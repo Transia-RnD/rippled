@@ -22,6 +22,7 @@
 
 #include <ripple/basics/safe_cast.h>
 #include <ripple/json/json_value.h>
+
 #include <cstdint>
 #include <map>
 #include <utility>
@@ -47,6 +48,8 @@ template <int>
 class STBitString;
 template <class>
 class STInteger;
+class STSidechain;
+class STXChainClaimProof;
 class STVector256;
 
 enum SerializedTypeID {
@@ -76,6 +79,8 @@ enum SerializedTypeID {
     STI_UINT192 = 21,
     STI_UINT384 = 22,
     STI_UINT512 = 23,
+    STI_SIDECHAIN = 24,
+    STI_XCHAIN_CLAIM_PROOF = 25,
 
     // high level types
     // cannot be serialized inside other types
@@ -320,6 +325,8 @@ using SF_ACCOUNT = TypedField<STAccount>;
 using SF_AMOUNT = TypedField<STAmount>;
 using SF_VL = TypedField<STBlob>;
 using SF_VECTOR256 = TypedField<STVector256>;
+using SF_SIDECHAIN = TypedField<STSidechain>;
+using SF_XCHAIN_CLAIM_PROOF = TypedField<STXChainClaimProof>;
 
 //------------------------------------------------------------------------------
 
@@ -400,6 +407,7 @@ extern SF_UINT32 const sfMintedNFTokens;
 extern SF_UINT32 const sfBurnedNFTokens;
 extern SF_UINT32 const sfHookStateCount;
 extern SF_UINT32 const sfEmitGeneration;
+extern SF_UINT32 const sfXChainSequence;
 
 // 64-bit integers (common)
 extern SF_UINT64 const sfIndexNext;
@@ -482,6 +490,7 @@ extern SF_AMOUNT const sfMinimumOffer;
 extern SF_AMOUNT const sfRippleEscrow;
 extern SF_AMOUNT const sfDeliveredAmount;
 extern SF_AMOUNT const sfNFTokenBrokerFee;
+extern SF_AMOUNT const sfXChainFee;
 
 // currency amount (fees)
 extern SF_AMOUNT const sfBaseFeeDrops;
@@ -529,9 +538,17 @@ extern SF_ACCOUNT const sfEmitCallback;
 
 // account (uncommon)
 extern SF_ACCOUNT const sfHookAccount;
+extern SF_ACCOUNT const sfThisChainAccount;
+extern SF_ACCOUNT const sfOtherChainAccount;
 
 // path set
 extern SField const sfPaths;
+
+// sidechain
+extern SF_SIDECHAIN const sfSidechain;
+
+// xchain claim proof
+extern SF_XCHAIN_CLAIM_PROOF const sfXChainClaimProof;
 
 // vector of 256-bit
 extern SF_VECTOR256 const sfIndexes;
@@ -583,6 +600,7 @@ extern SField const sfDisabledValidators;
 extern SField const sfHookExecutions;
 extern SField const sfHookParameters;
 extern SField const sfHookGrants;
+extern SField const sfXChainProofSigs;
 
 //------------------------------------------------------------------------------
 

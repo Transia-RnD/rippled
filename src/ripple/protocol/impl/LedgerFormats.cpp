@@ -19,6 +19,7 @@
 
 #include <ripple/protocol/LedgerFormats.h>
 #include <ripple/protocol/jss.h>
+#include "ripple/protocol/SField.h"
 #include <utility>
 
 namespace ripple {
@@ -262,6 +263,33 @@ LedgerFormats::LedgerFormats()
             {sfNFTokenOfferNode,     soeREQUIRED},
             {sfDestination,          soeOPTIONAL},
             {sfExpiration,           soeOPTIONAL},
+            {sfPreviousTxnID,        soeREQUIRED},
+            {sfPreviousTxnLgrSeq,    soeREQUIRED}
+        },
+        commonFields);
+
+    add(jss::Sidechain,
+        ltSIDECHAIN,
+        {
+            {sfOwner,                soeREQUIRED},
+            {sfSidechain,            soeREQUIRED},
+            {sfXChainSequence,       soeREQUIRED},
+            {sfSignerQuorum,         soeREQUIRED},
+            // TODO: This should store public keys, not account ids
+            {sfSignerEntries,        soeREQUIRED},
+            {sfOwnerNode,            soeREQUIRED},
+            {sfPreviousTxnID,        soeREQUIRED},
+            {sfPreviousTxnLgrSeq,    soeREQUIRED}
+        },
+        commonFields);
+
+    add(jss::CrosschainSeqNum,
+        ltCROSSCHAIN_SEQUENCE_NUMBER,
+        {
+            {sfOwner,                soeREQUIRED},
+            {sfSidechain,            soeREQUIRED},
+            {sfXChainSequence,       soeREQUIRED},
+            {sfOwnerNode,            soeREQUIRED},
             {sfPreviousTxnID,        soeREQUIRED},
             {sfPreviousTxnLgrSeq,    soeREQUIRED}
         },

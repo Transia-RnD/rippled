@@ -40,6 +40,7 @@
 #include <ripple/app/tx/impl/SetRegularKey.h>
 #include <ripple/app/tx/impl/SetSignerList.h>
 #include <ripple/app/tx/impl/SetTrust.h>
+#include <ripple/app/tx/impl/Sidechain.h>
 
 namespace ripple {
 
@@ -147,6 +148,18 @@ invoke_preflight(PreflightContext const& ctx)
             return invoke_preflight_helper<NFTokenCancelOffer>(ctx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return invoke_preflight_helper<NFTokenAcceptOffer>(ctx);
+        case ttSIDECHAIN_CREATE:
+            return invoke_preflight_helper<SidechainCreate>(ctx);
+        case ttSIDECHAIN_XCHAIN_SEQNUM_CREATE:
+            return invoke_preflight_helper<SidechainXChainSeqNumCreate>(ctx);
+        case ttSIDECHAIN_XCHAIN_TRANSFER:
+            return invoke_preflight_helper<SidechainXChainTransfer>(ctx);
+        case ttSIDECHAIN_XCHAIN_CLAIM:
+            return invoke_preflight_helper<SidechainClaim>(ctx);
+        case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
+            return invoke_preflight_helper<SidechainXChainCreateAccount>(ctx);
+        case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
+            return invoke_preflight_helper<SidechainXChainClaimAccount>(ctx);
         default:
             assert(false);
             return {temUNKNOWN, TxConsequences{temUNKNOWN}};
@@ -248,6 +261,18 @@ invoke_preclaim(PreclaimContext const& ctx)
             return invoke_preclaim<NFTokenCancelOffer>(ctx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return invoke_preclaim<NFTokenAcceptOffer>(ctx);
+        case ttSIDECHAIN_CREATE:
+            return invoke_preclaim<SidechainCreate>(ctx);
+        case ttSIDECHAIN_XCHAIN_SEQNUM_CREATE:
+            return invoke_preclaim<SidechainXChainSeqNumCreate>(ctx);
+        case ttSIDECHAIN_XCHAIN_TRANSFER:
+            return invoke_preclaim<SidechainXChainTransfer>(ctx);
+        case ttSIDECHAIN_XCHAIN_CLAIM:
+            return invoke_preclaim<SidechainClaim>(ctx);
+        case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
+            return invoke_preclaim<SidechainXChainCreateAccount>(ctx);
+        case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
+            return invoke_preclaim<SidechainXChainClaimAccount>(ctx);
         default:
             assert(false);
             return temUNKNOWN;
@@ -311,6 +336,18 @@ invoke_calculateBaseFee(ReadView const& view, STTx const& tx)
             return NFTokenCancelOffer::calculateBaseFee(view, tx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return NFTokenAcceptOffer::calculateBaseFee(view, tx);
+        case ttSIDECHAIN_CREATE:
+            return SidechainCreate::calculateBaseFee(view, tx);
+        case ttSIDECHAIN_XCHAIN_SEQNUM_CREATE:
+            return SidechainXChainSeqNumCreate::calculateBaseFee(view, tx);
+        case ttSIDECHAIN_XCHAIN_TRANSFER:
+            return SidechainXChainTransfer::calculateBaseFee(view, tx);
+        case ttSIDECHAIN_XCHAIN_CLAIM:
+            return SidechainClaim::calculateBaseFee(view, tx);
+        case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
+            return SidechainXChainCreateAccount::calculateBaseFee(view, tx);
+        case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
+            return SidechainXChainClaimAccount::calculateBaseFee(view, tx);
         default:
             assert(false);
             return XRPAmount{0};
@@ -461,6 +498,30 @@ invoke_apply(ApplyContext& ctx)
         }
         case ttNFTOKEN_ACCEPT_OFFER: {
             NFTokenAcceptOffer p(ctx);
+            return p();
+        }
+        case ttSIDECHAIN_CREATE: {
+            SidechainCreate p(ctx);
+            return p();
+        }
+        case ttSIDECHAIN_XCHAIN_SEQNUM_CREATE: {
+            SidechainXChainSeqNumCreate p(ctx);
+            return p();
+        }
+        case ttSIDECHAIN_XCHAIN_TRANSFER: {
+            SidechainXChainTransfer p(ctx);
+            return p();
+        }
+        case ttSIDECHAIN_XCHAIN_CLAIM: {
+            SidechainClaim p(ctx);
+            return p();
+        }
+        case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE: {
+            SidechainXChainCreateAccount p(ctx);
+            return p();
+        }
+        case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM: {
+            SidechainXChainClaimAccount p(ctx);
             return p();
         }
         default:

@@ -88,6 +88,12 @@ transResults()
         MAKE_ERROR(tecINSUFFICIENT_FUNDS,            "Not enough funds available to complete requested transaction."),
         MAKE_ERROR(tecOBJECT_NOT_FOUND,              "A requested object could not be located."),
         MAKE_ERROR(tecINSUFFICIENT_PAYMENT,          "The payment is not sufficient."),
+        MAKE_ERROR(tecBAD_XCHAIN_TRANSFER_ISSUE,     "Bad xchain transfer issue."),
+        MAKE_ERROR(tecBAD_XCHAIN_TRANSFER_SEQ_NUM,   "Bad xchain sequence number."),
+        MAKE_ERROR(tecXCHAIN_PROOF_NO_QUORUM,        "xchain proof no quorum."),
+        MAKE_ERROR(tecXCHAIN_PROOF_UNKNOWN_KEY,      "xchain proof unknown key."),
+        MAKE_ERROR(tecXCHAIN_CREATE_ACCOUNT_NONXRP_ISSUE, "xchain create account non-xrp issue."),
+        MAKE_ERROR(tecXCHAIN_CLAIM_ACCOUNT_DST_EXISTS, "xchain claim account dst exists."),
 
         MAKE_ERROR(tefALREADY,                     "The exact transaction was already in this ledger."),
         MAKE_ERROR(tefBAD_ADD_AUTH,                "Not authorized to add account."),
@@ -163,6 +169,9 @@ transResults()
         MAKE_ERROR(temINVALID_COUNT,             "Malformed: Count field outside valid range."),
         MAKE_ERROR(temSEQ_AND_TICKET,            "Transaction contains a TicketSequence and a non-zero Sequence."),
         MAKE_ERROR(temBAD_NFTOKEN_TRANSFER_FEE,  "Malformed: The NFToken transfer fee must be between 1 and 5000, inclusive."),
+        MAKE_ERROR(temEQUAL_DOOR_ACCOUNTS,       "Malformed: Sidechains must have unique door accounts."),
+        MAKE_ERROR(temBAD_XChain_Proof,          "Malformed: Bad cross-chain claim proof."),
+        MAKE_ERROR(temSIDECHAIN_BAD_ISSUES,      "Malformed: Bad sidechain issues."),
 
         MAKE_ERROR(terRETRY,                  "Retry transaction."),
         MAKE_ERROR(terFUNDS_SPENT,            "DEPRECATED."),

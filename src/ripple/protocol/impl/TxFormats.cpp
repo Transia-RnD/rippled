@@ -18,6 +18,9 @@
 //==============================================================================
 
 #include <ripple/protocol/TxFormats.h>
+
+#include <ripple/protocol/SField.h>
+#include <ripple/protocol/SOTemplate.h>
 #include <ripple/protocol/jss.h>
 
 namespace ripple {
@@ -325,6 +328,68 @@ TxFormats::TxFormats()
             {sfNFTokenSellOffer, soeOPTIONAL},
             {sfNFTokenBrokerFee, soeOPTIONAL},
             {sfTicketSequence, soeOPTIONAL},
+        },
+        commonFields);
+
+    add(jss::NFTokenAcceptOffer,
+        ttNFTOKEN_ACCEPT_OFFER,
+        {
+            {sfNFTokenBuyOffer, soeOPTIONAL},
+            {sfNFTokenSellOffer, soeOPTIONAL},
+            {sfNFTokenBrokerFee, soeOPTIONAL},
+            {sfTicketSequence, soeOPTIONAL},
+        },
+        commonFields);
+
+    add(jss::SidechainCreate,
+        ttSIDECHAIN_CREATE,
+        {
+            {sfSidechain, soeREQUIRED},
+            {sfSignerQuorum, soeREQUIRED},
+            {sfSignerEntries, soeREQUIRED},
+        },
+        commonFields);
+
+    add(jss::SidechainXChainSeqNumCreate,
+        ttSIDECHAIN_XCHAIN_SEQNUM_CREATE,
+        {
+            {sfSidechain, soeREQUIRED},
+        },
+        commonFields);
+
+    add(jss::SidechainXChainTransfer,
+        ttSIDECHAIN_XCHAIN_TRANSFER,
+        {
+            {sfSidechain, soeREQUIRED},
+            {sfXChainSequence, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+        },
+        commonFields);
+
+    add(jss::SidechainXChainClaim,
+        ttSIDECHAIN_XCHAIN_CLAIM,
+        {
+            {sfXChainClaimProof, soeREQUIRED},
+            {sfDestination, soeREQUIRED},
+        },
+        commonFields);
+
+    add(jss::SidechainXChainAccountCreate,
+        ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE,
+        {
+            {sfSidechain, soeREQUIRED},
+            {sfDestination, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfXChainFee, soeREQUIRED},
+        },
+        commonFields);
+
+    add(jss::SidechainXChainAccountClaim,
+        ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM,
+        {
+            {sfSidechain, soeREQUIRED},
+            {sfDestination, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
         },
         commonFields);
 }

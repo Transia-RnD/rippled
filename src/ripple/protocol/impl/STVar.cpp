@@ -27,7 +27,9 @@
 #include <ripple/protocol/STInteger.h>
 #include <ripple/protocol/STObject.h>
 #include <ripple/protocol/STPathSet.h>
+#include <ripple/protocol/STSidechain.h>
 #include <ripple/protocol/STVector256.h>
+#include <ripple/protocol/STXChainClaimProof.h>
 #include <ripple/protocol/impl/STVar.h>
 
 namespace ripple {
@@ -157,6 +159,12 @@ STVar::STVar(SerialIter& sit, SField const& name, int depth)
         case STI_ARRAY:
             construct<STArray>(sit, name, depth);
             return;
+        case STI_SIDECHAIN:
+            construct<STSidechain>(sit, name);
+            return;
+        case STI_XCHAIN_CLAIM_PROOF:
+            construct<STXChainClaimProof>(sit, name);
+            return;
         default:
             Throw<std::runtime_error>("Unknown object type");
     }
@@ -211,6 +219,12 @@ STVar::STVar(SerializedTypeID id, SField const& name)
             return;
         case STI_ARRAY:
             construct<STArray>(name);
+            return;
+        case STI_SIDECHAIN:
+            construct<STSidechain>(name);
+            return;
+        case STI_XCHAIN_CLAIM_PROOF:
+            construct<STXChainClaimProof>(name);
             return;
         default:
             Throw<std::runtime_error>("Unknown object type");

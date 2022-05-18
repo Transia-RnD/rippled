@@ -41,74 +41,82 @@ namespace jss {
    error: Common properties of RPC error responses.
 */
 
-JSS(AL_size);                // out: GetCounts
-JSS(AL_hit_rate);            // out: GetCounts
-JSS(Account);                // in: TransactionSign; field.
-JSS(AccountDelete);          // transaction type.
-JSS(AccountRoot);            // ledger type.
-JSS(AccountSet);             // transaction type.
-JSS(Amendments);             // ledger type.
-JSS(Amount);                 // in: TransactionSign; field.
-JSS(Check);                  // ledger type.
-JSS(CheckCancel);            // transaction type.
-JSS(CheckCash);              // transaction type.
-JSS(CheckCreate);            // transaction type.
-JSS(ClearFlag);              // field.
-JSS(DeliverMin);             // in: TransactionSign
-JSS(DepositPreauth);         // transaction and ledger type.
-JSS(Destination);            // in: TransactionSign; field.
-JSS(DirectoryNode);          // ledger type.
-JSS(EnableAmendment);        // transaction type.
-JSS(Escrow);                 // ledger type.
-JSS(EscrowCancel);           // transaction type.
-JSS(EscrowCreate);           // transaction type.
-JSS(EscrowFinish);           // transaction type.
-JSS(Fee);                    // in/out: TransactionSign; field.
-JSS(FeeSettings);            // ledger type.
-JSS(Flags);                  // in/out: TransactionSign; field.
-JSS(incomplete_shards);      // out: OverlayImpl, PeerImp
-JSS(Invalid);                //
-JSS(LastLedgerSequence);     // in: TransactionSign; field
-JSS(LedgerHashes);           // ledger type.
-JSS(LimitAmount);            // field.
-JSS(NFTokenBurn);            // transaction type.
-JSS(NFTokenMint);            // transaction type.
-JSS(NFTokenOffer);           // ledger type.
-JSS(NFTokenAcceptOffer);     // transaction type.
-JSS(NFTokenCancelOffer);     // transaction type.
-JSS(NFTokenCreateOffer);     // transaction type.
-JSS(NFTokenPage);            // ledger type.
-JSS(Offer);                  // ledger type.
-JSS(OfferCancel);            // transaction type.
-JSS(OfferCreate);            // transaction type.
-JSS(OfferSequence);          // field.
-JSS(Paths);                  // in/out: TransactionSign
-JSS(PayChannel);             // ledger type.
-JSS(Payment);                // transaction type.
-JSS(PaymentChannelClaim);    // transaction type.
-JSS(PaymentChannelCreate);   // transaction type.
-JSS(PaymentChannelFund);     // transaction type.
-JSS(RippleState);            // ledger type.
-JSS(SLE_hit_rate);           // out: GetCounts.
-JSS(SetFee);                 // transaction type.
-JSS(UNLModify);              // transaction type.
-JSS(SettleDelay);            // in: TransactionSign
-JSS(SendMax);                // in: TransactionSign
-JSS(Sequence);               // in/out: TransactionSign; field.
-JSS(SetFlag);                // field.
-JSS(SetRegularKey);          // transaction type.
-JSS(SignerList);             // ledger type.
-JSS(SignerListSet);          // transaction type.
-JSS(SigningPubKey);          // field.
-JSS(TakerGets);              // field.
-JSS(TakerPays);              // field.
-JSS(Ticket);                 // ledger type.
-JSS(TicketCreate);           // transaction type.
-JSS(TxnSignature);           // field.
-JSS(TransactionType);        // in: TransactionSign.
-JSS(TransferRate);           // in: TransferRate.
-JSS(TrustSet);               // transaction type.
-JSS(aborted);                // out: InboundLedger
+JSS(AL_size);                       // out: GetCounts
+JSS(AL_hit_rate);                   // out: GetCounts
+JSS(Account);                       // in: TransactionSign; field.
+JSS(AccountDelete);                 // transaction type.
+JSS(AccountRoot);                   // ledger type.
+JSS(AccountSet);                    // transaction type.
+JSS(Amendments);                    // ledger type.
+JSS(Amount);                        // in: TransactionSign; field.
+JSS(Check);                         // ledger type.
+JSS(CheckCancel);                   // transaction type.
+JSS(CheckCash);                     // transaction type.
+JSS(CheckCreate);                   // transaction type.
+JSS(ClearFlag);                     // field.
+JSS(CrosschainSeqNum);              // ledger type.
+JSS(DeliverMin);                    // in: TransactionSign
+JSS(DepositPreauth);                // transaction and ledger type.
+JSS(Destination);                   // in: TransactionSign; field.
+JSS(DirectoryNode);                 // ledger type.
+JSS(EnableAmendment);               // transaction type.
+JSS(Escrow);                        // ledger type.
+JSS(EscrowCancel);                  // transaction type.
+JSS(EscrowCreate);                  // transaction type.
+JSS(EscrowFinish);                  // transaction type.
+JSS(Fee);                           // in/out: TransactionSign; field.
+JSS(FeeSettings);                   // ledger type.
+JSS(Flags);                         // in/out: TransactionSign; field.
+JSS(incomplete_shards);             // out: OverlayImpl, PeerImp
+JSS(Invalid);                       //
+JSS(LastLedgerSequence);            // in: TransactionSign; field
+JSS(LedgerHashes);                  // ledger type.
+JSS(LimitAmount);                   // field.
+JSS(NFTokenBurn);                   // transaction type.
+JSS(NFTokenMint);                   // transaction type.
+JSS(NFTokenOffer);                  // ledger type.
+JSS(NFTokenAcceptOffer);            // transaction type.
+JSS(NFTokenCancelOffer);            // transaction type.
+JSS(NFTokenCreateOffer);            // transaction type.
+JSS(NFTokenPage);                   // ledger type.
+JSS(Offer);                         // ledger type.
+JSS(OfferCancel);                   // transaction type.
+JSS(OfferCreate);                   // transaction type.
+JSS(OfferSequence);                 // field.
+JSS(Paths);                         // in/out: TransactionSign
+JSS(PayChannel);                    // ledger type.
+JSS(Payment);                       // transaction type.
+JSS(PaymentChannelClaim);           // transaction type.
+JSS(PaymentChannelCreate);          // transaction type.
+JSS(PaymentChannelFund);            // transaction type.
+JSS(RippleState);                   // ledger type.
+JSS(SLE_hit_rate);                  // out: GetCounts.
+JSS(SetFee);                        // transaction type.
+JSS(UNLModify);                     // transaction type.
+JSS(SettleDelay);                   // in: TransactionSign
+JSS(SendMax);                       // in: TransactionSign
+JSS(Sequence);                      // in/out: TransactionSign; field.
+JSS(SetFlag);                       // field.
+JSS(SetRegularKey);                 // transaction type.
+JSS(Sidechain);                     // ledger type.
+JSS(SidechainCreate);               // transaction type.
+JSS(SidechainXChainSeqNumCreate);   // transaction type.
+JSS(SidechainXChainTransfer);       // transaction type.
+JSS(SidechainXChainClaim);          // transaction type.
+JSS(SidechainXChainAccountCreate);  // transaction type.
+JSS(SidechainXChainAccountClaim);   // transaction type.
+JSS(SignerList);                    // ledger type.
+JSS(SignerListSet);                 // transaction type.
+JSS(SigningPubKey);                 // field.
+JSS(TakerGets);                     // field.
+JSS(TakerPays);                     // field.
+JSS(Ticket);                        // ledger type.
+JSS(TicketCreate);                  // transaction type.
+JSS(TxnSignature);                  // field.
+JSS(TransactionType);               // in: TransactionSign.
+JSS(TransferRate);                  // in: TransferRate.
+JSS(TrustSet);                      // transaction type.
+JSS(aborted);                       // out: InboundLedger
 JSS(accepted);               // out: LedgerToJson, OwnerInfo, SubmitTransaction
 JSS(account);                // in/out: many
 JSS(accountState);           // out: LedgerToJson
@@ -233,6 +241,8 @@ JSS(dir_root);                // out: DirectoryEntryIterator
 JSS(directory);               // in: LedgerEntry
 JSS(domain);                  // out: ValidatorInfo, Manifest
 JSS(drops);                   // out: TxQ
+JSS(dst_chain_door);          // in: sidechain
+JSS(dst_chain_issue);         // in: sidechain
 JSS(duration_us);             // out: NetworkOPs
 JSS(effective);               // out: ValidatorList
                               // in: UNL
@@ -311,6 +321,7 @@ JSS(ip);                   // in: Connect, out: OverlayImpl
 JSS(issuer);               // in: RipplePathFind, Subscribe,
                            //     Unsubscribe, BookOffers
                            // out: STPathSet, STAmount
+JSS(is_src_chain);         // in: sidechain
 JSS(job);
 JSS(job_queue);
 JSS(jobs);
@@ -530,7 +541,9 @@ JSS(server_version);            // out: NetworkOPs
 JSS(settle_delay);              // out: AccountChannels
 JSS(severity);                  // in: LogLevel
 JSS(shards);                    // in/out: GetCounts, DownloadShard
+JSS(sidechain);                 // in: sidechain
 JSS(signature);                 // out: NetworkOPs, ChannelAuthorize
+JSS(signatures);                // in: sidechain
 JSS(signature_verified);        // out: ChannelVerify
 JSS(signing_key);               // out: NetworkOPs
 JSS(signing_keys);              // out: ValidatorList
@@ -542,6 +555,8 @@ JSS(source_account);            // in: PathRequest, RipplePathFind
 JSS(source_amount);             // in: PathRequest, RipplePathFind
 JSS(source_currencies);         // in: PathRequest, RipplePathFind
 JSS(source_tag);                // out: AccountChannels
+JSS(src_chain_door);            // in: sidechain
+JSS(src_chain_issue);           // in: sidechain
 JSS(stand_alone);               // out: NetworkOPs
 JSS(start);                     // in: TxHistory
 JSS(started);
@@ -652,6 +667,7 @@ JSS(warning);                 // rpc:
 JSS(warnings);                // out: server_info, server_state
 JSS(workers);
 JSS(write_load);   // out: GetCounts
+JSS(xchain_seq);   // in: sidechain
 JSS(NegativeUNL);  // out: ValidatorList; ledger type
 #undef JSS
 

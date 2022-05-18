@@ -18,9 +18,13 @@
 //==============================================================================
 
 #include <ripple/protocol/Indexes.h>
+#include <ripple/protocol/LedgerFormats.h>
+#include <ripple/protocol/SField.h>
+#include <ripple/protocol/STSidechain.h>
 #include <ripple/protocol/SeqProxy.h>
 #include <ripple/protocol/digest.h>
 #include <ripple/protocol/nftPageMask.h>
+
 #include <algorithm>
 #include <cassert>
 
@@ -63,6 +67,8 @@ enum class LedgerNameSpace : std::uint16_t {
     NFTOKEN_OFFER = 'q',
     NFTOKEN_BUY_OFFERS = 'h',
     NFTOKEN_SELL_OFFERS = 'i',
+    SIDECHAIN = 'H',
+    XCHAIN_SEQ = 'Q',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
@@ -368,6 +374,33 @@ Keylet
 nft_sells(uint256 const& id) noexcept
 {
     return {ltDIR_NODE, indexHash(LedgerNameSpace::NFTOKEN_SELL_OFFERS, id)};
+}
+
+Keylet
+sidechain(STSidechain const& sidechain)
+{
+    return {
+        ltSIDECHAIN,
+        indexHash(
+            LedgerNameSpace::SIDECHAIN,
+            sidechain.srcChainDoor(),
+            sidechain.srcChainIssue(),
+            sidechain.dstChainDoor(),
+            sidechain.dstChainIssue())};
+}
+
+Keylet
+xChainSeqNum(STSidechain const& sidechain, std::uint32_t seq)
+{
+    return {
+        ltCROSSCHAIN_SEQUENCE_NUMBER,
+        indexHash(
+            LedgerNameSpace::XCHAIN_SEQ,
+            sidechain.srcChainDoor(),
+            sidechain.srcChainIssue(),
+            sidechain.dstChainDoor(),
+            sidechain.dstChainIssue(),
+            seq)};
 }
 
 }  // namespace keylet

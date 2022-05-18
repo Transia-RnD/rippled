@@ -91,6 +91,13 @@ enum LedgerEntryType : std::uint16_t
      */
     ltOFFER = 0x006f,
 
+
+    /** The ledger object which lists details about sidechains.
+
+        \sa keyyet::sidechain
+    */
+    ltSIDECHAIN = 0x0069,
+
     /** A ledger object that contains a list of ledger hashes.
 
         This type is used to store the ledger hashes which the protocol uses
@@ -108,6 +115,12 @@ enum LedgerEntryType : std::uint16_t
         \sa keylet::amendments
      */
     ltAMENDMENTS = 0x0066,
+
+    /** A sequence number for a cross chain transaction.
+
+        \sa keylet::xchainSeqNum
+    */
+    ltCROSSCHAIN_SEQUENCE_NUMBER = 0x0071,
 
     /** The ledger object which lists the network's fee settings.
 

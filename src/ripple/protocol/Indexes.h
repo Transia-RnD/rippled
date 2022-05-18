@@ -263,6 +263,12 @@ nft_buys(uint256 const& id) noexcept;
 Keylet
 nft_sells(uint256 const& id) noexcept;
 
+Keylet
+sidechain(STSidechain const& sidechain);
+
+Keylet
+xChainSeqNum(STSidechain const& sidechain, std::uint32_t seq);
+
 }  // namespace keylet
 
 // Everything below is deprecated and should be removed in favor of keylets:

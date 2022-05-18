@@ -120,6 +120,9 @@ enum TEMcodes : TERUnderlyingType {
 
     temSEQ_AND_TICKET,
     temBAD_NFTOKEN_TRANSFER_FEE,
+    temEQUAL_DOOR_ACCOUNTS,
+    temBAD_XChain_Proof,
+    temSIDECHAIN_BAD_ISSUES,
 };
 
 //------------------------------------------------------------------------------
@@ -289,6 +292,13 @@ enum TECcodes : TERUnderlyingType {
     tecINSUFFICIENT_FUNDS = 159,
     tecOBJECT_NOT_FOUND = 160,
     tecINSUFFICIENT_PAYMENT = 161,
+    tecBAD_XCHAIN_TRANSFER_ISSUE = 162,
+    tecBAD_XCHAIN_TRANSFER_SEQ_NUM = 163,
+    tecXCHAIN_PROOF_NO_QUORUM = 164,
+    tecXCHAIN_PROOF_UNKNOWN_KEY = 165,
+    tecXCHAIN_CREATE_ACCOUNT_NONXRP_ISSUE = 166,
+    tecXCHAIN_CLAIM_ACCOUNT_DST_EXISTS = 167,
+    tecXCHAIN_CLAIM_WRONG_CHAIN = 168,
 };
 
 //------------------------------------------------------------------------------

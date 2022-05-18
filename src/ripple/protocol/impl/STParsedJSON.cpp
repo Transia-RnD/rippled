@@ -31,7 +31,9 @@
 #include <ripple/protocol/STInteger.h>
 #include <ripple/protocol/STParsedJSON.h>
 #include <ripple/protocol/STPathSet.h>
+#include <ripple/protocol/STSidechain.h>
 #include <ripple/protocol/STVector256.h>
+#include <ripple/protocol/STXChainClaimProof.h>
 #include <ripple/protocol/TER.h>
 #include <ripple/protocol/TxFormats.h>
 #include <ripple/protocol/UintTypes.h>
@@ -729,6 +731,32 @@ parseLeaf(
             }
         }
         break;
+
+        case STI_SIDECHAIN:
+            try
+            {
+                ret = detail::make_stvar<STSidechain>(
+                    STSidechainFromJson(field, value));
+            }
+            catch (std::exception const&)
+            {
+                error = invalid_data(json_name, fieldName);
+                return ret;
+            }
+
+            break;
+        case STI_XCHAIN_CLAIM_PROOF:
+            try
+            {
+                ret = detail::make_stvar<STXChainClaimProof>(
+                    STXChainClaimProofFromJson(field, value));
+            }
+            catch (std::exception const&)
+            {
+                error = invalid_data(json_name, fieldName);
+                return ret;
+            }
+            break;
 
         default:
             error = bad_type(json_name, fieldName);
