@@ -331,16 +331,6 @@ TxFormats::TxFormats()
         },
         commonFields);
 
-    add(jss::NFTokenAcceptOffer,
-        ttNFTOKEN_ACCEPT_OFFER,
-        {
-            {sfNFTokenBuyOffer, soeOPTIONAL},
-            {sfNFTokenSellOffer, soeOPTIONAL},
-            {sfNFTokenBrokerFee, soeOPTIONAL},
-            {sfTicketSequence, soeOPTIONAL},
-        },
-        commonFields);
-
     add(jss::SidechainCreate,
         ttSIDECHAIN_CREATE,
         {

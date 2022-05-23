@@ -86,7 +86,7 @@ SidechainCreate::preflight(PreflightContext const& ctx)
     }
 
     auto signersR = SignerEntries::deserialize(ctx.tx, ctx.j, "transaction");
-    if (signersR.error())
+    if (!signersR.has_value())
         return signersR.error();
     auto const& signers = signersR.value();
 
@@ -167,7 +167,7 @@ SidechainCreate::doApply()
         // set the signer entries
         auto signersR =
             SignerEntries::deserialize(ctx_.tx, ctx_.journal, "transaction");
-        if (signersR.error())
+        if (!signersR.has_value())
             return signersR.error();  // This is already checked in preflight
 
         auto& signers = signersR.value();

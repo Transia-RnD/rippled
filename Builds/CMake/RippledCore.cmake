@@ -721,6 +721,7 @@ if (tests)
     src/test/app/RCLValidations_test.cpp
     src/test/app/Regression_test.cpp
     src/test/app/SHAMapStore_test.cpp
+    src/test/app/Sidechain_test.cpp
     src/test/app/SetAuth_test.cpp
     src/test/app/SetRegularKey_test.cpp
     src/test/app/SetTrust_test.cpp

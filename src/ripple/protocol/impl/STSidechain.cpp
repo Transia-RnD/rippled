@@ -149,7 +149,8 @@ STSidechainFromJson(SField const& name, Json::Value const& v)
         *srcChainDoor,
         issueFromJson(srcChainIssue),
         *dstChainDoor,
-        issueFromJson(dstChainIssue)};
+        issueFromJson(dstChainIssue),
+        name};
 }
 
 }  // namespace ripple
