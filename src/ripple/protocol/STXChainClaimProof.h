@@ -32,7 +32,7 @@
 
 namespace ripple {
 
-class STXChainClaimProof : public STBase
+class STXChainClaimProof final : public STBase
 {
 public:
     using SigCollection = std::vector<std::pair<PublicKey, Buffer>>;

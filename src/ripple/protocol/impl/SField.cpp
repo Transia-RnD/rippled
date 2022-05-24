@@ -329,6 +329,7 @@ CONSTRUCT_UNTYPED_SFIELD(sfHookExecution,       "HookExecution",        OBJECT, 
 CONSTRUCT_UNTYPED_SFIELD(sfHookDefinition,      "HookDefinition",       OBJECT,    22);
 CONSTRUCT_UNTYPED_SFIELD(sfHookParameter,       "HookParameter",        OBJECT,    23);
 CONSTRUCT_UNTYPED_SFIELD(sfHookGrant,           "HookGrant",            OBJECT,    24);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainProofSig,      "XChainProofSig",       OBJECT,    25);
 
 // array of objects
 //                                                                            ARRAY/1 is reserved for end of array

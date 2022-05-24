@@ -78,6 +78,12 @@ SidechainCreate::preflight(PreflightContext const& ctx)
         return temEQUAL_DOOR_ACCOUNTS;
     }
 
+    if (sidechain.srcChainDoor() != account &&
+        sidechain.dstChainDoor() != account)
+    {
+        return temSIDECHAIN_NONDOOR_OWNER;
+    }
+
     if (isXRP(sidechain.srcChainIssue()) != isXRP(sidechain.dstChainIssue()))
     {
         // Because ious and xrp have different numeric ranges, both the src and
@@ -159,6 +165,7 @@ SidechainCreate::doApply()
     Keylet const sidechainKeylet = keylet::sidechain(sidechain);
     auto const sleSC = std::make_shared<SLE>(sidechainKeylet);
 
+    (*sleSC)[sfAccount] = account;
     (*sleSC)[sfSidechain] = sidechain;
     (*sleSC)[sfXChainSequence] = 0;
 
@@ -265,7 +272,7 @@ SidechainClaim::preclaim(PreclaimContext const& ctx)
     {
         // Check that the amount specified in the proof matches the expected
         // issue
-        auto const thisDoor = (*sleSC)[sfOwner];
+        auto const thisDoor = (*sleSC)[sfAccount];
 
         bool isSrcChain = false;
         {
@@ -306,7 +313,7 @@ SidechainClaim::preclaim(PreclaimContext const& ctx)
             return tecBAD_XCHAIN_TRANSFER_SEQ_NUM;
         }
 
-        if ((*sleSQ)[sfOwner] != account)
+        if ((*sleSQ)[sfAccount] != account)
         {
             // Sequence number isn't owned by the sender of this transaction
             return tecBAD_XCHAIN_TRANSFER_SEQ_NUM;
@@ -361,7 +368,7 @@ SidechainClaim::doApply()
     if (!(sleSC && sleSQ && sleAcc))
         return tecINTERNAL;
 
-    auto const thisDoor = (*sleSC)[sfOwner];
+    auto const thisDoor = (*sleSC)[sfAccount];
 
     Issue const thisChainIssue = [&] {
         bool const isSrcChain = (thisDoor == sidechain.srcChainDoor());
@@ -380,6 +387,35 @@ SidechainClaim::doApply()
         r.setIssue(thisChainIssue);
         return r;
     }();
+
+    // TODO: handle DepositAuth
+    //       handle dipping below reserve
+    // TODO: Create a payment transaction instead of calling flow directly?
+    if (thisChainAmount.native())
+    {
+        // TODO: Check reserve
+        auto const sleDoor = psb.peek(keylet::account(thisDoor));
+        assert(sleDoor);
+        if (!sleDoor)
+            return tecINTERNAL;
+
+        if ((*sleDoor)[sfBalance] < thisChainAmount)
+        {
+            return tecINSUFFICIENT_FUNDS;
+        }
+        auto const sleDst = psb.peek(keylet::account(dst));
+        if (!sleDst)
+        {
+            // TODO
+            return tecNO_DST;
+        }
+        (*sleDoor)[sfBalance] = (*sleDoor)[sfBalance] - thisChainAmount;
+        (*sleDst)[sfBalance] = (*sleDst)[sfBalance] + thisChainAmount;
+        psb.update(sleDoor);
+        psb.update(sleDst);
+        psb.apply(ctx_.rawView());
+        return tesSUCCESS;
+    }
 
     auto const result = flow(
         psb,
@@ -452,7 +488,7 @@ SidechainXChainTransfer::preclaim(PreclaimContext const& ctx)
         return tecNO_ENTRY;
     }
 
-    auto const thisDoor = (*sleSC)[sfOwner];
+    auto const thisDoor = (*sleSC)[sfAccount];
 
     bool isSrcChain = false;
     {
@@ -495,7 +531,31 @@ SidechainXChainTransfer::doApply()
     if (!sleSC)
         return tecINTERNAL;
 
-    auto const dst = (*sleSC)[sfOwner];
+    auto const dst = (*sleSC)[sfAccount];
+
+    // TODO: handle DepositAuth
+    //       handle dipping below reserve
+    // TODO: Create a payment transaction instead of calling flow directly?
+    if (amount.native())
+    {
+        // TODO: Check reserve
+        if ((*sle)[sfBalance] < amount)
+        {
+            return tecINSUFFICIENT_FUNDS;
+        }
+        auto const sleDst = psb.peek(keylet::account(dst));
+        if (!sleDst)
+        {
+            // TODO
+            return tecNO_DST;
+        }
+        (*sle)[sfBalance] = (*sle)[sfBalance] - amount;
+        (*sleDst)[sfBalance] = (*sleDst)[sfBalance] + amount;
+        psb.update(sle);
+        psb.update(sleDst);
+        psb.apply(ctx_.rawView());
+        return tesSUCCESS;
+    }
 
     auto const result = flow(
         psb,
@@ -590,6 +650,8 @@ SidechainXChainSeqNumCreate::doApply()
         return tecINTERNAL;  // already checked out!?!
 
     auto const sleQ = std::make_shared<SLE>(seqKeylet);
+
+    (*sleQ)[sfAccount] = account;
     (*sleQ)[sfSidechain] = sidechain;
     (*sleQ)[sfXChainSequence] = xChainSeq;
 
@@ -646,7 +708,7 @@ SidechainXChainCreateAccount::preclaim(PreclaimContext const& ctx)
         return tecNO_ENTRY;
     }
 
-    auto const thisDoor = (*sleSC)[sfOwner];
+    auto const thisDoor = (*sleSC)[sfAccount];
 
     bool isSrcChain = false;
     {
@@ -696,7 +758,7 @@ SidechainXChainCreateAccount::doApply()
     if (!sleSC)
         return tecINTERNAL;
 
-    auto const dst = (*sleSC)[sfOwner];
+    auto const dst = (*sleSC)[sfAccount];
 
     auto const result = flow(
         psb,
@@ -762,7 +824,7 @@ SidechainXChainClaimAccount::preclaim(PreclaimContext const& ctx)
     {
         // Check that the amount specified in the proof matches the expected
         // issue
-        auto const thisDoor = (*sleSC)[sfOwner];
+        auto const thisDoor = (*sleSC)[sfAccount];
 
         bool isSrcChain = false;
         {
@@ -805,7 +867,7 @@ SidechainXChainClaimAccount::doApply()
     if (!(sleSC && sleAcc))
         return tecINTERNAL;
 
-    auto const thisDoor = (*sleSC)[sfOwner];
+    auto const thisDoor = (*sleSC)[sfAccount];
 
     Issue const thisChainIssue = [&] {
         bool const isSrcChain = (thisDoor == sidechain.srcChainDoor());

@@ -256,7 +256,7 @@ LedgerFormats::LedgerFormats()
     add(jss::NFTokenOffer,
         ltNFTOKEN_OFFER,
         {
-            {sfOwner,                soeREQUIRED},
+            {sfAccount,              soeREQUIRED},
             {sfNFTokenID,            soeREQUIRED},
             {sfAmount,               soeREQUIRED},
             {sfOwnerNode,            soeREQUIRED},
@@ -271,7 +271,7 @@ LedgerFormats::LedgerFormats()
     add(jss::Sidechain,
         ltSIDECHAIN,
         {
-            {sfOwner,                soeREQUIRED},
+            {sfAccount,              soeREQUIRED},
             {sfSidechain,            soeREQUIRED},
             {sfXChainSequence,       soeREQUIRED},
             {sfSignerQuorum,         soeREQUIRED},
@@ -286,7 +286,7 @@ LedgerFormats::LedgerFormats()
     add(jss::CrosschainSeqNum,
         ltCROSSCHAIN_SEQUENCE_NUMBER,
         {
-            {sfOwner,                soeREQUIRED},
+            {sfAccount,              soeREQUIRED},
             {sfSidechain,            soeREQUIRED},
             {sfXChainSequence,       soeREQUIRED},
             {sfOwnerNode,            soeREQUIRED},

@@ -580,6 +580,7 @@ extern SField const sfHookExecution;
 extern SField const sfHookDefinition;
 extern SField const sfHookParameter;
 extern SField const sfHookGrant;
+extern SField const sfXChainProofSig;
 
 // array of objects (common)
 // ARRAY/1 is reserved for end of array

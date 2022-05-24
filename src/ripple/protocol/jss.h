@@ -321,7 +321,7 @@ JSS(ip);                   // in: Connect, out: OverlayImpl
 JSS(issuer);               // in: RipplePathFind, Subscribe,
                            //     Unsubscribe, BookOffers
                            // out: STPathSet, STAmount
-JSS(is_src_chain);         // in: sidechain
+JSS(was_src_chain_send);   // in: sidechain
 JSS(job);
 JSS(job_queue);
 JSS(jobs);

@@ -18,6 +18,7 @@
 //==============================================================================
 
 #include <ripple/protocol/InnerObjectFormats.h>
+#include "ripple/protocol/SField.h"
 
 namespace ripple {
 
@@ -37,6 +38,13 @@ InnerObjectFormats::InnerObjectFormats()
             {sfAccount, soeREQUIRED},
             {sfSigningPubKey, soeREQUIRED},
             {sfTxnSignature, soeREQUIRED},
+        });
+
+    add(sfXChainProofSig.jsonName.c_str(),
+        sfXChainProofSig.getCode(),
+        {
+            {sfPublicKey, soeREQUIRED},
+            {sfSignature, soeREQUIRED},
         });
 
     add(sfMajority.jsonName.c_str(),

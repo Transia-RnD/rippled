@@ -94,6 +94,7 @@ transResults()
         MAKE_ERROR(tecXCHAIN_PROOF_UNKNOWN_KEY,      "xchain proof unknown key."),
         MAKE_ERROR(tecXCHAIN_CREATE_ACCOUNT_NONXRP_ISSUE, "xchain create account non-xrp issue."),
         MAKE_ERROR(tecXCHAIN_CLAIM_ACCOUNT_DST_EXISTS, "xchain claim account dst exists."),
+        MAKE_ERROR(tecXCHAIN_CLAIM_WRONG_CHAIN,       "xchain claim wrong chain."),
 
         MAKE_ERROR(tefALREADY,                     "The exact transaction was already in this ledger."),
         MAKE_ERROR(tefBAD_ADD_AUTH,                "Not authorized to add account."),
@@ -172,6 +173,7 @@ transResults()
         MAKE_ERROR(temEQUAL_DOOR_ACCOUNTS,       "Malformed: Sidechains must have unique door accounts."),
         MAKE_ERROR(temBAD_XChain_Proof,          "Malformed: Bad cross-chain claim proof."),
         MAKE_ERROR(temSIDECHAIN_BAD_ISSUES,      "Malformed: Bad sidechain issues."),
+        MAKE_ERROR(temSIDECHAIN_NONDOOR_OWNER,   "Malformed: Sidechain owner must be one of the door accounts."),
 
         MAKE_ERROR(terRETRY,                  "Retry transaction."),
         MAKE_ERROR(terFUNDS_SPENT,            "DEPRECATED."),

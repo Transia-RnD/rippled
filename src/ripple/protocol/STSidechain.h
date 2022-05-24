@@ -27,7 +27,7 @@
 namespace ripple {
 
 // variable length byte string
-class STSidechain : public STBase
+class STSidechain final : public STBase
 {
     AccountID srcChainDoor_{};
     Issue srcChainIssue_{};

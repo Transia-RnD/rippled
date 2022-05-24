@@ -19,15 +19,16 @@
 
 #include <ripple/protocol/STXChainClaimProof.h>
 
+#include <ripple/basics/StringUtilities.h>
 #include <ripple/protocol/Indexes.h>
 #include <ripple/protocol/PublicKey.h>
 #include <ripple/protocol/SField.h>
+#include <ripple/protocol/STAmount.h>
 #include <ripple/protocol/STArray.h>
 #include <ripple/protocol/STObject.h>
 #include <ripple/protocol/STSidechain.h>
 #include <ripple/protocol/Serializer.h>
 #include <ripple/protocol/jss.h>
-#include "ripple/protocol/STAmount.h"
 
 namespace ripple {
 
@@ -58,7 +59,7 @@ STXChainClaimProof::value() const noexcept
 }
 
 STXChainClaimProof::STXChainClaimProof(SerialIter& sit, SField const& name)
-    : STBase(name), sidechain_{sit}, amount_{sit, sfGeneric}
+    : STBase(name), sidechain_{sit}, amount_{sit, sfAmount}
 {
     xChainSeqNum_ = sit.get32();
     wasSrcChainSend_ = static_cast<bool>(sit.get8());
@@ -101,7 +102,7 @@ STXChainClaimProof::add(Serializer& s) const
     STArray sigs{sfXChainProofSigs, signatures_.size()};
     for (auto const& [pk, sig] : signatures_)
     {
-        STObject o{sfGeneric};
+        STObject o{sfXChainProofSig};
         o[sfPublicKey] = pk;
         o[sfSignature] = sig;
         sigs.push_back(o);
@@ -169,13 +170,45 @@ STXChainClaimProofFromJson(SField const& name, Json::Value const& v)
             "STXChainClaimProof can only be specified with a 'object' Json "
             "value");
     }
-
+    // TODO: Throw is a field is not present
+    // TODO: Throw if too many signatures
     STSidechain sidechain = STSidechainFromJson(sfSidechain, v[jss::sidechain]);
     STAmount const amt = amountFromJson(sfAmount, v[jss::amount]);
     std::uint32_t const xchainSeq = v[jss::xchain_seq].asUInt();
-    bool const isSrc = v[jss::is_src_chain].asBool();
-    std::vector<std::pair<PublicKey, Buffer>> sigs;
-    // TODO: Iterate through the signatures
+    bool const isSrc = v[jss::was_src_chain_send].asBool();
+    std::vector<std::pair<PublicKey, Buffer>> sigs = [&] {
+        auto const jSigs = v[jss::signatures];
+        std::vector<std::pair<PublicKey, Buffer>> r;
+        r.reserve(jSigs.size());
+        for (auto const& sig : jSigs)
+        {
+            auto const signingKeyB58 = sig[jss::signing_key].asString();
+            std::optional<PublicKey> pk;
+            for (auto const tokenType :
+                 {TokenType::NodePublic, TokenType::AccountPublic})
+            {
+                pk = parseBase58<PublicKey>(tokenType, signingKeyB58);
+                if (pk)
+                    break;
+            }
+            if (!pk)
+            {
+                Throw<std::runtime_error>(
+                    "Invalid base 58 signing public key in claim proof");
+            }
+            auto const sigHex = sig[jss::signature].asString();
+            auto sigBlob = strUnHex(sigHex);
+            if (!sigBlob)
+            {
+                Throw<std::runtime_error>(
+                    "Invalid hex signature in claim proof");
+            }
+            // TODO: Mismatch between buffer and blob
+            r.emplace_back(*pk, Buffer(sigBlob->data(), sigBlob->size()));
+        }
+        return r;
+    }();
+
     return STXChainClaimProof{
         sidechain, amt, xchainSeq, isSrc, std::move(sigs), name};
 }

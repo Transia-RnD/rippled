@@ -30,6 +30,9 @@ class SecretKey;
 class STSidechain;
 class STAmount;
 
+namespace test {
+namespace jtx {
+
 Buffer
 sign_attestation(
     PublicKey const& pk,
@@ -39,6 +42,8 @@ sign_attestation(
     std::uint32_t xChainSeqNum,
     bool wasSrcChainSend);
 
+}  // namespace jtx
+}  // namespace test
 }  // namespace ripple
 
 #endif

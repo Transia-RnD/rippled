@@ -26,6 +26,8 @@
 #include <ripple/protocol/SecretKey.h>
 
 namespace ripple {
+namespace test {
+namespace jtx {
 
 Buffer
 sign_attestation(
@@ -41,4 +43,6 @@ sign_attestation(
     return sign(pk, sk, makeSlice(toSign));
 }
 
+}  // namespace jtx
+}  // namespace test
 }  // namespace ripple

@@ -123,6 +123,7 @@ enum TEMcodes : TERUnderlyingType {
     temEQUAL_DOOR_ACCOUNTS,
     temBAD_XChain_Proof,
     temSIDECHAIN_BAD_ISSUES,
+    temSIDECHAIN_NONDOOR_OWNER,
 };
 
 //------------------------------------------------------------------------------

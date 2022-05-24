@@ -48,12 +48,14 @@ sidechain_claim_proof(
     Json::Value const& sidechain,
     AnyAmount const& amt,
     std::uint32_t xchainSeq,
+    bool wasSrcSend,
     std::vector<std::pair<PublicKey, Buffer>> const& sigs)
 {
     Json::Value jv;
     jv[jss::sidechain] = sidechain;
     jv[jss::amount] = amt.value.getJson(JsonOptions::none);
     jv[jss::xchain_seq] = xchainSeq;
+    jv[jss::was_src_chain_send] = wasSrcSend;
     Json::Value signers{Json::arrayValue};
     for (auto const& [pk, sig] : sigs)
     {
