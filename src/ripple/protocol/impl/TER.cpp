@@ -171,7 +171,7 @@ transResults()
         MAKE_ERROR(temSEQ_AND_TICKET,            "Transaction contains a TicketSequence and a non-zero Sequence."),
         MAKE_ERROR(temBAD_NFTOKEN_TRANSFER_FEE,  "Malformed: The NFToken transfer fee must be between 1 and 5000, inclusive."),
         MAKE_ERROR(temEQUAL_DOOR_ACCOUNTS,       "Malformed: Sidechains must have unique door accounts."),
-        MAKE_ERROR(temBAD_XChain_Proof,          "Malformed: Bad cross-chain claim proof."),
+        MAKE_ERROR(temBAD_XCHAIN_PROOF,          "Malformed: Bad cross-chain claim proof."),
         MAKE_ERROR(temSIDECHAIN_BAD_ISSUES,      "Malformed: Bad sidechain issues."),
         MAKE_ERROR(temSIDECHAIN_NONDOOR_OWNER,   "Malformed: Sidechain owner must be one of the door accounts."),
 

@@ -231,7 +231,7 @@ SidechainClaim::preflight(PreflightContext const& ctx)
 
     // Verify the signatures
     if (!proof.verify())
-        return temBAD_XChain_Proof;
+        return temBAD_XCHAIN_PROOF;
 
     if (proof.amount().signum() <= 0)
         return temBAD_AMOUNT;

@@ -121,7 +121,7 @@ enum TEMcodes : TERUnderlyingType {
     temSEQ_AND_TICKET,
     temBAD_NFTOKEN_TRANSFER_FEE,
     temEQUAL_DOOR_ACCOUNTS,
-    temBAD_XChain_Proof,
+    temBAD_XCHAIN_PROOF,
     temSIDECHAIN_BAD_ISSUES,
     temSIDECHAIN_NONDOOR_OWNER,
 };
