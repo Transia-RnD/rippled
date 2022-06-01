@@ -20,9 +20,11 @@
 #include <ripple/protocol/STSidechain.h>
 
 #include <ripple/protocol/Indexes.h>
+#include <ripple/protocol/Issue.h>
+#include <ripple/protocol/SField.h>
+#include <ripple/protocol/UintTypes.h>
 #include <ripple/protocol/jss.h>
-#include "ripple/protocol/SField.h"
-#include "ripple/protocol/tokens.h"
+#include <ripple/protocol/tokens.h>
 
 namespace ripple {
 
@@ -54,11 +56,17 @@ STSidechain::STSidechain(SerialIter& sit, SField const& name) : STBase(name)
 {
     srcChainDoor_ = sit.get160();
     srcChainIssue_.currency = sit.get160();
-    srcChainIssue_.account = sit.get160();
+    if (srcChainIssue_.currency != xrpCurrency())
+        srcChainIssue_.account = sit.get160();
+    else
+        srcChainIssue_.account = xrpAccount();
 
     dstChainDoor_ = sit.get160();
     dstChainIssue_.currency = sit.get160();
-    dstChainIssue_.account = sit.get160();
+    if (dstChainIssue_.currency != xrpCurrency())
+        dstChainIssue_.account = sit.get160();
+    else
+        dstChainIssue_.account = xrpAccount();
 }
 
 STBase*
@@ -83,11 +91,13 @@ STSidechain::add(Serializer& s) const
 {
     s.addBitString(srcChainDoor_);
     s.addBitString(srcChainIssue_.currency);
-    s.addBitString(srcChainIssue_.account);
+    if (srcChainIssue_ != xrpIssue())
+        s.addBitString(srcChainIssue_.account);
 
     s.addBitString(dstChainDoor_);
     s.addBitString(dstChainIssue_.currency);
-    s.addBitString(dstChainIssue_.account);
+    if (dstChainIssue_ != xrpIssue())
+        s.addBitString(dstChainIssue_.account);
 }
 
 bool
