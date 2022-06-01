@@ -280,7 +280,13 @@ private:
     STBase*
     move(std::size_t n, void* buf) override;
 
+    STAmount&
+    operator=(IOUAmount const& iou);
+
     friend class detail::STVar;
+
+    friend STAmount
+    operator+(STAmount const& v1, STAmount const& v2);
 };
 
 //------------------------------------------------------------------------------
