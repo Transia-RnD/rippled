@@ -363,7 +363,7 @@ SidechainClaim::doApply()
     auto const sleAcc = psb.peek(keylet::account(account));
     auto const sleSC = psb.read(keylet::sidechain(sidechain));
     auto const seqK = keylet::xChainSeqNum(sidechain, xChainSeq);
-    auto const sleSQ = psb.read(seqK);
+    auto const sleSQ = psb.peek(seqK);
 
     if (!(sleSC && sleSQ && sleAcc))
         return tecINTERNAL;
@@ -414,25 +414,26 @@ SidechainClaim::doApply()
         psb.update(sleDoor);
         psb.update(sleDst);
         psb.apply(ctx_.rawView());
-        return tesSUCCESS;
     }
+    else
+    {
+        auto const result = flow(
+            psb,
+            thisChainAmount,
+            thisDoor,
+            dst,
+            STPathSet{},
+            /*default path*/ true,
+            /*partial payment*/ false,
+            /*owner pays transfer fee*/ true,
+            /*offer crossing*/ false,
+            /*limit quality*/ std::nullopt,
+            /*sendmax*/ std::nullopt,
+            ctx_.journal);
 
-    auto const result = flow(
-        psb,
-        thisChainAmount,
-        thisDoor,
-        dst,
-        STPathSet{},
-        /*default path*/ true,
-        /*partial payment*/ false,
-        /*owner pays transfer fee*/ true,
-        /*offer crossing*/ false,
-        /*limit quality*/ std::nullopt,
-        /*sendmax*/ std::nullopt,
-        ctx_.journal);
-
-    if (!isTesSuccess(result.result()))
-        return result.result();
+        if (!isTesSuccess(result.result()))
+            return result.result();
+    }
 
     {
         // Remove the sequence number
@@ -445,6 +446,9 @@ SidechainClaim::doApply()
                 << "Unable to delete xchain seq number from owner.";
             return tefBAD_LEDGER;
         }
+
+        // Remove the sequence number from the ledger
+        psb.erase(sleSQ);
     }
 
     adjustOwnerCount(psb, sleAcc, -1, j_);
