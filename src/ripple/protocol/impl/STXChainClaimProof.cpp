@@ -21,19 +21,20 @@
 
 #include <ripple/basics/StringUtilities.h>
 #include <ripple/protocol/Indexes.h>
+#include <ripple/protocol/InnerObjectFormats.h>
 #include <ripple/protocol/PublicKey.h>
 #include <ripple/protocol/SField.h>
 #include <ripple/protocol/STAmount.h>
 #include <ripple/protocol/STArray.h>
 #include <ripple/protocol/STObject.h>
-#include <ripple/protocol/STSidechain.h>
+#include <ripple/protocol/STXChainBridge.h>
 #include <ripple/protocol/Serializer.h>
 #include <ripple/protocol/jss.h>
 
 namespace ripple {
 
 STXChainClaimProof::STXChainClaimProof(
-    STSidechain const& sidechain,
+    STXChainBridge const& sidechain,
     STAmount const& amount,
     std::uint32_t xChainSeqNum,
     bool wasSrcChainSend,
@@ -59,7 +60,7 @@ STXChainClaimProof::value() const noexcept
 }
 
 STXChainClaimProof::STXChainClaimProof(SerialIter& sit, SField const& name)
-    : STBase(name), sidechain_{sit}, amount_{sit, sfAmount}
+    : STBase(name), sidechain_{sit, sfXChainBridge}, amount_{sit, sfAmount}
 {
     xChainSeqNum_ = sit.get32();
     wasSrcChainSend_ = static_cast<bool>(sit.get8());
@@ -120,8 +121,11 @@ STXChainClaimProof::isEquivalent(const STBase& t) const
 bool
 STXChainClaimProof::isDefault() const
 {
-    return sidechain_.isDefault() && amount_.isDefault() &&
-        xChainSeqNum_ == 0 && wasSrcChainSend_ && signatures_.empty();
+    // TODO: add isDefault to sidechain_
+    return amount_.isDefault() && xChainSeqNum_ == 0 && wasSrcChainSend_ &&
+        signatures_.empty();
+    // return sidechain_.isDefault() && amount_.isDefault() &&
+    //    xChainSeqNum_ == 0 && wasSrcChainSend_ && signatures_.empty();
 }
 
 std::vector<std::uint8_t>
@@ -145,7 +149,7 @@ STXChainClaimProof::verify() const
 
 std::vector<std::uint8_t>
 ChainClaimProofMessage(
-    STSidechain const& sidechain,
+    STXChainBridge const& sidechain,
     STAmount const& amount,
     std::uint32_t xChainSeqNum,
     bool wasSrcChainSend)
@@ -172,7 +176,7 @@ STXChainClaimProofFromJson(SField const& name, Json::Value const& v)
     }
     // TODO: Throw is a field is not present
     // TODO: Throw if too many signatures
-    STSidechain sidechain = STSidechainFromJson(sfSidechain, v[jss::sidechain]);
+    STXChainBridge sidechain{v[jss::sidechain]};
     STAmount const amt = amountFromJson(sfAmount, v[jss::amount]);
     std::uint32_t const xchainSeq = v[jss::xchain_seq].asUInt();
     bool const isSrc = v[jss::was_src_chain_send].asBool();

@@ -26,7 +26,7 @@
 #include <ripple/protocol/PublicKey.h>
 #include <ripple/protocol/SField.h>
 #include <ripple/protocol/STBase.h>
-#include <ripple/protocol/STSidechain.h>
+#include <ripple/protocol/STXChainBridge.h>
 
 #include <vector>
 
@@ -38,7 +38,7 @@ public:
     using SigCollection = std::vector<std::pair<PublicKey, Buffer>>;
 
 private:
-    STSidechain sidechain_;
+    STXChainBridge sidechain_;
     STAmount amount_;
     std::uint32_t xChainSeqNum_{};
     // True if the asset was sent to the door account on the src chain.
@@ -55,7 +55,7 @@ public:
     operator=(STXChainClaimProof const& rhs) = default;
 
     STXChainClaimProof(
-        STSidechain const& sidechain,
+        STXChainBridge const& sidechain,
         STAmount const& amount,
         std::uint32_t xChainSeqNum,
         bool wasSrcChainSend,
@@ -102,7 +102,7 @@ public:
         return !(lhs == rhs);
     }
 
-    STSidechain const&
+    STXChainBridge const&
     sidechain() const
     {
         return sidechain_;
@@ -158,7 +158,7 @@ private:
 
 std::vector<std::uint8_t>
 ChainClaimProofMessage(
-    STSidechain const& sidechain,
+    STXChainBridge const& sidechain,
     STAmount const& amount,
     std::uint32_t xChainSeqNum,
     bool wasSrcChainSend);

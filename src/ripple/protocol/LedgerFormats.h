@@ -96,7 +96,7 @@ enum LedgerEntryType : std::uint16_t
 
         \sa keyyet::sidechain
     */
-    ltSIDECHAIN = 0x0069,
+    ltBRIDGE = 0x0069,
 
     /** A ledger object that contains a list of ledger hashes.
 
@@ -120,7 +120,7 @@ enum LedgerEntryType : std::uint16_t
 
         \sa keylet::xchainSeqNum
     */
-    ltCROSSCHAIN_SEQUENCE_NUMBER = 0x0071,
+    ltXCHAIN_CLAIM_ID = 0x0071,
 
     /** The ledger object which lists the network's fee settings.
 

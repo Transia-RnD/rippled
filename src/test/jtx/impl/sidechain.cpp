@@ -17,8 +17,13 @@
 */
 //==============================================================================
 
-#include "ripple/protocol/SField.h"
+#include "ripple/protocol/STBase.h"
+#include "ripple/protocol/STObject.h"
 #include <test/jtx/sidechain.h>
+
+#include <ripple/json/json_value.h>
+#include <ripple/protocol/SField.h>
+#include <ripple/protocol/STXChainAttestationBatch.h>
 
 #include <ripple/protocol/Issue.h>
 #include <ripple/protocol/TxFlags.h>
@@ -29,92 +34,62 @@ namespace test {
 namespace jtx {
 
 Json::Value
-sidechain(
-    Account const& srcChainDoor,
-    Issue const& srcChainIssue,
-    Account const& dstChainDoor,
-    Issue const& dstChainIssue)
+bridge(
+    Account const& lockingChainDoor,
+    Issue const& lockingChainIssue,
+    Account const& issuingChainDoor,
+    Issue const& issuingChainIssue)
 {
     Json::Value jv;
-    jv[jss::src_chain_door] = srcChainDoor.human();
-    jv[jss::src_chain_issue] = to_json(srcChainIssue);
-    jv[jss::dst_chain_door] = dstChainDoor.human();
-    jv[jss::dst_chain_issue] = to_json(dstChainIssue);
+    jv[sfLockingChainDoor.getJsonName()] = lockingChainDoor.human();
+    jv[sfLockingChainIssue.getJsonName()] = to_json(lockingChainIssue);
+    jv[sfIssuingChainDoor.getJsonName()] = issuingChainDoor.human();
+    jv[sfIssuingChainIssue.getJsonName()] = to_json(issuingChainIssue);
     return jv;
 }
 
 Json::Value
-sidechain_claim_proof(
-    Json::Value const& sidechain,
-    AnyAmount const& amt,
-    std::uint32_t xchainSeq,
-    bool wasSrcSend,
-    std::vector<std::pair<PublicKey, Buffer>> const& sigs)
-{
-    Json::Value jv;
-    jv[jss::sidechain] = sidechain;
-    jv[jss::amount] = amt.value.getJson(JsonOptions::none);
-    jv[jss::xchain_seq] = xchainSeq;
-    jv[jss::was_src_chain_send] = wasSrcSend;
-    Json::Value signers{Json::arrayValue};
-    for (auto const& [pk, sig] : sigs)
-    {
-        Json::Value s;
-        // TODO: Do we want to use AccountPublic for token type?
-        s[jss::signing_key] = toBase58(TokenType::AccountPublic, pk);
-        s[jss::signature] = strHex(sig);
-        signers.append(s);
-    }
-    jv[jss::signatures] = signers;
-    return jv;
-}
-
-Json::Value
-sidechain_create(
+bridge_create(
     Account const& acc,
     Json::Value const& sidechain,
-    std::uint32_t quorum,
-    std::vector<signer> const& v)
+    STAmount const& reward,
+    std::optional<STAmount> const& minAccountCreate)
 {
     Json::Value jv;
 
     jv[jss::Account] = acc.human();
-    jv[sfSidechain.getJsonName()] = sidechain;
-    jv[sfSignerQuorum.getJsonName()] = quorum;
+    jv[sfXChainBridge.getJsonName()] = sidechain;
+    jv[sfSignatureReward.getJsonName()] = reward.getJson(JsonOptions::none);
+    if (minAccountCreate)
+        jv[sfMinAccountCreateAmount.getJsonName()] =
+            minAccountCreate->getJson(JsonOptions::none);
 
-    // TODO: Don't have the extra object name in the array
-    //       and store public keys, not account addresses
-    auto& ja = jv[sfSignerEntries.getJsonName()];
-    for (std::size_t i = 0; i < v.size(); ++i)
-    {
-        auto const& e = v[i];
-        auto& je = ja[i][sfSignerEntry.getJsonName()];
-        je[jss::Account] = e.account.human();
-        je[sfSignerWeight.getJsonName()] = e.weight;
-    }
-
-    jv[jss::TransactionType] = jss::SidechainCreate;
+    jv[jss::TransactionType] = jss::XChainCreateBridge;
     jv[jss::Flags] = tfUniversal;
     return jv;
 }
 
 Json::Value
-sidechain_xchain_seq_num_create(
+xchain_create_claim_id(
     Account const& acc,
-    Json::Value const& sidechain)
+    Json::Value const& sidechain,
+    STAmount const& reward,
+    Account const& otherChainAccount)
 {
     Json::Value jv;
 
     jv[jss::Account] = acc.human();
-    jv[sfSidechain.getJsonName()] = sidechain;
+    jv[sfXChainBridge.getJsonName()] = sidechain;
+    jv[sfSignatureReward.getJsonName()] = reward.getJson(JsonOptions::none);
+    jv[sfOtherChainAccount.getJsonName()] = otherChainAccount.human();
 
-    jv[jss::TransactionType] = jss::SidechainXChainSeqNumCreate;
+    jv[jss::TransactionType] = jss::XChainCreateClaimID;
     jv[jss::Flags] = tfUniversal;
     return jv;
 }
 
 Json::Value
-sidechain_xchain_transfer(
+xchain_commit(
     Account const& acc,
     Json::Value const& sidechain,
     std::uint32_t xchainSeq,
@@ -123,17 +98,17 @@ sidechain_xchain_transfer(
     Json::Value jv;
 
     jv[jss::Account] = acc.human();
-    jv[sfSidechain.getJsonName()] = sidechain;
-    jv[sfXChainSequence.getJsonName()] = xchainSeq;
+    jv[sfXChainBridge.getJsonName()] = sidechain;
+    jv[sfXChainClaimID.getJsonName()] = xchainSeq;
     jv[jss::Amount] = amt.value.getJson(JsonOptions::none);
 
-    jv[jss::TransactionType] = jss::SidechainXChainTransfer;
+    jv[jss::TransactionType] = jss::XChainCommit;
     jv[jss::Flags] = tfUniversal;
     return jv;
 }
 
 Json::Value
-sidechain_xchain_claim(
+xchain_claim(
     Account const& acc,
     Json::Value const& claimProof,
     Account const& dst)
@@ -144,7 +119,7 @@ sidechain_xchain_claim(
     jv[sfXChainClaimProof.getJsonName()] = claimProof;
     jv[jss::Destination] = dst.human();
 
-    jv[jss::TransactionType] = jss::SidechainXChainClaim;
+    jv[jss::TransactionType] = jss::XChainClaim;
     jv[jss::Flags] = tfUniversal;
     return jv;
 }
@@ -160,7 +135,7 @@ sidechain_xchain_account_create(
     Json::Value jv;
 
     jv[jss::Account] = acc.human();
-    jv[sfSidechain.getJsonName()] = sidechain;
+    jv[sfXChainBridge.getJsonName()] = sidechain;
     jv[jss::Destination] = dst.human();
     jv[jss::Amount] = amt.value.getJson(JsonOptions::none);
     jv[sfXChainFee.getJsonName()] = xChainFee.value.getJson(JsonOptions::none);
@@ -180,11 +155,24 @@ sidechain_xchain_account_claim(
     Json::Value jv;
 
     jv[jss::Account] = acc.human();
-    jv[sfSidechain.getJsonName()] = sidechain;
+    jv[sfXChainBridge.getJsonName()] = sidechain;
     jv[jss::Destination] = dst.human();
     jv[jss::Amount] = amt.value.getJson(JsonOptions::none);
 
     jv[jss::TransactionType] = jss::SidechainXChainAccountClaim;
+    jv[jss::Flags] = tfUniversal;
+    return jv;
+}
+
+Json::Value
+xchain_add_attestation_batch(Account const& acc, Json::Value const& batch)
+{
+    Json::Value jv;
+
+    jv[jss::Account] = acc.human();
+    jv[sfXChainAttestationBatch.getJsonName()] = batch;
+
+    jv[jss::TransactionType] = jss::XChainAddAttestation;
     jv[jss::Flags] = tfUniversal;
     return jv;
 }

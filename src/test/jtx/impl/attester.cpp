@@ -21,7 +21,8 @@
 #include <test/jtx/attester.h>
 
 #include <ripple/protocol/PublicKey.h>
-#include <ripple/protocol/STSidechain.h>
+#include <ripple/protocol/STXChainAttestationBatch.h>
+#include <ripple/protocol/STXChainBridge.h>
 #include <ripple/protocol/STXChainClaimProof.h>
 #include <ripple/protocol/SecretKey.h>
 
@@ -33,13 +34,22 @@ Buffer
 sign_attestation(
     PublicKey const& pk,
     SecretKey const& sk,
-    STSidechain const& sidechain,
-    STAmount const& amount,
-    std::uint32_t xChainSeqNum,
-    bool wasSrcChainSend)
+    STXChainBridge const& bridge,
+    AccountID const& sendingAccount,
+    STAmount const& sendingAmount,
+    AccountID const& rewardAccount,
+    bool wasLockingChainSend,
+    std::uint64_t claimID,
+    std::optional<AccountID> const& dst)
 {
-    auto const toSign = ChainClaimProofMessage(
-        sidechain, amount, xChainSeqNum, wasSrcChainSend);
+    auto const toSign = AttestationBatch::AttestationClaim::message(
+        bridge,
+        sendingAccount,
+        sendingAmount,
+        rewardAccount,
+        wasLockingChainSend,
+        claimID,
+        dst);
     return sign(pk, sk, makeSlice(toSign));
 }
 

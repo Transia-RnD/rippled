@@ -43,13 +43,15 @@ Some fields have a different meaning for their
 // Forwards
 class STAccount;
 class STAmount;
+class STIssue;
 class STBlob;
 template <int>
 class STBitString;
 template <class>
 class STInteger;
-class STSidechain;
+class STXChainBridge;
 class STXChainClaimProof;
+class STXChainAttestationBatch;
 class STVector256;
 
 enum SerializedTypeID {
@@ -79,8 +81,10 @@ enum SerializedTypeID {
     STI_UINT192 = 21,
     STI_UINT384 = 22,
     STI_UINT512 = 23,
-    STI_SIDECHAIN = 24,
-    STI_XCHAIN_CLAIM_PROOF = 25,
+    STI_XCHAIN_CLAIM_PROOF = 24,
+    STI_ISSUE = 25,
+    STI_XCHAIN_BRIDGE = 26,
+    STI_XCHAIN_ATTESTATION_BATCH = 27,
 
     // high level types
     // cannot be serialized inside other types
@@ -323,10 +327,12 @@ using SF_UINT512 = TypedField<STBitString<512>>;
 
 using SF_ACCOUNT = TypedField<STAccount>;
 using SF_AMOUNT = TypedField<STAmount>;
+using SF_ISSUE = TypedField<STIssue>;
 using SF_VL = TypedField<STBlob>;
 using SF_VECTOR256 = TypedField<STVector256>;
-using SF_SIDECHAIN = TypedField<STSidechain>;
 using SF_XCHAIN_CLAIM_PROOF = TypedField<STXChainClaimProof>;
+using SF_XCHAIN_BRIDGE = TypedField<STXChainBridge>;
+using SF_XCHAIN_ATTESTATION_BATCH = TypedField<STXChainAttestationBatch>;
 
 //------------------------------------------------------------------------------
 
@@ -341,6 +347,7 @@ extern SField const sfMetadata;
 extern SF_UINT8 const sfCloseResolution;
 extern SF_UINT8 const sfMethod;
 extern SF_UINT8 const sfTransactionResult;
+extern SF_UINT8 const sfWasLockingChainSend;
 
 // 8-bit integers (uncommon)
 extern SF_UINT8 const sfTickSize;
@@ -407,7 +414,6 @@ extern SF_UINT32 const sfMintedNFTokens;
 extern SF_UINT32 const sfBurnedNFTokens;
 extern SF_UINT32 const sfHookStateCount;
 extern SF_UINT32 const sfEmitGeneration;
-extern SF_UINT32 const sfXChainSequence;
 
 // 64-bit integers (common)
 extern SF_UINT64 const sfIndexNext;
@@ -429,6 +435,9 @@ extern SF_UINT64 const sfHookOn;
 extern SF_UINT64 const sfHookInstructionCount;
 extern SF_UINT64 const sfHookReturnCode;
 extern SF_UINT64 const sfReferenceCount;
+extern SF_UINT64 const sfXChainClaimID;
+extern SF_UINT64 const sfXChainAccountCreateCount;
+extern SF_UINT64 const sfXChainAccountClaimCount;
 
 // 128-bit
 extern SF_UINT128 const sfEmailHash;
@@ -491,6 +500,8 @@ extern SF_AMOUNT const sfRippleEscrow;
 extern SF_AMOUNT const sfDeliveredAmount;
 extern SF_AMOUNT const sfNFTokenBrokerFee;
 extern SF_AMOUNT const sfXChainFee;
+extern SF_AMOUNT const sfSignatureReward;
+extern SF_AMOUNT const sfMinAccountCreateAmount;
 
 // currency amount (fees)
 extern SF_AMOUNT const sfBaseFeeDrops;
@@ -540,15 +551,26 @@ extern SF_ACCOUNT const sfEmitCallback;
 extern SF_ACCOUNT const sfHookAccount;
 extern SF_ACCOUNT const sfThisChainAccount;
 extern SF_ACCOUNT const sfOtherChainAccount;
+extern SF_ACCOUNT const sfAttestationSignerAccount;
+extern SF_ACCOUNT const sfAttestationRewardAccount;
+extern SF_ACCOUNT const sfLockingChainDoor;
+extern SF_ACCOUNT const sfIssuingChainDoor;
 
 // path set
 extern SField const sfPaths;
 
-// sidechain
-extern SF_SIDECHAIN const sfSidechain;
-
 // xchain claim proof
 extern SF_XCHAIN_CLAIM_PROOF const sfXChainClaimProof;
+
+// bridge
+extern SF_XCHAIN_BRIDGE const sfXChainBridge;
+
+// attestation batch
+extern SF_XCHAIN_ATTESTATION_BATCH const sfXChainAttestationBatch;
+
+// issues
+extern SF_ISSUE const sfLockingChainIssue;
+extern SF_ISSUE const sfIssuingChainIssue;
 
 // vector of 256-bit
 extern SF_VECTOR256 const sfIndexes;
@@ -581,6 +603,10 @@ extern SField const sfHookDefinition;
 extern SField const sfHookParameter;
 extern SField const sfHookGrant;
 extern SField const sfXChainProofSig;
+extern SField const sfXChainAttestationBatchElement;
+extern SField const sfXChainClaimAttestationBatchElement;
+extern SField const sfXChainCreateAccountAttestationBatchElement;
+extern SField const sfXChainAttestationBatchInner;
 
 // array of objects (common)
 // ARRAY/1 is reserved for end of array
@@ -602,6 +628,10 @@ extern SField const sfHookExecutions;
 extern SField const sfHookParameters;
 extern SField const sfHookGrants;
 extern SField const sfXChainProofSigs;
+extern SField const sfXChainAttestationSigs;
+extern SField const sfXChainClaimAttestationBatch;
+extern SField const sfXChainCreateAccountAttestationBatch;
+extern SField const sfXChainAttestations;
 
 //------------------------------------------------------------------------------
 

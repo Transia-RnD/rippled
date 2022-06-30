@@ -21,6 +21,7 @@
 #define RIPPLE_TEST_JTX_SIDECHAIN_H_INCLUDED
 
 #include <ripple/json/json_value.h>
+#include "ripple/protocol/SField.h"
 #include <test/jtx/Account.h>
 #include <test/jtx/amount.h>
 #include <test/jtx/multisign.h>
@@ -30,44 +31,41 @@ namespace test {
 namespace jtx {
 
 Json::Value
-sidechain(
-    Account const& srcChainDoor,
-    Issue const& sideChainIssue,
-    Account const& dstChainDoor,
-    Issue const& dstChainIssue);
+bridge(
+    Account const& lockingChainDoor,
+    Issue const& lockingChainIssue,
+    Account const& issuingChainDoor,
+    Issue const& issuingChainIssue);
 
 Json::Value
-sidechain_claim_proof(
-    Json::Value const& sidechain,
-    AnyAmount const& amt,
-    std::uint32_t xchainSeq,
-    bool wasSrcSend,
-    std::vector<std::pair<PublicKey, Buffer>> const& sigs);
-
-Json::Value
-sidechain_create(
+bridge_create(
     Account const& acc,
     Json::Value const& sidechain,
-    std::uint32_t quorum,
-    std::vector<signer> const& v);
+    STAmount const& reward,
+    std::optional<STAmount> const& minAccountCreate = std::nullopt);
 
 Json::Value
-sidechain_xchain_seq_num_create(
+xchain_create_claim_id(
     Account const& acc,
-    Json::Value const& sidechain);
+    Json::Value const& sidechain,
+    STAmount const& reward,
+    Account const& otherChainAccount);
 
 Json::Value
-sidechain_xchain_transfer(
+xchain_commit(
     Account const& acc,
     Json::Value const& sidechain,
     std::uint32_t xchainSeq,
     AnyAmount const& amt);
 
 Json::Value
-sidechain_xchain_claim(
+xchain_claim(
     Account const& acc,
     Json::Value const& claimProof,
     Account const& dst);
+
+Json::Value
+xchain_add_attestation_batch(Account const& acc, Json::Value const& batch);
 
 Json::Value
 sidechain_xchain_account_create(

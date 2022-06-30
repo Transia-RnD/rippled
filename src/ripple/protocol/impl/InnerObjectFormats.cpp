@@ -40,13 +40,6 @@ InnerObjectFormats::InnerObjectFormats()
             {sfTxnSignature, soeREQUIRED},
         });
 
-    add(sfXChainProofSig.jsonName.c_str(),
-        sfXChainProofSig.getCode(),
-        {
-            {sfPublicKey, soeREQUIRED},
-            {sfSignature, soeREQUIRED},
-        });
-
     add(sfMajority.jsonName.c_str(),
         sfMajority.getCode(),
         {
@@ -66,6 +59,42 @@ InnerObjectFormats::InnerObjectFormats()
         {
             {sfNFTokenID, soeREQUIRED},
             {sfURI, soeOPTIONAL},
+        });
+
+    add(sfXChainClaimAttestationBatchElement.jsonName.c_str(),
+        sfXChainClaimAttestationBatchElement.getCode(),
+        {
+            {sfPublicKey, soeREQUIRED},
+            {sfSignature, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfAccount, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfXChainClaimID, soeREQUIRED},
+            {sfDestination, soeOPTIONAL},
+        });
+
+    add(sfXChainCreateAccountAttestationBatchElement.jsonName.c_str(),
+        sfXChainCreateAccountAttestationBatchElement.getCode(),
+        {
+            {sfPublicKey, soeREQUIRED},
+            {sfSignature, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfAccount, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfDestination, soeREQUIRED},
+            {sfSignatureReward, soeREQUIRED},
+        });
+
+    add(sfXChainProofSig.jsonName.c_str(),
+        sfXChainProofSig.getCode(),
+        {
+            {sfAttestationSignerAccount, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfDestination, soeOPTIONAL},
         });
 }
 

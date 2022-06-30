@@ -372,9 +372,9 @@ funds from the door account.
 
 ## Ledger Objects
 
-### STBridge
+### STXChainBridge
 
-Many of the ledger objects and transactions contain a `STBridge` object. These
+Many of the ledger objects and transactions contain a `STXChainBridge` object. These
 are the parameters that define a bridge. It contains the following fields:
 
 * lockingChainDoor: `AccountID` of the door account on the locking-chain. This account
@@ -396,10 +396,10 @@ Note: `lockingChainIssue` and `issuingChainIssue` must both XRP or both be IOUs.
     the future.
 
 
-A snippet of the data for C++ class for an `STBridge` is:
+A snippet of the data for C++ class for an `STXChainBridge` is:
 
 ```c++
-class STBridge final : public STBase
+class STXChainBridge final : public STBase
 {
     AccountID lockingChainDoor_{};
     Issue lockingChainIssue_{};
@@ -435,7 +435,7 @@ The ledger object contains the following fields:
   `XChainCreateAccountCommit` will fail. May only be present on XRP to XRP
   sidechains. Optional.
 
-* Bridge: Door accounts and assets. See `STBridge` above. Required.
+* Bridge: Door accounts and assets. See `STXChainBridge` above. Required.
 
 * XChainClaimID: A counter used to assign unique "chain claim id"s
   in the `XChainCreateClaimID` transaction. Required.
@@ -462,7 +462,7 @@ The c++ code for this ledger object format is:
             {sfBalance,                soeREQUIRED},
             {sfSignaturesReward,       soeREQUIRED},
             {sfMinAccountCreateAmount, soeOPTIONAL},
-            {sfBridge,              soeREQUIRED},
+            {sfXChainBridge,              soeREQUIRED},
             {sfXChainClaimID,         soeREQUIRED},
             {sfXChainAccountCreateCount, soeREQUIRED},
             {sfXChainAccountClaimCount, soeREQUIRED},
@@ -476,11 +476,11 @@ The c++ code for this ledger object format is:
 #### Ledger ID
 
 The ledger id is a hash of a unique prefix for sidechain object, and the fields
-in `STBridge`. The C++ code for this is:
+in `STXChainBridge`. The C++ code for this is:
 
 ```c++
 Keylet
-bridge(STBridge const& bridge)
+bridge(STXChainBridge const& bridge)
 {
     return {
         ltBRIDGE,
@@ -506,7 +506,7 @@ destination chain.
 
 * Account: The account that owns this object. Required.
 
-* Bridge: Door accounts and assets. See `STBridge` above. Required.
+* Bridge: Door accounts and assets. See `STXChainBridge` above. Required.
 
 * XChainClaimID: Integer unique sequence number for a cross-chain transfer.
   Required.
@@ -534,7 +534,7 @@ The c++ code for this ledger object format is:
         ltCROSSCHAIN_SEQUENCE_NUMBER,
         {
             {sfAccount,              soeREQUIRED},
-            {sfBridge,            soeREQUIRED},
+            {sfXChainBridge,            soeREQUIRED},
             {sfXChainClaimID,       soeREQUIRED},
             {sfSourceAccount,        soeREQUIRED},
             {sfSignatures,           soeREQUIRED},
@@ -548,11 +548,11 @@ The c++ code for this ledger object format is:
 #### Ledger ID
 
 The ledger id is a hash of a unique prefix for "chain claim id"s, the
-sequence number, and the fields in `STBridge`. The C++ code for this is:
+sequence number, and the fields in `STXChainBridge`. The C++ code for this is:
 
 ```c++
 Keylet
-xChainSeqNum(STBridge const& bridge, std::uint32_t seq)
+xChainSeqNum(STXChainBridge const& bridge, std::uint32_t seq)
 {
     return {
         ltCROSSCHAIN_SEQUENCE_NUMBER,
@@ -579,7 +579,7 @@ adds a signature attesting to a `XChainAccountCreate` transaction and the
 
 * Account: Owner of this object. The door account. Required.
 
-* Bridge: Door accounts and assets. See `STBridge` above. Required.
+* Bridge: Door accounts and assets. See `STXChainBridge` above. Required.
 
 * TxnID: The transaction ID of the initiating transaction on the other chain.
 
@@ -612,7 +612,7 @@ transfer transactions may be used to transfer funds from this account.
 
 The transaction contains the following fields:
 
-* Bridge: Door accounts and assets. See `STBridge` above. Required.
+* Bridge: Door accounts and assets. See `STXChainBridge` above. Required.
 
 * SignaturesReward: Total amount, in XRP, to be rewarded for providing a
   signatures for a cross-chain transfer or for signing for the cross-chain
@@ -623,15 +623,15 @@ The transaction contains the following fields:
   `XChainCreateAccountCommit` will fail. Only applicaple for XRP to XRP
   sidechains. Optional.
 
-See notes in the `STBridge` section and the `Bridge` ledger object section for
+See notes in the `STXChainBridge` section and the `Bridge` ledger object section for
 restrictions on these fields (i.e. door account must be unique, assets must both
 be XRP or both be IOU).
 
 ```c++
     add(jss::XChainCreateBridge,
-        ttCREATE_BRIDGE,
+        ttXCHAIN_CREATE_BRIDGE,
         {
-            {sfBridge,              soeREQUIRED},
+            {sfXChainBridge,              soeREQUIRED},
             {sfSignaturesReward,       soeREQUIRED},
             {sfMinAccountCreateAmount, soeOPTIONAL},
         },
@@ -651,9 +651,7 @@ validated ledger.
 
 #### Fields
 
-* Bridge: Door accounts and assets. See `STBridge` above. Required.
-
-* XChainClaimID: Integer unique sequence number for a cross-chain transfer. Required.
+* Bridge: Door accounts and assets. See `STXChainBridge` above. Required.
 
 * SourceAccount: Account that must send the `XChainCommit` on the
   other chain. Since the destination may be specified in the
@@ -672,8 +670,8 @@ validated ledger.
     add(jss::XChainCreateClaimID,
         ttXCHAIN_CREATE_CLAIM_ID,
         {
-            {sfBridge,     soeREQUIRED},
-            {sfSourceAccount, soeREQUIRED},
+            {sfXChainBridge,     soeREQUIRED},
+            {sfOtherChainAccount, soeREQUIRED},
             {sfSignaturesReward, soeREQUIRED},
         },
         commonFields);
@@ -687,7 +685,7 @@ locking-chain. The second step in a cross-chain transfer.
 
 #### Fields
 
-* Bridge: Door accounts and assets. See `STBridge` above. Required.
+* Bridge: Door accounts and assets. See `STXChainBridge` above. Required.
 
 * XChainClaimID: Integer unique id for a cross-chain transfer. Must be acquired
   on the destination chain and checked from a validated ledger before submitting
@@ -706,7 +704,7 @@ from another account the funds will be lost.
     add(jss::XChainCommit,
         ttXCHAIN_COMMIT,
         {
-            {sfBridge, soeREQUIRED},
+            {sfXChainBridge, soeREQUIRED},
             {sfXChainClaimID, soeREQUIRED}
             {sfAmount, soeREQUIRED},
             {sfOtherChainDestination, soeOPTIONAL},
@@ -728,7 +726,7 @@ may be re-run with different parameters.
 
 #### Fields
 
-* Bridge: Door accounts and assets. See `STBridge` above. Required.
+* Bridge: Door accounts and assets. See `STXChainBridge` above. Required.
 
 * XChainClaimID: Integer unique sequence number that identifies the claim and
   was referenced in the `XChainCommit` transaction.
@@ -738,13 +736,17 @@ may be re-run with different parameters.
   the sequence number and collected signatures will not be destroyed and the
   transaction may be rerun with a different destination address.
   
+* Amount: Amount to claim on the destination chain. Must match the amount
+  attested to on the claim id's chain attestations.
+  
 ```c++
     add(jss::XChainClaim,
         ttXCHAIN_CLAIM,
         {
-            {sfBridge, soeREQUIRED},
+            {sfXChainBridge, soeREQUIRED},
             {sfXChainClaimID, soeREQUIRED},
             {sfDestination, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
         },
         commonFields);
 ```
@@ -777,7 +779,7 @@ be used for account creation.
 
 #### Fields
 
-* Bridge: Door accounts and assets. See `STBridge` above. Required.
+* Bridge: Door accounts and assets. See `STXChainBridge` above. Required.
 
 * OtherChainDestination: Destination account on the other chain. Required.
   
@@ -795,7 +797,7 @@ be used for account creation.
     add(jss::XChainCreateAccountCommit,
         tXCHAIN_CREATE_ACCOUNT_COMMIT,
         {
-            {sfBridge, soeREQUIRED},
+            {sfXChainBridge, soeREQUIRED},
             {sfOtherChainDestination, soeREQUIRED},
             {sfAmount, soeREQUIRED},
             {sfSignaturesReward, soeREQUIRED},
@@ -821,14 +823,14 @@ witness servers that work on the "subscription" model.
 
 An attestation bears witness to a particular event on the other chain. It contains:
 
-* Bridge: Door accounts and assets. See `STBridge` above. Required.
+* Bridge: Door accounts and assets. See `STXChainBridge` above. Required.
 * SignatureRewardAccount: Account to send this signer's share of the signer's
   reward. Required.
 * SignatureReward: Signature reward for this event.
   Optional (required for `XChainCreateAccountCommit` transactions only).
 * PublicKey: Public key used to verify the signature.
 * Signature: Signature bearing witness to the event on the other chain.
-* Event type: Type of event (XChainAccountCreate, XChainTransfer, SignatureProvided)
+* Event type: Type of event (XChainAccountCreate, XChainTransfer)
 * Event data: Data needed to recreate the message signed by the witness servers.
   The data depends on event. TBD.
   
@@ -871,7 +873,7 @@ the same way signer's lists are changed on accounts.
 
 The transaction contains the following fields:
 
-* Bridge: Door accounts and assets. See `STBridge` above. Required.
+* Bridge: Door accounts and assets. See `STXChainBridge` above. Required.
 
 * SignaturesReward: Total amount, in XRP, to be rewarded for providing a
   signatures for a cross-chain transfer or for signing for the cross-chain
@@ -887,7 +889,7 @@ At least one of `SignaturesReward` and `MinAccountCreateAmount` must be present.
     add(jss::XChainModifyBridge,
         ttSIDECHAIN_MODIFY,
         {
-            {sfBridge,              soeREQUIRED},
+            {sfXChainBridge,              soeREQUIRED},
             {sfSignaturesReward,       soeOPTIONAL},
             {sfMinAccountCreateAmount, soeOPTIONAL},
         },

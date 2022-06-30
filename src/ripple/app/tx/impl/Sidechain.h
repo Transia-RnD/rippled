@@ -21,15 +21,20 @@
 #define RIPPLE_TX_SIDECHAIN_H_INCLUDED
 
 #include <ripple/app/tx/impl/Transactor.h>
+#include "ripple/protocol/SField.h"
 
 namespace ripple {
 
-class SidechainCreate : public Transactor
+namespace AttestationBatch {
+struct AttestationClaim;
+}
+
+class BridgeCreate : public Transactor
 {
 public:
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-    explicit SidechainCreate(ApplyContext& ctx) : Transactor(ctx)
+    explicit BridgeCreate(ApplyContext& ctx) : Transactor(ctx)
     {
     }
 
@@ -45,12 +50,12 @@ public:
 
 //------------------------------------------------------------------------------
 
-class SidechainClaim : public Transactor
+class XChainClaim : public Transactor
 {
 public:
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-    explicit SidechainClaim(ApplyContext& ctx) : Transactor(ctx)
+    explicit XChainClaim(ApplyContext& ctx) : Transactor(ctx)
     {
     }
 
@@ -66,12 +71,12 @@ public:
 
 //------------------------------------------------------------------------------
 
-class SidechainXChainTransfer : public Transactor
+class XChainCommit : public Transactor
 {
 public:
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-    explicit SidechainXChainTransfer(ApplyContext& ctx) : Transactor(ctx)
+    explicit XChainCommit(ApplyContext& ctx) : Transactor(ctx)
     {
     }
 
@@ -87,12 +92,12 @@ public:
 
 //------------------------------------------------------------------------------
 
-class SidechainXChainSeqNumCreate : public Transactor
+class XChainCreateClaimID : public Transactor
 {
 public:
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-    explicit SidechainXChainSeqNumCreate(ApplyContext& ctx) : Transactor(ctx)
+    explicit XChainCreateClaimID(ApplyContext& ctx) : Transactor(ctx)
     {
     }
 
@@ -104,6 +109,37 @@ public:
 
     TER
     doApply() override;
+};
+
+//------------------------------------------------------------------------------
+
+class XChainAddAttestation : public Transactor
+{
+public:
+    static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
+
+    explicit XChainAddAttestation(ApplyContext& ctx) : Transactor(ctx)
+    {
+    }
+
+    static NotTEC
+    preflight(PreflightContext const& ctx);
+
+    static TER
+    preclaim(PreclaimContext const& ctx);
+
+    TER
+    doApply() override;
+
+private:
+    // Apply an attestation for an claim
+    // signersList is a map from a signer's account id to its weight
+    TER
+    applyClaim(
+        AttestationBatch::AttestationClaim const& claim,
+        STXChainBridge const& bridgeSpec,
+        std::unordered_map<AccountID, std::uint32_t> const& signersList,
+        std::uint32_t quorum);
 };
 
 //------------------------------------------------------------------------------

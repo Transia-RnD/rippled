@@ -140,23 +140,26 @@ enum TxType : std::uint16_t
     ttNFTOKEN_ACCEPT_OFFER = 29,
 
     /** This transactions creates a sidechain */
-    ttSIDECHAIN_CREATE = 30,
+    ttXCHAIN_CREATE_BRIDGE = 30,
 
     /** This transactions creates a crosschain sequence number */
-    ttSIDECHAIN_XCHAIN_SEQNUM_CREATE = 31,
+    ttXCHAIN_CREATE_CLAIM_ID = 31,
 
     // TODO: Better name for this
     /** This transactions initiates a crosschain transaction */
-    ttSIDECHAIN_XCHAIN_TRANSFER = 32,
+    ttXCHAIN_COMMIT = 32,
 
     /** This transaction completes a crosschain transaction */
-    ttSIDECHAIN_XCHAIN_CLAIM = 33,
+    ttXCHAIN_CLAIM = 33,
 
     /** This transaction initiates a crosschain account create transaction */
     ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE = 34,
 
     /** This transaction completes a crosschain account create transaction */
     ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM = 35,
+
+    /** This transaction adds attestations to claimid and account claim states*/
+    ttXCHAIN_ADD_ATTESTATION = 36,
 
     /** This system-generated transaction type is used to update the status of the various amendments.
 

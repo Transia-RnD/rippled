@@ -331,43 +331,54 @@ TxFormats::TxFormats()
         },
         commonFields);
 
-    add(jss::SidechainCreate,
-        ttSIDECHAIN_CREATE,
+    add(jss::XChainCreateBridge,
+        ttXCHAIN_CREATE_BRIDGE,
         {
-            {sfSidechain, soeREQUIRED},
-            {sfSignerQuorum, soeREQUIRED},
-            {sfSignerEntries, soeREQUIRED},
+            {sfXChainBridge, soeREQUIRED},
+            {sfSignatureReward, soeREQUIRED},
+            {sfMinAccountCreateAmount, soeOPTIONAL},
         },
         commonFields);
 
-    add(jss::SidechainXChainSeqNumCreate,
-        ttSIDECHAIN_XCHAIN_SEQNUM_CREATE,
+    add(jss::XChainCreateClaimID,
+        ttXCHAIN_CREATE_CLAIM_ID,
         {
-            {sfSidechain, soeREQUIRED},
+            {sfXChainBridge, soeREQUIRED},
+            {sfSignatureReward, soeREQUIRED},
+            {sfOtherChainAccount, soeREQUIRED},
         },
         commonFields);
 
-    add(jss::SidechainXChainTransfer,
-        ttSIDECHAIN_XCHAIN_TRANSFER,
+    add(jss::XChainCommit,
+        ttXCHAIN_COMMIT,
         {
-            {sfSidechain, soeREQUIRED},
-            {sfXChainSequence, soeREQUIRED},
+            {sfXChainBridge, soeREQUIRED},
+            {sfXChainClaimID, soeREQUIRED},
             {sfAmount, soeREQUIRED},
         },
         commonFields);
 
-    add(jss::SidechainXChainClaim,
-        ttSIDECHAIN_XCHAIN_CLAIM,
+    add(jss::XChainClaim,
+        ttXCHAIN_CLAIM,
         {
-            {sfXChainClaimProof, soeREQUIRED},
+            {sfXChainBridge, soeREQUIRED},
+            {sfXChainClaimID, soeREQUIRED},
             {sfDestination, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+        },
+        commonFields);
+
+    add(jss::XChainAddAttestation,
+        ttXCHAIN_ADD_ATTESTATION,
+        {
+            {sfXChainAttestationBatch, soeREQUIRED},
         },
         commonFields);
 
     add(jss::SidechainXChainAccountCreate,
         ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE,
         {
-            {sfSidechain, soeREQUIRED},
+            {sfXChainBridge, soeREQUIRED},
             {sfDestination, soeREQUIRED},
             {sfAmount, soeREQUIRED},
             {sfXChainFee, soeREQUIRED},
@@ -377,7 +388,7 @@ TxFormats::TxFormats()
     add(jss::SidechainXChainAccountClaim,
         ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM,
         {
-            {sfSidechain, soeREQUIRED},
+            {sfXChainBridge, soeREQUIRED},
             {sfDestination, soeREQUIRED},
             {sfAmount, soeREQUIRED},
         },

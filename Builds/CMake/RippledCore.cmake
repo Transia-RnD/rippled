@@ -77,6 +77,7 @@ target_sources (xrpl_core PRIVATE
   src/ripple/protocol/impl/Indexes.cpp
   src/ripple/protocol/impl/InnerObjectFormats.cpp
   src/ripple/protocol/impl/Issue.cpp
+  src/ripple/protocol/impl/STIssue.cpp
   src/ripple/protocol/impl/Keylet.cpp
   src/ripple/protocol/impl/LedgerFormats.cpp
   src/ripple/protocol/impl/PublicKey.cpp
@@ -95,8 +96,10 @@ target_sources (xrpl_core PRIVATE
   src/ripple/protocol/impl/STObject.cpp
   src/ripple/protocol/impl/STParsedJSON.cpp
   src/ripple/protocol/impl/STPathSet.cpp
-  src/ripple/protocol/impl/STSidechain.cpp
+  src/ripple/protocol/impl/STXChainBridge.cpp
   src/ripple/protocol/impl/STTx.cpp
+  src/ripple/protocol/impl/XChainAttestations.cpp
+  src/ripple/protocol/impl/STXChainAttestationBatch.cpp
   src/ripple/protocol/impl/STXChainClaimProof.cpp
   src/ripple/protocol/impl/STValidation.cpp
   src/ripple/protocol/impl/STVar.cpp
@@ -220,6 +223,7 @@ install (
     src/ripple/protocol/SOTemplate.h
     src/ripple/protocol/STAccount.h
     src/ripple/protocol/STAmount.h
+    src/ripple/protocol/STIssue.h
     src/ripple/protocol/STArray.h
     src/ripple/protocol/STBase.h
     src/ripple/protocol/STBitString.h
@@ -230,8 +234,10 @@ install (
     src/ripple/protocol/STObject.h
     src/ripple/protocol/STParsedJSON.h
     src/ripple/protocol/STPathSet.h
-    src/ripple/protocol/STSidechain.h
     src/ripple/protocol/STTx.h
+    src/ripple/protocol/XChainAttestations.h
+    src/ripple/protocol/STXChainAttestationBatch.h
+    src/ripple/protocol/STXChainBridge.h
     src/ripple/protocol/STXChainClaimProof.h
     src/ripple/protocol/STValidation.h
     src/ripple/protocol/STVector256.h

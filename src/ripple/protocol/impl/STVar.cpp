@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+#include <ripple/protocol/impl/STVar.h>
+
 #include <ripple/basics/contract.h>
 #include <ripple/protocol/STAccount.h>
 #include <ripple/protocol/STAmount.h>
@@ -25,12 +27,14 @@
 #include <ripple/protocol/STBitString.h>
 #include <ripple/protocol/STBlob.h>
 #include <ripple/protocol/STInteger.h>
+#include <ripple/protocol/STIssue.h>
 #include <ripple/protocol/STObject.h>
 #include <ripple/protocol/STPathSet.h>
-#include <ripple/protocol/STSidechain.h>
 #include <ripple/protocol/STVector256.h>
+#include <ripple/protocol/STXChainAttestationBatch.h>
+#include <ripple/protocol/STXChainBridge.h>
 #include <ripple/protocol/STXChainClaimProof.h>
-#include <ripple/protocol/impl/STVar.h>
+#include <ripple/protocol/XChainAttestations.h>
 
 namespace ripple {
 namespace detail {
@@ -159,11 +163,17 @@ STVar::STVar(SerialIter& sit, SField const& name, int depth)
         case STI_ARRAY:
             construct<STArray>(sit, name, depth);
             return;
-        case STI_SIDECHAIN:
-            construct<STSidechain>(sit, name);
-            return;
         case STI_XCHAIN_CLAIM_PROOF:
             construct<STXChainClaimProof>(sit, name);
+            return;
+        case STI_ISSUE:
+            construct<STIssue>(sit, name);
+            return;
+        case STI_XCHAIN_BRIDGE:
+            construct<STXChainBridge>(sit, name);
+            return;
+        case STI_XCHAIN_ATTESTATION_BATCH:
+            construct<STXChainAttestationBatch>(sit, name);
             return;
         default:
             Throw<std::runtime_error>("Unknown object type");
@@ -220,11 +230,17 @@ STVar::STVar(SerializedTypeID id, SField const& name)
         case STI_ARRAY:
             construct<STArray>(name);
             return;
-        case STI_SIDECHAIN:
-            construct<STSidechain>(name);
-            return;
         case STI_XCHAIN_CLAIM_PROOF:
             construct<STXChainClaimProof>(name);
+            return;
+        case STI_ISSUE:
+            construct<STIssue>(name);
+            return;
+        case STI_XCHAIN_BRIDGE:
+            construct<STXChainBridge>(name);
+            return;
+        case STI_XCHAIN_ATTESTATION_BATCH:
+            construct<STXChainAttestationBatch>(name);
             return;
         default:
             Throw<std::runtime_error>("Unknown object type");

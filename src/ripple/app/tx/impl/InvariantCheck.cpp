@@ -372,8 +372,8 @@ LedgerEntryTypesMatch::visitEntry(
             case ltNEGATIVE_UNL:
             case ltNFTOKEN_PAGE:
             case ltNFTOKEN_OFFER:
-            case ltSIDECHAIN:
-            case ltCROSSCHAIN_SEQUENCE_NUMBER:
+            case ltBRIDGE:
+            case ltXCHAIN_CLAIM_ID:
                 break;
             default:
                 invalidTypeAdded_ = true;

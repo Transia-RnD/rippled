@@ -235,6 +235,8 @@ public:
     getFieldV256(SField const& field) const;
     const STArray&
     getFieldArray(SField const& field) const;
+    const STObject&
+    getFieldObject(SField const& field) const;
 
     /** Get the value of a field.
         @param A TypedField built from an SField value representing the desired

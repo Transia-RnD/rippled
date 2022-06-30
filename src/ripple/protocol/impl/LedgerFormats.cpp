@@ -268,27 +268,32 @@ LedgerFormats::LedgerFormats()
         },
         commonFields);
 
-    add(jss::Sidechain,
-        ltSIDECHAIN,
+    add(jss::Bridge,
+        ltBRIDGE,
         {
             {sfAccount,              soeREQUIRED},
-            {sfSidechain,            soeREQUIRED},
-            {sfXChainSequence,       soeREQUIRED},
-            {sfSignerQuorum,         soeREQUIRED},
-            // TODO: This should store public keys, not account ids
-            {sfSignerEntries,        soeREQUIRED},
+            {sfBalance,              soeREQUIRED},
+            {sfSignatureReward,      soeREQUIRED},
+            {sfMinAccountCreateAmount, soeOPTIONAL},
+            {sfXChainBridge,               soeREQUIRED},
+            {sfXChainClaimID,       soeREQUIRED},
+            {sfXChainAccountCreateCount, soeREQUIRED},
+            {sfXChainAccountClaimCount, soeREQUIRED},
             {sfOwnerNode,            soeREQUIRED},
             {sfPreviousTxnID,        soeREQUIRED},
             {sfPreviousTxnLgrSeq,    soeREQUIRED}
         },
         commonFields);
 
-    add(jss::CrosschainSeqNum,
-        ltCROSSCHAIN_SEQUENCE_NUMBER,
+    add(jss::XChainClaimID,
+        ltXCHAIN_CLAIM_ID,
         {
             {sfAccount,              soeREQUIRED},
-            {sfSidechain,            soeREQUIRED},
-            {sfXChainSequence,       soeREQUIRED},
+            {sfXChainBridge,         soeREQUIRED},
+            {sfXChainClaimID,        soeREQUIRED},
+            {sfOtherChainAccount,    soeREQUIRED},
+            {sfXChainAttestations,   soeREQUIRED},
+            {sfSignatureReward,      soeREQUIRED},
             {sfOwnerNode,            soeREQUIRED},
             {sfPreviousTxnID,        soeREQUIRED},
             {sfPreviousTxnLgrSeq,    soeREQUIRED}

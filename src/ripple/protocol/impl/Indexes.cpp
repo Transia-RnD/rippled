@@ -20,7 +20,7 @@
 #include <ripple/protocol/Indexes.h>
 #include <ripple/protocol/LedgerFormats.h>
 #include <ripple/protocol/SField.h>
-#include <ripple/protocol/STSidechain.h>
+#include <ripple/protocol/STXChainBridge.h>
 #include <ripple/protocol/SeqProxy.h>
 #include <ripple/protocol/digest.h>
 #include <ripple/protocol/nftPageMask.h>
@@ -377,29 +377,29 @@ nft_sells(uint256 const& id) noexcept
 }
 
 Keylet
-sidechain(STSidechain const& sidechain)
+bridge(STXChainBridge const& sidechain)
 {
     return {
-        ltSIDECHAIN,
+        ltBRIDGE,
         indexHash(
             LedgerNameSpace::SIDECHAIN,
-            sidechain.srcChainDoor(),
-            sidechain.srcChainIssue(),
-            sidechain.dstChainDoor(),
-            sidechain.dstChainIssue())};
+            sidechain.lockingChainDoor(),
+            sidechain.lockingChainIssue(),
+            sidechain.issuingChainDoor(),
+            sidechain.issuingChainIssue())};
 }
 
 Keylet
-xChainSeqNum(STSidechain const& sidechain, std::uint32_t seq)
+xChainClaimID(STXChainBridge const& sidechain, std::uint64_t seq)
 {
     return {
-        ltCROSSCHAIN_SEQUENCE_NUMBER,
+        ltXCHAIN_CLAIM_ID,
         indexHash(
             LedgerNameSpace::XCHAIN_SEQ,
-            sidechain.srcChainDoor(),
-            sidechain.srcChainIssue(),
-            sidechain.dstChainDoor(),
-            sidechain.dstChainIssue(),
+            sidechain.lockingChainDoor(),
+            sidechain.lockingChainIssue(),
+            sidechain.issuingChainDoor(),
+            sidechain.issuingChainIssue(),
             seq)};
 }
 

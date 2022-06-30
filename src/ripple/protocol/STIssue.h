@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 /*
     This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
+    Copyright (c) 2022 Ripple Labs Inc.
 
     Permission to use, copy, modify, and/or distribute this software for any
     purpose  with  or without fee is hereby granted, provided that the above
@@ -17,40 +17,49 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_PROTOCOL_STACCOUNT_H_INCLUDED
-#define RIPPLE_PROTOCOL_STACCOUNT_H_INCLUDED
+#ifndef RIPPLE_PROTOCOL_STISSUE_H_INCLUDED
+#define RIPPLE_PROTOCOL_STISSUE_H_INCLUDED
 
-#include <ripple/protocol/AccountID.h>
+#include <ripple/basics/CountedObject.h>
+#include <ripple/protocol/Issue.h>
+#include <ripple/protocol/SField.h>
 #include <ripple/protocol/STBase.h>
-#include <string>
+#include <ripple/protocol/Serializer.h>
 
 namespace ripple {
 
-class STAccount final : public STBase
+class STIssue final : public STBase
 {
 private:
-    // The original implementation of STAccount kept the value in an STBlob.
-    // But an STAccount is always 160 bits, so we can store it with less
-    // overhead in a ripple::uint160.  However, so the serialized format of the
-    // STAccount stays unchanged, we serialize and deserialize like an STBlob.
-    AccountID value_;
-    bool default_;
+    Issue issue_{xrpIssue()};
 
 public:
-    using value_type = AccountID;
+    using value_type = Issue;
 
-    STAccount();
+    STIssue() = default;
 
-    STAccount(SField const& n);
-    STAccount(SField const& n, Buffer&& v);
-    STAccount(SerialIter& sit, SField const& name);
-    STAccount(SField const& n, AccountID const& v);
+    explicit STIssue(SerialIter& sit, SField const& name);
+
+    explicit STIssue(SField const& name, Issue const& issue);
+
+    explicit STIssue(SField const& name);
+
+    Issue const&
+    issue() const;
+
+    Issue const&
+    value() const noexcept;
+
+    void
+    setIssue(Issue const& issue);
 
     SerializedTypeID
     getSType() const override;
 
     std::string
     getText() const override;
+
+    Json::Value getJson(JsonOptions) const override;
 
     void
     add(Serializer& s) const override;
@@ -61,16 +70,10 @@ public:
     bool
     isDefault() const override;
 
-    STAccount&
-    operator=(AccountID const& value);
-
-    AccountID const&
-    value() const noexcept;
-
-    void
-    setValue(AccountID const& v);
-
 private:
+    static std::unique_ptr<STIssue>
+    construct(SerialIter&, SField const& name);
+
     STBase*
     copy(std::size_t n, void* buf) const override;
     STBase*
@@ -79,30 +82,43 @@ private:
     friend class detail::STVar;
 };
 
-inline STAccount&
-STAccount::operator=(AccountID const& value)
+STIssue
+issueFromJson(SField const& name, Json::Value const& v);
+
+inline bool
+operator==(STIssue const& lhs, Issue const& rhs)
 {
-    setValue(value);
-    return *this;
+    return lhs.issue() == rhs;
 }
 
-inline AccountID const&
-STAccount::value() const noexcept
+inline Issue const&
+STIssue::issue() const
 {
-    return value_;
+    return issue_;
+}
+
+inline Issue const&
+STIssue::value() const noexcept
+{
+    return issue_;
 }
 
 inline void
-STAccount::setValue(AccountID const& v)
+STIssue::setIssue(Issue const& issue)
 {
-    value_ = v;
-    default_ = false;
+    issue_ = issue;
 }
 
 inline bool
-operator==(STAccount const& lhs, AccountID const& rhs)
+operator==(STIssue const& lhs, STIssue const& rhs)
 {
-    return lhs.value() == rhs;
+    return lhs.issue() == rhs.issue();
+}
+
+inline bool
+operator!=(STIssue const& lhs, STIssue const& rhs)
+{
+    return !operator==(lhs, rhs);
 }
 
 }  // namespace ripple

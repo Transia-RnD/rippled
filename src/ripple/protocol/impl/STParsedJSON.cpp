@@ -23,21 +23,26 @@
 #include <ripple/beast/core/LexicalCast.h>
 #include <ripple/protocol/ErrorCodes.h>
 #include <ripple/protocol/LedgerFormats.h>
+#include <ripple/protocol/SField.h>
 #include <ripple/protocol/STAccount.h>
 #include <ripple/protocol/STAmount.h>
 #include <ripple/protocol/STArray.h>
 #include <ripple/protocol/STBitString.h>
 #include <ripple/protocol/STBlob.h>
 #include <ripple/protocol/STInteger.h>
+#include <ripple/protocol/STIssue.h>
 #include <ripple/protocol/STParsedJSON.h>
 #include <ripple/protocol/STPathSet.h>
-#include <ripple/protocol/STSidechain.h>
 #include <ripple/protocol/STVector256.h>
+#include <ripple/protocol/STXChainAttestationBatch.h>
+#include <ripple/protocol/STXChainBridge.h>
 #include <ripple/protocol/STXChainClaimProof.h>
 #include <ripple/protocol/TER.h>
 #include <ripple/protocol/TxFormats.h>
 #include <ripple/protocol/UintTypes.h>
+#include <ripple/protocol/XChainAttestations.h>
 #include <ripple/protocol/impl/STVar.h>
+
 #include <cassert>
 #include <charconv>
 #include <memory>
@@ -732,24 +737,47 @@ parseLeaf(
         }
         break;
 
-        case STI_SIDECHAIN:
+        case STI_XCHAIN_CLAIM_PROOF:
             try
             {
-                ret = detail::make_stvar<STSidechain>(
-                    STSidechainFromJson(field, value));
+                ret = detail::make_stvar<STXChainClaimProof>(
+                    STXChainClaimProofFromJson(field, value));
             }
             catch (std::exception const&)
             {
                 error = invalid_data(json_name, fieldName);
                 return ret;
             }
-
             break;
-        case STI_XCHAIN_CLAIM_PROOF:
+
+        case STI_ISSUE:
             try
             {
-                ret = detail::make_stvar<STXChainClaimProof>(
-                    STXChainClaimProofFromJson(field, value));
+                ret = detail::make_stvar<STIssue>(issueFromJson(field, value));
+            }
+            catch (std::exception const&)
+            {
+                error = invalid_data(json_name, fieldName);
+                return ret;
+            }
+            break;
+        case STI_XCHAIN_BRIDGE:
+            try
+            {
+                ret = detail::make_stvar<STXChainBridge>(
+                    STXChainBridge(field, value));
+            }
+            catch (std::exception const&)
+            {
+                error = invalid_data(json_name, fieldName);
+                return ret;
+            }
+            break;
+        case STI_XCHAIN_ATTESTATION_BATCH:
+            try
+            {
+                ret = detail::make_stvar<STXChainAttestationBatch>(
+                    STXChainAttestationBatch(field, value));
             }
             catch (std::exception const&)
             {
@@ -967,6 +995,7 @@ parseArray(
 
             if (ret->getFName().fieldType != STI_OBJECT)
             {
+                ss << "Field type: " << ret->getFName().fieldType << " ";
                 error = non_object_in_array(ss.str(), i);
                 return std::nullopt;
             }

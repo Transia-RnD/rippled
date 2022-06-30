@@ -264,10 +264,10 @@ Keylet
 nft_sells(uint256 const& id) noexcept;
 
 Keylet
-sidechain(STSidechain const& sidechain);
+bridge(STXChainBridge const& sidechain);
 
 Keylet
-xChainSeqNum(STSidechain const& sidechain, std::uint32_t seq);
+xChainClaimID(STXChainBridge const& sidechain, std::uint64_t seq);
 
 }  // namespace keylet
 

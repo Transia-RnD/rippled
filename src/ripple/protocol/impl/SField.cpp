@@ -89,6 +89,7 @@ CONSTRUCT_TYPED_SFIELD(sfTransactionResult,     "TransactionResult",    UINT8,  
 CONSTRUCT_TYPED_SFIELD(sfTickSize,              "TickSize",             UINT8,     16);
 CONSTRUCT_TYPED_SFIELD(sfUNLModifyDisabling,    "UNLModifyDisabling",   UINT8,     17);
 CONSTRUCT_TYPED_SFIELD(sfHookResult,            "HookResult",           UINT8,     18);
+CONSTRUCT_TYPED_SFIELD(sfWasLockingChainSend,   "WasLockingChainSend",  UINT8,     19);
 
 // 16-bit integers
 CONSTRUCT_TYPED_SFIELD(sfLedgerEntryType,       "LedgerEntryType",      UINT16,     1, SField::sMD_Never);
@@ -150,7 +151,6 @@ CONSTRUCT_TYPED_SFIELD(sfMintedNFTokens,        "MintedNFTokens",       UINT32, 
 CONSTRUCT_TYPED_SFIELD(sfBurnedNFTokens,        "BurnedNFTokens",       UINT32,    44);
 CONSTRUCT_TYPED_SFIELD(sfHookStateCount,        "HookStateCount",       UINT32,    45);
 CONSTRUCT_TYPED_SFIELD(sfEmitGeneration,        "EmitGeneration",       UINT32,    46);
-CONSTRUCT_TYPED_SFIELD(sfXChainSequence,        "XChainSequence",       UINT32,    47);
 
 // 64-bit integers (common)
 CONSTRUCT_TYPED_SFIELD(sfIndexNext,             "IndexNext",            UINT64,     1);
@@ -168,10 +168,13 @@ CONSTRUCT_TYPED_SFIELD(sfNFTokenOfferNode,      "NFTokenOfferNode",     UINT64, 
 CONSTRUCT_TYPED_SFIELD(sfEmitBurden,            "EmitBurden",           UINT64,    13);
 
 // 64-bit integers (uncommon)
-CONSTRUCT_TYPED_SFIELD(sfHookOn,                "HookOn",               UINT64,    16);
-CONSTRUCT_TYPED_SFIELD(sfHookInstructionCount,  "HookInstructionCount", UINT64,    17);
-CONSTRUCT_TYPED_SFIELD(sfHookReturnCode,        "HookReturnCode",       UINT64,    18);
-CONSTRUCT_TYPED_SFIELD(sfReferenceCount,        "ReferenceCount",       UINT64,    19);
+CONSTRUCT_TYPED_SFIELD(sfHookOn,                   "HookOn",                   UINT64, 16);
+CONSTRUCT_TYPED_SFIELD(sfHookInstructionCount,     "HookInstructionCount",     UINT64, 17);
+CONSTRUCT_TYPED_SFIELD(sfHookReturnCode,           "HookReturnCode",           UINT64, 18);
+CONSTRUCT_TYPED_SFIELD(sfReferenceCount,           "ReferenceCount",           UINT64, 19);
+CONSTRUCT_TYPED_SFIELD(sfXChainClaimID,            "XChainClaimID",            UINT64, 20);
+CONSTRUCT_TYPED_SFIELD(sfXChainAccountCreateCount, "XChainAccountCreateCount", UINT64, 21);
+CONSTRUCT_TYPED_SFIELD(sfXChainAccountClaimCount,  "XChainAccountClaimCount",  UINT64, 22);
 
 // 128-bit
 CONSTRUCT_TYPED_SFIELD(sfEmailHash,             "EmailHash",            UINT128,    1);
@@ -228,13 +231,15 @@ CONSTRUCT_TYPED_SFIELD(sfHighLimit,             "HighLimit",            AMOUNT, 
 CONSTRUCT_TYPED_SFIELD(sfFee,                   "Fee",                  AMOUNT,     8);
 CONSTRUCT_TYPED_SFIELD(sfSendMax,               "SendMax",              AMOUNT,     9);
 CONSTRUCT_TYPED_SFIELD(sfDeliverMin,            "DeliverMin",           AMOUNT,    10);
-CONSTRUCT_TYPED_SFIELD(sfXChainFee,             "XChainFee",            AMOUNT,    11);
 
 // currency amount (uncommon)
 CONSTRUCT_TYPED_SFIELD(sfMinimumOffer,          "MinimumOffer",         AMOUNT,    16);
 CONSTRUCT_TYPED_SFIELD(sfRippleEscrow,          "RippleEscrow",         AMOUNT,    17);
 CONSTRUCT_TYPED_SFIELD(sfDeliveredAmount,       "DeliveredAmount",      AMOUNT,    18);
 CONSTRUCT_TYPED_SFIELD(sfNFTokenBrokerFee,      "NFTokenBrokerFee",     AMOUNT,    19);
+CONSTRUCT_TYPED_SFIELD(sfXChainFee,             "XChainFee",            AMOUNT,    20);
+CONSTRUCT_TYPED_SFIELD(sfSignatureReward,       "SignatureReward",      AMOUNT,    21);
+CONSTRUCT_TYPED_SFIELD(sfMinAccountCreateAmount, "MinAccountCreateAmount", AMOUNT, 22);
 
 // Reserve 20 & 21 for Hooks
 
@@ -287,6 +292,10 @@ CONSTRUCT_TYPED_SFIELD(sfEmitCallback,          "EmitCallback",         ACCOUNT,
 CONSTRUCT_TYPED_SFIELD(sfHookAccount,           "HookAccount",          ACCOUNT,   16);
 CONSTRUCT_TYPED_SFIELD(sfThisChainAccount,      "ThisChainAccount",     ACCOUNT,   17);
 CONSTRUCT_TYPED_SFIELD(sfOtherChainAccount,     "OtherChainAccount",    ACCOUNT,   18);
+CONSTRUCT_TYPED_SFIELD(sfAttestationSignerAccount, "AttestationSignerAccount", ACCOUNT, 19);
+CONSTRUCT_TYPED_SFIELD(sfAttestationRewardAccount, "AttestationRewardAccount", ACCOUNT, 20);
+CONSTRUCT_TYPED_SFIELD(sfLockingChainDoor,      "LockingChainDoor",     ACCOUNT,   21);
+CONSTRUCT_TYPED_SFIELD(sfIssuingChainDoor,      "IssuingChainDoor",     ACCOUNT,   22);
 
 // vector of 256-bit
 CONSTRUCT_TYPED_SFIELD(sfIndexes,               "Indexes",              VECTOR256,  1, SField::sMD_Never);
@@ -297,11 +306,22 @@ CONSTRUCT_TYPED_SFIELD(sfNFTokenOffers,         "NFTokenOffers",        VECTOR25
 // path set
 CONSTRUCT_UNTYPED_SFIELD(sfPaths,               "Paths",                PATHSET,    1);
 
-// sidechain
-CONSTRUCT_TYPED_SFIELD(sfSidechain,             "Sidechain",            SIDECHAIN,   1);
-
 // xchain claim proof
 CONSTRUCT_TYPED_SFIELD(sfXChainClaimProof,      "XChainClaimProof",     XCHAIN_CLAIM_PROOF,   1);
+
+// Issue
+CONSTRUCT_TYPED_SFIELD(sfLockingChainIssue,      "LockingChainIssue",   ISSUE, 1);
+CONSTRUCT_TYPED_SFIELD(sfIssuingChainIssue,      "IssuingChainIssue",   ISSUE, 2);
+
+// Bridge
+CONSTRUCT_TYPED_SFIELD(sfXChainBridge,           "XChainBridge",        XCHAIN_BRIDGE,
+                                                                               1);
+
+// Attestation batch
+CONSTRUCT_TYPED_SFIELD(sfXChainAttestationBatch,
+                                                 "XChainAttestationBatch",
+                                                                         XCHAIN_ATTESTATION_BATCH,
+                                                                               1);
 
 // inner object
 // OBJECT/1 is reserved for end of object
@@ -330,6 +350,20 @@ CONSTRUCT_UNTYPED_SFIELD(sfHookDefinition,      "HookDefinition",       OBJECT, 
 CONSTRUCT_UNTYPED_SFIELD(sfHookParameter,       "HookParameter",        OBJECT,    23);
 CONSTRUCT_UNTYPED_SFIELD(sfHookGrant,           "HookGrant",            OBJECT,    24);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainProofSig,      "XChainProofSig",       OBJECT,    25);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainAttestationSigs,
+                                                "XChainAttestationSigs",OBJECT,    26);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainAttestationBatchElement,
+                                                 "XChainAttestationBatchElement",
+                                                                        OBJECT,    27);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimAttestationBatchElement,
+                                                 "XChainClaimAttestationBatchElement",
+                                                                        OBJECT,     28);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountAttestationBatchElement,
+                                                 "XChainCreateAccountAttestationBatchElement",
+                                                                        OBJECT,     29);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainAttestationBatchInner,
+                                                 "XChainAttestationBatchInner",
+                                                                        OBJECT,     30);
 
 // array of objects
 //                                                                            ARRAY/1 is reserved for end of array
@@ -351,6 +385,13 @@ CONSTRUCT_UNTYPED_SFIELD(sfHookExecutions,      "HookExecutions",       ARRAY,  
 CONSTRUCT_UNTYPED_SFIELD(sfHookParameters,      "HookParameters",       ARRAY,     19);
 CONSTRUCT_UNTYPED_SFIELD(sfHookGrants,          "HookGrants",           ARRAY,     20);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainProofSigs,     "XChainProofSigs",      ARRAY,     21);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimAttestationBatch,
+                                                 "XChainClaimAttestationBatch",
+                                                                        ARRAY,     22);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountAttestationBatch,
+                                                 "XChainCreateAccountAttestationBatch",
+                                                                        ARRAY,     23);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainAttestations,   "XChainAttestations",  ARRAY,     24);
 
 // clang-format on
 
@@ -432,3 +473,4 @@ SField::getField(std::string const& fieldName)
 }
 
 }  // namespace ripple
+   // ripple

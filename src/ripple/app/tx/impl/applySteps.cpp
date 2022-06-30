@@ -41,6 +41,7 @@
 #include <ripple/app/tx/impl/SetSignerList.h>
 #include <ripple/app/tx/impl/SetTrust.h>
 #include <ripple/app/tx/impl/Sidechain.h>
+#include "ripple/protocol/TxFormats.h"
 
 namespace ripple {
 
@@ -148,14 +149,16 @@ invoke_preflight(PreflightContext const& ctx)
             return invoke_preflight_helper<NFTokenCancelOffer>(ctx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return invoke_preflight_helper<NFTokenAcceptOffer>(ctx);
-        case ttSIDECHAIN_CREATE:
-            return invoke_preflight_helper<SidechainCreate>(ctx);
-        case ttSIDECHAIN_XCHAIN_SEQNUM_CREATE:
-            return invoke_preflight_helper<SidechainXChainSeqNumCreate>(ctx);
-        case ttSIDECHAIN_XCHAIN_TRANSFER:
-            return invoke_preflight_helper<SidechainXChainTransfer>(ctx);
-        case ttSIDECHAIN_XCHAIN_CLAIM:
-            return invoke_preflight_helper<SidechainClaim>(ctx);
+        case ttXCHAIN_CREATE_BRIDGE:
+            return invoke_preflight_helper<BridgeCreate>(ctx);
+        case ttXCHAIN_CREATE_CLAIM_ID:
+            return invoke_preflight_helper<XChainCreateClaimID>(ctx);
+        case ttXCHAIN_COMMIT:
+            return invoke_preflight_helper<XChainCommit>(ctx);
+        case ttXCHAIN_CLAIM:
+            return invoke_preflight_helper<XChainClaim>(ctx);
+        case ttXCHAIN_ADD_ATTESTATION:
+            return invoke_preflight_helper<XChainAddAttestation>(ctx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
             return invoke_preflight_helper<SidechainXChainCreateAccount>(ctx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
@@ -261,14 +264,16 @@ invoke_preclaim(PreclaimContext const& ctx)
             return invoke_preclaim<NFTokenCancelOffer>(ctx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return invoke_preclaim<NFTokenAcceptOffer>(ctx);
-        case ttSIDECHAIN_CREATE:
-            return invoke_preclaim<SidechainCreate>(ctx);
-        case ttSIDECHAIN_XCHAIN_SEQNUM_CREATE:
-            return invoke_preclaim<SidechainXChainSeqNumCreate>(ctx);
-        case ttSIDECHAIN_XCHAIN_TRANSFER:
-            return invoke_preclaim<SidechainXChainTransfer>(ctx);
-        case ttSIDECHAIN_XCHAIN_CLAIM:
-            return invoke_preclaim<SidechainClaim>(ctx);
+        case ttXCHAIN_CREATE_BRIDGE:
+            return invoke_preclaim<BridgeCreate>(ctx);
+        case ttXCHAIN_CREATE_CLAIM_ID:
+            return invoke_preclaim<XChainCreateClaimID>(ctx);
+        case ttXCHAIN_COMMIT:
+            return invoke_preclaim<XChainCommit>(ctx);
+        case ttXCHAIN_CLAIM:
+            return invoke_preclaim<XChainClaim>(ctx);
+        case ttXCHAIN_ADD_ATTESTATION:
+            return invoke_preclaim<XChainAddAttestation>(ctx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
             return invoke_preclaim<SidechainXChainCreateAccount>(ctx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
@@ -336,14 +341,16 @@ invoke_calculateBaseFee(ReadView const& view, STTx const& tx)
             return NFTokenCancelOffer::calculateBaseFee(view, tx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return NFTokenAcceptOffer::calculateBaseFee(view, tx);
-        case ttSIDECHAIN_CREATE:
-            return SidechainCreate::calculateBaseFee(view, tx);
-        case ttSIDECHAIN_XCHAIN_SEQNUM_CREATE:
-            return SidechainXChainSeqNumCreate::calculateBaseFee(view, tx);
-        case ttSIDECHAIN_XCHAIN_TRANSFER:
-            return SidechainXChainTransfer::calculateBaseFee(view, tx);
-        case ttSIDECHAIN_XCHAIN_CLAIM:
-            return SidechainClaim::calculateBaseFee(view, tx);
+        case ttXCHAIN_CREATE_BRIDGE:
+            return BridgeCreate::calculateBaseFee(view, tx);
+        case ttXCHAIN_CREATE_CLAIM_ID:
+            return XChainCreateClaimID::calculateBaseFee(view, tx);
+        case ttXCHAIN_COMMIT:
+            return XChainCommit::calculateBaseFee(view, tx);
+        case ttXCHAIN_CLAIM:
+            return XChainClaim::calculateBaseFee(view, tx);
+        case ttXCHAIN_ADD_ATTESTATION:
+            return XChainAddAttestation::calculateBaseFee(view, tx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
             return SidechainXChainCreateAccount::calculateBaseFee(view, tx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
@@ -500,20 +507,24 @@ invoke_apply(ApplyContext& ctx)
             NFTokenAcceptOffer p(ctx);
             return p();
         }
-        case ttSIDECHAIN_CREATE: {
-            SidechainCreate p(ctx);
+        case ttXCHAIN_CREATE_BRIDGE: {
+            BridgeCreate p(ctx);
             return p();
         }
-        case ttSIDECHAIN_XCHAIN_SEQNUM_CREATE: {
-            SidechainXChainSeqNumCreate p(ctx);
+        case ttXCHAIN_CREATE_CLAIM_ID: {
+            XChainCreateClaimID p(ctx);
             return p();
         }
-        case ttSIDECHAIN_XCHAIN_TRANSFER: {
-            SidechainXChainTransfer p(ctx);
+        case ttXCHAIN_COMMIT: {
+            XChainCommit p(ctx);
             return p();
         }
-        case ttSIDECHAIN_XCHAIN_CLAIM: {
-            SidechainClaim p(ctx);
+        case ttXCHAIN_CLAIM: {
+            XChainClaim p(ctx);
+            return p();
+        }
+        case ttXCHAIN_ADD_ATTESTATION: {
+            XChainAddAttestation p(ctx);
             return p();
         }
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE: {

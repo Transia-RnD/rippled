@@ -21,13 +21,16 @@
 #define RIPPLE_TEST_JTX_ATTESTER_H_INCLUDED
 
 #include <ripple/basics/Buffer.h>
+#include <ripple/protocol/AccountID.h>
+
 #include <cstdint>
+#include <optional>
 
 namespace ripple {
 
 class PublicKey;
 class SecretKey;
-class STSidechain;
+class STXChainBridge;
 class STAmount;
 
 namespace test {
@@ -37,10 +40,13 @@ Buffer
 sign_attestation(
     PublicKey const& pk,
     SecretKey const& sk,
-    STSidechain const& sidechain,
-    STAmount const& amount,
-    std::uint32_t xChainSeqNum,
-    bool wasSrcChainSend);
+    STXChainBridge const& bridge,
+    AccountID const& sendingAccount,
+    STAmount const& sendingAmount,
+    AccountID const& rewardAccount,
+    bool wasLockingChainSend,
+    std::uint64_t claimID,
+    std::optional<AccountID> const& dst);
 
 }  // namespace jtx
 }  // namespace test
