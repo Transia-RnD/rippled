@@ -23,11 +23,17 @@
 #include <ripple/beast/unit_test.h>
 #include <ripple/protocol/ErrorCodes.h>
 #include <ripple/protocol/jss.h>
+#include <ripple/protocol/STXChainBridge.h>
 #include <test/jtx.h>
+#include <test/jtx/attester.h>
+#include <test/jtx/multisign.h>
+#include <test/jtx/xchain_bridge.h>
+#include <test/jtx/xchain_utils.h>
 
 namespace ripple {
 
-class LedgerRPC_test : public beast::unit_test::suite
+class LedgerRPC_test : public beast::unit_test::suite,
+                       public test::jtx::XChainBridgeObjects
 {
     void
     checkErrorValue(
@@ -363,6 +369,291 @@ class LedgerRPC_test : public beast::unit_test::suite
             jvParams[jss::account_root] = Account("bob").human();
             jvParams[jss::ledger_hash] = ledgerHash;
             Json::Value const jrr = env.rpc(
+                "json", "ledger_entry", to_string(jvParams))[jss::result];
+            checkErrorValue(jrr, "entryNotFound", "");
+        }
+    }
+
+    void
+    testLedgerEntryBridge()
+    {
+        testcase("ledger_entry Request Bridge");
+        using namespace test::jtx;
+
+        Env mcEnv{*this, features};
+        Env scEnv(*this, envconfig(port_increment, 3), features);
+
+        createBridgeObjects(mcEnv, scEnv);
+
+        std::string const ledgerHash{to_string(mcEnv.closed()->info().hash)};
+        std::string bridge_index;
+        {
+            // request the bridge via RPC
+            Json::Value jvParams;
+            jvParams[jss::Bridge] = jvXRPBridge;
+            // std::cout << to_string(jvParams) << '\n';
+            Json::Value const jrr = mcEnv.rpc(
+                "json", "ledger_entry", to_string(jvParams))[jss::result];
+
+            BEAST_EXPECT(jrr.isMember(jss::node));
+            auto r = jrr[jss::node];
+            // std::cout << to_string(r) << '\n';
+
+            BEAST_EXPECT(r.isMember(jss::Account));
+            BEAST_EXPECT(r[jss::Account] == mcDoor.human());
+
+            BEAST_EXPECT(r.isMember(jss::Flags));
+
+            BEAST_EXPECT(r.isMember(sfLedgerEntryType.jsonName));
+            BEAST_EXPECT(r[sfLedgerEntryType.jsonName] == jss::Bridge);
+
+            // we not created an account yet
+            BEAST_EXPECT(r.isMember(sfXChainAccountCreateCount.jsonName));
+            BEAST_EXPECT(r[sfXChainAccountCreateCount.jsonName].asInt() == 0);
+
+            // we have not claimed a locking chain tx yet
+            BEAST_EXPECT(r.isMember(sfXChainAccountClaimCount.jsonName));
+            BEAST_EXPECT(r[sfXChainAccountClaimCount.jsonName].asInt() == 0);
+
+            BEAST_EXPECT(r.isMember(jss::index));
+            bridge_index = r[jss::index].asString();
+        }
+        {
+            // request the bridge via RPC by index
+            Json::Value jvParams;
+            jvParams[jss::Bridge] = jvXRPBridge;
+            jvParams[jss::index] = bridge_index;
+            Json::Value const jrr = mcEnv.rpc(
+                "json", "ledger_entry", to_string(jvParams))[jss::result];
+
+            BEAST_EXPECT(jrr.isMember(jss::node));
+            auto r = jrr[jss::node];
+            // std::cout << to_string(r) << '\n';
+
+            BEAST_EXPECT(r.isMember(jss::Account));
+            BEAST_EXPECT(r[jss::Account] == mcDoor.human());
+        }
+        {
+            // swap door accounts and make sure we get an error value
+            Json::Value reverse_bridge_def =
+                bridge(scDoor, xrpIssue(), mcDoor, xrpIssue());
+            Json::Value jvParams;
+            jvParams[jss::Bridge] = reverse_bridge_def;
+            jvParams[jss::ledger_hash] = ledgerHash;
+            Json::Value const jrr = mcEnv.rpc(
+                "json", "ledger_entry", to_string(jvParams))[jss::result];
+
+            checkErrorValue(jrr, "entryNotFound", "");
+        }
+        {
+            // create two claim ids and verify that the bridge counter was
+            // incremented
+            mcEnv(
+                xchain_create_claim_id(mcAlice, jvXRPBridge, reward, scAlice));
+            mcEnv.close();
+            mcEnv(xchain_create_claim_id(mcBob, jvXRPBridge, reward, scBob));
+            mcEnv.close();
+
+            // request the bridge via RPC
+            Json::Value jvParams;
+            jvParams[jss::Bridge] = jvXRPBridge;
+            // std::cout << to_string(jvParams) << '\n';
+            Json::Value const jrr = mcEnv.rpc(
+                "json", "ledger_entry", to_string(jvParams))[jss::result];
+
+            BEAST_EXPECT(jrr.isMember(jss::node));
+            auto r = jrr[jss::node];
+
+            // we executed two create claim id txs
+            BEAST_EXPECT(r.isMember(sfXChainClaimID.jsonName));
+            BEAST_EXPECT(r[sfXChainClaimID.jsonName].asInt() == 2);
+        }
+    }
+
+    void
+    testLedgerEntryClaimID()
+    {
+        testcase("ledger_entry Request ClaimID");
+        using namespace test::jtx;
+
+        Env mcEnv{*this, features};
+        Env scEnv(*this, envconfig(port_increment, 3), features);
+
+        createBridgeObjects(mcEnv, scEnv);
+
+        scEnv(xchain_create_claim_id(scAlice, jvXRPBridge, reward, mcAlice));
+        scEnv.close();
+        scEnv(xchain_create_claim_id(scBob, jvXRPBridge, reward, mcBob));
+        scEnv.close();
+
+        std::string bridge_index;
+        {
+            // request the xchain_claim_id via RPC
+            Json::Value jvParams;
+            jvParams[jss::XChainClaimID] = jvXRPBridge;
+            jvParams[jss::XChainClaimID][jss::XChainClaimID] = 1;
+            // std::cout << to_string(jvParams) << '\n';
+            Json::Value const jrr = scEnv.rpc(
+                "json", "ledger_entry", to_string(jvParams))[jss::result];
+
+            BEAST_EXPECT(jrr.isMember(jss::node));
+            auto r = jrr[jss::node];
+            // std::cout << to_string(r) << '\n';
+
+            BEAST_EXPECT(r.isMember(jss::Account));
+            BEAST_EXPECT(r[jss::Account] == scAlice.human());
+            BEAST_EXPECT(r[sfLedgerEntryType.jsonName] == jss::XChainClaimID);
+            BEAST_EXPECT(r[jss::XChainClaimID].asInt() == 1);
+            BEAST_EXPECT(r[sfOwnerNode.jsonName].asInt() == 0);
+        }
+
+        {
+            // request the xchain_claim_id via RPC
+            Json::Value jvParams;
+            jvParams[jss::XChainClaimID] = jvXRPBridge;
+            jvParams[jss::XChainClaimID][jss::XChainClaimID] = 2;
+            Json::Value const jrr = scEnv.rpc(
+                "json", "ledger_entry", to_string(jvParams))[jss::result];
+
+            BEAST_EXPECT(jrr.isMember(jss::node));
+            auto r = jrr[jss::node];
+            // std::cout << to_string(r) << '\n';
+
+            BEAST_EXPECT(r.isMember(jss::Account));
+            BEAST_EXPECT(r[jss::Account] == scBob.human());
+            BEAST_EXPECT(r[sfLedgerEntryType.jsonName] == jss::XChainClaimID);
+            BEAST_EXPECT(r[jss::XChainClaimID].asInt() == 2);
+            BEAST_EXPECT(r[sfOwnerNode.jsonName].asInt() == 0);
+        }
+    }
+
+    void
+    testLedgerEntryCreateAccountClaimID()
+    {
+        testcase("ledger_entry Request CreateAccountClaimID");
+        using namespace test::jtx;
+
+        Env mcEnv{*this, features};
+        Env scEnv(*this, envconfig(port_increment, 3), features);
+
+        createBridgeObjects(mcEnv, scEnv);
+
+        auto scCarol =
+            Account("scCarol");  // Don't fund it - it will be created with the
+                                 // xchain transaction
+        auto const amt = XRP(1000);
+        mcEnv(sidechain_xchain_account_create(
+            mcAlice, jvXRPBridge, scCarol, amt, reward));
+        mcEnv.close();
+
+        // send less than quorum of attestations (otherwise funds are
+        // immediately transferred and no "claim" object is created)
+        size_t constexpr num_attest = 3;
+        Json::Value batch = attestationCreateAccountBatch(
+            jvXRPBridge,
+            mcAlice,
+            amt,
+            reward,
+            rewardAccountsScReward,
+            /*wasLockingChainSend*/ true,
+            1,
+            scCarol,
+            signers,
+            num_attest);
+        scEnv(xchain_add_attestation_batch(scAttester, batch));
+        scEnv.close();
+
+        {
+            // request the create account claim_id via RPC
+            Json::Value jvParams;
+            jvParams[jss::XChainCreateAccountClaimID] = jvXRPBridge;
+            jvParams[jss::XChainCreateAccountClaimID]
+                    [jss::XChainCreateAccountClaimID] = 1;
+            // std::cout << to_string(jvParams) << '\n';
+            Json::Value const jrr = scEnv.rpc(
+                "json", "ledger_entry", to_string(jvParams))[jss::result];
+            // std::cout << to_string(jrr) << '\n';
+
+            BEAST_EXPECT(jrr.isMember(jss::node));
+            auto r = jrr[jss::node];
+
+            BEAST_EXPECT(r.isMember(jss::Account));
+            BEAST_EXPECT(r[jss::Account] == scDoor.human());
+
+            BEAST_EXPECT(r.isMember(sfXChainAccountCreateCount.jsonName));
+            BEAST_EXPECT(r[sfXChainAccountCreateCount.jsonName].asInt() == 1);
+
+            BEAST_EXPECT(
+                r.isMember(sfXChainCreateAccountAttestations.jsonName));
+            auto attest = r[sfXChainCreateAccountAttestations.jsonName];
+            BEAST_EXPECT(attest.isArray());
+            BEAST_EXPECT(attest.size() == 3);
+            BEAST_EXPECT(attest[Json::Value::UInt(0)].isMember(
+                sfXChainCreateAccountProofSig.jsonName));
+            Json::Value a[num_attest];
+            for (size_t i = 0; i < num_attest; ++i)
+            {
+                a[i] = attest[Json::Value::UInt(0)]
+                             [sfXChainCreateAccountProofSig.jsonName];
+                BEAST_EXPECT(
+                    a[i].isMember(jss::Amount) &&
+                    a[i][jss::Amount].asInt() == 1000 * drop_per_xrp);
+                BEAST_EXPECT(
+                    a[i].isMember(jss::Destination) &&
+                    a[i][jss::Destination] == scCarol.human());
+                BEAST_EXPECT(
+                    a[i].isMember(sfAttestationSignerAccount.jsonName) &&
+                    std::any_of(
+                        signers.begin(), signers.end(), [&](signer const& s) {
+                            return a[i][sfAttestationSignerAccount.jsonName] ==
+                                s.account.human();
+                        }));
+                BEAST_EXPECT(
+                    a[i].isMember(sfAttestationRewardAccount.jsonName) &&
+                    std::any_of(
+                        rewardAccountsScReward.begin(),
+                        rewardAccountsScReward.end(),
+                        [&](Account const& account) {
+                            return a[i][sfAttestationRewardAccount.jsonName] ==
+                                account.human();
+                        }));
+                BEAST_EXPECT(
+                    a[i].isMember(sfWasLockingChainSend.jsonName) &&
+                    a[i][sfWasLockingChainSend.jsonName] == 1);
+                BEAST_EXPECT(
+                    a[i].isMember(sfXChainAccountCreateCount.jsonName) &&
+                    a[i][sfXChainAccountCreateCount.jsonName].asInt() == 1);
+                BEAST_EXPECT(
+                    a[i].isMember(sfSignatureReward.jsonName) &&
+                    a[i][sfSignatureReward.jsonName].asInt() ==
+                        1 * drop_per_xrp);
+            }
+        }
+
+        // complete attestations quorum - CreateAccountClaimID should not be
+        // present anymore
+        Json::Value batch2 = attestationCreateAccountBatch(
+            jvXRPBridge,
+            mcAlice,
+            amt,
+            reward,
+            rewardAccountsScReward,
+            /*wasLockingChainSend*/ true,
+            1,
+            scCarol,
+            signers);
+
+        scEnv(xchain_add_attestation_batch(scAttester, batch2));
+        scEnv.close();
+
+        {
+            // request the create account claim_id via RPC
+            Json::Value jvParams;
+            jvParams[jss::XChainCreateAccountClaimID] = jvXRPBridge;
+            jvParams[jss::XChainCreateAccountClaimID]
+                    [jss::XChainCreateAccountClaimID] = 1;
+            // std::cout << to_string(jvParams) << '\n';
+            Json::Value const jrr = scEnv.rpc(
                 "json", "ledger_entry", to_string(jvParams))[jss::result];
             checkErrorValue(jrr, "entryNotFound", "");
         }
@@ -1726,6 +2017,9 @@ public:
         testLedgerFullNonAdmin();
         testLedgerAccounts();
         testLedgerEntryAccountRoot();
+        testLedgerEntryBridge();
+        testLedgerEntryClaimID();
+        testLedgerEntryCreateAccountClaimID();
         testLedgerEntryCheck();
         testLedgerEntryDepositPreauth();
         testLedgerEntryDirectory();

@@ -139,9 +139,11 @@ JSS(account_sequence_next);  // out: SubmitTransaction
 JSS(account_sequence_available);  // out: SubmitTransaction
 JSS(account_history_tx_stream);   // in: Subscribe, Unsubscribe
 JSS(account_history_tx_index);    // out: Account txn history subscribe
-JSS(account_history_tx_first);    // out: Account txn history subscribe
-JSS(accounts);                    // in: LedgerEntry, Subscribe,
-                                  //     handlers/Ledger, Unsubscribe
+
+JSS(account_history_tx_first);         // out: Account txn history subscribe
+JSS(account_history_ledger_boundary);  // out: Account txn history subscribe
+JSS(accounts);                         // in: LedgerEntry, Subscribe,
+                                       //     handlers/Ledger, Unsubscribe
 JSS(accounts_proposed);           // in: Subscribe, Unsubscribe
 JSS(action);
 JSS(acquiring);                   // out: LedgerRequest
@@ -251,8 +253,6 @@ JSS(dir_root);                // out: DirectoryEntryIterator
 JSS(directory);               // in: LedgerEntry
 JSS(domain);                  // out: ValidatorInfo, Manifest
 JSS(drops);                   // out: TxQ
-JSS(dst_chain_door);          // in: sidechain
-JSS(dst_chain_issue);         // in: sidechain
 JSS(duration_us);             // out: NetworkOPs
 JSS(effective);               // out: ValidatorList
                               // in: UNL
@@ -565,8 +565,6 @@ JSS(source_account);            // in: PathRequest, RipplePathFind
 JSS(source_amount);             // in: PathRequest, RipplePathFind
 JSS(source_currencies);         // in: PathRequest, RipplePathFind
 JSS(source_tag);                // out: AccountChannels
-JSS(src_chain_door);            // in: sidechain
-JSS(src_chain_issue);           // in: sidechain
 JSS(stand_alone);               // out: NetworkOPs
 JSS(start);                     // in: TxHistory
 JSS(started);

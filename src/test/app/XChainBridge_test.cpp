@@ -32,6 +32,7 @@
 #include <test/jtx/attester.h>
 #include <test/jtx/multisign.h>
 #include <test/jtx/xchain_bridge.h>
+#include <test/jtx/xchain_utils.h>
 
 #include <optional>
 #include <string>
@@ -40,7 +41,8 @@
 namespace ripple {
 namespace test {
 
-struct XChainBridge_test : public beast::unit_test::suite
+struct XChainBridge_test : public beast::unit_test::suite,
+                           public jtx::XChainBridgeObjects
 {
     void
     testBridgeCreate()
@@ -48,15 +50,6 @@ struct XChainBridge_test : public beast::unit_test::suite
         testcase("Bridge Create");
 
         using namespace jtx;
-        auto const features =
-            supported_amendments() | FeatureBitset{featureXChainBridge};
-        auto const mcDoor = Account("mcDoor");
-        auto const scDoor = Account("scDoor");
-        auto const alice = Account("alice");
-        auto const mcGw = Account("mcGw");
-        auto const scGw = Account("scGw");
-        auto const mcUSD = mcGw["USD"];
-        auto const scUSD = scGw["USD"];
 
         for (auto withMinCreate : {true, false})
         {
@@ -77,11 +70,11 @@ struct XChainBridge_test : public beast::unit_test::suite
         {
             // Bridge must be owned by one of the door accounts
             Env env(*this, features);
-            env.fund(XRP(10000), alice, mcDoor);
+            env.fund(XRP(10000), mcAlice, mcDoor);
             auto const reward = XRP(1);
             std::optional<STAmount> minCreate;
             env(bridge_create(
-                    alice,
+                    mcAlice,
                     bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()),
                     reward,
                     minCreate),
@@ -92,7 +85,7 @@ struct XChainBridge_test : public beast::unit_test::suite
             for (auto const scIsXRP : {true, false})
             {
                 Env env(*this, features);
-                env.fund(XRP(10000), alice, mcDoor, mcGw);
+                env.fund(XRP(10000), mcAlice, mcDoor, mcGw);
                 auto const reward = XRP(1);
                 std::optional<STAmount> minCreate;
                 // issue must be both xrp or both iou
@@ -205,160 +198,25 @@ struct XChainBridge_test : public beast::unit_test::suite
         }
     }
 
-    Json::Value
-    attestationClaimBatch(
-        Json::Value const& jvBridge,
-        jtx::Account const& sendingAccount,
-        jtx::AnyAmount const& sendingAmount,
-        std::vector<jtx::Account> const& rewardAccounts,
-        bool wasLockingChainSend,
-        std::uint64_t claimID,
-        std::optional<jtx::Account> const& dst,
-        std::vector<jtx::signer> const& signers)
-    {
-        assert(rewardAccounts.size() == signers.size());
-
-        STXChainBridge const stBridge(jvBridge);
-        std::vector<AttestationBatch::AttestationClaim> claims;
-        claims.reserve(signers.size());
-
-        for (int i = 0, e = signers.size(); i != e; ++i)
-        {
-            auto const& s = signers[i];
-            auto const& pk = s.account.pk();
-            auto const& sk = s.account.sk();
-            auto const sig = jtx::sign_claim_attestation(
-                pk,
-                sk,
-                stBridge,
-                sendingAccount,
-                sendingAmount.value,
-                rewardAccounts[i],
-                wasLockingChainSend,
-                claimID,
-                dst);
-
-            claims.emplace_back(
-                pk,
-                std::move(sig),
-                sendingAccount.id(),
-                sendingAmount.value,
-                rewardAccounts[i].id(),
-                wasLockingChainSend,
-                claimID,
-                dst ? std::optional{dst->id()} : std::nullopt);
-        }
-
-        STXChainAttestationBatch batch{stBridge, claims.begin(), claims.end()};
-
-        return batch.getJson(JsonOptions::none);
-    }
-
-    Json::Value
-    attestationCreateAccountBatch(
-        Json::Value const& jvBridge,
-        jtx::Account const& sendingAccount,
-        jtx::AnyAmount const& sendingAmount,
-        jtx::AnyAmount const& rewardAmount,
-        std::vector<jtx::Account> const& rewardAccounts,
-        bool wasLockingChainSend,
-        std::uint64_t createCount,
-        jtx::Account const& dst,
-        std::vector<jtx::signer> const& signers)
-    {
-        assert(rewardAccounts.size() == signers.size());
-
-        STXChainBridge const stBridge(jvBridge);
-        std::vector<AttestationBatch::AttestationCreateAccount> atts;
-        atts.reserve(signers.size());
-
-        for (int i = 0, e = signers.size(); i != e; ++i)
-        {
-            auto const& s = signers[i];
-            auto const& pk = s.account.pk();
-            auto const& sk = s.account.sk();
-            auto const sig = jtx::sign_create_account_attestation(
-                pk,
-                sk,
-                stBridge,
-                sendingAccount,
-                sendingAmount.value,
-                rewardAmount.value,
-                rewardAccounts[i],
-                wasLockingChainSend,
-                createCount,
-                dst);
-
-            atts.emplace_back(
-                pk,
-                std::move(sig),
-                sendingAccount.id(),
-                sendingAmount.value,
-                rewardAmount.value,
-                rewardAccounts[i].id(),
-                wasLockingChainSend,
-                createCount,
-                dst);
-        }
-
-        AttestationBatch::AttestationClaim* nullClaimRange = nullptr;
-        STXChainAttestationBatch batch{
-            stBridge, nullClaimRange, nullClaimRange, atts.begin(), atts.end()};
-
-        return batch.getJson(JsonOptions::none);
-    }
-
     void
     testSerializers()
     {
         testcase("XChain serializers");
 
         using namespace jtx;
-        auto const mcDoor = Account("mcDoor");
-        auto const mcAlice = Account("mcAlice");
-        auto const mcBob = Account("mcBob");
-        auto const mcGw = Account("mcGw");
-        auto const scDoor = Account("scDoor");
-        auto const scAlice = Account("scAlice");
-        auto const scBob = Account("scBob");
-        auto const scGw = Account("scGw");
-        auto const mcUSD = mcGw["USD"];
-        auto const scUSD = scGw["USD"];
 
         // Simple xchain txn
-        std::vector<signer> const signers = [] {
-            constexpr int numSigners = 5;
-            std::vector<signer> result;
-            result.reserve(numSigners);
-            for (int i = 0; i < numSigners; ++i)
-            {
-                using namespace std::literals;
-                auto const a = Account("signer_"s + std::to_string(i));
-                result.emplace_back(a);
-            }
-            return result;
-        }();
-
         auto const reward = XRP(1);
         std::optional<STAmount> minCreate;
         auto const bridgeSpec = bridge(mcDoor, xrpIssue(), scDoor, xrpIssue());
         std::uint32_t const chaimID = 1;
         auto const amt = XRP(1000);
-        std::vector<Account> const rewardAccounts = [&] {
-            std::vector<Account> r;
-            r.reserve(signers.size());
-            for (int i = 0, e = signers.size(); i != e; ++i)
-            {
-                r.push_back(scDoor);
-            }
-            return r;
-        }();
         std::optional<Account> dst{scBob};
         Json::Value batch = attestationClaimBatch(
             bridgeSpec,
             mcAlice,
             amt,
-            rewardAccounts,
+            rewardAccountsMisc,
             /*wasLockingChainSend*/ true,
             chaimID,
             dst,
@@ -406,32 +264,6 @@ struct XChainBridge_test : public beast::unit_test::suite
         testcase("Bridge XChain Txn");
 
         using namespace jtx;
-        auto const features =
-            supported_amendments() | FeatureBitset{featureXChainBridge};
-        auto const mcDoor = Account("mcDoor");
-        auto const mcAlice = Account("mcAlice");
-        auto const mcBob = Account("mcBob");
-        auto const mcGw = Account("mcGw");
-        auto const scDoor = Account("scDoor");
-        auto const scAlice = Account("scAlice");
-        auto const scBob = Account("scBob");
-        auto const scGw = Account("scGw");
-        auto const scReward = Account("scReward");
-        auto const mcUSD = mcGw["USD"];
-        auto const scUSD = scGw["USD"];
-
-        std::vector<signer> const signers = [] {
-            constexpr int numSigners = 5;
-            std::vector<signer> result;
-            result.reserve(numSigners);
-            for (int i = 0; i < numSigners; ++i)
-            {
-                using namespace std::literals;
-                auto const a = Account("signer_"s + std::to_string(i));
-                result.emplace_back(a);
-            }
-            return result;
-        }();
 
         for (auto withClaim : {false, true})
         {
@@ -491,7 +323,7 @@ struct XChainBridge_test : public beast::unit_test::suite
                 bridgeSpec,
                 mcAlice,
                 amt,
-                rewardAccounts,
+                rewardAccountsScReward,
                 /*wasLockingChainSend*/ true,
                 claimID,
                 dst,
@@ -529,33 +361,6 @@ struct XChainBridge_test : public beast::unit_test::suite
         testcase("Bridge XChain Create Account");
 
         using namespace jtx;
-        auto const features =
-            supported_amendments() | FeatureBitset{featureXChainBridge};
-        auto const mcDoor = Account("mcDoor");
-        auto const mcAlice = Account("mcAlice");
-        auto const mcBob = Account("mcBob");
-        auto const mcGw = Account("mcGw");
-        auto const scDoor = Account("scDoor");
-        auto const scAlice = Account("scAlice");
-        auto const scBob = Account("scBob");
-        auto const scGw = Account("scGw");
-        auto const scAttester = Account("scAttester");
-        auto const scReward = Account("scReward");
-        auto const mcUSD = mcGw["USD"];
-        auto const scUSD = scGw["USD"];
-
-        std::vector<signer> const signers = [] {
-            constexpr int numSigners = 5;
-            std::vector<signer> result;
-            result.reserve(numSigners);
-            for (int i = 0; i < numSigners; ++i)
-            {
-                using namespace std::literals;
-                auto const a = Account("signer_"s + std::to_string(i));
-                result.emplace_back(a);
-            }
-            return result;
-        }();
 
         Env mcEnv(*this, features);
         Env scEnv(*this, envconfig(port_increment, 3), features);
@@ -588,16 +393,6 @@ struct XChainBridge_test : public beast::unit_test::suite
         // TODO: Get createCount from the ledger
         std::uint64_t const createCount = 1;
         // TODO: reward accounts
-        std::vector<Account> const rewardAccounts = [&] {
-            std::vector<Account> r;
-            r.reserve(signers.size());
-            for (int i = 0, e = signers.size(); i != e; ++i)
-            {
-                // TODO: Specify different reward accounts so can check
-                r.push_back(scReward);
-            }
-            return r;
-        }();
         Account dst{scBob};
 
         auto const bobPre = XRP(0);
@@ -609,7 +404,7 @@ struct XChainBridge_test : public beast::unit_test::suite
             mcAlice,
             amt,
             reward,
-            rewardAccounts,
+            rewardAccountsScReward,
             /*wasLockingChainSend*/ true,
             createCount,
             dst,

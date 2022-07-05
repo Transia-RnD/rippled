@@ -883,7 +883,7 @@ chooseLedgerEntryType(Json::Value const& params)
     std::pair<RPC::Status, LedgerEntryType> result{RPC::Status::OK, ltANY};
     if (params.isMember(jss::type))
     {
-        static constexpr std::array<std::pair<char const*, LedgerEntryType>, 14>
+        static constexpr std::array<std::pair<char const*, LedgerEntryType>, 15>
             types{
                 {{jss::account, ltACCOUNT_ROOT},
                  {jss::amendments, ltAMENDMENTS},
@@ -898,7 +898,8 @@ chooseLedgerEntryType(Json::Value const& params)
                  {jss::signer_list, ltSIGNER_LIST},
                  {jss::state, ltRIPPLE_STATE},
                  {jss::ticket, ltTICKET},
-                 {jss::nft_offer, ltNFTOKEN_OFFER}}};
+                 {jss::nft_offer, ltNFTOKEN_OFFER},
+                 {jss::xchain_seq, ltXCHAIN_CLAIM_ID}}};
 
         auto const& p = params[jss::type];
         if (!p.isString())
