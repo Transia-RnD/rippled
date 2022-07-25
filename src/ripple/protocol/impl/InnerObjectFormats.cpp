@@ -19,6 +19,7 @@
 
 #include <ripple/protocol/InnerObjectFormats.h>
 #include "ripple/protocol/SField.h"
+#include "ripple/protocol/SOTemplate.h"
 
 namespace ripple {
 
@@ -83,18 +84,31 @@ InnerObjectFormats::InnerObjectFormats()
             {sfAccount, soeREQUIRED},
             {sfAttestationRewardAccount, soeREQUIRED},
             {sfWasLockingChainSend, soeREQUIRED},
+            {sfXChainAccountCreateCount, soeREQUIRED},
             {sfDestination, soeREQUIRED},
             {sfSignatureReward, soeREQUIRED},
         });
 
-    add(sfXChainProofSig.jsonName.c_str(),
-        sfXChainProofSig.getCode(),
+    add(sfXChainClaimProofSig.jsonName.c_str(),
+        sfXChainClaimProofSig.getCode(),
         {
             {sfAttestationSignerAccount, soeREQUIRED},
             {sfAmount, soeREQUIRED},
             {sfAttestationRewardAccount, soeREQUIRED},
             {sfWasLockingChainSend, soeREQUIRED},
             {sfDestination, soeOPTIONAL},
+        });
+
+    add(sfXChainCreateAccountProofSig.jsonName.c_str(),
+        sfXChainCreateAccountProofSig.getCode(),
+        {
+            {sfAttestationSignerAccount, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfSignatureReward, soeREQUIRED},
+            {sfXChainAccountCreateCount, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfDestination, soeREQUIRED},
         });
 }
 

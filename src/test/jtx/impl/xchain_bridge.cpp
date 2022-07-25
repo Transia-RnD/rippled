@@ -17,17 +17,15 @@
 */
 //==============================================================================
 
-#include "ripple/protocol/STBase.h"
-#include "ripple/protocol/STObject.h"
-#include <test/jtx/sidechain.h>
-
 #include <ripple/json/json_value.h>
-#include <ripple/protocol/SField.h>
-#include <ripple/protocol/STXChainAttestationBatch.h>
-
 #include <ripple/protocol/Issue.h>
+#include <ripple/protocol/SField.h>
+#include <ripple/protocol/STBase.h>
+#include <ripple/protocol/STObject.h>
+#include <ripple/protocol/STXChainAttestationBatch.h>
 #include <ripple/protocol/TxFlags.h>
 #include <ripple/protocol/jss.h>
+#include <test/jtx/xchain_bridge.h>
 
 namespace ripple {
 namespace test {
@@ -51,14 +49,14 @@ bridge(
 Json::Value
 bridge_create(
     Account const& acc,
-    Json::Value const& sidechain,
+    Json::Value const& bridge,
     STAmount const& reward,
     std::optional<STAmount> const& minAccountCreate)
 {
     Json::Value jv;
 
     jv[jss::Account] = acc.human();
-    jv[sfXChainBridge.getJsonName()] = sidechain;
+    jv[sfXChainBridge.getJsonName()] = bridge;
     jv[sfSignatureReward.getJsonName()] = reward.getJson(JsonOptions::none);
     if (minAccountCreate)
         jv[sfMinAccountCreateAmount.getJsonName()] =
@@ -72,14 +70,14 @@ bridge_create(
 Json::Value
 xchain_create_claim_id(
     Account const& acc,
-    Json::Value const& sidechain,
+    Json::Value const& bridge,
     STAmount const& reward,
     Account const& otherChainAccount)
 {
     Json::Value jv;
 
     jv[jss::Account] = acc.human();
-    jv[sfXChainBridge.getJsonName()] = sidechain;
+    jv[sfXChainBridge.getJsonName()] = bridge;
     jv[sfSignatureReward.getJsonName()] = reward.getJson(JsonOptions::none);
     jv[sfOtherChainAccount.getJsonName()] = otherChainAccount.human();
 
@@ -91,14 +89,14 @@ xchain_create_claim_id(
 Json::Value
 xchain_commit(
     Account const& acc,
-    Json::Value const& sidechain,
+    Json::Value const& bridge,
     std::uint32_t xchainSeq,
     AnyAmount const& amt)
 {
     Json::Value jv;
 
     jv[jss::Account] = acc.human();
-    jv[sfXChainBridge.getJsonName()] = sidechain;
+    jv[sfXChainBridge.getJsonName()] = bridge;
     jv[sfXChainClaimID.getJsonName()] = xchainSeq;
     jv[jss::Amount] = amt.value.getJson(JsonOptions::none);
 
@@ -110,14 +108,18 @@ xchain_commit(
 Json::Value
 xchain_claim(
     Account const& acc,
-    Json::Value const& claimProof,
+    Json::Value const& bridge,
+    std::uint32_t claimID,
+    AnyAmount const& amt,
     Account const& dst)
 {
     Json::Value jv;
 
-    jv[jss::Account] = acc.human();
-    jv[sfXChainClaimProof.getJsonName()] = claimProof;
-    jv[jss::Destination] = dst.human();
+    jv[sfAccount.getJsonName()] = acc.human();
+    jv[sfXChainBridge.getJsonName()] = bridge;
+    jv[sfXChainClaimID.getJsonName()] = claimID;
+    jv[sfDestination.getJsonName()] = dst.human();
+    jv[sfAmount.getJsonName()] = amt.value.getJson(JsonOptions::none);
 
     jv[jss::TransactionType] = jss::XChainClaim;
     jv[jss::Flags] = tfUniversal;
@@ -127,18 +129,19 @@ xchain_claim(
 Json::Value
 sidechain_xchain_account_create(
     Account const& acc,
-    Json::Value const& sidechain,
+    Json::Value const& bridge,
     Account const& dst,
     AnyAmount const& amt,
-    AnyAmount const& xChainFee)
+    AnyAmount const& reward)
 {
     Json::Value jv;
 
-    jv[jss::Account] = acc.human();
-    jv[sfXChainBridge.getJsonName()] = sidechain;
-    jv[jss::Destination] = dst.human();
-    jv[jss::Amount] = amt.value.getJson(JsonOptions::none);
-    jv[sfXChainFee.getJsonName()] = xChainFee.value.getJson(JsonOptions::none);
+    jv[sfAccount.getJsonName()] = acc.human();
+    jv[sfXChainBridge.getJsonName()] = bridge;
+    jv[sfDestination.getJsonName()] = dst.human();
+    jv[sfAmount.getJsonName()] = amt.value.getJson(JsonOptions::none);
+    jv[sfSignatureReward.getJsonName()] =
+        reward.value.getJson(JsonOptions::none);
 
     jv[jss::TransactionType] = jss::SidechainXChainAccountCreate;
     jv[jss::Flags] = tfUniversal;
@@ -148,14 +151,14 @@ sidechain_xchain_account_create(
 Json::Value
 sidechain_xchain_account_claim(
     Account const& acc,
-    Json::Value const& sidechain,
+    Json::Value const& bridge,
     Account const& dst,
     AnyAmount const& amt)
 {
     Json::Value jv;
 
     jv[jss::Account] = acc.human();
-    jv[sfXChainBridge.getJsonName()] = sidechain;
+    jv[sfXChainBridge.getJsonName()] = bridge;
     jv[jss::Destination] = dst.human();
     jv[jss::Amount] = amt.value.getJson(JsonOptions::none);
 

@@ -602,7 +602,8 @@ extern SField const sfHookExecution;
 extern SField const sfHookDefinition;
 extern SField const sfHookParameter;
 extern SField const sfHookGrant;
-extern SField const sfXChainProofSig;
+extern SField const sfXChainClaimProofSig;
+extern SField const sfXChainCreateAccountProofSig;
 extern SField const sfXChainAttestationBatchElement;
 extern SField const sfXChainClaimAttestationBatchElement;
 extern SField const sfXChainCreateAccountAttestationBatchElement;
@@ -628,10 +629,10 @@ extern SField const sfHookExecutions;
 extern SField const sfHookParameters;
 extern SField const sfHookGrants;
 extern SField const sfXChainProofSigs;
-extern SField const sfXChainAttestationSigs;
 extern SField const sfXChainClaimAttestationBatch;
 extern SField const sfXChainCreateAccountAttestationBatch;
-extern SField const sfXChainAttestations;
+extern SField const sfXChainClaimAttestations;
+extern SField const sfXChainCreateAccountAttestations;
 
 //------------------------------------------------------------------------------
 

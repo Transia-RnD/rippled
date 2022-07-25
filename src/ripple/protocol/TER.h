@@ -307,6 +307,9 @@ enum TECcodes : TERUnderlyingType {
     tecXCHAIN_REWARD_MISMATCH = 170,
     tecXCHAIN_NO_SIGNERS_LIST = 171,
     tecXCHAIN_SENDING_ACCOUNT_MISMATCH = 172,
+    tecXCHAIN_INSUFF_CREATE_AMOUNT = 173,
+    tecXCHAIN_ACCOUNT_CREATE_PAST = 174,
+    tecXCHAIN_ACCOUNT_CREATE_TOO_MANY = 175,
 };
 
 //------------------------------------------------------------------------------

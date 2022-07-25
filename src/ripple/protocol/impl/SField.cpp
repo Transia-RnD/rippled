@@ -349,21 +349,22 @@ CONSTRUCT_UNTYPED_SFIELD(sfHookExecution,       "HookExecution",        OBJECT, 
 CONSTRUCT_UNTYPED_SFIELD(sfHookDefinition,      "HookDefinition",       OBJECT,    22);
 CONSTRUCT_UNTYPED_SFIELD(sfHookParameter,       "HookParameter",        OBJECT,    23);
 CONSTRUCT_UNTYPED_SFIELD(sfHookGrant,           "HookGrant",            OBJECT,    24);
-CONSTRUCT_UNTYPED_SFIELD(sfXChainProofSig,      "XChainProofSig",       OBJECT,    25);
-CONSTRUCT_UNTYPED_SFIELD(sfXChainAttestationSigs,
-                                                "XChainAttestationSigs",OBJECT,    26);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimProofSig, "XChainClaimProofSig",  OBJECT,    25);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountProofSig,
+                                                "XChainCreateAccountProofSig",
+                                                                        OBJECT,    26);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainAttestationBatchElement,
                                                  "XChainAttestationBatchElement",
                                                                         OBJECT,    27);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimAttestationBatchElement,
                                                  "XChainClaimAttestationBatchElement",
-                                                                        OBJECT,     28);
+                                                                        OBJECT,    28);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountAttestationBatchElement,
                                                  "XChainCreateAccountAttestationBatchElement",
-                                                                        OBJECT,     29);
+                                                                        OBJECT,    29);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainAttestationBatchInner,
                                                  "XChainAttestationBatchInner",
-                                                                        OBJECT,     30);
+                                                                        OBJECT,    30);
 
 // array of objects
 //                                                                            ARRAY/1 is reserved for end of array
@@ -391,7 +392,12 @@ CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimAttestationBatch,
 CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountAttestationBatch,
                                                  "XChainCreateAccountAttestationBatch",
                                                                         ARRAY,     23);
-CONSTRUCT_UNTYPED_SFIELD(sfXChainAttestations,   "XChainAttestations",  ARRAY,     24);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimAttestations,
+                                                 "XChainClaimAttestations",
+                                                                        ARRAY,     24);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountAttestations,
+                                                 "XChainCreateAccountAttestations",
+                                                                        ARRAY,     25);
 
 // clang-format on
 

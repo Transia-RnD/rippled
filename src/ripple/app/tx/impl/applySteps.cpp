@@ -40,7 +40,7 @@
 #include <ripple/app/tx/impl/SetRegularKey.h>
 #include <ripple/app/tx/impl/SetSignerList.h>
 #include <ripple/app/tx/impl/SetTrust.h>
-#include <ripple/app/tx/impl/Sidechain.h>
+#include <ripple/app/tx/impl/XChainBridge.h>
 #include "ripple/protocol/TxFormats.h"
 
 namespace ripple {
@@ -160,9 +160,9 @@ invoke_preflight(PreflightContext const& ctx)
         case ttXCHAIN_ADD_ATTESTATION:
             return invoke_preflight_helper<XChainAddAttestation>(ctx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
-            return invoke_preflight_helper<SidechainXChainCreateAccount>(ctx);
+            return invoke_preflight_helper<XChainCreateAccount>(ctx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
-            return invoke_preflight_helper<SidechainXChainClaimAccount>(ctx);
+            return invoke_preflight_helper<XChainClaimAccount>(ctx);
         default:
             assert(false);
             return {temUNKNOWN, TxConsequences{temUNKNOWN}};
@@ -275,9 +275,9 @@ invoke_preclaim(PreclaimContext const& ctx)
         case ttXCHAIN_ADD_ATTESTATION:
             return invoke_preclaim<XChainAddAttestation>(ctx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
-            return invoke_preclaim<SidechainXChainCreateAccount>(ctx);
+            return invoke_preclaim<XChainCreateAccount>(ctx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
-            return invoke_preclaim<SidechainXChainClaimAccount>(ctx);
+            return invoke_preclaim<XChainClaimAccount>(ctx);
         default:
             assert(false);
             return temUNKNOWN;
@@ -352,9 +352,9 @@ invoke_calculateBaseFee(ReadView const& view, STTx const& tx)
         case ttXCHAIN_ADD_ATTESTATION:
             return XChainAddAttestation::calculateBaseFee(view, tx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
-            return SidechainXChainCreateAccount::calculateBaseFee(view, tx);
+            return XChainCreateAccount::calculateBaseFee(view, tx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
-            return SidechainXChainClaimAccount::calculateBaseFee(view, tx);
+            return XChainClaimAccount::calculateBaseFee(view, tx);
         default:
             assert(false);
             return XRPAmount{0};
@@ -528,11 +528,11 @@ invoke_apply(ApplyContext& ctx)
             return p();
         }
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE: {
-            SidechainXChainCreateAccount p(ctx);
+            XChainCreateAccount p(ctx);
             return p();
         }
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM: {
-            SidechainXChainClaimAccount p(ctx);
+            XChainClaimAccount p(ctx);
             return p();
         }
         default:

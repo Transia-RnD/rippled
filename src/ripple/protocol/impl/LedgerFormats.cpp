@@ -292,8 +292,21 @@ LedgerFormats::LedgerFormats()
             {sfXChainBridge,         soeREQUIRED},
             {sfXChainClaimID,        soeREQUIRED},
             {sfOtherChainAccount,    soeREQUIRED},
-            {sfXChainAttestations,   soeREQUIRED},
+            {sfXChainClaimAttestations,   soeREQUIRED},
             {sfSignatureReward,      soeREQUIRED},
+            {sfOwnerNode,            soeREQUIRED},
+            {sfPreviousTxnID,        soeREQUIRED},
+            {sfPreviousTxnLgrSeq,    soeREQUIRED}
+        },
+        commonFields);
+
+    add(jss::XChainCreateAccountClaimID,
+        ltXCHAIN_CREATE_ACCOUNT_CLAIM_ID,
+        {
+            {sfAccount,              soeREQUIRED},
+            {sfXChainBridge,         soeREQUIRED},
+            {sfXChainAccountCreateCount, soeREQUIRED},
+            {sfXChainCreateAccountAttestations,   soeREQUIRED},
             {sfOwnerNode,            soeREQUIRED},
             {sfPreviousTxnID,        soeREQUIRED},
             {sfPreviousTxnLgrSeq,    soeREQUIRED}

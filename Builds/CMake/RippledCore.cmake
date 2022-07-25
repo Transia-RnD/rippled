@@ -188,6 +188,7 @@ install (
     src/ripple/json/Object.h
     src/ripple/json/Output.h
     src/ripple/json/Writer.h
+    src/ripple/json/json_get_or_throw.h
     src/ripple/json/json_forwards.h
     src/ripple/json/json_reader.h
     src/ripple/json/json_value.h
@@ -452,7 +453,7 @@ target_sources (rippled PRIVATE
   src/ripple/app/tx/impl/SetRegularKey.cpp
   src/ripple/app/tx/impl/SetSignerList.cpp
   src/ripple/app/tx/impl/SetTrust.cpp
-  src/ripple/app/tx/impl/Sidechain.cpp
+  src/ripple/app/tx/impl/XChainBridge.cpp
   src/ripple/app/tx/impl/SignerEntries.cpp
   src/ripple/app/tx/impl/Taker.cpp
   src/ripple/app/tx/impl/Transactor.cpp
@@ -727,7 +728,7 @@ if (tests)
     src/test/app/RCLValidations_test.cpp
     src/test/app/Regression_test.cpp
     src/test/app/SHAMapStore_test.cpp
-    src/test/app/Sidechain_test.cpp
+    src/test/app/XChainBridge_test.cpp
     src/test/app/SetAuth_test.cpp
     src/test/app/SetRegularKey_test.cpp
     src/test/app/SetTrust_test.cpp
@@ -865,7 +866,7 @@ if (tests)
     src/test/jtx/impl/regkey.cpp
     src/test/jtx/impl/sendmax.cpp
     src/test/jtx/impl/seq.cpp
-    src/test/jtx/impl/sidechain.cpp
+    src/test/jtx/impl/xchain_bridge.cpp
     src/test/jtx/impl/sig.cpp
     src/test/jtx/impl/tag.cpp
     src/test/jtx/impl/ticket.cpp

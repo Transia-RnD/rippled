@@ -20,6 +20,7 @@
 #include <ripple/protocol/STXChainAttestationBatch.h>
 
 #include <ripple/basics/StringUtilities.h>
+#include <ripple/json/json_get_or_throw.h>
 #include <ripple/protocol/Indexes.h>
 #include <ripple/protocol/PublicKey.h>
 #include <ripple/protocol/SField.h>
@@ -30,174 +31,9 @@
 #include <ripple/protocol/Serializer.h>
 #include <ripple/protocol/jss.h>
 
-#include <boost/lexical_cast.hpp>
-
 #include <algorithm>
 
 namespace ripple {
-
-namespace {
-// TODO: Add these to json_value.h?
-struct JsonMissingKeyError : std::exception
-{
-    char const* const key;
-    mutable std::string msg;
-    JsonMissingKeyError(Json::StaticString const& k) : key{k.c_str()}
-    {
-    }
-    const char*
-    what() const noexcept override
-    {
-        if (msg.empty())
-        {
-            msg = std::string("Missing json key: ") + key;
-        }
-        return msg.c_str();
-    }
-};
-
-struct JsonTypeMismatchError : std::exception
-{
-    char const* const key;
-    std::string const expectedType;
-    mutable std::string msg;
-    JsonTypeMismatchError(Json::StaticString const& k, std::string et)
-        : key{k.c_str()}, expectedType{std::move(et)}
-    {
-    }
-    const char*
-    what() const noexcept override
-    {
-        if (msg.empty())
-        {
-            msg = std::string("Type mismatch on json key: ") + key +
-                "; expected type: " + expectedType;
-        }
-        return msg.c_str();
-    }
-};
-
-template <class T>
-T
-getOrThrow(Json::Value const& v, SField const& field)
-{
-    static_assert(sizeof(T) == -1, "This function must be specialized");
-}
-
-template <>
-std::string
-getOrThrow(Json::Value const& v, SField const& field)
-{
-    Json::StaticString const& key = field.getJsonName();
-    if (!v.isMember(key))
-        Throw<JsonMissingKeyError>(key);
-
-    Json::Value const& inner = v[key];
-    if (!inner.isString())
-        Throw<JsonTypeMismatchError>(key, "string");
-    return inner.asString();
-}
-
-// Note, this allows integer numeric fields to act as bools
-template <>
-bool
-getOrThrow(Json::Value const& v, SField const& field)
-{
-    Json::StaticString const& key = field.getJsonName();
-    if (!v.isMember(key))
-        Throw<JsonMissingKeyError>(key);
-    Json::Value const& inner = v[key];
-    if (inner.isBool())
-        return inner.asBool();
-    if (!inner.isIntegral())
-        Throw<JsonTypeMismatchError>(key, "bool");
-
-    return inner.asInt() != 0;
-}
-
-template <>
-std::uint64_t
-getOrThrow(Json::Value const& v, SField const& field)
-{
-    Json::StaticString const& key = field.getJsonName();
-    if (!v.isMember(key))
-        Throw<JsonMissingKeyError>(key);
-    Json::Value const& inner = v[key];
-    if (inner.isUInt())
-        return inner.asUInt();
-    if (inner.isInt())
-    {
-        auto const r = inner.asInt();
-        if (r < 0)
-            Throw<JsonTypeMismatchError>(key, "uint64");
-        return r;
-    }
-    if (inner.isString())
-    {
-        auto const s = inner.asString();
-        try
-        {
-            return boost::lexical_cast<std::uint64_t>(s);
-        }
-        catch (...)
-        {
-        }
-    }
-    Throw<JsonTypeMismatchError>(key, "uint64");
-}
-
-template <>
-PublicKey
-getOrThrow(Json::Value const& v, SField const& field)
-{
-    std::string const b58 = getOrThrow<std::string>(v, field);
-    if (auto pubKeyBlob = strUnHex(b58); publicKeyType(makeSlice(*pubKeyBlob)))
-    {
-        return PublicKey{makeSlice(*pubKeyBlob)};
-    }
-    for (auto const tokenType :
-         {TokenType::NodePublic, TokenType::AccountPublic})
-    {
-        if (auto const pk = parseBase58<PublicKey>(tokenType, b58))
-            return *pk;
-    }
-    Throw<JsonTypeMismatchError>(field.getJsonName(), "PublicKey");
-}
-
-template <>
-AccountID
-getOrThrow(Json::Value const& v, SField const& field)
-{
-    std::string const b58 = getOrThrow<std::string>(v, field);
-    if (auto const r = parseBase58<AccountID>(b58))
-        return *r;
-    Throw<JsonTypeMismatchError>(field.getJsonName(), "AccountID");
-}
-
-template <>
-Buffer
-getOrThrow(Json::Value const& v, SField const& field)
-{
-    std::string const hex = getOrThrow<std::string>(v, field);
-    if (auto const r = strUnHex(hex))
-    {
-        // TODO: mismatch between a buffer and a blob
-        return Buffer{r->data(), r->size()};
-    }
-    Throw<JsonTypeMismatchError>(field.getJsonName(), "Buffer");
-}
-
-template <>
-STAmount
-getOrThrow(Json::Value const& v, SField const& field)
-{
-    Json::StaticString const& key = field.getJsonName();
-    if (!v.isMember(key))
-        Throw<JsonMissingKeyError>(key);
-    Json::Value const& inner = v[key];
-    return amountFromJson(field, inner);
-}
-}  // namespace
 
 namespace AttestationBatch {
 
@@ -256,12 +92,12 @@ AttestationBase::AttestationBase(STObject const& o)
 }
 
 AttestationBase::AttestationBase(Json::Value const& v)
-    : publicKey{getOrThrow<PublicKey>(v, sfPublicKey)}
-    , signature{getOrThrow<Buffer>(v, sfSignature)}
-    , sendingAccount{getOrThrow<AccountID>(v, sfAccount)}
-    , sendingAmount{getOrThrow<STAmount>(v, sfAmount)}
-    , rewardAccount{getOrThrow<AccountID>(v, sfAttestationRewardAccount)}
-    , wasLockingChainSend{getOrThrow<bool>(v, sfWasLockingChainSend)}
+    : publicKey{Json::getOrThrow<PublicKey>(v, sfPublicKey)}
+    , signature{Json::getOrThrow<Buffer>(v, sfSignature)}
+    , sendingAccount{Json::getOrThrow<AccountID>(v, sfAccount)}
+    , sendingAmount{Json::getOrThrow<STAmount>(v, sfAmount)}
+    , rewardAccount{Json::getOrThrow<AccountID>(v, sfAttestationRewardAccount)}
+    , wasLockingChainSend{Json::getOrThrow<bool>(v, sfWasLockingChainSend)}
 {
 }
 
@@ -297,10 +133,11 @@ AttestationClaim::AttestationClaim(STObject const& o)
 }
 
 AttestationClaim::AttestationClaim(Json::Value const& v)
-    : AttestationBase{v}, claimID{getOrThrow<std::uint64_t>(v, sfXChainClaimID)}
+    : AttestationBase{v}
+    , claimID{Json::getOrThrow<std::uint64_t>(v, sfXChainClaimID)}
 {
     if (v.isMember(sfDestination.getJsonName()))
-        dst = getOrThrow<AccountID>(v, sfDestination);
+        dst = Json::getOrThrow<AccountID>(v, sfDestination);
 }
 
 STObject
@@ -376,9 +213,28 @@ AttestationCreateAccount::AttestationCreateAccount(STObject const& o)
 
 AttestationCreateAccount::AttestationCreateAccount(Json::Value const& v)
     : AttestationBase{v}
-    , createCount{getOrThrow<std::uint64_t>(v, sfXChainAccountCreateCount)}
-    , toCreate{getOrThrow<AccountID>(v, sfDestination)}
-    , rewardAmount{getOrThrow<STAmount>(v, sfSignatureReward)}
+    , createCount{Json::getOrThrow<std::uint64_t>(
+          v,
+          sfXChainAccountCreateCount)}
+    , toCreate{Json::getOrThrow<AccountID>(v, sfDestination)}
+    , rewardAmount{Json::getOrThrow<STAmount>(v, sfSignatureReward)}
+{
+}
+
+AttestationCreateAccount::AttestationCreateAccount(
+    PublicKey const& publicKey_,
+    Buffer signature_,
+    AccountID const& sendingAccount_,
+    STAmount const& sendingAmount_,
+    STAmount const& rewardAmount_,
+    AccountID const& rewardAccount_,
+    bool wasLockingChainSend_,
+    std::uint64_t createCount_,
+    AccountID const& toCreate_)
+    : AttestationBase{publicKey_, std::move(signature_), sendingAccount_, sendingAmount_, rewardAccount_, wasLockingChainSend_}
+    , createCount{createCount_}
+    , toCreate{toCreate_}
+    , rewardAmount{rewardAmount_}
 {
 }
 
@@ -396,22 +252,44 @@ AttestationCreateAccount::toSTObject() const
 }
 
 std::vector<std::uint8_t>
-AttestationCreateAccount::message(STXChainBridge const& bridge) const
+AttestationCreateAccount::message(
+    STXChainBridge const& bridge,
+    AccountID const& sendingAccount,
+    STAmount const& sendingAmount,
+    STAmount const& rewardAmount,
+    AccountID const& rewardAccount,
+    bool wasLockingChainSend,
+    std::uint64_t createCount,
+    AccountID const& dst)
 {
     Serializer s;
 
     bridge.add(s);
     s.addBitString(sendingAccount);
     sendingAmount.add(s);
+    rewardAmount.add(s);
     s.addBitString(rewardAccount);
     std::uint8_t const lc = wasLockingChainSend ? 1 : 0;
     s.add8(lc);
 
     s.add64(createCount);
-    s.addBitString(toCreate);
-    rewardAmount.add(s);
+    s.addBitString(dst);
 
     return std::move(s.modData());
+}
+
+std::vector<std::uint8_t>
+AttestationCreateAccount::message(STXChainBridge const& bridge) const
+{
+    return AttestationCreateAccount::message(
+        bridge,
+        sendingAccount,
+        sendingAmount,
+        rewardAmount,
+        rewardAccount,
+        wasLockingChainSend,
+        createCount,
+        toCreate);
 }
 
 bool
@@ -601,6 +479,7 @@ STXChainAttestationBatch::add(Serializer& s) const
         for (auto const& claim : claims_)
             claimAtts.push_back(claim.toSTObject());
         claimAtts.add(s);
+        s.addFieldID(STI_ARRAY, 1);
     }
     {
         STArray createAtts{
@@ -608,6 +487,7 @@ STXChainAttestationBatch::add(Serializer& s) const
         for (auto const& create : creates_)
             createAtts.push_back(create.toSTObject());
         createAtts.add(s);
+        s.addFieldID(STI_ARRAY, 1);
     }
 }
 

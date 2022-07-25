@@ -116,11 +116,17 @@ enum LedgerEntryType : std::uint16_t
      */
     ltAMENDMENTS = 0x0066,
 
-    /** A sequence number for a cross chain transaction.
+    /** A claim id for a cross chain transaction.
 
-        \sa keylet::xchainSeqNum
+        \sa keylet::xChainClaimID
     */
     ltXCHAIN_CLAIM_ID = 0x0071,
+
+    /** A claim id for a cross chain create account transaction.
+
+        \sa keylet::xChainCreateAccountClaimID
+    */
+    ltXCHAIN_CREATE_ACCOUNT_CLAIM_ID = 0x0074,
 
     /** The ledger object which lists the network's fee settings.
 

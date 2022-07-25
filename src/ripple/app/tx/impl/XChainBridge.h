@@ -17,11 +17,12 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_TX_SIDECHAIN_H_INCLUDED
-#define RIPPLE_TX_SIDECHAIN_H_INCLUDED
+#ifndef RIPPLE_TX_XCHAINBRIDGE_H_INCLUDED
+#define RIPPLE_TX_XCHAINBRIDGE_H_INCLUDED
 
 #include <ripple/app/tx/impl/Transactor.h>
-#include "ripple/protocol/SField.h"
+#include <ripple/protocol/SField.h>
+#include "ripple/protocol/STXChainAttestationBatch.h"
 
 namespace ripple {
 
@@ -136,20 +137,32 @@ private:
     // signersList is a map from a signer's account id to its weight
     TER
     applyClaim(
-        AttestationBatch::AttestationClaim const& claim,
+        AttestationBatch::AttestationClaim const& att,
         STXChainBridge const& bridgeSpec,
+        std::unordered_map<AccountID, std::uint32_t> const& signersList,
+        std::uint32_t quorum);
+
+    // Apply an attestation for an account create
+    // signersList is a map from a signer's account id to its weight
+    TER
+    applyCreateAccountAtt(
+        AttestationBatch::AttestationCreateAccount const& att,
+        AccountID const& doorAccount,
+        Keylet const& doorK,
+        STXChainBridge const& bridgeSpec,
+        Keylet const& bridgeK,
         std::unordered_map<AccountID, std::uint32_t> const& signersList,
         std::uint32_t quorum);
 };
 
 //------------------------------------------------------------------------------
 
-class SidechainXChainCreateAccount : public Transactor
+class XChainCreateAccount : public Transactor
 {
 public:
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-    explicit SidechainXChainCreateAccount(ApplyContext& ctx) : Transactor(ctx)
+    explicit XChainCreateAccount(ApplyContext& ctx) : Transactor(ctx)
     {
     }
 
@@ -165,12 +178,12 @@ public:
 
 //------------------------------------------------------------------------------
 
-class SidechainXChainClaimAccount : public Transactor
+class XChainClaimAccount : public Transactor
 {
 public:
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-    explicit SidechainXChainClaimAccount(ApplyContext& ctx) : Transactor(ctx)
+    explicit XChainClaimAccount(ApplyContext& ctx) : Transactor(ctx)
     {
     }
 

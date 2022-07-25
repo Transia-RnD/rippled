@@ -17,8 +17,8 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_PROTOCOL_STSIDECHAIN_H_INCLUDED
-#define RIPPLE_PROTOCOL_STSIDECHAIN_H_INCLUDED
+#ifndef RIPPLE_PROTOCOL_STXCHAINBRIDGE_H_INCLUDED
+#define RIPPLE_PROTOCOL_STXCHAINBRIDGE_H_INCLUDED
 
 #include <ripple/protocol/STAccount.h>
 #include <ripple/protocol/STBase.h>

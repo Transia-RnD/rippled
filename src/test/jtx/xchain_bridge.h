@@ -17,11 +17,11 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_TEST_JTX_SIDECHAIN_H_INCLUDED
-#define RIPPLE_TEST_JTX_SIDECHAIN_H_INCLUDED
+#ifndef RIPPLE_TEST_JTX_XCHAINBRIDGE_H_INCLUDED
+#define RIPPLE_TEST_JTX_XCHAINBRIDGE_H_INCLUDED
 
 #include <ripple/json/json_value.h>
-#include "ripple/protocol/SField.h"
+#include <ripple/protocol/SField.h>
 #include <test/jtx/Account.h>
 #include <test/jtx/amount.h>
 #include <test/jtx/multisign.h>
@@ -40,28 +40,30 @@ bridge(
 Json::Value
 bridge_create(
     Account const& acc,
-    Json::Value const& sidechain,
+    Json::Value const& bridge,
     STAmount const& reward,
     std::optional<STAmount> const& minAccountCreate = std::nullopt);
 
 Json::Value
 xchain_create_claim_id(
     Account const& acc,
-    Json::Value const& sidechain,
+    Json::Value const& bridge,
     STAmount const& reward,
     Account const& otherChainAccount);
 
 Json::Value
 xchain_commit(
     Account const& acc,
-    Json::Value const& sidechain,
+    Json::Value const& bridge,
     std::uint32_t xchainSeq,
     AnyAmount const& amt);
 
 Json::Value
 xchain_claim(
     Account const& acc,
-    Json::Value const& claimProof,
+    Json::Value const& bridge,
+    std::uint32_t claimID,
+    AnyAmount const& amt,
     Account const& dst);
 
 Json::Value
@@ -70,7 +72,7 @@ xchain_add_attestation_batch(Account const& acc, Json::Value const& batch);
 Json::Value
 sidechain_xchain_account_create(
     Account const& acc,
-    Json::Value const& sidechain,
+    Json::Value const& bridge,
     Account const& dst,
     AnyAmount const& amt,
     AnyAmount const& xChainFee);
@@ -78,7 +80,7 @@ sidechain_xchain_account_create(
 Json::Value
 sidechain_xchain_account_claim(
     Account const& acc,
-    Json::Value const& sidechain,
+    Json::Value const& bridge,
     Account const& dst,
     AnyAmount const& amt);
 

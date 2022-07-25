@@ -147,7 +147,19 @@ struct AttestationCreateAccount : AttestationBase
     STAmount rewardAmount;
 
     explicit AttestationCreateAccount(STObject const& o);
+
     explicit AttestationCreateAccount(Json::Value const& v);
+
+    explicit AttestationCreateAccount(
+        PublicKey const& publicKey_,
+        Buffer signature_,
+        AccountID const& sendingAccount_,
+        STAmount const& sendingAmount_,
+        STAmount const& rewardAmount_,
+        AccountID const& rewardAccount_,
+        bool wasLockingChainSend_,
+        std::uint64_t createCount_,
+        AccountID const& toCreate_);
 
     STObject
     toSTObject() const;
@@ -161,6 +173,17 @@ struct AttestationCreateAccount : AttestationBase
     operator!=(
         AttestationCreateAccount const& lhs,
         AttestationCreateAccount const& rhs);
+
+    static std::vector<std::uint8_t>
+    message(
+        STXChainBridge const& bridge,
+        AccountID const& sendingAccount,
+        STAmount const& sendingAmount,
+        STAmount const& rewardAmount,
+        AccountID const& rewardAccount,
+        bool wasLockingChainSend,
+        std::uint64_t createCount,
+        AccountID const& dst);
 
 private:
     std::vector<std::uint8_t>

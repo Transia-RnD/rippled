@@ -103,7 +103,7 @@ STXChainClaimProof::add(Serializer& s) const
     STArray sigs{sfXChainProofSigs, signatures_.size()};
     for (auto const& [pk, sig] : signatures_)
     {
-        STObject o{sfXChainProofSig};
+        STObject o{sfXChainClaimProofSig};
         o[sfPublicKey] = pk;
         o[sfSignature] = sig;
         sigs.push_back(o);

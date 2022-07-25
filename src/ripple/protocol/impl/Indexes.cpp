@@ -69,6 +69,7 @@ enum class LedgerNameSpace : std::uint16_t {
     NFTOKEN_SELL_OFFERS = 'i',
     SIDECHAIN = 'H',
     XCHAIN_SEQ = 'Q',
+    XCHAIN_CREATE_ACCOUNT_SEQ = 'K',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
@@ -396,6 +397,20 @@ xChainClaimID(STXChainBridge const& sidechain, std::uint64_t seq)
         ltXCHAIN_CLAIM_ID,
         indexHash(
             LedgerNameSpace::XCHAIN_SEQ,
+            sidechain.lockingChainDoor(),
+            sidechain.lockingChainIssue(),
+            sidechain.issuingChainDoor(),
+            sidechain.issuingChainIssue(),
+            seq)};
+}
+
+Keylet
+xChainCreateAccountClaimID(STXChainBridge const& sidechain, std::uint64_t seq)
+{
+    return {
+        ltXCHAIN_CREATE_ACCOUNT_CLAIM_ID,
+        indexHash(
+            LedgerNameSpace::XCHAIN_CREATE_ACCOUNT_SEQ,
             sidechain.lockingChainDoor(),
             sidechain.lockingChainIssue(),
             sidechain.issuingChainDoor(),

@@ -21,13 +21,15 @@
 #define RIPPLE_PROTOCOL_STXATTESTATIONS_H_INCLUDED
 
 #include <ripple/basics/Buffer.h>
+#include <ripple/basics/Expected.h>
 #include <ripple/protocol/AccountID.h>
 #include <ripple/protocol/Issue.h>
 #include <ripple/protocol/PublicKey.h>
 #include <ripple/protocol/SField.h>
 #include <ripple/protocol/STXChainBridge.h>
+#include <ripple/protocol/TER.h>
 
-#include "ripple/protocol/STObject.h"
+#include "ripple/protocol/STXChainAttestationBatch.h"
 #include <cstddef>
 #include <vector>
 
@@ -35,66 +37,164 @@ namespace ripple {
 
 namespace AttestationBatch {
 struct AttestationClaim;
-}
+struct AttestationCreateAccount;
+}  // namespace AttestationBatch
+
+// Result when checking when two attestation match.
+enum class AttestationMatch {
+    // One of the fields doesn't match, and it isn't the dst field
+    non_dst_mismatch,
+    // all of the fields match, except the dst field
+    match_except_dst,
+    // all of the fields match
+    match
+};
+
+struct XChainClaimAttestation
+{
+    using TBatchAttestation = AttestationBatch::AttestationClaim;
+    static SField const& ArrayFieldName;
+
+    AccountID keyAccount;
+    STAmount amount;
+    AccountID rewardAccount;
+    bool wasLockingChainSend;
+    std::optional<AccountID> dst;
+
+    struct MatchFields
+    {
+        STAmount amount;
+        bool wasLockingChainSend;
+        std::optional<AccountID> dst;
+        MatchFields(TBatchAttestation const& att);
+        MatchFields(
+            STAmount const& a,
+            bool b,
+            std::optional<AccountID> const& d)
+            : amount{a}, wasLockingChainSend{b}, dst{d}
+        {
+        }
+    };
+
+    explicit XChainClaimAttestation(
+        AccountID const& keyAccount_,
+        STAmount const& amount_,
+        AccountID const& rewardAccount_,
+        bool wasLockingChainSend_,
+        std::optional<AccountID> const& dst);
+
+    explicit XChainClaimAttestation(
+        STAccount const& keyAccount_,
+        STAmount const& amount_,
+        STAccount const& rewardAccount_,
+        bool wasLockingChainSend_,
+        std::optional<STAccount> const& dst);
+
+    explicit XChainClaimAttestation(TBatchAttestation const& claimAtt);
+
+    explicit XChainClaimAttestation(STObject const& o);
+
+    explicit XChainClaimAttestation(Json::Value const& v);
+
+    AttestationMatch
+    match(MatchFields const& rhs) const;
+
+    STObject
+    toSTObject() const;
+
+    friend bool
+    operator==(
+        XChainClaimAttestation const& lhs,
+        XChainClaimAttestation const& rhs);
+    friend bool
+    operator!=(
+        XChainClaimAttestation const& lhs,
+        XChainClaimAttestation const& rhs);
+};
+
+struct XChainCreateAccountAttestation
+{
+    using TBatchAttestation = AttestationBatch::AttestationCreateAccount;
+    static SField const& ArrayFieldName;
+
+    AccountID keyAccount;
+    // TODO: Remove createCount: it's on the ledger object
+    std::uint64_t createCount;
+    STAmount amount;
+    STAmount rewardAmount;
+    AccountID rewardAccount;
+    bool wasLockingChainSend;
+    AccountID dst;
+
+    struct MatchFields
+    {
+        std::uint64_t createCount;
+        STAmount amount;
+        STAmount rewardAmount;
+        bool wasLockingChainSend;
+        AccountID dst;
+
+        MatchFields(TBatchAttestation const& att);
+    };
+
+    explicit XChainCreateAccountAttestation(
+        AccountID const& keyAccount_,
+        std::uint64_t createCount_,
+        STAmount const& amount_,
+        STAmount const& rewardAmount_,
+        AccountID const& rewardAccount_,
+        bool wasLockingChainSend_,
+        AccountID const& dst_);
+
+    explicit XChainCreateAccountAttestation(TBatchAttestation const& claimAtt);
+
+    explicit XChainCreateAccountAttestation(STObject const& o);
+
+    explicit XChainCreateAccountAttestation(Json::Value const& v);
+
+    STObject
+    toSTObject() const;
+
+    AttestationMatch
+    match(MatchFields const& rhs) const;
+
+    friend bool
+    operator==(
+        XChainCreateAccountAttestation const& lhs,
+        XChainCreateAccountAttestation const& rhs);
+    friend bool
+    operator!=(
+        XChainCreateAccountAttestation const& lhs,
+        XChainCreateAccountAttestation const& rhs);
+};
 
 // Attestations from witness servers for a particular claimid and bridge.
 // Only one attestation per signature is allowed. If more than one is added, the
 // attestation with the larger amount is kept.
-class XChainAttestations final
+template <class TAttestation>
+class XChainAttestationsBase
 {
 public:
-    struct Attestation
-    {
-        AccountID keyAccount;
-        STAmount amount;
-        AccountID rewardAccount;
-        bool wasLockingChainSend;
-        std::optional<AccountID> dst;
-
-        explicit Attestation(
-            AccountID const& keyAccount_,
-            STAmount const& amount_,
-            AccountID const& rewardAccount_,
-            bool wasLockingChainSend_,
-            std::optional<AccountID> const& dst);
-
-        explicit Attestation(
-            STAccount const& keyAccount_,
-            STAmount const& amount_,
-            STAccount const& rewardAccount_,
-            bool wasLockingChainSend_,
-            std::optional<STAccount> const& dst);
-
-        explicit Attestation(
-            AttestationBatch::AttestationClaim const& claimAtt);
-
-        explicit Attestation(STObject const& o);
-
-        STObject
-        toSTObject() const;
-
-        friend bool
-        operator==(Attestation const& lhs, Attestation const& rhs);
-        friend bool
-        operator!=(Attestation const& lhs, Attestation const& rhs);
-    };
-
-    using AttCollection = std::vector<Attestation>;
+    using AttCollection = std::vector<TAttestation>;
 
 private:
     AttCollection attestations_;
 
+protected:
+    // Prevent slicing to the base class
+    ~XChainAttestationsBase() = default;
+
 public:
-    XChainAttestations() = default;
-    XChainAttestations(XChainAttestations const& rhs) = default;
-    XChainAttestations&
-    operator=(XChainAttestations const& rhs) = default;
+    XChainAttestationsBase() = default;
+    XChainAttestationsBase(XChainAttestationsBase const& rhs) = default;
+    XChainAttestationsBase&
+    operator=(XChainAttestationsBase const& rhs) = default;
 
-    XChainAttestations(AttCollection&& sigs);
+    XChainAttestationsBase(AttCollection&& sigs);
 
-    explicit XChainAttestations(Json::Value const& v);
+    explicit XChainAttestationsBase(Json::Value const& v);
 
-    explicit XChainAttestations(STArray const& arr);
+    explicit XChainAttestationsBase(STArray const& arr);
 
     STArray
     toSTArray() const;
@@ -132,14 +232,14 @@ public:
      */
     std::optional<std::vector<AccountID>>
     onNewAttestation(
-        AttestationBatch::AttestationClaim const& claimAtt,
+        typename TAttestation::TBatchAttestation const& claimAtt,
         std::uint32_t quorum,
         std::unordered_map<AccountID, std::uint32_t> const& signersList);
 
-    AttCollection::const_iterator
+    typename AttCollection::const_iterator
     begin() const;
 
-    AttCollection::const_iterator
+    typename AttCollection::const_iterator
     end() const;
 
     std::size_t
@@ -155,42 +255,96 @@ public:
     bool
     verify() const;
 
-private:
+protected:
+    // If there is a quorum of attestations for the given parameters, then
+    // return the reward accounts, otherwise return TER for the error.
+    // Also removes attestations that are no longer part of the signers list.
+    //
+    // Note: the dst parameter is what the attestations are attesting to, which
+    // is not always used (it is used when automatically triggering a transfer
+    // from an `addAttestation` transaction, it is not used in a `claim`
+    // transaction). If the `checkDst` parameter is `check`, the attestations
+    // must attest to this destination, if it is `ignore` then the `dst` of the
+    // attestations are not checked (as for a `claim` transaction)
+
+    enum class CheckDst { check, ignore };
+    Expected<std::vector<AccountID>, TER>
+    claimHelper(
+        typename TAttestation::MatchFields const& toMatch,
+        CheckDst checkDst,
+        std::uint32_t quorum,
+        std::unordered_map<AccountID, std::uint32_t> const& signersList);
+
     // Return the message that was expected to be signed by the attesters given
     // the data to be proved.
     std::vector<std::uint8_t>
     message() const;
 };
 
+template <class TAttestation>
 inline bool
-operator==(XChainAttestations const& lhs, XChainAttestations const& rhs)
+operator==(
+    XChainAttestationsBase<TAttestation> const& lhs,
+    XChainAttestationsBase<TAttestation> const& rhs)
 {
     return lhs.attestations() == rhs.attestations();
 }
 
+template <class TAttestation>
 inline bool
-operator!=(XChainAttestations const& lhs, XChainAttestations const& rhs)
+operator!=(
+    XChainAttestationsBase<TAttestation> const& lhs,
+    XChainAttestationsBase<TAttestation> const& rhs)
 {
     return !(lhs == rhs);
 }
 
-inline XChainAttestations::AttCollection const&
-XChainAttestations::attestations() const
+template <class TAttestation>
+inline typename XChainAttestationsBase<TAttestation>::AttCollection const&
+XChainAttestationsBase<TAttestation>::attestations() const
 {
     return attestations_;
 };
 
+template <class TAttestation>
 inline std::size_t
-XChainAttestations::size() const
+XChainAttestationsBase<TAttestation>::size() const
 {
     return attestations_.size();
 }
 
+template <class TAttestation>
 inline bool
-XChainAttestations::empty() const
+XChainAttestationsBase<TAttestation>::empty() const
 {
     return attestations_.empty();
 }
+
+class XChainClaimAttestations final
+    : public XChainAttestationsBase<XChainClaimAttestation>
+{
+    using TBase = XChainAttestationsBase<XChainClaimAttestation>;
+    using TBase::TBase;
+
+public:
+    // Check if there is a quorurm of attestations for the given amount and
+    // chain. If so return the reward accounts, if not return the tec code (most
+    // likely tecXCHAIN_CLAIM_NO_QUORUM)
+    Expected<std::vector<AccountID>, TER>
+    onClaim(
+        STAmount const& sendingAmount,
+        bool wasLockingChainSend,
+        std::uint32_t quorum,
+        std::unordered_map<AccountID, std::uint32_t> const& signersList);
+};
+
+class XChainCreateAccountAttestations final
+    : public XChainAttestationsBase<XChainCreateAccountAttestation>
+{
+    using TBase = XChainAttestationsBase<XChainCreateAccountAttestation>;
+    using TBase::TBase;
+};
+
 }  // namespace ripple
 
 #endif  // STXCHAINATTESTATIONS_H_

@@ -55,6 +55,7 @@ JSS(CheckCash);                     // transaction type.
 JSS(CheckCreate);                   // transaction type.
 JSS(ClearFlag);                     // field.
 JSS(XChainClaimID);                 // ledger type.
+JSS(XChainCreateAccountClaimID);    // ledger type.
 JSS(DeliverMin);                    // in: TransactionSign
 JSS(DepositPreauth);                // transaction and ledger type.
 JSS(Destination);                   // in: TransactionSign; field.
