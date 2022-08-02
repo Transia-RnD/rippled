@@ -49,6 +49,24 @@ public:
     doApply() override;
 };
 
+class BridgeModify : public Transactor
+{
+public:
+    static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
+
+    explicit BridgeModify(ApplyContext& ctx) : Transactor(ctx)
+    {
+    }
+
+    static NotTEC
+    preflight(PreflightContext const& ctx);
+
+    static TER
+    preclaim(PreclaimContext const& ctx);
+
+    TER
+    doApply() override;
+};
 //------------------------------------------------------------------------------
 
 class XChainClaim : public Transactor

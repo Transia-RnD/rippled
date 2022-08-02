@@ -161,6 +161,9 @@ enum TxType : std::uint16_t
     /** This transaction adds attestations to claimid and account claim states*/
     ttXCHAIN_ADD_ATTESTATION = 36,
 
+    /** This transactions modifies a sidechain */
+    ttXCHAIN_MODIFY_BRIDGE = 37,
+
     /** This system-generated transaction type is used to update the status of the various amendments.
 
         For details, see: https://xrpl.org/amendments.html

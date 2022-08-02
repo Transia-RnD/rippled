@@ -340,6 +340,15 @@ TxFormats::TxFormats()
         },
         commonFields);
 
+    add(jss::XChainModifyBridge,
+        ttXCHAIN_MODIFY_BRIDGE,
+        {
+            {sfXChainBridge, soeREQUIRED},
+            {sfSignatureReward, soeOPTIONAL},
+            {sfMinAccountCreateAmount, soeOPTIONAL},
+        },
+        commonFields);
+
     add(jss::XChainCreateClaimID,
         ttXCHAIN_CREATE_CLAIM_ID,
         {

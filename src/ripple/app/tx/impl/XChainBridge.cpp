@@ -387,6 +387,93 @@ BridgeCreate::doApply()
 //------------------------------------------------------------------------------
 
 NotTEC
+BridgeModify::preflight(PreflightContext const& ctx)
+{
+    if (!ctx.rules.enabled(featureXChainBridge))
+        return temDISABLED;
+
+    if (auto const ret = preflight1(ctx); !isTesSuccess(ret))
+        return ret;
+
+    if (ctx.tx.getFlags() & tfUniversalMask)
+        return temINVALID_FLAG;
+
+    auto const account = ctx.tx[sfAccount];
+    auto const reward = ctx.tx[~sfSignatureReward];
+    auto const minAccountCreate = ctx.tx[~sfMinAccountCreateAmount];
+    auto const bridge = ctx.tx[sfXChainBridge];
+
+    if (!reward && !minAccountCreate)
+    {
+        // Must change something
+        return temMALFORMED;
+    }
+
+    if (bridge.lockingChainDoor() != account &&
+        bridge.issuingChainDoor() != account)
+    {
+        return temSIDECHAIN_NONDOOR_OWNER;
+    }
+
+    if (reward && (!isXRP(*reward) || reward->signum() <= 0))
+    {
+        return temXCHAIN_BRIDGE_BAD_REWARD_AMOUNT;
+    }
+
+    if (minAccountCreate &&
+        (!isXRP(*minAccountCreate) || minAccountCreate->signum() < 0))
+    {
+        return temXCHAIN_BRIDGE_BAD_MIN_ACCOUNT_CREATE_AMOUNT;
+    }
+
+    return preflight2(ctx);
+}
+
+TER
+BridgeModify::preclaim(PreclaimContext const& ctx)
+{
+    auto const bridge = ctx.tx[sfXChainBridge];
+
+    if (!ctx.view.read(keylet::bridge(bridge)))
+    {
+        // TODO: custom return code for no sidechain?
+        return tecNO_ENTRY;
+    }
+
+    return tesSUCCESS;
+}
+
+TER
+BridgeModify::doApply()
+{
+    auto const account = ctx_.tx[sfAccount];
+    auto const bridge = ctx_.tx[sfXChainBridge];
+    auto const reward = ctx_.tx[~sfSignatureReward];
+    auto const minAccountCreate = ctx_.tx[~sfMinAccountCreateAmount];
+
+    auto const sleAcc = ctx_.view().peek(keylet::account(account));
+    if (!sleAcc)
+        return tecINTERNAL;
+
+    auto const sleB = ctx_.view().peek(keylet::bridge(bridge));
+    if (!sleB)
+        return tecINTERNAL;
+
+    if (reward)
+        (*sleB)[sfSignatureReward] = *reward;
+    if (minAccountCreate)
+    {
+        // TODO: How do I modify minAccountCreate to clear it? With a flag?
+        (*sleB)[sfMinAccountCreateAmount] = *minAccountCreate;
+    }
+    ctx_.view().update(sleB);
+
+    return tesSUCCESS;
+}
+
+//------------------------------------------------------------------------------
+
+NotTEC
 XChainClaim::preflight(PreflightContext const& ctx)
 {
     if (!ctx.rules.enabled(featureXChainBridge))
