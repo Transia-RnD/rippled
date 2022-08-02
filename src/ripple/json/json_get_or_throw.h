@@ -112,20 +112,14 @@ getOrThrow(Json::Value const& v, ripple::SField const& field)
     if (inner.isString())
     {
         auto const s = inner.asString();
-        try
-        {
-            // parse as hex
-            std::uint64_t val;
+        // parse as hex
+        std::uint64_t val;
 
-            auto [p, ec] =
-                std::from_chars(s.data(), s.data() + s.size(), val, 16);
+        auto [p, ec] = std::from_chars(s.data(), s.data() + s.size(), val, 16);
 
-            if (ec != std::errc() || (p != s.data() + s.size()))
-                Throw<JsonTypeMismatchError>(key, "uint64");
-        }
-        catch (...)
-        {
-        }
+        if (ec != std::errc() || (p != s.data() + s.size()))
+            Throw<JsonTypeMismatchError>(key, "uint64");
+        return val;
     }
     Throw<JsonTypeMismatchError>(key, "uint64");
 }
