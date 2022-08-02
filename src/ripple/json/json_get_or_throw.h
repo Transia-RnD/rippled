@@ -7,8 +7,7 @@
 #include <ripple/json/json_value.h>
 #include <ripple/protocol/SField.h>
 
-#include <boost/lexical_cast.hpp>
-
+#include <charconv>
 #include <exception>
 #include <string>
 
@@ -115,7 +114,14 @@ getOrThrow(Json::Value const& v, ripple::SField const& field)
         auto const s = inner.asString();
         try
         {
-            return boost::lexical_cast<std::uint64_t>(s);
+            // parse as hex
+            std::uint64_t val;
+
+            auto [p, ec] =
+                std::from_chars(s.data(), s.data() + s.size(), val, 16);
+
+            if (ec != std::errc() || (p != s.data() + s.size()))
+                Throw<JsonTypeMismatchError>(key, "uint64");
         }
         catch (...)
         {
