@@ -45,6 +45,13 @@ bridge_create(
     std::optional<STAmount> const& minAccountCreate = std::nullopt);
 
 Json::Value
+bridge_modify(
+    Account const& acc,
+    Json::Value const& bridge,
+    std::optional<STAmount> const& reward,
+    std::optional<STAmount> const& minAccountCreate = std::nullopt);
+
+Json::Value
 xchain_create_claim_id(
     Account const& acc,
     Json::Value const& bridge,

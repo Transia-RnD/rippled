@@ -68,6 +68,29 @@ bridge_create(
 }
 
 Json::Value
+bridge_modify(
+    Account const& acc,
+    Json::Value const& bridge,
+    std::optional<STAmount> const& reward,
+    std::optional<STAmount> const& minAccountCreate)
+{
+    Json::Value jv;
+
+    jv[jss::Account] = acc.human();
+    jv[sfXChainBridge.getJsonName()] = bridge;
+    if (reward)
+        jv[sfSignatureReward.getJsonName()] =
+            reward->getJson(JsonOptions::none);
+    if (minAccountCreate)
+        jv[sfMinAccountCreateAmount.getJsonName()] =
+            minAccountCreate->getJson(JsonOptions::none);
+
+    jv[jss::TransactionType] = jss::XChainModifyBridge;
+    jv[jss::Flags] = tfUniversal;
+    return jv;
+}
+
+Json::Value
 xchain_create_claim_id(
     Account const& acc,
     Json::Value const& bridge,

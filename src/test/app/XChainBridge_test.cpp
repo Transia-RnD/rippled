@@ -178,7 +178,27 @@ struct XChainBridge_test : public beast::unit_test::suite
                 reward,
                 minCreate));
         }
+        {
+            // Simple modify
+            Env env(*this, features);
+            env.fund(XRP(10000), mcDoor);
+            auto const reward = XRP(1);
+            std::optional<STAmount> minCreate;
 
+            env(bridge_create(
+                mcDoor,
+                bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()),
+                reward,
+                minCreate));
+
+            auto const newReward = XRP(2);
+            auto const newMinCreate = XRP(10);
+            env(bridge_modify(
+                mcDoor,
+                bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()),
+                newReward,
+                newMinCreate));
+        }
         {
             // TODO
             // check reserves
