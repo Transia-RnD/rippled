@@ -9,6 +9,7 @@
 
 #include <charconv>
 #include <exception>
+#include <optional>
 #include <string>
 
 namespace Json {
@@ -136,6 +137,20 @@ getOrThrow(Json::Value const& v, ripple::SField const& field)
         return Buffer{r->data(), r->size()};
     }
     Throw<JsonTypeMismatchError>(field.getJsonName(), "Buffer");
+}
+
+template <class T>
+std::optional<T>
+getOptional(Json::Value const& v, ripple::SField const& field)
+{
+    try
+    {
+        return getOrThrow<T>(v, field);
+    }
+    catch (...)
+    {
+    }
+    return {};
 }
 
 }  // namespace Json

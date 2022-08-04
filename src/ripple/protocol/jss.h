@@ -104,6 +104,7 @@ JSS(Sequence);                      // in/out: TransactionSign; field.
 JSS(SetFlag);                       // field.
 JSS(SetRegularKey);                 // transaction type.
 JSS(Bridge);                        // ledger type.
+JSS(XChainBridge);                  // field.
 JSS(XChainCreateBridge);            // transaction type.
 JSS(XChainModifyBridge);            // transaction type.
 JSS(XChainCreateClaimID);           // transaction type.

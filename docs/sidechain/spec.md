@@ -496,7 +496,7 @@ bridge(STXChainBridge const& bridge)
 ### XChainClaimID
 
 The "chain claim id" ledger object must be acquired on the destination before
-submitting a `XChainCreateClaimID` on the source chain. A `XChainCreateClaimID`
+submitting a `XChainCommit` on the source chain. A `XChainCreateClaimID`
 transaction is used for this. Its purpose is to prevent transaction replay
 attacks and is also used as a place to collect attestations from witness
 servers. It is destroyed when the funds are successfully claimed on the
