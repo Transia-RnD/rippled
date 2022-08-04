@@ -91,7 +91,8 @@ xchain_commit(
     Account const& acc,
     Json::Value const& bridge,
     std::uint32_t xchainSeq,
-    AnyAmount const& amt)
+    AnyAmount const& amt,
+    std::optional<Account> const& dst)
 {
     Json::Value jv;
 
@@ -99,6 +100,8 @@ xchain_commit(
     jv[sfXChainBridge.getJsonName()] = bridge;
     jv[sfXChainClaimID.getJsonName()] = xchainSeq;
     jv[jss::Amount] = amt.value.getJson(JsonOptions::none);
+    if (dst)
+        jv[sfOtherChainAccount.getJsonName()] = dst->human();
 
     jv[jss::TransactionType] = jss::XChainCommit;
     jv[jss::Flags] = tfUniversal;

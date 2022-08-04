@@ -444,7 +444,12 @@ struct XChainBridge_test : public beast::unit_test::suite
             // RPC command to get owned sequence numbers?
             std::uint32_t const claimID = 1;
             auto const amt = XRP(1000);
-            mcEnv(xchain_commit(mcAlice, bridgeSpec, claimID, amt));
+
+            std::optional<Account> dst;
+            if (!withClaim)
+                dst.emplace(scBob);
+
+            mcEnv(xchain_commit(mcAlice, bridgeSpec, claimID, amt, dst));
             mcEnv.close();
             // TODO: reward accounts
             std::vector<Account> const rewardAccounts = [&] {
@@ -457,9 +462,6 @@ struct XChainBridge_test : public beast::unit_test::suite
                 }
                 return r;
             }();
-            std::optional<Account> dst;
-            if (!withClaim)
-                dst.emplace(scBob);
 
             auto const bobPre = scEnv.balance(scBob);
             auto const doorPre = scEnv.balance(scDoor);

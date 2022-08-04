@@ -355,6 +355,7 @@ TxFormats::TxFormats()
             {sfXChainBridge, soeREQUIRED},
             {sfXChainClaimID, soeREQUIRED},
             {sfAmount, soeREQUIRED},
+            {sfOtherChainAccount, soeOPTIONAL},
         },
         commonFields);
 
@@ -365,7 +366,6 @@ TxFormats::TxFormats()
             {sfXChainClaimID, soeREQUIRED},
             {sfDestination, soeREQUIRED},
             {sfAmount, soeREQUIRED},
-            {sfOtherChainAccount, soeOPTIONAL},
         },
         commonFields);
 

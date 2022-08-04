@@ -56,7 +56,8 @@ xchain_commit(
     Account const& acc,
     Json::Value const& bridge,
     std::uint32_t xchainSeq,
-    AnyAmount const& amt);
+    AnyAmount const& amt,
+    std::optional<Account> const& dst = std::nullopt);
 
 Json::Value
 xchain_claim(
