@@ -92,6 +92,64 @@ sidechain_xchain_account_claim(
     Account const& dst,
     AnyAmount const& amt);
 
+struct XChainBridgeObjects
+{
+    Account const mcDoor;
+    Account const mcAlice;
+    Account const mcBob;
+    Account const mcGw;
+    Account const scDoor;
+    Account const scAlice;
+    Account const scBob;
+    Account const scGw;
+    Account const scAttester;
+    Account const scReward;
+
+    IOU const mcUSD;
+    IOU const scUSD;
+
+    PrettyAmount const reward;
+
+    Json::Value const jvXRPBridge;
+
+    FeatureBitset const features;
+    std::vector<signer> const signers;
+    std::vector<Account> const rewardAccountsScReward;
+    std::vector<Account> const rewardAccountsMisc;
+    std::uint32_t const quorum;
+
+    static constexpr int drop_per_xrp = 1000000;
+
+    XChainBridgeObjects();
+
+    void
+    createBridgeObjects(Env& mcEnv, Env& scEnv);
+};
+
+Json::Value
+attestation_claim_batch(
+    Json::Value const& jvBridge,
+    jtx::Account const& sendingAccount,
+    jtx::AnyAmount const& sendingAmount,
+    std::vector<jtx::Account> const& rewardAccounts,
+    bool wasLockingChainSend,
+    std::uint64_t claimID,
+    std::optional<jtx::Account> const& dst,
+    std::vector<jtx::signer> const& signers);
+
+Json::Value
+attestation_create_account_batch(
+    Json::Value const& jvBridge,
+    jtx::Account const& sendingAccount,
+    jtx::AnyAmount const& sendingAmount,
+    jtx::AnyAmount const& rewardAmount,
+    std::vector<jtx::Account> const& rewardAccounts,
+    bool wasLockingChainSend,
+    std::uint64_t createCount,
+    jtx::Account const& dst,
+    std::vector<jtx::signer> const& signers,
+    size_t num_signers = 0);
+
 }  // namespace jtx
 }  // namespace test
 }  // namespace ripple

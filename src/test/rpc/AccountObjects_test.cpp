@@ -23,7 +23,6 @@
 #include <ripple/protocol/jss.h>
 #include <test/jtx.h>
 #include <test/jtx/xchain_bridge.h>
-#include <test/jtx/xchain_utils.h>
 
 #include <boost/utility/string_ref.hpp>
 
@@ -451,7 +450,7 @@ public:
             BEAST_EXPECT(escrow[sfAmount.jsonName].asUInt() == 100'000'000);
         }
 
-        // Andrea and Bob create a xchain sequence number that we can look for
+        // Alice and Bob create a xchain sequence number that we can look for
         // in the ledger.
         Env scEnv(*this, envconfig(port_increment, 3), features);
         createBridgeObjects(env, scEnv);

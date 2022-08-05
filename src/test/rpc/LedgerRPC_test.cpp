@@ -22,13 +22,12 @@
 #include <ripple/basics/StringUtilities.h>
 #include <ripple/beast/unit_test.h>
 #include <ripple/protocol/ErrorCodes.h>
-#include <ripple/protocol/jss.h>
 #include <ripple/protocol/STXChainBridge.h>
+#include <ripple/protocol/jss.h>
 #include <test/jtx.h>
 #include <test/jtx/attester.h>
 #include <test/jtx/multisign.h>
 #include <test/jtx/xchain_bridge.h>
-#include <test/jtx/xchain_utils.h>
 
 namespace ripple {
 
@@ -549,7 +548,7 @@ class LedgerRPC_test : public beast::unit_test::suite,
         // send less than quorum of attestations (otherwise funds are
         // immediately transferred and no "claim" object is created)
         size_t constexpr num_attest = 3;
-        Json::Value batch = attestationCreateAccountBatch(
+        Json::Value batch = attestation_create_account_batch(
             jvXRPBridge,
             mcAlice,
             amt,
@@ -632,7 +631,7 @@ class LedgerRPC_test : public beast::unit_test::suite,
 
         // complete attestations quorum - CreateAccountClaimID should not be
         // present anymore
-        Json::Value batch2 = attestationCreateAccountBatch(
+        Json::Value batch2 = attestation_create_account_batch(
             jvXRPBridge,
             mcAlice,
             amt,

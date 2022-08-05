@@ -24,8 +24,8 @@
 #include <ripple/net/RPCErr.h>
 #include <ripple/protocol/ErrorCodes.h>
 #include <ripple/protocol/Indexes.h>
-#include <ripple/protocol/jss.h>
 #include <ripple/protocol/STXChainBridge.h>
+#include <ripple/protocol/jss.h>
 #include <ripple/rpc/Context.h>
 #include <ripple/rpc/GRPCHandlers.h>
 #include <ripple/rpc/impl/RPCHelpers.h>
@@ -371,10 +371,10 @@ doLedgerEntry(RPC::JsonContext& context)
             // if not specified with a node id, a bridge is specified by
             // four strings (LockingChainDoor, LockingChainIssue,
             // IssuingChainDoor, IssuingChainIssue)
-            auto lcd =
-                parseBase58<AccountID>(bridge[jss::LockingChainDoor].asString());
-            auto icd =
-                parseBase58<AccountID>(bridge[jss::IssuingChainDoor].asString());
+            auto lcd = parseBase58<AccountID>(
+                bridge[jss::LockingChainDoor].asString());
+            auto icd = parseBase58<AccountID>(
+                bridge[jss::IssuingChainDoor].asString());
             Issue lci, ici;
             bool valid = lcd && icd;
             if (valid)
@@ -505,7 +505,8 @@ doLedgerEntry(RPC::JsonContext& context)
                 auto seq = claim_id[jss::XChainCreateAccountClaimID].asUInt();
 
                 STXChainBridge bridge_spec(*lcd, lci, *icd, ici);
-                Keylet keylet = keylet::xChainCreateAccountClaimID(bridge_spec, seq);
+                Keylet keylet =
+                    keylet::xChainCreateAccountClaimID(bridge_spec, seq);
                 uNodeIndex = keylet.key;
             }
         }
