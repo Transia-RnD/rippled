@@ -33,6 +33,7 @@
 #include <test/jtx/multisign.h>
 #include <test/jtx/xchain_bridge.h>
 
+#include <limits>
 #include <optional>
 #include <string>
 #include <vector>
@@ -481,9 +482,26 @@ struct XChainBridge_test : public beast::unit_test::suite
         auto const amt = XRP(1000);
         mcEnv(sidechain_xchain_account_create(
             mcAlice, bridgeSpec, scBob, amt, reward));
+        std::uint64_t const createCount = [&] {
+            auto const meta = mcEnv.meta();
+            if (meta)
+            {
+                for (STObject const& node :
+                     meta->getFieldArray(sfAffectedNodes))
+                {
+                    if (node[sfLedgerEntryType] != ltBRIDGE ||
+                        !node.isFieldPresent(sfFinalFields))
+                        continue;
+                    STObject const& ff = node.getFieldObject(sfFinalFields);
+                    if (!ff.isFieldPresent(sfXChainAccountCreateCount))
+                        continue;
+                    return ff[sfXChainAccountCreateCount];
+                }
+            }
+            fail();
+            return std::numeric_limits<std::uint64_t>::max();
+        }();
         mcEnv.close();
-        // TODO: Get createCount from the ledger
-        std::uint64_t const createCount = 1;
         // TODO: reward accounts
         std::vector<Account> const rewardAccounts = [&] {
             std::vector<Account> r;
