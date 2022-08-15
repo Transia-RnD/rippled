@@ -110,7 +110,8 @@ struct XChainBridgeObjects
 
     PrettyAmount const reward;
 
-    Json::Value const jvXRPBridge;
+    Json::Value const jvXRPBridgeRPC;
+    Json::Value jvXRPBridge;
 
     FeatureBitset const features;
     std::vector<signer> const signers;

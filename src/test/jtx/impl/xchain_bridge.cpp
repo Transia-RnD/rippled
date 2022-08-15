@@ -42,10 +42,10 @@ bridge(
     Issue const& issuingChainIssue)
 {
     Json::Value jv;
-    jv[sfLockingChainDoor.getJsonName()] = lockingChainDoor.human();
-    jv[sfLockingChainIssue.getJsonName()] = to_json(lockingChainIssue);
-    jv[sfIssuingChainDoor.getJsonName()] = issuingChainDoor.human();
-    jv[sfIssuingChainIssue.getJsonName()] = to_json(issuingChainIssue);
+    jv[jss::locking_chain_door] = lockingChainDoor.human();
+    jv[jss::locking_chain_issue] = to_json(lockingChainIssue);
+    jv[jss::issuing_chain_door] = issuingChainDoor.human();
+    jv[jss::issuing_chain_issue] = to_json(issuingChainIssue);
     return jv;
 }
 
@@ -329,7 +329,7 @@ XChainBridgeObjects::XChainBridgeObjects()
     , mcUSD(mcGw["USD"])
     , scUSD(scGw["USD"])
     , reward(XRP(1))
-    , jvXRPBridge(bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()))
+    , jvXRPBridgeRPC(bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()))
     , features(supported_amendments() | FeatureBitset{featureXChainBridge})
     , signers([] {
         constexpr int numSigners = 5;
@@ -381,6 +381,11 @@ XChainBridgeObjects::createBridgeObjects(Env& mcEnv, Env& scEnv)
     // create XRP bridges in both direction
     auto const reward = XRP(1);
     STAmount const minCreate = XRP(20);
+
+    jvXRPBridge[sfLockingChainDoor.getJsonName()] = mcDoor.human();
+    jvXRPBridge[sfLockingChainIssue.getJsonName()] = to_json(xrpIssue());
+    jvXRPBridge[sfIssuingChainDoor.getJsonName()] = scDoor.human();
+    jvXRPBridge[sfIssuingChainIssue.getJsonName()] = to_json(xrpIssue());
 
     mcEnv(bridge_create(mcDoor, jvXRPBridge, reward, minCreate));
     scEnv(bridge_create(scDoor, jvXRPBridge, reward, minCreate));
