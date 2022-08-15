@@ -182,6 +182,7 @@ JSS(books);                       // in: Subscribe, Unsubscribe
 JSS(both);                        // in: Subscribe, Unsubscribe
 JSS(both_sides);                  // in: Subscribe, Unsubscribe
 JSS(broadcast);                   // out: SubmitTransaction
+JSS(bridge);                      // in: LedgerEntry
 JSS(build_path);                  // in: TransactionSign
 JSS(build_version);               // out: NetworkOPs
 JSS(cancel_after);                // out: AccountChannels
@@ -674,9 +675,11 @@ JSS(vote);                    // in: Feature
 JSS(warning);                 // rpc:
 JSS(warnings);                // out: server_info, server_state
 JSS(workers);
-JSS(write_load);   // out: GetCounts
-JSS(xchain_seq);   // in: sidechain
-JSS(NegativeUNL);  // out: ValidatorList; ledger type
+JSS(write_load);                      // out: GetCounts
+JSS(xchain_seq);                      // in: sidechain
+JSS(xchain_claim_id);                 // in: LedgerEntry, AccountObjects
+JSS(xchain_create_account_claim_id);  // in: LedgerEntry
+JSS(NegativeUNL);                     // out: ValidatorList; ledger type
 #undef JSS
 
 }  // namespace jss

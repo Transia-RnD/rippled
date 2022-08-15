@@ -899,7 +899,7 @@ chooseLedgerEntryType(Json::Value const& params)
                  {jss::state, ltRIPPLE_STATE},
                  {jss::ticket, ltTICKET},
                  {jss::nft_offer, ltNFTOKEN_OFFER},
-                 {jss::xchain_seq, ltXCHAIN_CLAIM_ID}}};
+                 {jss::xchain_claim_id, ltXCHAIN_CLAIM_ID}}};
 
         auto const& p = params[jss::type];
         if (!p.isString())
