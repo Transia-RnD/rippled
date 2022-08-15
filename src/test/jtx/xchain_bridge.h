@@ -92,6 +92,30 @@ sidechain_xchain_account_claim(
     Account const& dst,
     AnyAmount const& amt);
 
+Json::Value
+attestation_claim_batch(
+    Json::Value const& jvBridge,
+    jtx::Account const& sendingAccount,
+    jtx::AnyAmount const& sendingAmount,
+    std::vector<jtx::Account> const& rewardAccounts,
+    bool wasLockingChainSend,
+    std::uint64_t claimID,
+    std::optional<jtx::Account> const& dst,
+    std::vector<jtx::signer> const& signers);
+
+Json::Value
+attestation_create_account_batch(
+    Json::Value const& jvBridge,
+    jtx::Account const& sendingAccount,
+    jtx::AnyAmount const& sendingAmount,
+    jtx::AnyAmount const& rewardAmount,
+    std::vector<jtx::Account> const& rewardAccounts,
+    bool wasLockingChainSend,
+    std::uint64_t createCount,
+    jtx::Account const& dst,
+    std::vector<jtx::signer> const& signers,
+    size_t num_signers = 0);
+
 struct XChainBridgeObjects
 {
     Account const mcDoor;
@@ -126,30 +150,6 @@ struct XChainBridgeObjects
     void
     createBridgeObjects(Env& mcEnv, Env& scEnv);
 };
-
-Json::Value
-attestation_claim_batch(
-    Json::Value const& jvBridge,
-    jtx::Account const& sendingAccount,
-    jtx::AnyAmount const& sendingAmount,
-    std::vector<jtx::Account> const& rewardAccounts,
-    bool wasLockingChainSend,
-    std::uint64_t claimID,
-    std::optional<jtx::Account> const& dst,
-    std::vector<jtx::signer> const& signers);
-
-Json::Value
-attestation_create_account_batch(
-    Json::Value const& jvBridge,
-    jtx::Account const& sendingAccount,
-    jtx::AnyAmount const& sendingAmount,
-    jtx::AnyAmount const& rewardAmount,
-    std::vector<jtx::Account> const& rewardAccounts,
-    bool wasLockingChainSend,
-    std::uint64_t createCount,
-    jtx::Account const& dst,
-    std::vector<jtx::signer> const& signers,
-    size_t num_signers = 0);
 
 }  // namespace jtx
 }  // namespace test

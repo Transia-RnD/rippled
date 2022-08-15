@@ -34,8 +34,25 @@ namespace ripple {
 namespace test {
 namespace jtx {
 
+// use this for creating a bridge for a transaction
 Json::Value
 bridge(
+    Account const& lockingChainDoor,
+    Issue const& lockingChainIssue,
+    Account const& issuingChainDoor,
+    Issue const& issuingChainIssue)
+{
+    Json::Value jv;
+    jv[sfLockingChainDoor.getJsonName()] = lockingChainDoor.human();
+    jv[sfLockingChainIssue.getJsonName()] = to_json(lockingChainIssue);
+    jv[sfIssuingChainDoor.getJsonName()] = issuingChainDoor.human();
+    jv[sfIssuingChainIssue.getJsonName()] = to_json(issuingChainIssue);
+    return jv;
+}
+
+// use this for creating a bridge for a rpc query
+Json::Value
+bridge_rpc(
     Account const& lockingChainDoor,
     Issue const& lockingChainIssue,
     Account const& issuingChainDoor,
@@ -329,7 +346,7 @@ XChainBridgeObjects::XChainBridgeObjects()
     , mcUSD(mcGw["USD"])
     , scUSD(scGw["USD"])
     , reward(XRP(1))
-    , jvXRPBridgeRPC(bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()))
+    , jvXRPBridgeRPC(bridge_rpc(mcDoor, xrpIssue(), scDoor, xrpIssue()))
     , features(supported_amendments() | FeatureBitset{featureXChainBridge})
     , signers([] {
         constexpr int numSigners = 5;
@@ -382,10 +399,7 @@ XChainBridgeObjects::createBridgeObjects(Env& mcEnv, Env& scEnv)
     auto const reward = XRP(1);
     STAmount const minCreate = XRP(20);
 
-    jvXRPBridge[sfLockingChainDoor.getJsonName()] = mcDoor.human();
-    jvXRPBridge[sfLockingChainIssue.getJsonName()] = to_json(xrpIssue());
-    jvXRPBridge[sfIssuingChainDoor.getJsonName()] = scDoor.human();
-    jvXRPBridge[sfIssuingChainIssue.getJsonName()] = to_json(xrpIssue());
+    jvXRPBridge = bridge(mcDoor, xrpIssue(), scDoor, xrpIssue());
 
     mcEnv(bridge_create(mcDoor, jvXRPBridge, reward, minCreate));
     scEnv(bridge_create(scDoor, jvXRPBridge, reward, minCreate));
