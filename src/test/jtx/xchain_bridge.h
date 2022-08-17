@@ -118,6 +118,7 @@ attestation_create_account_batch(
 
 struct XChainBridgeObjects
 {
+    // funded accounts
     Account const mcDoor;
     Account const mcAlice;
     Account const mcBob;
@@ -129,13 +130,24 @@ struct XChainBridgeObjects
     Account const scAttester;
     Account const scReward;
 
+    // unfunded accounts
+    Account const mcuDoor;
+    Account const mcuAlice;
+    Account const mcuBob;
+    Account const mcuGw;
+    Account const scuDoor;
+    Account const scuAlice;
+    Account const scuBob;
+    Account const scuGw;
+
     IOU const mcUSD;
     IOU const scUSD;
 
     PrettyAmount const reward;
 
     Json::Value const jvXRPBridgeRPC;
-    Json::Value jvXRPBridge;
+    Json::Value jvb;   // standard xrp bridge def for tx
+    Json::Value jvub;  // standard xrp bridge def for tx, unfunded accounts
 
     FeatureBitset const features;
     std::vector<signer> const signers;
@@ -149,6 +161,20 @@ struct XChainBridgeObjects
 
     void
     createBridgeObjects(Env& mcEnv, Env& scEnv);
+
+    Json::Value
+    create_bridge(
+        Account const& acc,
+        Json::Value const& bridge = Json::nullValue,
+        STAmount const& _reward = XRP(1),
+        std::optional<STAmount> const& minAccountCreate = XRP(20))
+    {
+        return bridge_create(
+            acc,
+            bridge == Json::nullValue ? jvb : bridge,
+            _reward,
+            minAccountCreate);
+    }
 };
 
 }  // namespace jtx

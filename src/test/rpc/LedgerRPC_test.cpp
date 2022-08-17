@@ -128,10 +128,9 @@ class LedgerRPC_XChain_test : public beast::unit_test::suite,
         {
             // create two claim ids and verify that the bridge counter was
             // incremented
-            mcEnv(
-                xchain_create_claim_id(mcAlice, jvXRPBridge, reward, scAlice));
+            mcEnv(xchain_create_claim_id(mcAlice, jvb, reward, scAlice));
             mcEnv.close();
-            mcEnv(xchain_create_claim_id(mcBob, jvXRPBridge, reward, scBob));
+            mcEnv(xchain_create_claim_id(mcBob, jvb, reward, scBob));
             mcEnv.close();
 
             // request the bridge via RPC
@@ -161,9 +160,9 @@ class LedgerRPC_XChain_test : public beast::unit_test::suite,
 
         createBridgeObjects(mcEnv, scEnv);
 
-        scEnv(xchain_create_claim_id(scAlice, jvXRPBridge, reward, mcAlice));
+        scEnv(xchain_create_claim_id(scAlice, jvb, reward, mcAlice));
         scEnv.close();
-        scEnv(xchain_create_claim_id(scBob, jvXRPBridge, reward, mcBob));
+        scEnv(xchain_create_claim_id(scBob, jvb, reward, mcBob));
         scEnv.close();
 
         std::string bridge_index;
@@ -223,14 +222,14 @@ class LedgerRPC_XChain_test : public beast::unit_test::suite,
                                  // xchain transaction
         auto const amt = XRP(1000);
         mcEnv(sidechain_xchain_account_create(
-            mcAlice, jvXRPBridge, scCarol, amt, reward));
+            mcAlice, jvb, scCarol, amt, reward));
         mcEnv.close();
 
         // send less than quorum of attestations (otherwise funds are
         // immediately transferred and no "claim" object is created)
         size_t constexpr num_attest = 3;
         Json::Value batch = attestation_create_account_batch(
-            jvXRPBridge,
+            jvb,
             mcAlice,
             amt,
             reward,
@@ -313,7 +312,7 @@ class LedgerRPC_XChain_test : public beast::unit_test::suite,
         // complete attestations quorum - CreateAccountClaimID should not be
         // present anymore
         Json::Value batch2 = attestation_create_account_batch(
-            jvXRPBridge,
+            jvb,
             mcAlice,
             amt,
             reward,

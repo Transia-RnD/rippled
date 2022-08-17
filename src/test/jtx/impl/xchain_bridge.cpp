@@ -341,6 +341,14 @@ XChainBridgeObjects::XChainBridgeObjects()
     , scAlice("scAlice")
     , scBob("scBob")
     , scGw("scGw")
+    , mcuDoor("mcuDoor")
+    , mcuAlice("mcuAlice")
+    , mcuBob("mcuBob")
+    , mcuGw("mcuGw")
+    , scuDoor("scuDoor")
+    , scuAlice("scuAlice")
+    , scuBob("scuBob")
+    , scuGw("scuGw")
     , scAttester("scAttester")
     , scReward("scReward")
     , mcUSD(mcGw["USD"])
@@ -381,6 +389,8 @@ XChainBridgeObjects::XChainBridgeObjects()
         return r;
     }())
     , quorum(static_cast<std::uint32_t>(signers.size()) - 1)
+    , jvb(bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()))
+    , jvub(bridge(mcuDoor, xrpIssue(), scuDoor, xrpIssue()))
 {
 }
 
@@ -399,10 +409,8 @@ XChainBridgeObjects::createBridgeObjects(Env& mcEnv, Env& scEnv)
     auto const reward = XRP(1);
     STAmount const minCreate = XRP(20);
 
-    jvXRPBridge = bridge(mcDoor, xrpIssue(), scDoor, xrpIssue());
-
-    mcEnv(bridge_create(mcDoor, jvXRPBridge, reward, minCreate));
-    scEnv(bridge_create(scDoor, jvXRPBridge, reward, minCreate));
+    mcEnv(bridge_create(mcDoor, jvb, reward, minCreate));
+    scEnv(bridge_create(scDoor, jvb, reward, minCreate));
     mcEnv.close();
     scEnv.close();
 }

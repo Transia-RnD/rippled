@@ -455,11 +455,10 @@ public:
             Env scEnv(*this, envconfig(port_increment, 3), features);
             x.createBridgeObjects(env, scEnv);
 
-            scEnv(xchain_create_claim_id(
-                x.scAlice, x.jvXRPBridge, x.reward, x.mcAlice));
+            scEnv(
+                xchain_create_claim_id(x.scAlice, x.jvb, x.reward, x.mcAlice));
             scEnv.close();
-            scEnv(xchain_create_claim_id(
-                x.scBob, x.jvXRPBridge, x.reward, x.mcBob));
+            scEnv(xchain_create_claim_id(x.scBob, x.jvb, x.reward, x.mcBob));
             scEnv.close();
 
             auto scenv_acct_objs = [&](Account const& acct, char const* type) {
