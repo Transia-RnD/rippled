@@ -39,6 +39,9 @@
 #include <tuple>
 #include <vector>
 
+#include <fstream>
+#include <iostream>
+
 namespace ripple {
 namespace test {
 
@@ -120,21 +123,31 @@ struct XChain_test : public beast::unit_test::suite,
             .close()
             .tx(create_bridge(mcDoor), ter(tecDUPLICATE));
 
+        // Create USD bridge Alice -> Bob ... should succeed
+        xEnv(*this).tx(
+            create_bridge(
+                mcAlice, bridge(mcAlice, mcAlice["USD"], mcBob, mcBob["USD"])),
+            ter(tesSUCCESS));
+
         // Create where both door accounts are on the same chain. The second
         // bridge create should fail.
         xEnv(*this)
-            .tx(create_bridge(mcDoor))
-            .fund(XRP(10000), scDoor)
+            .tx(create_bridge(
+                mcAlice, bridge(mcAlice, mcAlice["USD"], mcBob, mcBob["USD"])))
             .close()
-            .tx(create_bridge(scDoor), ter(tecDUPLICATE));
+            .tx(create_bridge(
+                    mcBob,
+                    bridge(mcAlice, mcAlice["USD"], mcBob, mcBob["USD"])),
+                ter(tecDUPLICATE));
 
         // Bridge where the two door accounts are equal.
-        Json::Value jvsd = bridge(mcDoor, xrpIssue(), mcDoor, xrpIssue());
         xEnv(*this).tx(
-            create_bridge(mcDoor, jvsd), ter(temEQUAL_DOOR_ACCOUNTS));
+            create_bridge(
+                mcBob, bridge(mcBob, mcBob["USD"], mcBob, mcBob["USD"])),
+            ter(temEQUAL_DOOR_ACCOUNTS));
 
         // Create an bridge on an account with exactly enough balance to meet
-        // the new reserve
+        // the new reserve should succeed
         xEnv(*this)
             .fund(res1, mcuDoor)  // exact reserve for account + 1 object
             .close()
@@ -147,6 +160,52 @@ struct XChain_test : public beast::unit_test::suite,
             .close()
             .tx(create_bridge(mcuDoor, jvub), ter(tecINSUFFICIENT_RESERVE));
 
+        // Reward amount is non-xrp
+        xEnv(*this).tx(
+            create_bridge(mcDoor, jvb, mcUSD(1)),
+            ter(temXCHAIN_BRIDGE_BAD_REWARD_AMOUNT));
+
+        // Reward amount is XRP and negative
+        xEnv(*this).tx(
+            create_bridge(mcDoor, jvb, XRP(-1)),
+            ter(temXCHAIN_BRIDGE_BAD_REWARD_AMOUNT));
+
+        // Reward amount is zero
+        xEnv(*this).tx(
+            create_bridge(mcDoor, jvb, XRP(0)),
+            ter(temXCHAIN_BRIDGE_BAD_REWARD_AMOUNT));
+
+        // Reward amount is 1 xrp => should succeed
+        xEnv(*this).tx(create_bridge(mcDoor, jvb, XRP(1)), ter(tesSUCCESS));
+
+        // Min create amount is 1 xrp, mincreate is 1 xrp => should succeed
+        xEnv(*this).tx(
+            create_bridge(mcDoor, jvb, XRP(1), XRP(1)), ter(tesSUCCESS));
+
+        // Min create amount is non-xrp
+        xEnv(*this).tx(
+            create_bridge(mcDoor, jvb, XRP(1), mcUSD(100)),
+            ter(temXCHAIN_BRIDGE_BAD_MIN_ACCOUNT_CREATE_AMOUNT));
+
+        // Min create amount is zero (should fail, currently succeeds)
+        xEnv(*this).tx(
+            create_bridge(mcDoor, jvb, XRP(1), XRP(0)),
+            ter(temXCHAIN_BRIDGE_BAD_MIN_ACCOUNT_CREATE_AMOUNT));
+
+        // Min create amount is negative
+        xEnv(*this).tx(
+            create_bridge(mcDoor, jvb, XRP(1), XRP(-1)),
+            ter(temXCHAIN_BRIDGE_BAD_MIN_ACCOUNT_CREATE_AMOUNT));
+    }
+
+    void
+    testBridgeCreateMatrix(bool markdown_output = true)
+    {
+        XRPAmount res1 = reserve(1);
+
+        using namespace jtx;
+        testcase("Bridge Create Matrix");
+
         // Test all combinations of the following:`
         // --------------------------------------
         // - Locking chain is IOU with locking chain door account as issuer
@@ -154,24 +213,24 @@ struct XChain_test : public beast::unit_test::suite,
         //   the locking chain as issuer
         // - Locking chain is IOU with issuing chain door account that does not
         //   exists on the locking chain as issuer
-        // - Locking chain is IOU with non-locking chain door account (that
+        // - Locking chain is IOU with non-door account (that exists on the
+        //   locking chain ledger) as issuer
+        // - Locking chain is IOU with non-door account (that does not exist
         //   exists on the locking chain ledger) as issuer
-        // - Locking chain is IOU with non-locking chain door account (that does
-        //   not exist exists on the locking chain ledger) as issuer
         // - Locking chain is XRP
         // ---------------------------------------------------------------------
         // - Issuing chain is IOU with issuing chain door account as the issuer
-        // - Issuing chain is IOU with non-issuing chain door account (that
-        //   exists on the ledger issuing chain ledger) as the issuer
-        // - Issuing chain is IOU with non-issuing chain door account (that does
-        //   not exists on the ledger issuing chain ledger) as the issuer
         // - Issuing chain is IOU with locking chain door account (that exists
         //   on the issuing chain ledger) as the issuer
-        // - Issuing chain is IOU with locking chain door account (that deos not
-        //   exist exists on the issuing chain ledger) as the issuer
-        // - Issuing chain is XRP and issuing chain door account is the root
-        //   account
+        // - Issuing chain is IOU with locking chain door account (that does not
+        //   exist on the issuing chain ledger) as the issuer
+        // - Issuing chain is IOU with non-door account (that exists on the
+        //   issuing chain ledger) as the issuer
+        // - Issuing chain is IOU with non-door account (that does not exists on
+        //   the issuing chain ledger) as the issuer
         // - Issuing chain is XRP and issuing chain door account is not the root
+        //   account
+        // - Issuing chain is XRP and issuing chain door account is the root
         //   account
         // ---------------------------------------------------------------------
         // That's 42 combinations. The only combinations that should succeed
@@ -182,23 +241,192 @@ struct XChain_test : public beast::unit_test::suite,
         Account a, b;
         Issue ia, ib;
 
-        std::tuple lc{
-            [&]() { return xEnv(*this); },
-            [&]() { return xEnv(*this); },
-            [&]() { return xEnv(*this); }};
+        std::tuple lcs{
+            std::make_pair(
+                "Locking chain is IOU(locking chain door)",
+                [&](auto& env) {
+                    a = mcDoor;
+                    ia = mcDoor["USD"];
+                }),
+            std::make_pair(
+                "Locking chain is IOU(issuing chain door funded on locking "
+                "chain)",
+                [&](auto& env) {
+                    a = mcDoor;
+                    ia = scDoor["USD"];
+                    env.fund(XRP(10000), scDoor);
+                }),
+            std::make_pair(
+                "Locking chain is IOU(issuing chain door account unfunded on "
+                "locking chain)",
+                [&](auto& env) {
+                    a = mcDoor;
+                    ia = scDoor["USD"];
+                }),
+            std::make_pair(
+                "Locking chain is IOU(bob funded on locking chain)",
+                [&](auto& env) {
+                    a = mcDoor;
+                    ia = mcGw["USD"];
+                }),
+            std::make_pair(
+                "Locking chain is IOU(bob unfunded on locking chain)",
+                [&](auto& env) {
+                    a = mcDoor;
+                    ia = mcuGw["USD"];
+                }),
+            std::make_pair("Locking chain is XRP", [&](auto& env) {
+                a = mcDoor;
+                ia = xrpIssue();
+            })};
+
+        std::tuple ics{
+            std::make_pair(
+                "Issuing chain is IOU(issuing chain door account)",
+                [&](auto& env) {
+                    b = scDoor;
+                    ib = scDoor["USD"];
+                }),
+            std::make_pair(
+                "Issuing chain is IOU(locking chain door funded on issuing "
+                "chain)",
+                [&](auto& env) {
+                    b = scDoor;
+                    ib = mcDoor["USD"];
+                    env.fund(XRP(10000), mcDoor);
+                }),
+            std::make_pair(
+                "Issuing chain is IOU(locking chain door unfunded on issuing "
+                "chain)",
+                [&](auto& env) {
+                    b = scDoor;
+                    ib = mcDoor["USD"];
+                }),
+            std::make_pair(
+                "Issuing chain is IOU(bob funded on issuing chain)",
+                [&](auto& env) {
+                    b = scDoor;
+                    ib = mcGw["USD"];
+                }),
+            std::make_pair(
+                "Issuing chain is IOU(bob unfunded on issuing chain)",
+                [&](auto& env) {
+                    b = scDoor;
+                    ib = mcuGw["USD"];
+                }),
+            std::make_pair(
+                "Issuing chain is XRP and issuing chain door account is not "
+                "the root account",
+                [&](auto& env) {
+                    b = scDoor;
+                    ib = xrpIssue();
+                }),
+            std::make_pair(
+                "Issuing chain is XRP and issuing chain door account is the "
+                "root account ",
+                [&](auto& env) {
+                    b = Account::master;
+                    ib = xrpIssue();
+                })};
+
+        std::vector<std::tuple<TER, bool>> test_result;
+
+        auto testcase = [&](auto const& lc, auto const& ic) {
+            xEnv env(*this);
+            lc.second(env);
+            ic.second(env);
+            env.tx(create_bridge(mcDoor, bridge(a, ia, b, ib)));
+            test_result.emplace_back(env.env_.ter(), true);
+        };
+
+        auto apply_ics = [&](auto const& lc, auto const& ics) {
+            std::apply(
+                [&](auto const&... ic) { (testcase(lc, ic), ...); }, ics);
+        };
+
+        std::apply([&](auto const&... lc) { (apply_ics(lc, ics), ...); }, lcs);
+
+        // optional output of matrix results in markdown format
+        // ----------------------------------------------------
+        if (!markdown_output)
+            return;
+
+        std::string fname{std::tmpnam(nullptr)};
+        fname += ".md";
+        std::cout << "Markdown output for matrix test: " << fname << "\n";
+
+        std::ofstream(fname) << [&]() {
+            size_t test_idx = 0;
+            std::string res;
+            res.reserve(10000);  // should be enough :-)
+
+            // first two header lines
+            res += "|  `issuing ->` | ";
+            std::apply(
+                [&](auto const&... ic) {
+                    ((res += ic.first, res += " | "), ...);
+                },
+                ics);
+            res += "\n";
+
+            res += "| :--- | ";
+            std::apply(
+                [&](auto const&... ic) {
+                    ((ic.first, res += ":---: |  "), ...);
+                },
+                ics);
+            res += "\n";
+
+            auto output = [&](auto const& lc, auto const& ic) {
+                res += transToken(std::get<0>(test_result[test_idx]));
+                res += " | ";
+                ++test_idx;
+            };
+
+            auto output_ics = [&](auto const& lc, auto const& ics) {
+                res += "| ";
+                res += lc.first;
+                res += " | ";
+                std::apply(
+                    [&](auto const&... ic) { (output(lc, ic), ...); }, ics);
+                res += "\n";
+            };
+
+            std::apply(
+                [&](auto const&... lc) { (output_ics(lc, ics), ...); }, lcs);
+
+            return res;
+        }();
     }
 
     void
     testBridgeModify()
     {
+        XRPAmount res1 = reserve(1);
+
         using namespace jtx;
         testcase("Bridge Modify");
+
+        // Changing a non-existent bridge should fail
+
+        // Reward amount is non-xrp
+
+        // Reward amount is XRP and negative
+
+        // Reward amount is zero
+
+        // Min create amount is non-xrp
+
+        // Min create amount is zero
+
+        // Min create amount is negative
     }
 
     void
     run() override
     {
         testBridgeCreate();
+        testBridgeCreateMatrix();
         // testBridgeModify();
     }
 };

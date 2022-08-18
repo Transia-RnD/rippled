@@ -354,9 +354,10 @@ XChainBridgeObjects::XChainBridgeObjects()
     , mcUSD(mcGw["USD"])
     , scUSD(scGw["USD"])
     , reward(XRP(1))
-    , jvXRPBridgeRPC(bridge_rpc(mcDoor, xrpIssue(), scDoor, xrpIssue()))
-    , jvb(bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()))
-    , jvub(bridge(mcuDoor, xrpIssue(), scuDoor, xrpIssue()))
+    , jvXRPBridgeRPC(
+          bridge_rpc(mcDoor, xrpIssue(), Account::master, xrpIssue()))
+    , jvb(bridge(mcDoor, xrpIssue(), Account::master, xrpIssue()))
+    , jvub(bridge(mcuDoor, xrpIssue(), Account::master, xrpIssue()))
     , features(supported_amendments() | FeatureBitset{featureXChainBridge})
     , signers([] {
         constexpr int numSigners = 5;
