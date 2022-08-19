@@ -298,6 +298,9 @@ public:
     [[nodiscard]] bool
     noConflicts() const;
 
+    [[nodiscard]] bool
+    validAmounts() const;
+
     [[nodiscard]] STXChainBridge const&
     bridge() const;
 

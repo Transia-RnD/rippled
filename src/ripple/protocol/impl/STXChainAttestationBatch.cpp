@@ -627,6 +627,23 @@ STXChainAttestationBatch::noConflicts() const
     return true;
 }
 
+bool
+STXChainAttestationBatch::validAmounts() const
+{
+    for (auto const& c : creates_)
+    {
+        if (!isLegalNet(c.rewardAmount) || !isLegalNet(c.sendingAmount))
+            return false;
+    }
+    for (auto const& c : claims_)
+    {
+        if (!isLegalNet(c.sendingAmount))
+            return false;
+    }
+
+    return true;
+}
+
 SerializedTypeID
 STXChainAttestationBatch::getSType() const
 {

@@ -115,28 +115,50 @@ transferHelper(
     TransferHelperCanCreateDst canCreate,
     beast::Journal j)
 {
-    // TODO: handle DepositAuth
-    //       handle dipping below reserve
-    // TODO: Create a payment transaction instead of calling flow directly?
-    // TODO: Set delivered amount?
+    if (dst == src)
+        return tesSUCCESS;
+
+    auto const dstK = keylet::account(dst);
+    if (auto sleDst = psb.read(dstK))
+    {
+        // Check dst tag and deposit auth
+
+        // TODO: Need a way to specify destination tags
+        if (sleDst->getFlags() & lsfRequireDestTag)
+            return tecDST_TAG_NEEDED;
+
+        if ((sleDst->getFlags() & lsfDepositAuth) &&
+            (!psb.exists(keylet::depositPreauth(dst, src))))
+        {
+            return tecNO_PERMISSION;
+        }
+    }
+    else if (!amt.native() || canCreate == TransferHelperCanCreateDst::no)
+    {
+        return tecNO_DST;
+    }
+
     if (amt.native())
     {
-        // TODO: Check reserve
         auto const sleSrc = psb.peek(keylet::account(src));
         assert(sleSrc);
         if (!sleSrc)
             return tecINTERNAL;
 
-        if ((*sleSrc)[sfBalance] < amt)
+        auto const ownerCount = sleSrc->getFieldU32(sfOwnerCount);
+        auto const reserve = psb.fees().accountReserve(ownerCount);
+
+        if ((*sleSrc)[sfBalance] < amt + reserve)
         {
             return tecINSUFFICIENT_FUNDS;
         }
-        auto const dstK = keylet::account(dst);
+
         auto sleDst = psb.peek(dstK);
         if (!sleDst)
         {
             if (canCreate == TransferHelperCanCreateDst::no)
             {
+                // Already checked, but ok to check again
                 return tecNO_DST;
             }
 
@@ -150,6 +172,7 @@ transferHelper(
 
             psb.insert(sleDst);
         }
+
         (*sleSrc)[sfBalance] = (*sleSrc)[sfBalance] - amt;
         (*sleDst)[sfBalance] = (*sleDst)[sfBalance] + amt;
         psb.update(sleSrc);
@@ -757,7 +780,7 @@ XChainCommit::preflight(PreflightContext const& ctx)
 
     auto const amount = ctx.tx[sfAmount];
 
-    if (amount.signum() <= 0)
+    if (amount.signum() <= 0 || !isLegalNet(amount))
         return temBAD_AMOUNT;
 
     return preflight2(ctx);
@@ -853,7 +876,7 @@ XChainCreateClaimID::preflight(PreflightContext const& ctx)
 
     auto const reward = ctx.tx[sfSignatureReward];
 
-    if (!isXRP(reward) || reward.signum() < 0)
+    if (!isXRP(reward) || reward.signum() < 0 || !isLegalNet(reward))
         return temXCHAIN_BRIDGE_BAD_REWARD_AMOUNT;
 
     return preflight2(ctx);
@@ -980,6 +1003,9 @@ XChainAddAttestation::preflight(PreflightContext const& ctx)
         // TODO: return a better error here
         return temBAD_XCHAIN_PROOF;
     }
+
+    if (!batch.validAmounts())
+        return temBAD_XCHAIN_PROOF;
 
     auto const& bridgeSpec = batch.bridge();
     // If any attestation is for a negative amount or for an amount
@@ -1570,8 +1596,6 @@ XChainClaimAccount::doApply()
 
     if (!isTesSuccess(result.result()))
         return result.result();
-
-    // TODO: Can I make the account non-deletable?
 
     psb.apply(ctx_.rawView());
     return tesSUCCESS;
