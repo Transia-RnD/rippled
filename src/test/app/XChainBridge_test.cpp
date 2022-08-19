@@ -52,12 +52,13 @@ struct XChainBridge_test : public beast::unit_test::suite
         auto const features =
             supported_amendments() | FeatureBitset{featureXChainBridge};
         auto const mcDoor = Account("mcDoor");
-        auto const scDoor = Account("scDoor");
+        // Door account for ious. Must be master account for XRP
+        auto const scIOUDoor = Account("scDoor");
         auto const alice = Account("alice");
         auto const mcGw = Account("mcGw");
         auto const scGw = Account("scGw");
         auto const mcUSD = mcGw["USD"];
-        auto const scUSD = scGw["USD"];
+        auto const scUSD = scIOUDoor["USD"];
 
         for (auto withMinCreate : {true, false})
         {
@@ -71,7 +72,7 @@ struct XChainBridge_test : public beast::unit_test::suite
 
             env(bridge_create(
                 mcDoor,
-                bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()),
+                bridge(mcDoor, xrpIssue(), Account::master, xrpIssue()),
                 reward,
                 minCreate));
         }
@@ -83,7 +84,7 @@ struct XChainBridge_test : public beast::unit_test::suite
             std::optional<STAmount> minCreate;
             env(bridge_create(
                     alice,
-                    bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()),
+                    bridge(mcDoor, xrpIssue(), Account::master, xrpIssue()),
                     reward,
                     minCreate),
                 ter(temSIDECHAIN_NONDOOR_OWNER));
@@ -103,6 +104,7 @@ struct XChainBridge_test : public beast::unit_test::suite
 
                 Issue const mcIssue = mcIsXRP ? xrpIssue() : mcUSD;
                 Issue const scIssue = scIsXRP ? xrpIssue() : scUSD;
+                auto const scDoor = scIsXRP ? Account::master : scIOUDoor;
 
                 env(bridge_create(
                         mcDoor,
@@ -120,8 +122,12 @@ struct XChainBridge_test : public beast::unit_test::suite
             auto const reward = XRP(1);
             std::optional<STAmount> minCreate;
             env(bridge_create(
-                    mcDoor,
-                    bridge(mcDoor, xrpIssue(), mcDoor, xrpIssue()),
+                    Account::master,
+                    bridge(
+                        Account::master,
+                        xrpIssue(),
+                        Account::master,
+                        xrpIssue()),
                     reward,
                     minCreate),
                 ter(temEQUAL_DOOR_ACCOUNTS));
@@ -136,14 +142,14 @@ struct XChainBridge_test : public beast::unit_test::suite
             std::optional<STAmount> minCreate;
             env(bridge_create(
                 mcDoor,
-                bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()),
+                bridge(mcDoor, xrpIssue(), Account::master, xrpIssue()),
                 reward,
                 minCreate));
 
             // Can't create the same sidechain twice
             env(bridge_create(
                     mcDoor,
-                    bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()),
+                    bridge(mcDoor, xrpIssue(), Account::master, xrpIssue()),
                     reward,
                     minCreate),
                 ter(tecDUPLICATE));
@@ -151,7 +157,7 @@ struct XChainBridge_test : public beast::unit_test::suite
             // But can create a different sidechain on the same account
             env(bridge_create(
                 mcDoor,
-                bridge(mcDoor, mcUSD, scDoor, scUSD),
+                bridge(mcDoor, mcUSD, scIOUDoor, scUSD),
                 reward,
                 minCreate));
         }
@@ -165,7 +171,7 @@ struct XChainBridge_test : public beast::unit_test::suite
             // Issuer doesn't exist. Should fail.
             env(bridge_create(
                     mcDoor,
-                    bridge(mcDoor, mcUSD, scDoor, scUSD),
+                    bridge(mcDoor, mcUSD, scIOUDoor, scUSD),
                     reward,
                     minCreate),
                 ter(tecNO_ISSUER));
@@ -175,7 +181,7 @@ struct XChainBridge_test : public beast::unit_test::suite
             // Issuer now exists. Should succeed.
             env(bridge_create(
                 mcDoor,
-                bridge(mcDoor, mcUSD, scDoor, scUSD),
+                bridge(mcDoor, mcUSD, scIOUDoor, scUSD),
                 reward,
                 minCreate));
         }
@@ -188,7 +194,7 @@ struct XChainBridge_test : public beast::unit_test::suite
 
             env(bridge_create(
                 mcDoor,
-                bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()),
+                bridge(mcDoor, xrpIssue(), Account::master, xrpIssue()),
                 reward,
                 minCreate));
 
@@ -196,7 +202,7 @@ struct XChainBridge_test : public beast::unit_test::suite
             auto const newMinCreate = XRP(10);
             env(bridge_modify(
                 mcDoor,
-                bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()),
+                bridge(mcDoor, xrpIssue(), Account::master, xrpIssue()),
                 newReward,
                 newMinCreate));
         }
@@ -221,7 +227,7 @@ struct XChainBridge_test : public beast::unit_test::suite
         auto const scBob = Account("scBob");
         auto const scGw = Account("scGw");
         auto const mcUSD = mcGw["USD"];
-        auto const scUSD = scGw["USD"];
+        auto const scUSD = scDoor["USD"];
 
         // Simple xchain txn
         std::vector<signer> const signers = [] {
@@ -239,7 +245,8 @@ struct XChainBridge_test : public beast::unit_test::suite
 
         auto const reward = XRP(1);
         std::optional<STAmount> minCreate;
-        auto const bridgeSpec = bridge(mcDoor, xrpIssue(), scDoor, xrpIssue());
+        auto const bridgeSpec =
+            bridge(mcDoor, xrpIssue(), Account::master, xrpIssue());
         std::uint32_t const chaimID = 1;
         auto const amt = XRP(1000);
         std::vector<Account> const rewardAccounts = [&] {
@@ -310,13 +317,11 @@ struct XChainBridge_test : public beast::unit_test::suite
         auto const mcAlice = Account("mcAlice");
         auto const mcBob = Account("mcBob");
         auto const mcGw = Account("mcGw");
-        auto const scDoor = Account("scDoor");
         auto const scAlice = Account("scAlice");
         auto const scBob = Account("scBob");
         auto const scGw = Account("scGw");
         auto const scReward = Account("scReward");
         auto const mcUSD = mcGw["USD"];
-        auto const scUSD = scGw["USD"];
 
         std::vector<signer> const signers = [] {
             constexpr int numSigners = 5;
@@ -336,18 +341,19 @@ struct XChainBridge_test : public beast::unit_test::suite
             Env mcEnv(*this, features);
             Env scEnv(*this, envconfig(port_increment, 3), features);
             mcEnv.fund(XRP(10000), mcDoor, mcAlice);
-            scEnv.fund(XRP(10000), scDoor, scAlice, scBob, scReward);
+            scEnv.fund(XRP(10000), scAlice, scBob, scReward);
 
             // Signer's list must match the attestation signers
             mcEnv(jtx::signers(mcDoor, signers.size(), signers));
-            scEnv(jtx::signers(scDoor, signers.size(), signers));
+            scEnv(jtx::signers(Account::master, signers.size(), signers));
 
             auto const reward = XRP(1);
             std::optional<STAmount> minCreate;
             auto const bridgeSpec =
-                bridge(mcDoor, xrpIssue(), scDoor, xrpIssue());
+                bridge(mcDoor, xrpIssue(), Account::master, xrpIssue());
             mcEnv(bridge_create(mcDoor, bridgeSpec, reward, minCreate));
-            scEnv(bridge_create(scDoor, bridgeSpec, reward, minCreate));
+            scEnv(
+                bridge_create(Account::master, bridgeSpec, reward, minCreate));
             mcEnv.close();
             scEnv.close();
 
@@ -382,7 +388,7 @@ struct XChainBridge_test : public beast::unit_test::suite
             }();
 
             auto const bobPre = scEnv.balance(scBob);
-            auto const doorPre = scEnv.balance(scDoor);
+            auto const doorPre = scEnv.balance(Account::master);
             auto const rewardPre = scEnv.balance(scReward);
 
             Json::Value batch = attestation_claim_batch(
@@ -401,7 +407,7 @@ struct XChainBridge_test : public beast::unit_test::suite
             if (withClaim)
             {
                 auto const bobPost = scEnv.balance(scBob);
-                auto const doorPost = scEnv.balance(scDoor);
+                auto const doorPost = scEnv.balance(Account::master);
                 auto const rewardPost = scEnv.balance(scReward);
                 BEAST_EXPECT(bobPost == bobPre);
                 BEAST_EXPECT(doorPre == doorPost);
@@ -413,7 +419,7 @@ struct XChainBridge_test : public beast::unit_test::suite
             }
 
             auto const bobPost = scEnv.balance(scBob);
-            auto const doorPost = scEnv.balance(scDoor);
+            auto const doorPost = scEnv.balance(Account::master);
             auto const rewardPost = scEnv.balance(scReward);
             BEAST_EXPECT(bobPost - bobPre == amt);
             BEAST_EXPECT(doorPre - doorPost == amt);
@@ -433,14 +439,12 @@ struct XChainBridge_test : public beast::unit_test::suite
         auto const mcAlice = Account("mcAlice");
         auto const mcBob = Account("mcBob");
         auto const mcGw = Account("mcGw");
-        auto const scDoor = Account("scDoor");
         auto const scAlice = Account("scAlice");
         auto const scBob = Account("scBob");
         auto const scGw = Account("scGw");
         auto const scAttester = Account("scAttester");
         auto const scReward = Account("scReward");
         auto const mcUSD = mcGw["USD"];
-        auto const scUSD = scGw["USD"];
 
         std::vector<signer> const signers = [] {
             constexpr int numSigners = 5;
@@ -459,17 +463,18 @@ struct XChainBridge_test : public beast::unit_test::suite
         Env scEnv(*this, envconfig(port_increment, 3), features);
         mcEnv.fund(XRP(10000), mcDoor, mcAlice);
         // Don't fund scBob - it will be created with the xchain transaction
-        scEnv.fund(XRP(10000), scDoor, scAlice, scAttester, scReward);
+        scEnv.fund(XRP(10000), scAlice, scAttester, scReward);
 
         // Signer's list must match the attestation signers
         mcEnv(jtx::signers(mcDoor, signers.size(), signers));
-        scEnv(jtx::signers(scDoor, signers.size(), signers));
+        scEnv(jtx::signers(Account::master, signers.size(), signers));
 
         auto const reward = XRP(1);
         STAmount const minCreate = XRP(20);
-        auto const bridgeSpec = bridge(mcDoor, xrpIssue(), scDoor, xrpIssue());
+        auto const bridgeSpec =
+            bridge(mcDoor, xrpIssue(), Account::master, xrpIssue());
         mcEnv(bridge_create(mcDoor, bridgeSpec, reward, minCreate));
-        scEnv(bridge_create(scDoor, bridgeSpec, reward, minCreate));
+        scEnv(bridge_create(Account::master, bridgeSpec, reward, minCreate));
         mcEnv.close();
         scEnv.close();
 
@@ -516,7 +521,7 @@ struct XChainBridge_test : public beast::unit_test::suite
         Account dst{scBob};
 
         auto const bobPre = XRP(0);
-        auto const doorPre = scEnv.balance(scDoor);
+        auto const doorPre = scEnv.balance(Account::master);
         auto const rewardPre = scEnv.balance(scReward);
 
         Json::Value batch = attestation_create_account_batch(
@@ -534,7 +539,7 @@ struct XChainBridge_test : public beast::unit_test::suite
         scEnv.close();
 
         auto const bobPost = scEnv.balance(scBob);
-        auto const doorPost = scEnv.balance(scDoor);
+        auto const doorPost = scEnv.balance(Account::master);
         auto const rewardPost = scEnv.balance(scReward);
         BEAST_EXPECT(bobPost - bobPre == amt);
         BEAST_EXPECT(doorPre - doorPost == amt + reward);

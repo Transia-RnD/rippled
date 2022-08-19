@@ -75,6 +75,19 @@ AttestationBase::equalHelper(
 }
 
 bool
+AttestationBase::sameEventHelper(
+    AttestationBase const& lhs,
+    AttestationBase const& rhs)
+{
+    return std::tie(
+               lhs.sendingAccount,
+               lhs.sendingAmount,
+               lhs.wasLockingChainSend) ==
+        std::tie(
+               rhs.sendingAccount, rhs.sendingAmount, rhs.wasLockingChainSend);
+}
+
+bool
 AttestationBase::verify(STXChainBridge const& bridge) const
 {
     std::vector<std::uint8_t> msg = message(bridge);
@@ -191,6 +204,13 @@ AttestationClaim::message(STXChainBridge const& bridge) const
 }
 
 bool
+AttestationClaim::sameEvent(AttestationClaim const& rhs) const
+{
+    return AttestationClaim::sameEventHelper(*this, rhs) &&
+        tie(claimID, dst) == tie(rhs.claimID, rhs.dst);
+}
+
+bool
 operator==(AttestationClaim const& lhs, AttestationClaim const& rhs)
 {
     return AttestationClaim::equalHelper(lhs, rhs) &&
@@ -290,6 +310,14 @@ AttestationCreateAccount::message(STXChainBridge const& bridge) const
         wasLockingChainSend,
         createCount,
         toCreate);
+}
+
+bool
+AttestationCreateAccount::sameEvent(AttestationCreateAccount const& rhs) const
+{
+    return AttestationCreateAccount::sameEventHelper(*this, rhs) &&
+        std::tie(createCount, toCreate, rewardAmount) ==
+        std::tie(rhs.createCount, rhs.toCreate, rhs.rewardAmount);
 }
 
 bool
@@ -557,6 +585,46 @@ STXChainAttestationBatch::verify() const
         std::all_of(creates_.begin(), creates_.end(), [&](auto const& c) {
                return c.verify(bridge_);
            });
+}
+
+bool
+STXChainAttestationBatch::noConflicts() const
+{
+    // Check that all the batches attest to the same thing
+    auto isConsistent = [](auto batchStart, auto batchEnd) -> bool {
+        if (batchStart == batchEnd)
+            return true;
+        auto const& toMatch = *batchStart;
+        ++batchStart;
+        for (auto i = batchStart; i != batchEnd; ++i)
+        {
+            if (!toMatch.sameEvent(*i))
+            {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    {
+        // Check that all the claim batches attest to the same thing
+        auto r = for_each_create_batch<bool>(
+            creates_.begin(), creates_.end(), isConsistent);
+        if (!std::all_of(r.begin(), r.end(), [](bool v) { return v; }))
+        {
+            return false;
+        }
+    }
+    {
+        auto r = for_each_claim_batch<bool>(
+            claims_.begin(), claims_.end(), isConsistent);
+        if (!std::all_of(r.begin(), r.end(), [](bool v) { return v; }))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 SerializedTypeID

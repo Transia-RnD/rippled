@@ -359,20 +359,18 @@ XChainAttestationsBase<TAttestation>::toSTArray() const
 
 template <class TAttestation>
 std::optional<std::vector<AccountID>>
-XChainAttestationsBase<TAttestation>::onNewAttestation(
-    typename TAttestation::TBatchAttestation const& att,
+XChainAttestationsBase<TAttestation>::onNewAttestations(
+    typename TAttestation::TBatchAttestation const* attBegin,
+    typename TAttestation::TBatchAttestation const* attEnd,
     std::uint32_t quorum,
     std::unordered_map<AccountID, std::uint32_t> const& signersList)
 {
+    if (attBegin == attEnd)
+        return {};
+
+    for (auto att = attBegin; att != attEnd; ++att)
     {
-        // Add the new attestation, but only if it is not currently part of the
-        // collection or the amount it attests to is greater or equal (the equal
-        // case can be used to change the reward account)
-        //
-        // TODO: Reconsider this rule. It makes it impossible to replace an
-        // incorrect attestation if the amount is too large. Maybe always
-        // replace?
-        auto const claimSigningAccount = calcAccountID(att.publicKey);
+        auto const claimSigningAccount = calcAccountID(att->publicKey);
         if (auto i = std::find_if(
                 attestations_.begin(),
                 attestations_.end(),
@@ -382,19 +380,17 @@ XChainAttestationsBase<TAttestation>::onNewAttestation(
             i != attestations_.end())
         {
             // existing attestation
-            if (att.sendingAmount >= i->amount)
-            {
-                // replace old attestation with new attestion
-                *i = TAttestation{att};
-            }
+            // replace old attestation with new attestion
+            *i = TAttestation{*att};
         }
+        else
         {
-            attestations_.emplace_back(att);
+            attestations_.emplace_back(*att);
         }
     }
 
     auto r = claimHelper(
-        typename TAttestation::MatchFields{att},
+        typename TAttestation::MatchFields{*attBegin},
         CheckDst::check,
         quorum,
         signersList);

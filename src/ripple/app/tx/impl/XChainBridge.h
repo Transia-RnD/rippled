@@ -151,11 +151,12 @@ public:
     doApply() override;
 
 private:
-    // Apply an attestation for an claim
+    // Apply the attestations for a claim id
     // signersList is a map from a signer's account id to its weight
     TER
-    applyClaim(
-        AttestationBatch::AttestationClaim const& att,
+    applyClaims(
+        STXChainAttestationBatch::TClaims::const_iterator attBegin,
+        STXChainAttestationBatch::TClaims::const_iterator attEnd,
         STXChainBridge const& bridgeSpec,
         std::unordered_map<AccountID, std::uint32_t> const& signersList,
         std::uint32_t quorum);
@@ -164,7 +165,8 @@ private:
     // signersList is a map from a signer's account id to its weight
     TER
     applyCreateAccountAtt(
-        AttestationBatch::AttestationCreateAccount const& att,
+        STXChainAttestationBatch::TCreates::const_iterator attBegin,
+        STXChainAttestationBatch::TCreates::const_iterator attEnd,
         AccountID const& doorAccount,
         Keylet const& doorK,
         STXChainBridge const& bridgeSpec,

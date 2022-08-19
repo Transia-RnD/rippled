@@ -231,8 +231,9 @@ public:
            all). Instead, it handles the event of a new attestation.
      */
     std::optional<std::vector<AccountID>>
-    onNewAttestation(
-        typename TAttestation::TBatchAttestation const& claimAtt,
+    onNewAttestations(
+        typename TAttestation::TBatchAttestation const* attBegin,
+        typename TAttestation::TBatchAttestation const* attEnd,
         std::uint32_t quorum,
         std::unordered_map<AccountID, std::uint32_t> const& signersList);
 

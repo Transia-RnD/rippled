@@ -50,26 +50,69 @@
 namespace ripple {
 
 /*
-    Sidechains
+   Bridges connect two independent ledgers: a "locking chain" and an "issuing
+   chain". An asset can be moved from the locking chain to the issuing chain by
+   putting it into trust on the locking chain, and issuing a "wrapped asset"
+   that represents the locked asset on the issuing chain.
 
-        Sidechains allow the transfer of assets from one chain to another. While
-        the asset is used on the other chain, it is kept in an account on the
-        mainchain.
-        TODO: Finish this description
+   Note that a bridge is not an exchange. There is no exchange rate: one wrapped
+   asset on the issuing chain always represents one asset in trust on the
+   locking chain. The bridge also does not exchange an asset on the locking
+   chain for an asset on the issuing chain.
 
-        TODO: Txn to change signatures
-        TODO: Txn to remove the sidechain - track assets in trust?
-        TODO: add trace and debug logging
+   A good model for thinking about bridges is a box that contains an infinite
+   number of "wrapped tokens". When a token from the locking chain
+   (locking-chain-token) is put into the box, a wrapped token is taken out of
+   the box an put onto the issuing chain (issuing-chain-token). No one can use
+   the locking-chain-token while it remains in the box. When an
+   issuing-chain-token is returned to the box, one locking-chain-token is taken
+   out of the box and put back onto the locking chain.
 
+   This requires a way to put assets into trust on one chain (put a
+   locking-chain-token into the box). A regular XRP account is used for this.
+   This account is called a "door account". Much in the same way that a door is
+   used to go from one room to another, a door account is used to move from one
+   chain to another. This account will be jointly controlled by a set of witness
+   servers by using the ledger's multi-signature support. The master key will be
+   disabled. These witness servers are trusted in the sense that if a quorum of
+   them collude, they can steal the funds put into trust.
+
+   This also requires a way to prove that assets were put into the box - either
+   a locking-chain-token on the locking chain or returning an
+   issuing-chain-token on the issuing chain. A set of servers called "witness
+   servers" fill this role. These servers watch the ledger for these
+   transactions, and attests that the given events happened on the different
+   chains by signing messages with the event information.
+
+   There needs to be a way to prevent the attestations from the witness
+   servers from being used more than once. "Claim ids" fill this role. A claim
+   id must be acquired on the destination chain before the asset is "put into
+   the box" on the source chain. This claim id has a unique id, and once it is
+   destroyed it can never exist again (it's a simple counter). The attestations
+   reference this claim id, and are accumulated on the claim id. Once a quorum
+   is reached, funds can move. Once the funds move, the claim id is destroyed.
+
+   Finally, a claim id requires that the sender has an account on the
+   destination chain. For some chains, this can be a problem - especially if
+   the wrapped asset represents XRP, and XRP is needed to create an account.
+   There's a bootstrap problem. To address there, there is a special transaction
+   used to create accounts. This transaction does not require a claim id.
+
+   See the document "docs/sidechain/spec.md" for a full description of how
+   bridges and their transactions work.
 */
 
 namespace {
+
+enum class TransferHelperCanCreateDst { no, yes };
+
 TER
 transferHelper(
     PaymentSandbox& psb,
     AccountID const& src,
     AccountID const& dst,
     STAmount const& amt,
+    TransferHelperCanCreateDst canCreate,
     beast::Journal j)
 {
     // TODO: handle DepositAuth
@@ -92,6 +135,11 @@ transferHelper(
         auto sleDst = psb.peek(dstK);
         if (!sleDst)
         {
+            if (canCreate == TransferHelperCanCreateDst::no)
+            {
+                return tecNO_DST;
+            }
+
             // Create the account.
             std::uint32_t const seqno{
                 psb.rules().enabled(featureDeletableAccounts) ? psb.seq() : 1};
@@ -157,7 +205,13 @@ finalizeClaimHelper(
     auto const& thisDoor = wasLockingChainSend ? bridgeSpec.issuingChainDoor()
                                                : bridgeSpec.lockingChainDoor();
 
-    auto const thTer = transferHelper(psb, thisDoor, dst, thisChainAmount, j);
+    auto const thTer = transferHelper(
+        psb,
+        thisDoor,
+        dst,
+        thisChainAmount,
+        TransferHelperCanCreateDst::yes,
+        j);
 
     if (!isTesSuccess(thTer))
         return thTer;
@@ -196,7 +250,14 @@ finalizeClaimHelper(
         STAmount distributed = rewardPool.zeroed();
         for (auto const& ra : rewardAccounts)
         {
-            auto const thTer = transferHelper(psb, rewardPoolSrc, ra, share, j);
+            auto const thTer = transferHelper(
+                psb,
+                rewardPoolSrc,
+                ra,
+                share,
+                TransferHelperCanCreateDst::no,
+                j);
+
             if (thTer == tecINSUFFICIENT_FUNDS || thTer == tecINTERNAL)
                 return thTer;
 
@@ -286,9 +347,30 @@ BridgeCreate::preflight(PreflightContext const& ctx)
     }
 
     if (minAccountCreate &&
-        (!isXRP(*minAccountCreate) || minAccountCreate->signum() < 0))
+        (!isXRP(*minAccountCreate) || minAccountCreate->signum() <= 0))
     {
         return temXCHAIN_BRIDGE_BAD_MIN_ACCOUNT_CREATE_AMOUNT;
+    }
+
+    if (isXRP(bridge.issuingChainIssue()))
+    {
+        // Issuing account must be the root account for XRP
+        static auto const rootAccount = calcAccountID(
+            generateKeyPair(
+                KeyType::secp256k1, generateSeed("masterpassphrase"))
+                .first);
+        if (bridge.issuingChainDoor() != rootAccount)
+        {
+            return temSIDECHAIN_BAD_ISSUES;
+        }
+    }
+    else
+    {
+        // Issuing account must be the issuer for non-XRP
+        if (bridge.issuingChainDoor() != bridge.issuingChainIssue().account)
+        {
+            return temSIDECHAIN_BAD_ISSUES;
+        }
     }
 
     return preflight2(ctx);
@@ -421,7 +503,7 @@ BridgeModify::preflight(PreflightContext const& ctx)
     }
 
     if (minAccountCreate &&
-        (!isXRP(*minAccountCreate) || minAccountCreate->signum() < 0))
+        (!isXRP(*minAccountCreate) || minAccountCreate->signum() <= 0))
     {
         return temXCHAIN_BRIDGE_BAD_MIN_ACCOUNT_CREATE_AMOUNT;
     }
@@ -487,7 +569,6 @@ XChainClaim::preflight(PreflightContext const& ctx)
 
     STXChainBridge const bridgeSpec = ctx.tx[sfXChainBridge];
     auto const amount = ctx.tx[sfAmount];
-    AccountID const account = ctx.tx[sfAccount];
 
     if (amount.signum() <= 0 ||
         amount.issue() != bridgeSpec.lockingChainIssue() ||
@@ -740,7 +821,14 @@ XChainCommit::doApply()
 
     auto const dst = (*sleB)[sfAccount];
 
-    auto const thTer = transferHelper(psb, account, dst, amount, ctx_.journal);
+    auto const thTer = transferHelper(
+        psb,
+        account,
+        dst,
+        amount,
+        TransferHelperCanCreateDst::no,
+        ctx_.journal);
+
     if (!isTesSuccess(thTer))
         return thTer;
 
@@ -887,6 +975,12 @@ XChainAddAttestation::preflight(PreflightContext const& ctx)
     if (!batch.verify())
         return temBAD_XCHAIN_PROOF;
 
+    if (!batch.noConflicts())
+    {
+        // TODO: return a better error here
+        return temBAD_XCHAIN_PROOF;
+    }
+
     auto const& bridgeSpec = batch.bridge();
     // If any attestation is for a negative amount or for an amount
     // that isn't expected by the given bridge, the whole transaction is bad
@@ -908,7 +1002,6 @@ XChainAddAttestation::preflight(PreflightContext const& ctx)
     {
         return temBAD_XCHAIN_PROOF;
     }
-
     return preflight2(ctx);
 }
 
@@ -919,30 +1012,43 @@ XChainAddAttestation::preclaim(PreclaimContext const& ctx)
     return tesSUCCESS;
 }
 
-// TODO: Do all the claims for a claimid as a batch
-// If we don't do this some of the signers may miss out on the reward because a
-// quorum may be reached before we get to those signatures
+// Precondition: all the claims in the range are consistant. They must sign for
+// the same event (amount, sending account, claim id, ect).
 TER
-XChainAddAttestation::applyClaim(
-    AttestationBatch::AttestationClaim const& att,
+XChainAddAttestation::applyClaims(
+    STXChainAttestationBatch::TClaims::const_iterator attBegin,
+    STXChainAttestationBatch::TClaims::const_iterator attEnd,
     STXChainBridge const& bridgeSpec,
     std::unordered_map<AccountID, std::uint32_t> const& signersList,
     std::uint32_t quorum)
 {
+    if (attBegin == attEnd)
+        return tesSUCCESS;
+
     PaymentSandbox psb(&ctx_.view());
 
     auto const sleCID =
-        psb.peek(keylet::xChainClaimID(bridgeSpec, att.claimID));
+        psb.peek(keylet::xChainClaimID(bridgeSpec, attBegin->claimID));
     if (!sleCID)
         return tecXCHAIN_NO_CLAIM_ID;
 
-    if (!signersList.count(calcAccountID(att.publicKey)))
+    // Add claims that are part of the signer's list to the "claims" vector
+    std::vector<AttestationBatch::AttestationClaim> atts;
+    atts.reserve(std::distance(attBegin, attEnd));
+    for (auto att = attBegin; att != attEnd; ++att)
+    {
+        if (!signersList.count(calcAccountID(att->publicKey)))
+            continue;
+        atts.push_back(*att);
+    }
+
+    if (atts.empty())
     {
         return tecXCHAIN_PROOF_UNKNOWN_KEY;
     }
 
     AccountID const otherChainAccount = (*sleCID)[sfOtherChainAccount];
-    if (att.sendingAccount != otherChainAccount)
+    if (attBegin->sendingAccount != otherChainAccount)
     {
         return tecXCHAIN_SENDING_ACCOUNT_MISMATCH;
     }
@@ -950,21 +1056,21 @@ XChainAddAttestation::applyClaim(
     XChainClaimAttestations curAtts{
         sleCID->getFieldArray(sfXChainClaimAttestations)};
 
-    auto const rewardAccounts =
-        curAtts.onNewAttestation(att, quorum, signersList);
+    auto const rewardAccounts = curAtts.onNewAttestations(
+        &atts[0], &atts[0] + atts.size(), quorum, signersList);
 
-    if (rewardAccounts && att.dst)
+    if (rewardAccounts && attBegin->dst)
     {
         auto const& rewardPoolSrc = (*sleCID)[sfAccount];
         auto const r = finalizeClaimHelper(
             psb,
             bridgeSpec,
-            *att.dst,
-            att.sendingAmount,
+            *attBegin->dst,
+            attBegin->sendingAmount,
             rewardPoolSrc,
             (*sleCID)[sfSignatureReward],
             *rewardAccounts,
-            att.wasLockingChainSend,
+            attBegin->wasLockingChainSend,
             sleCID,
             ctx_.journal);
         if (!isTesSuccess(r))
@@ -984,7 +1090,8 @@ XChainAddAttestation::applyClaim(
 
 TER
 XChainAddAttestation::applyCreateAccountAtt(
-    AttestationBatch::AttestationCreateAccount const& att,
+    STXChainAttestationBatch::TCreates::const_iterator attBegin,
+    STXChainAttestationBatch::TCreates::const_iterator attEnd,
     AccountID const& doorAccount,
     Keylet const& doorK,
     STXChainBridge const& bridgeSpec,
@@ -992,6 +1099,9 @@ XChainAddAttestation::applyCreateAccountAtt(
     std::unordered_map<AccountID, std::uint32_t> const& signersList,
     std::uint32_t quorum)
 {
+    if (attBegin == attEnd)
+        return tesSUCCESS;
+
     PaymentSandbox psb(&ctx_.view());
 
     auto const sleDoor = psb.peek(doorK);
@@ -1004,18 +1114,18 @@ XChainAddAttestation::applyCreateAccountAtt(
 
     std::int64_t const claimCount = (*sleB)[sfXChainAccountClaimCount];
 
-    if (att.createCount <= claimCount)
+    if (attBegin->createCount <= claimCount)
     {
         return tecXCHAIN_ACCOUNT_CREATE_PAST;
     }
-    if (att.createCount >= claimCount + 128)
+    if (attBegin->createCount >= claimCount + 128)
     {
         // Limit the number of claims on the account
         return tecXCHAIN_ACCOUNT_CREATE_TOO_MANY;
     }
 
     auto const claimKeylet =
-        keylet::xChainCreateAccountClaimID(bridgeSpec, att.createCount);
+        keylet::xChainCreateAccountClaimID(bridgeSpec, attBegin->createCount);
 
     // sleCID may be null. If it's null it isn't created until the end of this
     // function (if needed)
@@ -1034,7 +1144,15 @@ XChainAddAttestation::applyCreateAccountAtt(
             return tecINSUFFICIENT_RESERVE;
     }
 
-    if (!signersList.count(calcAccountID(att.publicKey)))
+    std::vector<AttestationBatch::AttestationCreateAccount> atts;
+    atts.reserve(std::distance(attBegin, attEnd));
+    for (auto att = attBegin; att != attEnd; ++att)
+    {
+        if (!signersList.count(calcAccountID(att->publicKey)))
+            continue;
+        atts.push_back(*att);
+    }
+    if (atts.empty())
     {
         return tecXCHAIN_PROOF_UNKNOWN_KEY;
     }
@@ -1046,26 +1164,26 @@ XChainAddAttestation::applyCreateAccountAtt(
         return XChainCreateAccountAttestations{};
     }();
 
-    auto const rewardAccounts =
-        curAtts.onNewAttestation(att, quorum, signersList);
+    auto const rewardAccounts = curAtts.onNewAttestations(
+        &atts[0], &atts[0] + atts.size(), quorum, signersList);
 
     // Account create transactions must happen in order
-    if (rewardAccounts && claimCount + 1 == att.createCount)
+    if (rewardAccounts && claimCount + 1 == attBegin->createCount)
     {
         auto const r = finalizeClaimHelper(
             psb,
             bridgeSpec,
-            att.toCreate,
-            att.sendingAmount,
+            attBegin->toCreate,
+            attBegin->sendingAmount,
             /*rewardPoolSrc*/ doorAccount,
-            att.rewardAmount,
+            attBegin->rewardAmount,
             *rewardAccounts,
-            att.wasLockingChainSend,
+            attBegin->wasLockingChainSend,
             sleCID,
             ctx_.journal);
         if (!isTesSuccess(r))
             return r;
-        (*sleB)[sfXChainAccountClaimCount] = att.createCount;
+        (*sleB)[sfXChainAccountClaimCount] = attBegin->createCount;
         psb.update(sleB);
     }
     else
@@ -1078,7 +1196,7 @@ XChainAddAttestation::applyCreateAccountAtt(
             auto const sleCID = std::make_shared<SLE>(claimKeylet);
             (*sleCID)[sfAccount] = doorAccount;
             (*sleCID)[sfXChainBridge] = bridgeSpec;
-            (*sleCID)[sfXChainAccountCreateCount] = att.createCount;
+            (*sleCID)[sfXChainAccountCreateCount] = attBegin->createCount;
             sleCID->setFieldArray(
                 sfXChainCreateAccountAttestations, curAtts.toSTArray());
 
@@ -1141,31 +1259,49 @@ XChainAddAttestation::doApply()
     if (!isTesSuccess(slTer))
         return slTer;
 
-    for (auto const& createAtt : batch.creates())
     {
-        auto const r = applyCreateAccountAtt(
-            createAtt,
-            thisDoor,
-            doorK,
-            bridgeSpec,
-            bridgeK,
-            signersList,
-            quorum);
+        auto const claimResults =
+            STXChainAttestationBatch::for_each_create_batch<TER>(
+                batch.creates().begin(),
+                batch.creates().end(),
+                [&, &signersList = signersList, &quorum = quorum](
+                    auto batchStart, auto batchEnd) {
+                    return applyCreateAccountAtt(
+                        batchStart,
+                        batchEnd,
+                        thisDoor,
+                        doorK,
+                        bridgeSpec,
+                        bridgeK,
+                        signersList,
+                        quorum);
+                });
+        auto isTecInternal = [](auto r) { return r == tecINTERNAL; };
+        if (std::any_of(
+                claimResults.begin(), claimResults.end(), isTecInternal))
+            return tecINTERNAL;
 
-        if (r == tecINTERNAL)
-            return r;
-
-        applyRestuls.push_back(r);
+        applyRestuls.insert(
+            applyRestuls.end(), claimResults.begin(), claimResults.end());
     }
 
-    for (auto const& claimAtt : batch.claims())
     {
-        auto const r = applyClaim(claimAtt, bridgeSpec, signersList, quorum);
+        auto const claimResults =
+            STXChainAttestationBatch::for_each_claim_batch<TER>(
+                batch.claims().begin(),
+                batch.claims().end(),
+                [&, &signersList = signersList, &quorum = quorum](
+                    auto batchStart, auto batchEnd) {
+                    return applyClaims(
+                        batchStart, batchEnd, bridgeSpec, signersList, quorum);
+                });
+        auto isTecInternal = [](auto r) { return r == tecINTERNAL; };
+        if (std::any_of(
+                claimResults.begin(), claimResults.end(), isTecInternal))
+            return tecINTERNAL;
 
-        if (r == tecINTERNAL)
-            return r;
-
-        applyRestuls.push_back(r);
+        applyRestuls.insert(
+            applyRestuls.end(), claimResults.begin(), claimResults.end());
     }
 
     if (applyRestuls.size() == 1)
@@ -1289,8 +1425,13 @@ XChainCreateAccount::doApply()
     auto const dst = (*sleB)[sfAccount];
 
     STAmount const toTransfer = amount + reward;
-    auto const thTer =
-        transferHelper(psb, account, dst, toTransfer, ctx_.journal);
+    auto const thTer = transferHelper(
+        psb,
+        account,
+        dst,
+        toTransfer,
+        TransferHelperCanCreateDst::yes,
+        ctx_.journal);
 
     if (!isTesSuccess(thTer))
         return thTer;

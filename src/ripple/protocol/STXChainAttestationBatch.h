@@ -29,7 +29,9 @@
 #include <ripple/protocol/STXChainBridge.h>
 
 #include <boost/container/flat_set.hpp>
+#include <boost/container/vector.hpp>
 
+#include <type_traits>
 #include <vector>
 
 namespace ripple {
@@ -61,7 +63,12 @@ struct AttestationBase
         AccountID const& rewardAccount_,
         bool wasLockingChainSend_);
 
+    AttestationBase(AttestationBase const&) = default;
+
     virtual ~AttestationBase() = default;
+
+    AttestationBase&
+    operator=(AttestationBase const&) = default;
 
     // verify that the signature attests to the data.
     bool
@@ -71,14 +78,17 @@ protected:
     explicit AttestationBase(STObject const& o);
     explicit AttestationBase(Json::Value const& v);
 
-    static bool
+    [[nodiscard]] static bool
     equalHelper(AttestationBase const& lhs, AttestationBase const& rhs);
+
+    [[nodiscard]] static bool
+    sameEventHelper(AttestationBase const& lhs, AttestationBase const& rhs);
 
     void
     addHelper(STObject& o) const;
 
 private:
-    virtual std::vector<std::uint8_t>
+    [[nodiscard]] virtual std::vector<std::uint8_t>
     message(STXChainBridge const& bridge) const = 0;
 };
 
@@ -101,10 +111,14 @@ struct AttestationClaim : AttestationBase
     explicit AttestationClaim(STObject const& o);
     explicit AttestationClaim(Json::Value const& v);
 
-    STObject
+    [[nodiscard]] STObject
     toSTObject() const;
 
-    static std::vector<std::uint8_t>
+    // return true if the two attestations attest to the same thing
+    [[nodiscard]] bool
+    sameEvent(AttestationClaim const& rhs) const;
+
+    [[nodiscard]] static std::vector<std::uint8_t>
     message(
         STXChainBridge const& bridge,
         AccountID const& sendingAccount,
@@ -115,7 +129,7 @@ struct AttestationClaim : AttestationBase
         std::optional<AccountID> const& dst);
 
 private:
-    std::vector<std::uint8_t>
+    [[nodiscard]] std::vector<std::uint8_t>
     message(STXChainBridge const& bridge) const override;
 
     friend bool
@@ -161,8 +175,12 @@ struct AttestationCreateAccount : AttestationBase
         std::uint64_t createCount_,
         AccountID const& toCreate_);
 
-    STObject
+    [[nodiscard]] STObject
     toSTObject() const;
+
+    // return true if the two attestations attest to the same thing
+    [[nodiscard]] bool
+    sameEvent(AttestationCreateAccount const& rhs) const;
 
     friend bool
     operator==(
@@ -174,7 +192,7 @@ struct AttestationCreateAccount : AttestationBase
         AttestationCreateAccount const& lhs,
         AttestationCreateAccount const& rhs);
 
-    static std::vector<std::uint8_t>
+    [[nodiscard]] static std::vector<std::uint8_t>
     message(
         STXChainBridge const& bridge,
         AccountID const& sendingAccount,
@@ -186,7 +204,7 @@ struct AttestationCreateAccount : AttestationBase
         AccountID const& dst);
 
 private:
-    std::vector<std::uint8_t>
+    [[nodiscard]] std::vector<std::uint8_t>
     message(STXChainBridge const& bridge) const override;
 };
 
@@ -214,6 +232,22 @@ public:
     using TCreates = boost::container::flat_multiset<
         AttestationBatch::AttestationCreateAccount,
         AttestationBatch::CmpByCreateCount>;
+
+    template <class R, class TIter, class T, class F>
+    [[nodiscard]] static boost::container::vector<R>
+    for_each_batch(
+        TIter begin,
+        TIter end,
+        std::uint64_t T::*groupByMember,
+        F&& callback);
+
+    template <class R, class TIter, class F>
+    [[nodiscard]] static boost::container::vector<R>
+    for_each_claim_batch(TIter begin, TIter end, F&& callback);
+
+    template <class R, class TIter, class F>
+    [[nodiscard]] static boost::container::vector<R>
+    for_each_create_batch(TIter begin, TIter end, F&& callback);
 
 private:
     STXChainBridge bridge_;
@@ -250,40 +284,47 @@ public:
     STXChainAttestationBatch&
     operator=(STXChainAttestationBatch const& rhs) = default;
 
-    STObject
+    [[nodiscard]] STObject
     toSTObject() const;
 
     // verify that all the signatures attest to their data.
-    bool
+    [[nodiscard]] bool
     verify() const;
 
-    STXChainBridge const&
+    // Return true if there are no conflicting attestations. I.e., all the
+    // attestation for a given claim id or create count attest to the same event
+    // (same amounts, sending accounts, ect - the signers and reward accounts
+    // may be different)
+    [[nodiscard]] bool
+    noConflicts() const;
+
+    [[nodiscard]] STXChainBridge const&
     bridge() const;
 
-    TClaims const&
+    [[nodiscard]] TClaims const&
     claims() const;
 
-    TCreates const&
+    [[nodiscard]] TCreates const&
     creates() const;
 
-    std::size_t
+    [[nodiscard]] std::size_t
     numAttestations() const;
 
-    SerializedTypeID
+    [[nodiscard]] SerializedTypeID
     getSType() const override;
 
-    Json::Value getJson(JsonOptions) const override;
+    [[nodiscard]] Json::Value getJson(JsonOptions) const override;
 
     void
     add(Serializer& s) const override;
 
-    bool
+    [[nodiscard]] bool
     isEquivalent(const STBase& t) const override;
 
-    bool
+    [[nodiscard]] bool
     isDefault() const override;
 
-    value_type const&
+    [[nodiscard]] value_type const&
     value() const noexcept;
 
 private:
@@ -344,6 +385,65 @@ inline STXChainAttestationBatch::value_type const&
 STXChainAttestationBatch::value() const noexcept
 {
     return *this;
+}
+
+// Boost vector does not specialize vector<bool>
+template <class R, class TIter, class T, class F>
+boost::container::vector<R>
+STXChainAttestationBatch::for_each_batch(
+    TIter begin,
+    TIter end,
+    std::uint64_t T::*groupByMember,
+    F&& callback)
+{
+    boost::container::vector<R> results;
+    results.reserve(std::distance(begin, end));
+    auto batchStart = begin;
+    while (batchStart != end)
+    {
+        auto batchEnd = std::upper_bound(
+            batchStart,
+            end,
+            (*batchStart).*groupByMember,
+            [&groupByMember](std::uint64_t v, T const& elem) {
+                return v < elem.*groupByMember;
+            });
+
+        auto const r = callback(batchStart, batchEnd);
+        results.push_back(r);
+        batchStart = batchEnd;
+    }
+    return results;
+}
+
+// Boost vector does not specialize vector<bool>
+template <class R, class TIter, class F>
+boost::container::vector<R>
+STXChainAttestationBatch::for_each_claim_batch(
+    TIter begin,
+    TIter end,
+    F&& callback)
+{
+    return for_each_batch<R>(
+        begin,
+        end,
+        &AttestationBatch::AttestationClaim::claimID,
+        std::forward<F>(callback));
+}
+
+// Boost vector does not specialize vector<bool>
+template <class R, class TIter, class F>
+boost::container::vector<R>
+STXChainAttestationBatch::for_each_create_batch(
+    TIter begin,
+    TIter end,
+    F&& callback)
+{
+    return for_each_batch<R>(
+        begin,
+        end,
+        &AttestationBatch::AttestationCreateAccount::createCount,
+        std::forward<F>(callback));
 }
 
 }  // namespace ripple
