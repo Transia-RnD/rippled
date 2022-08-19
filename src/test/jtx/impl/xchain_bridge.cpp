@@ -341,6 +341,8 @@ XChainBridgeObjects::XChainBridgeObjects()
     , scAlice("scAlice")
     , scBob("scBob")
     , scGw("scGw")
+    , scAttester("scAttester")
+    , scReward("scReward")
     , mcuDoor("mcuDoor")
     , mcuAlice("mcuAlice")
     , mcuBob("mcuBob")
@@ -349,12 +351,12 @@ XChainBridgeObjects::XChainBridgeObjects()
     , scuAlice("scuAlice")
     , scuBob("scuBob")
     , scuGw("scuGw")
-    , scAttester("scAttester")
-    , scReward("scReward")
     , mcUSD(mcGw["USD"])
     , scUSD(scGw["USD"])
     , reward(XRP(1))
     , jvXRPBridgeRPC(bridge_rpc(mcDoor, xrpIssue(), scDoor, xrpIssue()))
+    , jvb(bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()))
+    , jvub(bridge(mcuDoor, xrpIssue(), scuDoor, xrpIssue()))
     , features(supported_amendments() | FeatureBitset{featureXChainBridge})
     , signers([] {
         constexpr int numSigners = 5;
@@ -389,8 +391,6 @@ XChainBridgeObjects::XChainBridgeObjects()
         return r;
     }())
     , quorum(static_cast<std::uint32_t>(signers.size()) - 1)
-    , jvb(bridge(mcDoor, xrpIssue(), scDoor, xrpIssue()))
-    , jvub(bridge(mcuDoor, xrpIssue(), scuDoor, xrpIssue()))
 {
 }
 
