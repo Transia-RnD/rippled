@@ -931,7 +931,7 @@ XChainCreateClaimID::doApply()
     auto const account = ctx_.tx[sfAccount];
     auto const bridge = ctx_.tx[sfXChainBridge];
     auto const reward = ctx_.tx[sfSignatureReward];
-    auto const otherChainAccount = ctx_.tx[sfOtherChainAccount];
+    auto const otherChainSrc = ctx_.tx[sfOtherChainSource];
 
     auto const sleAcc = ctx_.view().peek(keylet::account(account));
     if (!sleAcc)
@@ -956,7 +956,7 @@ XChainCreateClaimID::doApply()
     (*sleQ)[sfAccount] = account;
     (*sleQ)[sfXChainBridge] = bridge;
     (*sleQ)[sfXChainClaimID] = claimID;
-    (*sleQ)[sfOtherChainAccount] = otherChainAccount;
+    (*sleQ)[sfOtherChainSource] = otherChainSrc;
     (*sleQ)[sfSignatureReward] = reward;
     sleQ->setFieldArray(
         sfXChainClaimAttestations, STArray{sfXChainClaimAttestations});
@@ -1078,8 +1078,8 @@ XChainAddAttestation::applyClaims(
         return tecXCHAIN_PROOF_UNKNOWN_KEY;
     }
 
-    AccountID const otherChainAccount = (*sleCID)[sfOtherChainAccount];
-    if (attBegin->sendingAccount != otherChainAccount)
+    AccountID const otherChainSource = (*sleCID)[sfOtherChainSource];
+    if (attBegin->sendingAccount != otherChainSource)
     {
         return tecXCHAIN_SENDING_ACCOUNT_MISMATCH;
     }

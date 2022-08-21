@@ -115,14 +115,14 @@ xchain_create_claim_id(
     Account const& acc,
     Json::Value const& bridge,
     STAmount const& reward,
-    Account const& otherChainAccount)
+    Account const& otherChainSource)
 {
     Json::Value jv;
 
     jv[jss::Account] = acc.human();
     jv[sfXChainBridge.getJsonName()] = bridge;
     jv[sfSignatureReward.getJsonName()] = reward.getJson(JsonOptions::none);
-    jv[sfOtherChainAccount.getJsonName()] = otherChainAccount.human();
+    jv[sfOtherChainSource.getJsonName()] = otherChainSource.human();
 
     jv[jss::TransactionType] = jss::XChainCreateClaimID;
     jv[jss::Flags] = tfUniversal;
@@ -144,7 +144,7 @@ xchain_commit(
     jv[sfXChainClaimID.getJsonName()] = xchainSeq;
     jv[jss::Amount] = amt.value.getJson(JsonOptions::none);
     if (dst)
-        jv[sfOtherChainAccount.getJsonName()] = dst->human();
+        jv[sfOtherChainDestination.getJsonName()] = dst->human();
 
     jv[jss::TransactionType] = jss::XChainCommit;
     jv[jss::Flags] = tfUniversal;

@@ -291,7 +291,7 @@ LedgerFormats::LedgerFormats()
             {sfAccount,              soeREQUIRED},
             {sfXChainBridge,         soeREQUIRED},
             {sfXChainClaimID,        soeREQUIRED},
-            {sfOtherChainAccount,    soeREQUIRED},
+            {sfOtherChainSource,     soeREQUIRED},
             {sfXChainClaimAttestations,   soeREQUIRED},
             {sfSignatureReward,      soeREQUIRED},
             {sfOwnerNode,            soeREQUIRED},

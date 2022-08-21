@@ -550,7 +550,8 @@ extern SF_ACCOUNT const sfEmitCallback;
 // account (uncommon)
 extern SF_ACCOUNT const sfHookAccount;
 extern SF_ACCOUNT const sfThisChainAccount;
-extern SF_ACCOUNT const sfOtherChainAccount;
+extern SF_ACCOUNT const sfOtherChainSource;
+extern SF_ACCOUNT const sfOtherChainDestination;
 extern SF_ACCOUNT const sfAttestationSignerAccount;
 extern SF_ACCOUNT const sfAttestationRewardAccount;
 extern SF_ACCOUNT const sfLockingChainDoor;

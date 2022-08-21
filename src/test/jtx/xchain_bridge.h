@@ -56,7 +56,7 @@ xchain_create_claim_id(
     Account const& acc,
     Json::Value const& bridge,
     STAmount const& reward,
-    Account const& otherChainAccount);
+    Account const& otherChainSource);
 
 Json::Value
 xchain_commit(
