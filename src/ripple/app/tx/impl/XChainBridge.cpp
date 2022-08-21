@@ -111,6 +111,7 @@ transferHelper(
     PaymentSandbox& psb,
     AccountID const& src,
     AccountID const& dst,
+    std::optional<std::uint32_t> const& dstTag,
     STAmount const& amt,
     TransferHelperCanCreateDst canCreate,
     beast::Journal j)
@@ -123,8 +124,7 @@ transferHelper(
     {
         // Check dst tag and deposit auth
 
-        // TODO: Need a way to specify destination tags
-        if (sleDst->getFlags() & lsfRequireDestTag)
+        if ((sleDst->getFlags() & lsfRequireDestTag) && !dstTag)
             return tecDST_TAG_NEEDED;
 
         if ((sleDst->getFlags() & lsfDepositAuth) &&
@@ -211,6 +211,7 @@ finalizeClaimHelper(
     PaymentSandbox& psb,
     STXChainBridge const& bridgeSpec,
     AccountID const& dst,
+    std::optional<std::uint32_t> const& dstTag,
     STAmount const& sendingAmount,
     AccountID const& rewardPoolSrc,
     STAmount const& rewardPool,
@@ -237,6 +238,7 @@ finalizeClaimHelper(
         psb,
         thisDoor,
         dst,
+        dstTag,
         thisChainAmount,
         TransferHelperCanCreateDst::yes,
         j);
@@ -282,6 +284,7 @@ finalizeClaimHelper(
                 psb,
                 rewardPoolSrc,
                 ra,
+                /*dstTag*/ std::nullopt,
                 share,
                 TransferHelperCanCreateDst::no,
                 j);
@@ -750,10 +753,13 @@ XChainClaim::doApply()
     auto const& rewardAccounts = claimR.value();
     auto const& rewardPoolSrc = (*sleCID)[sfAccount];
 
+    std::optional<std::uint32_t> dstTag = ctx_.tx[~sfDestinationTag];
+
     auto const r = finalizeClaimHelper(
         psb,
         bridgeSpec,
         dst,
+        dstTag,
         sendingAmount,
         rewardPoolSrc,
         (*sleCID)[sfSignatureReward],
@@ -866,6 +872,7 @@ XChainCommit::doApply()
         psb,
         account,
         dst,
+        /*dst tag*/ std::nullopt,
         amount,
         TransferHelperCanCreateDst::no,
         ctx_.journal);
@@ -1110,6 +1117,7 @@ XChainAddAttestation::applyClaims(
             psb,
             bridgeSpec,
             *attBegin->dst,
+            /*dstTag*/ std::nullopt,
             attBegin->sendingAmount,
             rewardPoolSrc,
             (*sleCID)[sfSignatureReward],
@@ -1218,6 +1226,7 @@ XChainAddAttestation::applyCreateAccountAtt(
             psb,
             bridgeSpec,
             attBegin->toCreate,
+            /*dstTag*/ std::nullopt,
             attBegin->sendingAmount,
             /*rewardPoolSrc*/ doorAccount,
             attBegin->rewardAmount,
@@ -1473,6 +1482,7 @@ XChainCreateAccount::doApply()
         psb,
         account,
         dst,
+        /*dstTag*/ std::nullopt,
         toTransfer,
         TransferHelperCanCreateDst::yes,
         ctx_.journal);
