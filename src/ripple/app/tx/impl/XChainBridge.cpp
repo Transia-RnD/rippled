@@ -195,7 +195,12 @@ transferHelper(
         /*sendmax*/ std::nullopt,
         j);
 
-    return result.result();
+    {
+        auto const r = result.result();
+        if (isTesSuccess(r) || isTecClaim(r) || isTerRetry(r))
+            return r;
+        return tecXCHAIN_PAYMENT_FAILED;
+    }
 }
 
 // move the funds
@@ -1579,7 +1584,6 @@ XChainClaimAccount::doApply()
     if (!thisChainAmount.native())
         return tecINTERNAL;
 
-    // TODO: Make sure we turn ters into tecs or can spam for free!
     auto const result = flow(
         psb,
         thisChainAmount,
@@ -1595,7 +1599,12 @@ XChainClaimAccount::doApply()
         ctx_.journal);
 
     if (!isTesSuccess(result.result()))
-        return result.result();
+    {
+        auto const r = result.result();
+        if (isTecClaim(r) || isTerRetry(r))
+            return r;
+        return tecXCHAIN_PAYMENT_FAILED;
+    }
 
     psb.apply(ctx_.rawView());
     return tesSUCCESS;
