@@ -771,6 +771,19 @@ XChainClaim::doApply()
 
 //------------------------------------------------------------------------------
 
+TxConsequences
+XChainCommit::makeTxConsequences(PreflightContext const& ctx)
+{
+    auto const maxSpend = [&] {
+        auto const amount = ctx.tx[sfAmount];
+        if (amount.native() && amount.signum() > 0)
+            return amount.xrp();
+        return XRPAmount{beast::zero};
+    }();
+
+    return TxConsequences{ctx.tx, maxSpend};
+}
+
 NotTEC
 XChainCommit::preflight(PreflightContext const& ctx)
 {

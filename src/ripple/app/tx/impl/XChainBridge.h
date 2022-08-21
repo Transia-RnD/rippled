@@ -72,6 +72,8 @@ public:
 class XChainClaim : public Transactor
 {
 public:
+    // TODO: "Normal" isn't right - as rewards are paid, but we don't know the
+    // reward amount on preflight
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
     explicit XChainClaim(ApplyContext& ctx) : Transactor(ctx)
@@ -93,7 +95,10 @@ public:
 class XChainCommit : public Transactor
 {
 public:
-    static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
+    static constexpr ConsequencesFactoryType ConsequencesFactory{Custom};
+
+    static TxConsequences
+    makeTxConsequences(PreflightContext const& ctx);
 
     explicit XChainCommit(ApplyContext& ctx) : Transactor(ctx)
     {
@@ -135,6 +140,9 @@ public:
 class XChainAddAttestation : public Transactor
 {
 public:
+    // TODO: "Normal" isn't right - as rewards are paid, but we don't know if
+    // the account submitting this transaction will pay some of the rewards or
+    // not
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
     explicit XChainAddAttestation(ApplyContext& ctx) : Transactor(ctx)
