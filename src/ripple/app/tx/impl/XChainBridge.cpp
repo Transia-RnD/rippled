@@ -1396,12 +1396,12 @@ XChainCreateAccount::preclaim(PreclaimContext const& ctx)
     std::optional<STAmount> minCreateAmount =
         (*sleB)[~sfMinAccountCreateAmount];
 
-    if (!minCreateAmount)
+    if (!minCreateAmount || amount < *minCreateAmount)
     {
         return tecXCHAIN_INSUFF_CREATE_AMOUNT;
     }
 
-    if (minCreateAmount->issue() != amount.issue() || amount < minCreateAmount)
+    if (minCreateAmount->issue() != amount.issue())
         return tecBAD_XCHAIN_TRANSFER_ISSUE;
 
     AccountID const thisDoor = (*sleB)[sfAccount];
