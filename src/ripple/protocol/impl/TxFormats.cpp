@@ -394,15 +394,6 @@ TxFormats::TxFormats()
             {sfSignatureReward, soeREQUIRED},
         },
         commonFields);
-
-    add(jss::SidechainXChainAccountClaim,
-        ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM,
-        {
-            {sfXChainBridge, soeREQUIRED},
-            {sfDestination, soeREQUIRED},
-            {sfAmount, soeREQUIRED},
-        },
-        commonFields);
 }
 
 TxFormats const&

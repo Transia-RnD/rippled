@@ -155,9 +155,6 @@ enum TxType : std::uint16_t
     /** This transaction initiates a crosschain account create transaction */
     ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE = 34,
 
-    /** This transaction completes a crosschain account create transaction */
-    ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM = 35,
-
     /** This transaction adds attestations to claimid and account claim states*/
     ttXCHAIN_ADD_ATTESTATION = 36,
 

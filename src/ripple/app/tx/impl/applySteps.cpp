@@ -163,8 +163,6 @@ invoke_preflight(PreflightContext const& ctx)
             return invoke_preflight_helper<XChainAddAttestation>(ctx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
             return invoke_preflight_helper<XChainCreateAccount>(ctx);
-        case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
-            return invoke_preflight_helper<XChainClaimAccount>(ctx);
         default:
             assert(false);
             return {temUNKNOWN, TxConsequences{temUNKNOWN}};
@@ -280,8 +278,6 @@ invoke_preclaim(PreclaimContext const& ctx)
             return invoke_preclaim<XChainAddAttestation>(ctx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
             return invoke_preclaim<XChainCreateAccount>(ctx);
-        case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
-            return invoke_preclaim<XChainClaimAccount>(ctx);
         default:
             assert(false);
             return temUNKNOWN;
@@ -359,8 +355,6 @@ invoke_calculateBaseFee(ReadView const& view, STTx const& tx)
             return XChainAddAttestation::calculateBaseFee(view, tx);
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE:
             return XChainCreateAccount::calculateBaseFee(view, tx);
-        case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM:
-            return XChainClaimAccount::calculateBaseFee(view, tx);
         default:
             assert(false);
             return XRPAmount{0};
@@ -539,10 +533,6 @@ invoke_apply(ApplyContext& ctx)
         }
         case ttSIDECHAIN_XCHAIN_ACCOUNT_CREATE: {
             XChainCreateAccount p(ctx);
-            return p();
-        }
-        case ttSIDECHAIN_XCHAIN_ACCOUNT_CLAIM: {
-            XChainClaimAccount p(ctx);
             return p();
         }
         default:
