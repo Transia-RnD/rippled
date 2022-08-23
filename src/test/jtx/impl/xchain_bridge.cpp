@@ -235,15 +235,18 @@ attestation_claim_batch(
     bool wasLockingChainSend,
     std::uint64_t claimID,
     std::optional<jtx::Account> const& dst,
-    std::vector<jtx::signer> const& signers)
+    std::vector<jtx::signer> const& signers,
+    size_t num_signers /* = 0 */)
 {
     assert(rewardAccounts.size() == signers.size());
+    if (num_signers == 0)
+        num_signers = signers.size();
 
     STXChainBridge const stBridge(jvBridge);
     std::vector<AttestationBatch::AttestationClaim> claims;
     claims.reserve(signers.size());
 
-    for (int i = 0, e = signers.size(); i != e; ++i)
+    for (int i = 0, e = num_signers; i != e; ++i)
     {
         auto const& s = signers[i];
         auto const& pk = s.account.pk();
@@ -353,7 +356,6 @@ XChainBridgeObjects::XChainBridgeObjects()
     , scuGw("scuGw")
     , mcUSD(mcGw["USD"])
     , scUSD(scGw["USD"])
-    , reward(XRP(1))
     , jvXRPBridgeRPC(
           bridge_rpc(mcDoor, xrpIssue(), Account::master, xrpIssue()))
     , jvb(bridge(mcDoor, xrpIssue(), Account::master, xrpIssue()))
@@ -371,6 +373,18 @@ XChainBridgeObjects::XChainBridgeObjects()
         }
         return result;
     }())
+    , alt_signers([] {
+        constexpr int numSigners = 5;
+        std::vector<signer> result;
+        result.reserve(numSigners);
+        for (int i = 0; i < numSigners; ++i)
+        {
+            using namespace std::literals;
+            auto const a = Account("alt_signer_"s + std::to_string(i));
+            result.emplace_back(a);
+        }
+        return result;
+    }())
     , rewardAccountsScReward([&] {
         std::vector<Account> r;
         r.reserve(signers.size());
@@ -380,7 +394,7 @@ XChainBridgeObjects::XChainBridgeObjects()
         }
         return r;
     }())
-    , rewardAccountsMisc([&] {
+    , rewardAccounts([&] {
         std::vector<Account> r;
         r.reserve(signers.size());
         for (int i = 0, e = signers.size(); i != e; ++i)
@@ -392,13 +406,16 @@ XChainBridgeObjects::XChainBridgeObjects()
         return r;
     }())
     , quorum(static_cast<std::uint32_t>(signers.size()) - 1)
+    , reward(XRP(1))
+    , split_reward(
+          divide(reward, STAmount(rewardAccounts.size()), reward.issue()))
 {
 }
 
 void
 XChainBridgeObjects::createBridgeObjects(Env& mcEnv, Env& scEnv)
 {
-    PrettyAmount xrp_funds{XRP(10000)};
+    STAmount xrp_funds{XRP(10000)};
     mcEnv.fund(xrp_funds, mcDoor, mcAlice, mcBob, mcGw);
     scEnv.fund(xrp_funds, scDoor, scAlice, scBob, scGw, scAttester, scReward);
 

@@ -143,17 +143,19 @@ struct XChainBridgeObjects
     IOU const mcUSD;
     IOU const scUSD;
 
-    PrettyAmount const reward;
-
     Json::Value const jvXRPBridgeRPC;
     Json::Value jvb;   // standard xrp bridge def for tx
     Json::Value jvub;  // standard xrp bridge def for tx, unfunded accounts
 
     FeatureBitset const features;
     std::vector<signer> const signers;
+    std::vector<signer> const alt_signers;
     std::vector<Account> const rewardAccountsScReward;
-    std::vector<Account> const rewardAccountsMisc;
+    std::vector<Account> const rewardAccounts;
     std::uint32_t const quorum;
+
+    STAmount const reward;
+    STAmount const split_reward;
 
     static constexpr int drop_per_xrp = 1000000;
 

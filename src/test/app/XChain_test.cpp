@@ -42,8 +42,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace ripple {
-namespace test {
+namespace ripple::test {
 
 template <class T>
 struct xEnv : public jtx::XChainBridgeObjects
@@ -54,22 +53,25 @@ struct xEnv : public jtx::XChainBridgeObjects
         : env_(s, jtx::envconfig(jtx::port_increment, side ? 3 : 0), features)
     {
         using namespace jtx;
-        PrettyAmount xrp_funds{XRP(10000)};
+        STAmount xrp_funds{XRP(10000)};
 
         if (!side)
         {
             env_.fund(xrp_funds, mcDoor, mcAlice, mcBob, mcGw);
 
             // Signer's list must match the attestation signers
-            env_(jtx::signers(mcDoor, signers.size(), signers));
+            // env_(jtx::signers(mcDoor, signers.size(), signers));
         }
         else
         {
             env_.fund(
                 xrp_funds, scDoor, scAlice, scBob, scGw, scAttester, scReward);
 
+            for (auto& ra : rewardAccounts)
+                env_.fund(xrp_funds, ra);
+
             // Signer's list must match the attestation signers
-            env_(jtx::signers(scDoor, signers.size(), signers));
+            // env_(jtx::signers(Account::master, signers.size(), signers));
         }
     }
 
@@ -94,6 +96,71 @@ struct xEnv : public jtx::XChainBridgeObjects
     {
         env_(std::forward<JsonValue>(jv), fN...);
         return *this;
+    }
+
+    STAmount
+    balance(jtx::Account const& account) const
+    {
+        return env_.balance(account);
+    }
+};
+
+template <class T>
+struct Balance
+{
+    T& env_;
+    jtx::Account const& account_;
+    STAmount startAmount;
+
+    Balance(T& env, jtx::Account const& account) : account_(account), env_(env)
+    {
+        startAmount = env_.balance(account_).value();
+    }
+
+    STAmount
+    diff() const
+    {
+        return env_.balance(account_).value() - startAmount;
+    }
+};
+
+template <class T>
+struct BalanceTransfer
+{
+    using balance = Balance<T>;
+
+    balance from_;
+    balance to_;
+    std::vector<balance> reward_;
+
+    BalanceTransfer(
+        T& env,
+        jtx::Account const& from_acct,
+        jtx::Account const& to_acct,
+        std::vector<jtx::Account> const& rewardAccounts)
+        : from_(env, from_acct), to_(env, to_acct), reward_([&]() {
+            std::vector<balance> r;
+            r.reserve(rewardAccounts.size());
+            for (auto& ra : rewardAccounts)
+                r.emplace_back(env, ra);
+            return r;
+        }())
+    {
+    }
+
+    bool
+    has_happened(STAmount const& amt, STAmount const& reward)
+    {
+        return from_.diff() == -amt && to_.diff() == amt &&
+            std::all_of(reward_.begin(), reward_.end(), [&](const balance& b) {
+                   return b.diff() == reward;
+               });
+    }
+
+    bool
+    has_not_happened()
+    {
+        return has_happened(STAmount(0), STAmount(0));
     }
 };
 
@@ -146,15 +213,15 @@ struct XChain_test : public beast::unit_test::suite,
                 mcBob, bridge(mcBob, mcBob["USD"], mcBob, mcBob["USD"])),
             ter(temEQUAL_DOOR_ACCOUNTS));
 
-        // Create an bridge on an account with exactly enough balance to meet
-        // the new reserve should succeed
+        // Create an bridge on an account with exactly enough balance to
+        // meet the new reserve should succeed
         xEnv(*this)
             .fund(res1, mcuDoor)  // exact reserve for account + 1 object
             .close()
             .tx(create_bridge(mcuDoor, jvub), ter(tesSUCCESS));
 
-        // Create an bridge on an account with no enough balance to meet the new
-        // reserve
+        // Create an bridge on an account with no enough balance to meet the
+        // new reserve
         xEnv(*this)
             .fund(res1 - 1, mcuDoor)  // just short of required reserve
             .close()
@@ -209,9 +276,11 @@ struct XChain_test : public beast::unit_test::suite,
         // Test all combinations of the following:`
         // --------------------------------------
         // - Locking chain is IOU with locking chain door account as issuer
-        // - Locking chain is IOU with issuing chain door account that exists on
+        // - Locking chain is IOU with issuing chain door account that
+        // exists on
         //   the locking chain as issuer
-        // - Locking chain is IOU with issuing chain door account that does not
+        // - Locking chain is IOU with issuing chain door account that does
+        // not
         //   exists on the locking chain as issuer
         // - Locking chain is IOU with non-door account (that exists on the
         //   locking chain ledger) as issuer
@@ -219,24 +288,29 @@ struct XChain_test : public beast::unit_test::suite,
         //   exists on the locking chain ledger) as issuer
         // - Locking chain is XRP
         // ---------------------------------------------------------------------
-        // - Issuing chain is IOU with issuing chain door account as the issuer
-        // - Issuing chain is IOU with locking chain door account (that exists
+        // - Issuing chain is IOU with issuing chain door account as the
+        // issuer
+        // - Issuing chain is IOU with locking chain door account (that
+        // exists
         //   on the issuing chain ledger) as the issuer
-        // - Issuing chain is IOU with locking chain door account (that does not
+        // - Issuing chain is IOU with locking chain door account (that does
+        // not
         //   exist on the issuing chain ledger) as the issuer
         // - Issuing chain is IOU with non-door account (that exists on the
         //   issuing chain ledger) as the issuer
-        // - Issuing chain is IOU with non-door account (that does not exists on
+        // - Issuing chain is IOU with non-door account (that does not
+        // exists on
         //   the issuing chain ledger) as the issuer
-        // - Issuing chain is XRP and issuing chain door account is not the root
+        // - Issuing chain is XRP and issuing chain door account is not the
+        // root
         //   account
         // - Issuing chain is XRP and issuing chain door account is the root
         //   account
         // ---------------------------------------------------------------------
         // That's 42 combinations. The only combinations that should succeed
         // are: Locking chain is any IOU, Issuing chain is IOU with issuing
-        // chain door account as the issuer Locking chain is XRP, Issuing chain
-        // is XRP with issuing chain is the root account.
+        // chain door account as the issuer Locking chain is XRP, Issuing
+        // chain is XRP with issuing chain is the root account.
         // ---------------------------------------------------------------------
         Account a, b;
         Issue ia, ib;
@@ -257,7 +331,8 @@ struct XChain_test : public beast::unit_test::suite,
                     env.fund(XRP(10000), scDoor);
                 }),
             std::make_pair(
-                "Locking chain is IOU(issuing chain door account unfunded on "
+                "Locking chain is IOU(issuing chain door account unfunded "
+                "on "
                 "locking chain)",
                 [&](auto& env) {
                     a = mcDoor;
@@ -296,7 +371,8 @@ struct XChain_test : public beast::unit_test::suite,
                     env.fund(XRP(10000), mcDoor);
                 }),
             std::make_pair(
-                "Issuing chain is IOU(locking chain door unfunded on issuing "
+                "Issuing chain is IOU(locking chain door unfunded on "
+                "issuing "
                 "chain)",
                 [&](auto& env) {
                     b = scDoor;
@@ -315,14 +391,16 @@ struct XChain_test : public beast::unit_test::suite,
                     ib = mcuGw["USD"];
                 }),
             std::make_pair(
-                "Issuing chain is XRP and issuing chain door account is not "
+                "Issuing chain is XRP and issuing chain door account is "
+                "not "
                 "the root account",
                 [&](auto& env) {
                     b = scDoor;
                     ib = xrpIssue();
                 }),
             std::make_pair(
-                "Issuing chain is XRP and issuing chain door account is the "
+                "Issuing chain is XRP and issuing chain door account is "
+                "the "
                 "root account ",
                 [&](auto& env) {
                     b = Account::master;
@@ -408,30 +486,158 @@ struct XChain_test : public beast::unit_test::suite,
         testcase("Bridge Modify");
 
         // Changing a non-existent bridge should fail
+        xEnv(*this).tx(
+            bridge_modify(
+                mcAlice,
+                bridge(mcAlice, mcAlice["USD"], mcBob, mcBob["USD"]),
+                XRP(2),
+                XRP(10)),
+            ter(tecNO_ENTRY));
+
+        // must change something
+        // xEnv(*this)
+        //    .tx(create_bridge(mcDoor, jvb, XRP(1), XRP(1)))
+        //    .tx(bridge_modify(mcDoor, jvb, XRP(1), XRP(1)),
+        //    ter(temMALFORMED));
+
+        // must change something
+        xEnv(*this)
+            .tx(create_bridge(mcDoor, jvb, XRP(1), XRP(1)))
+            .close()
+            .tx(bridge_modify(mcDoor, jvb, {}, {}), ter(temMALFORMED));
 
         // Reward amount is non-xrp
+        xEnv(*this).tx(
+            bridge_modify(mcDoor, jvb, mcUSD(2), XRP(10)),
+            ter(temXCHAIN_BRIDGE_BAD_REWARD_AMOUNT));
 
         // Reward amount is XRP and negative
+        xEnv(*this).tx(
+            bridge_modify(mcDoor, jvb, XRP(-2), XRP(10)),
+            ter(temXCHAIN_BRIDGE_BAD_REWARD_AMOUNT));
 
         // Reward amount is zero
+        xEnv(*this).tx(
+            bridge_modify(mcDoor, jvb, XRP(0), XRP(10)),
+            ter(temXCHAIN_BRIDGE_BAD_REWARD_AMOUNT));
 
         // Min create amount is non-xrp
+        xEnv(*this).tx(
+            bridge_modify(mcDoor, jvb, XRP(2), mcUSD(10)),
+            ter(temXCHAIN_BRIDGE_BAD_MIN_ACCOUNT_CREATE_AMOUNT));
 
         // Min create amount is zero
+        xEnv(*this).tx(
+            bridge_modify(mcDoor, jvb, XRP(2), XRP(0)),
+            ter(temXCHAIN_BRIDGE_BAD_MIN_ACCOUNT_CREATE_AMOUNT));
 
         // Min create amount is negative
+        xEnv(*this).tx(
+            bridge_modify(mcDoor, jvb, XRP(2), XRP(-10)),
+            ter(temXCHAIN_BRIDGE_BAD_MIN_ACCOUNT_CREATE_AMOUNT));
+
+        // First check the regular claim process (without bridge_modify)
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, rewardAccounts);
+
+            Json::Value batch = attestation_claim_batch(
+                jvb, mcAlice, amt, rewardAccounts, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAlice, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+        }
+    }
+
+    void
+    testBridgeClaim()
+    {
+        XRPAmount res1 = reserve(1);
+
+        using namespace jtx;
+        testcase("Bridge Claim");
+
+        // Claim against non-existent bridge
+
+        // Claim against non-existent claim id
+
+        // Claim against a claim id owned by another account
+
+        // Claim against a claim id with no attestations
+
+        // Claim against a claim id with attestations, but not enough to make a
+        // quorum
+
+        // Claim id of zero
+
+        // Claim issue that does not match the expected issue on the bridge
+        // (either LockingChainIssue or IssuingChainIssue, depending on the
+        // chain). The claim id should already have enough attestations to reach
+        // a quorum for this amount (for a different issuer).
+
+        // Claim to a destination that does not already exist on the chain
+
+        // Claim where the claim id owner does not have enough XRP to pay the
+        // reward
+
+        // Claim where the claim id owner has enough XRP to pay the reward, but
+        // it would put his balance below the reserve
+
+        // Pay to an account with deposit auth set
+
+        // Claim where the amount different from what is attested to
+
+        // Verify that rewards are paid from the account that owns the claim id
+
+        // Verify that if a reward is not evenly divisible amung the reward
+        // accounts, the remaining amount goes to the claim id owner.
+
+        // If a reward distribution fails for one of the reward accounts (the
+        // reward account doesn't exist or has deposit auth set), then the txn
+        // should still succeed, but that portion should go to the claim id
+        // owner.
+
+        // Verify that if a batch of attestations brings the signatures over
+        // quorum (say the quorum is 4 and there are 5 attestations) then the
+        // reward should be split amung the five accounts.
     }
 
     void
     run() override
     {
         testBridgeCreate();
-        testBridgeCreateMatrix();
-        // testBridgeModify();
+        // testBridgeCreateMatrix();
+        testBridgeModify();
+        testBridgeClaim();
     }
 };
 
 BEAST_DEFINE_TESTSUITE(XChain, app, ripple);
 
-}  // namespace test
-}  // namespace ripple
+}  // namespace ripple::test
