@@ -112,6 +112,7 @@ transferHelper(
     AccountID const& src,
     AccountID const& dst,
     std::optional<std::uint32_t> const& dstTag,
+    std::optional<AccountID> const& claimOwner,
     STAmount const& amt,
     TransferHelperCanCreateDst canCreate,
     beast::Journal j)
@@ -127,7 +128,7 @@ transferHelper(
         if ((sleDst->getFlags() & lsfRequireDestTag) && !dstTag)
             return tecDST_TAG_NEEDED;
 
-        if ((sleDst->getFlags() & lsfDepositAuth) &&
+        if ((dst != claimOwner) && (sleDst->getFlags() & lsfDepositAuth) &&
             (!psb.exists(keylet::depositPreauth(dst, src))))
         {
             return tecNO_PERMISSION;
@@ -212,6 +213,7 @@ finalizeClaimHelper(
     STXChainBridge const& bridgeSpec,
     AccountID const& dst,
     std::optional<std::uint32_t> const& dstTag,
+    AccountID const& claimOwner,
     STAmount const& sendingAmount,
     AccountID const& rewardPoolSrc,
     STAmount const& rewardPool,
@@ -239,6 +241,7 @@ finalizeClaimHelper(
         thisDoor,
         dst,
         dstTag,
+        claimOwner,
         thisChainAmount,
         TransferHelperCanCreateDst::yes,
         j);
@@ -285,6 +288,8 @@ finalizeClaimHelper(
                 rewardPoolSrc,
                 ra,
                 /*dstTag*/ std::nullopt,
+                // claim owner is not relavent to distributing rewards
+                /*claimOwner*/ std::nullopt,
                 share,
                 TransferHelperCanCreateDst::no,
                 j);
@@ -760,6 +765,7 @@ XChainClaim::doApply()
         bridgeSpec,
         dst,
         dstTag,
+        /*claimOwner*/ account,
         sendingAmount,
         rewardPoolSrc,
         (*sleCID)[sfSignatureReward],
@@ -872,7 +878,8 @@ XChainCommit::doApply()
         psb,
         account,
         dst,
-        /*dst tag*/ std::nullopt,
+        /*dstTag*/ std::nullopt,
+        /*claimOwner*/ std::nullopt,
         amount,
         TransferHelperCanCreateDst::no,
         ctx_.journal);
@@ -1083,6 +1090,7 @@ XChainAddAttestation::applyClaims(
         psb.peek(keylet::xChainClaimID(bridgeSpec, attBegin->claimID));
     if (!sleCID)
         return tecXCHAIN_NO_CLAIM_ID;
+    AccountID const cidOwner = (*sleCID)[sfAccount];
 
     // Add claims that are part of the signer's list to the "claims" vector
     std::vector<AttestationBatch::AttestationClaim> atts;
@@ -1123,6 +1131,7 @@ XChainAddAttestation::applyClaims(
             bridgeSpec,
             *attBegin->dst,
             /*dstTag*/ std::nullopt,
+            cidOwner,
             attBegin->sendingAmount,
             rewardPoolSrc,
             (*sleCID)[sfSignatureReward],
@@ -1238,6 +1247,7 @@ XChainAddAttestation::applyCreateAccountAtt(
             bridgeSpec,
             attBegin->toCreate,
             /*dstTag*/ std::nullopt,
+            doorAccount,
             attBegin->sendingAmount,
             /*rewardPoolSrc*/ doorAccount,
             attBegin->rewardAmount,
@@ -1509,6 +1519,7 @@ XChainCreateAccount::doApply()
         account,
         dst,
         /*dstTag*/ std::nullopt,
+        /*claimOwner*/ std::nullopt,
         toTransfer,
         TransferHelperCanCreateDst::yes,
         ctx_.journal);
