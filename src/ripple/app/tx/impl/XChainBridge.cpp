@@ -1123,6 +1123,10 @@ XChainAddAttestation::applyClaims(
     auto const rewardAccounts = curAtts.onNewAttestations(
         &atts[0], &atts[0] + atts.size(), quorum, signersList);
 
+    // update the claim id
+    sleCID->setFieldArray(sfXChainClaimAttestations, curAtts.toSTArray());
+    psb.update(sleCID);
+
     if (rewardAccounts && attBegin->dst)
     {
         auto const& rewardPoolSrc = (*sleCID)[sfAccount];
@@ -1141,12 +1145,6 @@ XChainAddAttestation::applyClaims(
             ctx_.journal);
         if (!isTesSuccess(r))
             return r;
-    }
-    else
-    {
-        // update the claim id
-        sleCID->setFieldArray(sfXChainClaimAttestations, curAtts.toSTArray());
-        psb.update(sleCID);
     }
 
     psb.apply(ctx_.rawView());
@@ -1239,6 +1237,17 @@ XChainAddAttestation::applyCreateAccountAtt(
     auto const rewardAccounts = curAtts.onNewAttestations(
         &atts[0], &atts[0] + atts.size(), quorum, signersList);
 
+    if (!createCID)
+    {
+        // Modify the object before it's potentially deleted, so the meta data
+        // will include the new attestations
+        if (!sleCID)
+            return tecINTERNAL;
+        sleCID->setFieldArray(
+            sfXChainCreateAccountAttestations, curAtts.toSTArray());
+        psb.update(sleCID);
+    }
+
     // Account create transactions must happen in order
     if (rewardAccounts && claimCount + 1 == attBegin->createCount)
     {
@@ -1260,42 +1269,31 @@ XChainAddAttestation::applyCreateAccountAtt(
         (*sleB)[sfXChainAccountClaimCount] = attBegin->createCount;
         psb.update(sleB);
     }
-    else
+    else if (createCID)
     {
-        if (createCID)
-        {
-            if (sleCID)
-                return tecINTERNAL;
+        if (sleCID)
+            return tecINTERNAL;
 
-            auto const sleCID = std::make_shared<SLE>(claimKeylet);
-            (*sleCID)[sfAccount] = doorAccount;
-            (*sleCID)[sfXChainBridge] = bridgeSpec;
-            (*sleCID)[sfXChainAccountCreateCount] = attBegin->createCount;
-            sleCID->setFieldArray(
-                sfXChainCreateAccountAttestations, curAtts.toSTArray());
+        auto const sleCID = std::make_shared<SLE>(claimKeylet);
+        (*sleCID)[sfAccount] = doorAccount;
+        (*sleCID)[sfXChainBridge] = bridgeSpec;
+        (*sleCID)[sfXChainAccountCreateCount] = attBegin->createCount;
+        sleCID->setFieldArray(
+            sfXChainCreateAccountAttestations, curAtts.toSTArray());
 
-            // Add to owner directory of the door account
-            auto const page = ctx_.view().dirInsert(
-                keylet::ownerDir(doorAccount),
-                claimKeylet,
-                describeOwnerDir(doorAccount));
-            if (!page)
-                return tecDIR_FULL;
-            (*sleCID)[sfOwnerNode] = *page;
+        // Add to owner directory of the door account
+        auto const page = ctx_.view().dirInsert(
+            keylet::ownerDir(doorAccount),
+            claimKeylet,
+            describeOwnerDir(doorAccount));
+        if (!page)
+            return tecDIR_FULL;
+        (*sleCID)[sfOwnerNode] = *page;
 
-            // Reserve was already checked
-            adjustOwnerCount(psb, sleDoor, 1, ctx_.journal);
-            psb.insert(sleCID);
-            psb.update(sleDoor);
-        }
-        else
-        {
-            if (!sleCID)
-                return tecINTERNAL;
-            sleCID->setFieldArray(
-                sfXChainCreateAccountAttestations, curAtts.toSTArray());
-            psb.update(sleCID);
-        }
+        // Reserve was already checked
+        adjustOwnerCount(psb, sleDoor, 1, ctx_.journal);
+        psb.insert(sleCID);
+        psb.update(sleDoor);
     }
 
     psb.apply(ctx_.rawView());

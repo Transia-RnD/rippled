@@ -193,6 +193,8 @@ should move funds.
 
 * If an attestation already exists for that server and claim id, the new attestation should replace the old attestation.
 
+* If attestation moves funds, confirm the claim ledger objects are removed (for both account create and "regualar" transactions)
+
 ## XChain create account
 
 ## Delete door account
