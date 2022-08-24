@@ -1070,6 +1070,7 @@ XChainAddAttestation::applyClaims(
     STXChainAttestationBatch::TClaims::const_iterator attBegin,
     STXChainAttestationBatch::TClaims::const_iterator attEnd,
     STXChainBridge const& bridgeSpec,
+    bool isLockingChain,
     std::unordered_map<AccountID, std::uint32_t> const& signersList,
     std::uint32_t quorum)
 {
@@ -1102,6 +1103,10 @@ XChainAddAttestation::applyClaims(
     if (attBegin->sendingAccount != otherChainSource)
     {
         return tecXCHAIN_SENDING_ACCOUNT_MISMATCH;
+    }
+    if (attBegin->wasLockingChainSend == isLockingChain)
+    {
+        return tecXCHAIN_WRONG_CHAIN;
     }
 
     XChainClaimAttestations curAtts{
@@ -1148,6 +1153,7 @@ XChainAddAttestation::applyCreateAccountAtt(
     Keylet const& doorK,
     STXChainBridge const& bridgeSpec,
     Keylet const& bridgeK,
+    bool isLockingChain,
     std::unordered_map<AccountID, std::uint32_t> const& signersList,
     std::uint32_t quorum)
 {
@@ -1174,6 +1180,11 @@ XChainAddAttestation::applyCreateAccountAtt(
     {
         // Limit the number of claims on the account
         return tecXCHAIN_ACCOUNT_CREATE_TOO_MANY;
+    }
+
+    if (attBegin->wasLockingChainSend == isLockingChain)
+    {
+        return tecXCHAIN_WRONG_CHAIN;
     }
 
     auto const claimKeylet =
@@ -1302,8 +1313,17 @@ XChainAddAttestation::doApply()
         // TODO: custom return code for no sidechain?
         return tecNO_ENTRY;
     }
-    auto const thisDoor = (*sleB)[sfAccount];
+    AccountID const thisDoor = (*sleB)[sfAccount];
     auto const doorK = keylet::account(thisDoor);
+    bool isLockingChain = false;
+    {
+        if (thisDoor == bridgeSpec.lockingChainDoor())
+            isLockingChain = true;
+        else if (thisDoor == bridgeSpec.issuingChainDoor())
+            isLockingChain = false;
+        else
+            return tecINTERNAL;
+    }
 
     // signersList is a map from account id to weights
     auto const [signersList, quorum, slTer] =
@@ -1326,6 +1346,7 @@ XChainAddAttestation::doApply()
                         doorK,
                         bridgeSpec,
                         bridgeK,
+                        isLockingChain,
                         signersList,
                         quorum);
                 });
@@ -1346,7 +1367,12 @@ XChainAddAttestation::doApply()
                 [&, &signersList = signersList, &quorum = quorum](
                     auto batchStart, auto batchEnd) {
                     return applyClaims(
-                        batchStart, batchEnd, bridgeSpec, signersList, quorum);
+                        batchStart,
+                        batchEnd,
+                        bridgeSpec,
+                        isLockingChain,
+                        signersList,
+                        quorum);
                 });
         auto isTecInternal = [](auto r) { return r == tecINTERNAL; };
         if (std::any_of(

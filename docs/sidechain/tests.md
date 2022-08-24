@@ -157,6 +157,8 @@ until that's in)
 
 * Add an attestation to a claim id that has already reached quorum. This should succeed and share in the reward.
 
+* Check that attestations are being added to the correct chain
+
 * Add a batch of attestations where one has an invalid signature. The entire transaction should fail.
 
 * Test combinations of the following when adding a batch of attestations for different claim ids:
@@ -167,7 +169,7 @@ When the claim ids exist, test for both reaching quorum, going over quorum, and 
 
 * Add attestations where some of the attestations are inconsistent with each
   other. The entire transaction should fail. Being inconsistent means attesting
-  to different values.
+  to different values (including different chains).
   
 * Test that signature weights are correctly handled. Assign signature weights of 1,2,4,4 and a quorum of 7. Check that the 4,4 signatures reach a quorum, the 1,2,4, reach a quorum, but the 4,2, 4,1 and 1,2 do not.
 
@@ -193,11 +195,13 @@ should move funds.
 
 ## XChain create account
 
-TBD
-
 ## Delete door account
 
 * Deleting a account that owns bridge should fail
 
 * Deleting an account that owns a claim id should fail
 
+## Witness tests
+
+* Claim transaction that fails
+* Create transaction that fails
