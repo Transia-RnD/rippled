@@ -385,7 +385,7 @@ XChainBridgeObjects::XChainBridgeObjects()
         }
         return result;
     }())
-    , rewardAccountsScReward([&] {
+    , payee([&] {
         std::vector<Account> r;
         r.reserve(signers.size());
         for (int i = 0, e = signers.size(); i != e; ++i)
@@ -394,7 +394,7 @@ XChainBridgeObjects::XChainBridgeObjects()
         }
         return r;
     }())
-    , rewardAccounts([&] {
+    , payees([&] {
         std::vector<Account> r;
         r.reserve(signers.size());
         for (int i = 0, e = signers.size(); i != e; ++i)
@@ -407,8 +407,16 @@ XChainBridgeObjects::XChainBridgeObjects()
     }())
     , quorum(static_cast<std::uint32_t>(signers.size()) - 1)
     , reward(XRP(1))
-    , split_reward(
-          divide(reward, STAmount(rewardAccounts.size()), reward.issue()))
+    , split_reward(divide(reward, STAmount(payees.size()), reward.issue()))
+    , tiny_reward(drops(37))
+    , tiny_reward_split(
+          (divide(tiny_reward, STAmount(payees.size()), tiny_reward.issue())))
+    , tiny_reward_remainder(
+          tiny_reward -
+          multiply(
+              tiny_reward_split,
+              STAmount(payees.size()),
+              tiny_reward.issue()))
 {
 }
 

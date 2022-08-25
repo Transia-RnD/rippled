@@ -67,7 +67,7 @@ struct xEnv : public jtx::XChainBridgeObjects
             env_.fund(
                 xrp_funds, scDoor, scAlice, scBob, scGw, scAttester, scReward);
 
-            for (auto& ra : rewardAccounts)
+            for (auto& ra : payees)
                 env_.fund(xrp_funds, ra);
 
             // Signer's list must match the attestation signers
@@ -137,11 +137,11 @@ struct BalanceTransfer
         T& env,
         jtx::Account const& from_acct,
         jtx::Account const& to_acct,
-        std::vector<jtx::Account> const& rewardAccounts)
+        std::vector<jtx::Account> const& payees)
         : from_(env, from_acct), to_(env, to_acct), reward_([&]() {
             std::vector<balance> r;
-            r.reserve(rewardAccounts.size());
-            for (auto& ra : rewardAccounts)
+            r.reserve(payees.size());
+            for (auto& ra : payees)
                 r.emplace_back(env, ra);
             return r;
         }())
@@ -171,6 +171,12 @@ struct XChain_test : public beast::unit_test::suite,
     reserve(std::uint32_t count)
     {
         return xEnv(*this).env_.current()->fees().accountReserve(count);
+    }
+
+    XRPAmount
+    txFee()
+    {
+        return xEnv(*this).env_.current()->fees().base;
     }
 
     void
@@ -555,12 +561,241 @@ struct XChain_test : public beast::unit_test::suite,
             std::uint32_t const claimID = 1;
             mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
 
-            BalanceTransfer transfer(
-                scEnv, Account::master, scBob, rewardAccounts);
+            BalanceTransfer transfer(scEnv, Account::master, scBob, payees);
 
             Json::Value batch = attestation_claim_batch(
-                jvb, mcAlice, amt, rewardAccounts, true, claimID, dst, signers);
-            scEnv.tx(xchain_add_attestation_batch(scAlice, batch)).close();
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+        }
+
+        // Check that the reward paid from a claim Id was the reward when
+        // the claim id was created, not the reward since the bridge was
+        // modified.
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            // Now modify the reward on the bridge
+            mcEnv.tx(bridge_modify(mcDoor, jvb, XRP(2), XRP(10))).close();
+            scEnv.tx(bridge_modify(Account::master, jvb, XRP(2), XRP(10)))
+                .close();
+
+            BalanceTransfer transfer(scEnv, Account::master, scBob, payees);
+
+            Json::Value batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+            }
+
+            // make sure the reward accounts indeed received the original
+            // split reward (1 split 5 ways) instead of the updated 2 XRP.
+            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+        }
+
+        // Check that the signatures used to verify attestations and decide
+        // if there is a quorum are the current signer's list on the door
+        // account, not the signer's list that was in effect when the claim
+        // id was created.
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            // change signers - claim should not be processed is the batch is
+            // signed by original signers
+            scEnv
+                .tx(jtx::signers(
+                    Account::master, alt_signers.size(), alt_signers))
+                .close();
+
+            BalanceTransfer transfer(scEnv, Account::master, scBob, payees);
+
+            // submit claim using outdated signers - should fail
+            Json::Value batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv
+                .tx(xchain_add_attestation_batch(scAttester, batch),
+                    ter(tecXCHAIN_PROOF_UNKNOWN_KEY))
+                .close();
+
+            if (withClaim)
+            {
+                // need to submit a claim transactions
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb, claimID, amt, scBob),
+                        ter(tecXCHAIN_CLAIM_NO_QUORUM))
+                    .close();
+            }
+
+            // make sure transfer has not happened as we sent attestations using
+            // outdated signers
+            BEAST_EXPECT(transfer.has_not_happened());
+
+            // submit claim using current signers - should succeed
+            batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, alt_signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+            }
+
+            // make sure the transfer went through as we sent attestations using
+            // new signers
+            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+        }
+    }
+
+    void
+    testBridgeCreateClaimID()
+    {
+        using namespace jtx;
+        XRPAmount res0 = reserve(0);
+        XRPAmount res1 = reserve(1);
+        XRPAmount tx_fee = txFee();
+        STAmount one_xrp{XRP(1)};
+        STAmount xrp_dust = divide(one_xrp, STAmount(10000), one_xrp.issue());
+
+        testcase("Bridge Create ClaimID");
+
+        // normal bridge create for sanity check with the exact necessary
+        // account balance
+        xEnv(*this, true)
+            .tx(create_bridge(Account::master, jvb))
+            .fund(res1, scuAlice)  // acct reserve + 1 object
+            .close()
+            .tx(xchain_create_claim_id(scuAlice, jvb, reward, mcAlice))
+            .close();
+
+        // Non-existent bridge
+        xEnv(*this, true)
+            .tx(xchain_create_claim_id(
+                    scAlice,
+                    bridge(mcAlice, mcAlice["USD"], scBob, scBob["USD"]),
+                    reward,
+                    mcAlice),
+                ter(tecNO_ENTRY))
+            .close();
+
+        // Creating the new object would put the account below the reserve
+        xEnv(*this, true)
+            .tx(create_bridge(Account::master, jvb))
+            .fund(res1 - xrp_dust, scuAlice)  // barely not enough
+            .close()
+            .tx(xchain_create_claim_id(scuAlice, jvb, reward, mcAlice),
+                ter(tecINSUFFICIENT_RESERVE))
+            .close();
+
+        // The specified reward doesn't match the reward on the bridge (test by
+        // giving the reward amount for the other side, as well as a completely
+        // non-matching reward)
+        xEnv(*this, true)
+            .tx(create_bridge(Account::master, jvb))
+            .close()
+            .tx(xchain_create_claim_id(scAlice, jvb, split_reward, mcAlice),
+                ter(tecXCHAIN_REWARD_MISMATCH))
+            .close();
+
+        // A reward amount that isn't XRP
+        xEnv(*this, true)
+            .tx(create_bridge(Account::master, jvb))
+            .close()
+            .tx(xchain_create_claim_id(scAlice, jvb, mcUSD(1), mcAlice),
+                ter(temXCHAIN_BRIDGE_BAD_REWARD_AMOUNT))
+            .close();
+    }
+
+    void
+    testBridgeClaim()
+    {
+        using namespace jtx;
+
+        XRPAmount res0 = reserve(0);
+        XRPAmount res1 = reserve(1);
+        XRPAmount tx_fee = txFee();
+        STAmount one_xrp{XRP(1)};
+        STAmount xrp_dust = divide(one_xrp, STAmount(10000), one_xrp.issue());
+
+        testcase("Bridge Claim");
+
+        // Claim where the amount matches what is attested to, to an account
+        // that exists, and there are enough attestations to reach a quorum
+        // => should succeed
+        // -----------------------------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(scEnv, Account::master, scBob, payees);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
 
             if (withClaim)
             {
@@ -576,56 +811,106 @@ struct XChain_test : public beast::unit_test::suite,
     }
 
     void
-    testBridgeClaim()
+    testBridgeCommit()
     {
+        XRPAmount res0 = reserve(0);
         XRPAmount res1 = reserve(1);
 
         using namespace jtx;
-        testcase("Bridge Claim");
+        testcase("Bridge Commit");
 
-        // Claim against non-existent bridge
+        // Commit to a non-existent bridge
 
-        // Claim against non-existent claim id
+        // Commit a negative amount
 
-        // Claim against a claim id owned by another account
+        // Commit an amount whose issue that does not match the expected issue
+        // on the bridge (either LockingChainIssue or IssuingChainIssue,
+        // depending on the chain).
 
-        // Claim against a claim id with no attestations
+        // Commit an amount that would put the sender below the required reserve
+        // (if XRP)
 
-        // Claim against a claim id with attestations, but not enough to make a
-        // quorum
+        // Commit an amount above the account's balance (for both XRP and IOUs)
+    }
 
-        // Claim id of zero
+    void
+    testBridgeAddAttestation()
+    {
+        XRPAmount res0 = reserve(0);
+        XRPAmount res1 = reserve(1);
 
-        // Claim issue that does not match the expected issue on the bridge
-        // (either LockingChainIssue or IssuingChainIssue, depending on the
-        // chain). The claim id should already have enough attestations to reach
-        // a quorum for this amount (for a different issuer).
+        using namespace jtx;
+        testcase("Bridge Add Attestation");
 
-        // Claim to a destination that does not already exist on the chain
+        // Add an attestation to a claim id that has already reached quorum.
+        // This should succeed and share in the reward.
 
-        // Claim where the claim id owner does not have enough XRP to pay the
-        // reward
+        // Add a batch of attestations where one has an invalid signature. The
+        // entire transaction should fail.
 
-        // Claim where the claim id owner has enough XRP to pay the reward, but
-        // it would put his balance below the reserve
+        // Test combinations of the following when adding a batch of
+        // attestations for different claim ids: All the claim id exist One
+        // claim id exists and other has already been claimed None of the claim
+        // ids exist When the claim ids exist, test for both reaching quorum,
+        // going over quorum, and not reaching qurorum.
 
-        // Pay to an account with deposit auth set
+        // Add attestations where some of the attestations are inconsistent with
+        // each other. The entire transaction should fail. Being inconsistent
+        // means attesting to different values.
 
-        // Claim where the amount different from what is attested to
+        // Test that signature weights are correctly handled. Assign signature
+        // weights of 1,2,4,4 and a quorum of 7. Check that the 4,4 signatures
+        // reach a quorum, the 1,2,4, reach a quorum, but the 4,2, 4,1 and 1,2
+        // do not.
 
-        // Verify that rewards are paid from the account that owns the claim id
+        // Add more than the maximum number of allowed attestations (8). This
+        // should fail.
 
-        // Verify that if a reward is not evenly divisible amung the reward
-        // accounts, the remaining amount goes to the claim id owner.
+        // Add attestations for both account create and claims.
 
-        // If a reward distribution fails for one of the reward accounts (the
-        // reward account doesn't exist or has deposit auth set), then the txn
-        // should still succeed, but that portion should go to the claim id
-        // owner.
+        // Confirm that account create transactions happen in the correct order.
+        // If they reach quorum out of order they should not execute until they
+        // reach quorum. Re-adding an attestation should move funds.
 
-        // Verify that if a batch of attestations brings the signatures over
-        // quorum (say the quorum is 4 and there are 5 attestations) then the
-        // reward should be split amung the five accounts.
+        // Check that creating an account with less the minimum reserve fails.
+
+        // Check that sending funds with an account create txn to an existing
+        // account works.
+
+        // Check that sending funds to an existing account with deposit auth set
+        // fails - for both claim and account create transactions.
+
+        // If an account is unable to pay the reserver, check that it fails.
+
+        // Create several account with a single batch attestation. This should
+        // succeed.
+
+        // If an attestation already exists for that server and claim id, the
+        // new attestation should replace the old attestation.
+    }
+
+    void
+    testBridgeCreateAccount()
+    {
+        XRPAmount res0 = reserve(0);
+        XRPAmount res1 = reserve(1);
+
+        using namespace jtx;
+        testcase("Bridge Create Account");
+    }
+
+    void
+    testBridgeDeleteDoor()
+    {
+        XRPAmount res0 = reserve(0);
+        XRPAmount res1 = reserve(1);
+
+        using namespace jtx;
+        testcase("Bridge Delete Door Account");
+
+        // Deleting a account that owns bridge should fail
+
+        // Deleting an account that owns a claim id should fail
     }
 
     void
@@ -634,6 +919,7 @@ struct XChain_test : public beast::unit_test::suite,
         testBridgeCreate();
         // testBridgeCreateMatrix();
         testBridgeModify();
+        testBridgeCreateClaimID();
         testBridgeClaim();
     }
 };

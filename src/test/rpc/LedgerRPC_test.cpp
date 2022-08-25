@@ -233,7 +233,7 @@ class LedgerRPC_XChain_test : public beast::unit_test::suite,
             mcAlice,
             amt,
             reward,
-            rewardAccountsScReward,
+            payee,
             /*wasLockingChainSend*/ true,
             1,
             scCarol,
@@ -290,8 +290,8 @@ class LedgerRPC_XChain_test : public beast::unit_test::suite,
                 BEAST_EXPECT(
                     a[i].isMember(sfAttestationRewardAccount.jsonName) &&
                     std::any_of(
-                        rewardAccountsScReward.begin(),
-                        rewardAccountsScReward.end(),
+                        payee.begin(),
+                        payee.end(),
                         [&](Account const& account) {
                             return a[i][sfAttestationRewardAccount.jsonName] ==
                                 account.human();
@@ -316,7 +316,7 @@ class LedgerRPC_XChain_test : public beast::unit_test::suite,
             mcAlice,
             amt,
             reward,
-            rewardAccountsScReward,
+            payee,
             /*wasLockingChainSend*/ true,
             1,
             scCarol,

@@ -101,7 +101,8 @@ attestation_claim_batch(
     bool wasLockingChainSend,
     std::uint64_t claimID,
     std::optional<jtx::Account> const& dst,
-    std::vector<jtx::signer> const& signers);
+    std::vector<jtx::signer> const& signers,
+    size_t num_signers = 0);
 
 Json::Value
 attestation_create_account_batch(
@@ -150,12 +151,16 @@ struct XChainBridgeObjects
     FeatureBitset const features;
     std::vector<signer> const signers;
     std::vector<signer> const alt_signers;
-    std::vector<Account> const rewardAccountsScReward;
-    std::vector<Account> const rewardAccounts;
+    std::vector<Account> const payee;
+    std::vector<Account> const payees;
     std::uint32_t const quorum;
 
-    STAmount const reward;
-    STAmount const split_reward;
+    STAmount const reward;        // 1 xrp
+    STAmount const split_reward;  // 200,000 drops
+
+    const STAmount tiny_reward;            // 37 drops
+    const STAmount tiny_reward_split;      // 7 drops
+    const STAmount tiny_reward_remainder;  // 2 drops
 
     static constexpr int drop_per_xrp = 1000000;
 
