@@ -417,6 +417,8 @@ XChainBridgeObjects::XChainBridgeObjects()
               tiny_reward_split,
               STAmount(payees.size()),
               tiny_reward.issue()))
+    , one_xrp(XRP(1))
+    , xrp_dust(divide(one_xrp, STAmount(10000), one_xrp.issue()))
 {
 }
 

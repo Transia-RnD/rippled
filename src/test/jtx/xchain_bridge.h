@@ -162,6 +162,9 @@ struct XChainBridgeObjects
     const STAmount tiny_reward_split;      // 7 drops
     const STAmount tiny_reward_remainder;  // 2 drops
 
+    const STAmount one_xrp;
+    const STAmount xrp_dust;
+
     static constexpr int drop_per_xrp = 1000000;
 
     XChainBridgeObjects();

@@ -283,11 +283,9 @@ struct XChain_test : public beast::unit_test::suite,
         // --------------------------------------
         // - Locking chain is IOU with locking chain door account as issuer
         // - Locking chain is IOU with issuing chain door account that
-        // exists on
-        //   the locking chain as issuer
-        // - Locking chain is IOU with issuing chain door account that does
-        // not
         //   exists on the locking chain as issuer
+        // - Locking chain is IOU with issuing chain door account that does
+        //   not exists on the locking chain as issuer
         // - Locking chain is IOU with non-door account (that exists on the
         //   locking chain ledger) as issuer
         // - Locking chain is IOU with non-door account (that does not exist
@@ -295,28 +293,26 @@ struct XChain_test : public beast::unit_test::suite,
         // - Locking chain is XRP
         // ---------------------------------------------------------------------
         // - Issuing chain is IOU with issuing chain door account as the
-        // issuer
+        //   issuer
         // - Issuing chain is IOU with locking chain door account (that
-        // exists
-        //   on the issuing chain ledger) as the issuer
+        //   exists on the issuing chain ledger) as the issuer
         // - Issuing chain is IOU with locking chain door account (that does
-        // not
-        //   exist on the issuing chain ledger) as the issuer
+        //   not exist on the issuing chain ledger) as the issuer
         // - Issuing chain is IOU with non-door account (that exists on the
         //   issuing chain ledger) as the issuer
         // - Issuing chain is IOU with non-door account (that does not
-        // exists on
-        //   the issuing chain ledger) as the issuer
+        //   exists on the issuing chain ledger) as the issuer
         // - Issuing chain is XRP and issuing chain door account is not the
-        // root
-        //   account
+        //   root account
         // - Issuing chain is XRP and issuing chain door account is the root
         //   account
         // ---------------------------------------------------------------------
         // That's 42 combinations. The only combinations that should succeed
-        // are: Locking chain is any IOU, Issuing chain is IOU with issuing
-        // chain door account as the issuer Locking chain is XRP, Issuing
-        // chain is XRP with issuing chain is the root account.
+        // are:
+        // - Locking chain is any IOU,
+        // - Issuing chain is IOU with issuing chain door account as the issuer
+        //   Locking chain is XRP,
+        // - Issuing chain is XRP with issuing chain is the root account.
         // ---------------------------------------------------------------------
         Account a, b;
         Issue ia, ib;
@@ -324,39 +320,39 @@ struct XChain_test : public beast::unit_test::suite,
         std::tuple lcs{
             std::make_pair(
                 "Locking chain is IOU(locking chain door)",
-                [&](auto& env) {
+                [&](auto& env, bool) {
                     a = mcDoor;
                     ia = mcDoor["USD"];
                 }),
             std::make_pair(
                 "Locking chain is IOU(issuing chain door funded on locking "
                 "chain)",
-                [&](auto& env) {
+                [&](auto& env, bool shouldFund) {
                     a = mcDoor;
                     ia = scDoor["USD"];
-                    env.fund(XRP(10000), scDoor);
+                    if (shouldFund)
+                        env.fund(XRP(10000), scDoor);
                 }),
             std::make_pair(
                 "Locking chain is IOU(issuing chain door account unfunded "
-                "on "
-                "locking chain)",
-                [&](auto& env) {
+                "on locking chain)",
+                [&](auto& env, bool) {
                     a = mcDoor;
                     ia = scDoor["USD"];
                 }),
             std::make_pair(
                 "Locking chain is IOU(bob funded on locking chain)",
-                [&](auto& env) {
+                [&](auto& env, bool) {
                     a = mcDoor;
                     ia = mcGw["USD"];
                 }),
             std::make_pair(
                 "Locking chain is IOU(bob unfunded on locking chain)",
-                [&](auto& env) {
+                [&](auto& env, bool) {
                     a = mcDoor;
                     ia = mcuGw["USD"];
                 }),
-            std::make_pair("Locking chain is XRP", [&](auto& env) {
+            std::make_pair("Locking chain is XRP", [&](auto& env, bool) {
                 a = mcDoor;
                 ia = xrpIssue();
             })};
@@ -364,63 +360,93 @@ struct XChain_test : public beast::unit_test::suite,
         std::tuple ics{
             std::make_pair(
                 "Issuing chain is IOU(issuing chain door account)",
-                [&](auto& env) {
+                [&](auto& env, bool) {
                     b = scDoor;
                     ib = scDoor["USD"];
                 }),
             std::make_pair(
                 "Issuing chain is IOU(locking chain door funded on issuing "
                 "chain)",
-                [&](auto& env) {
+                [&](auto& env, bool shouldFund) {
                     b = scDoor;
                     ib = mcDoor["USD"];
-                    env.fund(XRP(10000), mcDoor);
+                    if (shouldFund)
+                        env.fund(XRP(10000), mcDoor);
                 }),
             std::make_pair(
                 "Issuing chain is IOU(locking chain door unfunded on "
-                "issuing "
-                "chain)",
-                [&](auto& env) {
+                "issuing chain)",
+                [&](auto& env, bool) {
                     b = scDoor;
                     ib = mcDoor["USD"];
                 }),
             std::make_pair(
                 "Issuing chain is IOU(bob funded on issuing chain)",
-                [&](auto& env) {
+                [&](auto& env, bool) {
                     b = scDoor;
                     ib = mcGw["USD"];
                 }),
             std::make_pair(
                 "Issuing chain is IOU(bob unfunded on issuing chain)",
-                [&](auto& env) {
+                [&](auto& env, bool) {
                     b = scDoor;
                     ib = mcuGw["USD"];
                 }),
             std::make_pair(
                 "Issuing chain is XRP and issuing chain door account is "
-                "not "
-                "the root account",
-                [&](auto& env) {
+                "not the root account",
+                [&](auto& env, bool) {
                     b = scDoor;
                     ib = xrpIssue();
                 }),
             std::make_pair(
                 "Issuing chain is XRP and issuing chain door account is "
-                "the "
-                "root account ",
-                [&](auto& env) {
+                "the root account ",
+                [&](auto& env, bool) {
                     b = Account::master;
                     ib = xrpIssue();
                 })};
 
-        std::vector<std::tuple<TER, bool>> test_result;
+        std::vector<std::pair<int, int>> expected_result{
+            {0, 0},       {-259, -259}, {-259, -259}, {-259, -259},
+            {-259, -259}, {-259, -259}, {-259, -259}, {0, 0},
+            {-259, -259}, {-259, -259}, {-259, -259}, {-259, -259},
+            {-259, -259}, {-259, -259}, {133, 0},     {-259, -259},
+            {-259, -259}, {-259, -259}, {-259, -259}, {-259, -259},
+            {-259, -259}, {0, 0},       {-259, -259}, {-259, -259},
+            {-259, -259}, {-259, -259}, {-259, -259}, {-259, -259},
+            {133, 0},     {-259, -259}, {-259, -259}, {-259, -259},
+            {-259, -259}, {-259, -259}, {-259, -259}, {-259, -259},
+            {-259, -259}, {-259, -259}, {-259, -259}, {-259, -259},
+            {-259, -259}, {0, 0}};
+
+        std::vector<std::tuple<TER, TER, bool>> test_result;
 
         auto testcase = [&](auto const& lc, auto const& ic) {
-            xEnv env(*this);
-            lc.second(env);
-            ic.second(env);
-            env.tx(create_bridge(mcDoor, bridge(a, ia, b, ib)));
-            test_result.emplace_back(env.env_.ter(), true);
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            lc.second(mcEnv, true);
+            lc.second(scEnv, false);
+
+            ic.second(mcEnv, false);
+            ic.second(scEnv, true);
+
+            auto const& expected = expected_result[test_result.size()];
+
+            mcEnv.tx(
+                create_bridge(a, bridge(a, ia, b, ib)),
+                ter(TER::fromInt(expected.first)));
+            TER mcTER = mcEnv.env_.ter();
+
+            scEnv.tx(
+                create_bridge(b, bridge(a, ia, b, ib)),
+                ter(TER::fromInt(expected.second)));
+            TER scTER = scEnv.env_.ter();
+
+            bool pass = mcTER == tesSUCCESS && scTER == tesSUCCESS;
+
+            test_result.emplace_back(mcTER, scTER, pass);
         };
 
         auto apply_ics = [&](auto const& lc, auto const& ics) {
@@ -439,7 +465,20 @@ struct XChain_test : public beast::unit_test::suite,
         fname += ".md";
         std::cout << "Markdown output for matrix test: " << fname << "\n";
 
-        std::ofstream(fname) << [&]() {
+        auto print_res = [](auto tup) -> std::string {
+            std::string status = std::string(transToken(std::get<0>(tup))) +
+                " / " + transToken(std::get<1>(tup));
+
+            if (std::get<2>(tup))
+                return status;
+            else
+            {
+                // red
+                return std::string("`") + status + "`";
+            }
+        };
+
+        auto output_table = [&](auto print_res) {
             size_t test_idx = 0;
             std::string res;
             res.reserve(10000);  // should be enough :-)
@@ -462,7 +501,7 @@ struct XChain_test : public beast::unit_test::suite,
             res += "\n";
 
             auto output = [&](auto const& lc, auto const& ic) {
-                res += transToken(std::get<0>(test_result[test_idx]));
+                res += print_res(test_result[test_idx]);
                 res += " | ";
                 ++test_idx;
             };
@@ -480,7 +519,18 @@ struct XChain_test : public beast::unit_test::suite,
                 [&](auto const&... lc) { (output_ics(lc, ics), ...); }, lcs);
 
             return res;
-        }();
+        };
+
+        std::ofstream(fname) << output_table(print_res);
+
+        std::string ter_fname{std::tmpnam(nullptr)};
+        std::cout << "ter output for matrix test: " << ter_fname << "\n";
+
+        std::ofstream ofs(ter_fname);
+        for (auto& t : test_result)
+        {
+            ofs << "{ " << std::get<0>(t) << ", " << std::get<1>(t) << "}\n,";
+        }
     }
 
     void
@@ -704,8 +754,6 @@ struct XChain_test : public beast::unit_test::suite,
         XRPAmount res0 = reserve(0);
         XRPAmount res1 = reserve(1);
         XRPAmount tx_fee = txFee();
-        STAmount one_xrp{XRP(1)};
-        STAmount xrp_dust = divide(one_xrp, STAmount(10000), one_xrp.issue());
 
         testcase("Bridge Create ClaimID");
 
@@ -757,87 +805,79 @@ struct XChain_test : public beast::unit_test::suite,
     }
 
     void
-    testBridgeClaim()
+    testBridgeCommit()
     {
         using namespace jtx;
-
         XRPAmount res0 = reserve(0);
         XRPAmount res1 = reserve(1);
         XRPAmount tx_fee = txFee();
-        STAmount one_xrp{XRP(1)};
-        STAmount xrp_dust = divide(one_xrp, STAmount(10000), one_xrp.issue());
 
-        testcase("Bridge Claim");
-
-        // Claim where the amount matches what is attested to, to an account
-        // that exists, and there are enough attestations to reach a quorum
-        // => should succeed
-        // -----------------------------------------------------------------
-        for (auto withClaim : {false, true})
-        {
-            xEnv mcEnv(*this);
-            xEnv scEnv(*this, true);
-
-            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
-
-            scEnv.tx(create_bridge(Account::master, jvb))
-                .tx(jtx::signers(Account::master, signers.size(), signers))
-                .close()
-                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
-                .close();
-
-            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
-            auto const amt = XRP(1000);
-            std::uint32_t const claimID = 1;
-            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
-
-            BalanceTransfer transfer(scEnv, Account::master, scBob, payees);
-
-            auto batch = attestation_claim_batch(
-                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
-            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
-
-            if (withClaim)
-            {
-                BEAST_EXPECT(transfer.has_not_happened());
-
-                // need to submit a claim transactions
-                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
-                    .close();
-            }
-
-            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
-        }
-    }
-
-    void
-    testBridgeCommit()
-    {
-        XRPAmount res0 = reserve(0);
-        XRPAmount res1 = reserve(1);
-
-        using namespace jtx;
         testcase("Bridge Commit");
 
         // Commit to a non-existent bridge
+        xEnv(*this).tx(
+            xchain_commit(mcAlice, jvb, 1, one_xrp, scBob), ter(tecNO_ENTRY));
 
         // Commit a negative amount
+        xEnv(*this)
+            .tx(create_bridge(mcDoor, jvb))
+            .close()
+            .tx(xchain_commit(mcAlice, jvb, 1, XRP(-1), scBob),
+                ter(temBAD_AMOUNT));
 
         // Commit an amount whose issue that does not match the expected issue
         // on the bridge (either LockingChainIssue or IssuingChainIssue,
         // depending on the chain).
+        xEnv(*this)
+            .tx(create_bridge(mcDoor, jvb))
+            .close()
+            .tx(xchain_commit(mcAlice, jvb, 1, mcUSD(100), scBob),
+                ter(tecBAD_XCHAIN_TRANSFER_ISSUE));
 
         // Commit an amount that would put the sender below the required reserve
         // (if XRP)
+        xEnv(*this)
+            .tx(create_bridge(mcDoor, jvb))
+            .fund(res0 + one_xrp - xrp_dust, mcuAlice)  // barely not enough
+            .close()
+            .tx(xchain_commit(mcuAlice, jvb, 1, one_xrp, scBob),
+                ter(tecINSUFFICIENT_FUNDS));
+
+        xEnv(*this)
+            .tx(create_bridge(mcDoor, jvb))
+            .fund(
+                res0 + one_xrp +
+                    xrp_dust,  // todo: "+ xrp_dust" should not be needed
+                mcuAlice)      // exactly enough => should succeed
+            .close()
+            .tx(xchain_commit(mcuAlice, jvb, 1, one_xrp, scBob));
 
         // Commit an amount above the account's balance (for both XRP and IOUs)
+        xEnv(*this)
+            .tx(create_bridge(mcDoor, jvb))
+            .fund(res0, mcuAlice)  // barely not enough
+            .close()
+            .tx(xchain_commit(mcuAlice, jvb, 1, res0 + one_xrp, scBob),
+                ter(tecINSUFFICIENT_FUNDS));
+
+#if 0
+        auto jvb_mcuBob = bridge(mcuBob, mcuBob["USD"], scBob, scBob["USD"]);
+        xEnv(*this)
+            .fund(res1, mcuBob)
+            .tx(create_bridge(mcuBob, jvb_mcuBob))
+            .close()
+            .tx(xchain_commit(mcuBob, jvb_mcuBob, 1, mcuBob["USD"](1), scBob),
+                ter(tecINSUFFICIENT_FUNDS));
+#endif
     }
 
     void
     testBridgeAddAttestation()
     {
+        using namespace jtx;
         XRPAmount res0 = reserve(0);
         XRPAmount res1 = reserve(1);
+        XRPAmount tx_fee = txFee();
 
         using namespace jtx;
         testcase("Bridge Add Attestation");
@@ -890,6 +930,58 @@ struct XChain_test : public beast::unit_test::suite,
     }
 
     void
+    testBridgeClaim()
+    {
+        using namespace jtx;
+
+        XRPAmount res0 = reserve(0);
+        XRPAmount res1 = reserve(1);
+        XRPAmount tx_fee = txFee();
+
+        testcase("Bridge Claim");
+
+        // Claim where the amount matches what is attested to, to an account
+        // that exists, and there are enough attestations to reach a quorum
+        // => should succeed
+        // -----------------------------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(scEnv, Account::master, scBob, payees);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+        }
+    }
+
+    void
     testBridgeCreateAccount()
     {
         XRPAmount res0 = reserve(0);
@@ -917,9 +1009,11 @@ struct XChain_test : public beast::unit_test::suite,
     run() override
     {
         testBridgeCreate();
-        // testBridgeCreateMatrix();
+        testBridgeCreateMatrix(false);
         testBridgeModify();
         testBridgeCreateClaimID();
+        testBridgeCommit();
+        testBridgeAddAttestation();
         testBridgeClaim();
     }
 };
