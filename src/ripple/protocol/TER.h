@@ -311,6 +311,7 @@ enum TECcodes : TERUnderlyingType {
     tecXCHAIN_ACCOUNT_CREATE_PAST = 174,
     tecXCHAIN_ACCOUNT_CREATE_TOO_MANY = 175,
     tecXCHAIN_PAYMENT_FAILED = 176,
+    tecXCHAIN_SELF_COMMIT = 177,
 };
 
 //------------------------------------------------------------------------------

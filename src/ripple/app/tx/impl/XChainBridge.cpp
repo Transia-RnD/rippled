@@ -819,23 +819,30 @@ XChainCommit::preflight(PreflightContext const& ctx)
 TER
 XChainCommit::preclaim(PreclaimContext const& ctx)
 {
-    auto const sidechain = ctx.tx[sfXChainBridge];
+    auto const bridge = ctx.tx[sfXChainBridge];
     auto const amount = ctx.tx[sfAmount];
 
-    auto const sleB = ctx.view.read(keylet::bridge(sidechain));
+    auto const sleB = ctx.view.read(keylet::bridge(bridge));
     if (!sleB)
     {
         // TODO: custom return code for no sidechain?
         return tecNO_ENTRY;
     }
 
-    auto const thisDoor = (*sleB)[sfAccount];
+    AccountID const thisDoor = (*sleB)[sfAccount];
+    AccountID const account = ctx.tx[sfAccount];
+
+    if (thisDoor == account)
+    {
+        // Door account can't lock funds onto itself
+        return tecXCHAIN_SELF_COMMIT;
+    }
 
     bool isLockingChain = false;
     {
-        if (thisDoor == sidechain.lockingChainDoor())
+        if (thisDoor == bridge.lockingChainDoor())
             isLockingChain = true;
-        else if (thisDoor == sidechain.issuingChainDoor())
+        else if (thisDoor == bridge.issuingChainDoor())
             isLockingChain = false;
         else
             return tecINTERNAL;
@@ -843,12 +850,12 @@ XChainCommit::preclaim(PreclaimContext const& ctx)
 
     if (isLockingChain)
     {
-        if (sidechain.lockingChainIssue() != ctx.tx[sfAmount].issue())
+        if (bridge.lockingChainIssue() != ctx.tx[sfAmount].issue())
             return tecBAD_XCHAIN_TRANSFER_ISSUE;
     }
     else
     {
-        if (sidechain.issuingChainIssue() != ctx.tx[sfAmount].issue())
+        if (bridge.issuingChainIssue() != ctx.tx[sfAmount].issue())
             return tecBAD_XCHAIN_TRANSFER_ISSUE;
     }
 
@@ -1461,6 +1468,13 @@ XChainCreateAccount::preclaim(PreclaimContext const& ctx)
         return tecBAD_XCHAIN_TRANSFER_ISSUE;
 
     AccountID const thisDoor = (*sleB)[sfAccount];
+    AccountID const account = ctx.tx[sfAccount];
+    if (thisDoor == account)
+    {
+        // Door account can't lock funds onto itself
+        return tecXCHAIN_SELF_COMMIT;
+    }
+
     bool isLockingChain = false;
     {
         if (thisDoor == bridgeSpec.lockingChainDoor())

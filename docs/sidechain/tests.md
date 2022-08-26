@@ -144,6 +144,8 @@ until that's in)
 
 * Commit an amount above the account's balance (for both XRP and IOUs)
 
+* Commit to a door account from the door account. This should fail.
+
 ## Create claim id
 
 ### The following should fail
