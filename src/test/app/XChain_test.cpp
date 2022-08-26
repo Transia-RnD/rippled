@@ -108,8 +108,8 @@ struct xEnv : public jtx::XChainBridgeObjects
 template <class T>
 struct Balance
 {
-    T& env_;
     jtx::Account const& account_;
+    T& env_;
     STAmount startAmount;
 
     Balance(T& env, jtx::Account const& account) : account_(account), env_(env)
@@ -455,7 +455,7 @@ struct XChain_test : public beast::unit_test::suite,
         };
 
         std::apply([&](auto const&... lc) { (apply_ics(lc, ics), ...); }, lcs);
-
+#if 0
         // optional output of matrix results in markdown format
         // ----------------------------------------------------
         if (!markdown_output)
@@ -531,6 +531,7 @@ struct XChain_test : public beast::unit_test::suite,
         {
             ofs << "{ " << std::get<0>(t) << ", " << std::get<1>(t) << "}\n,";
         }
+#endif
     }
 
     void
