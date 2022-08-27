@@ -162,6 +162,11 @@ transferHelper(
                 // Already checked, but ok to check again
                 return tecNO_DST;
             }
+            if (amt < psb.fees().accountReserve(0))
+            {
+                JLOG(j.trace()) << "Insufficent payment to create account.";
+                return tecNO_DST_INSUF_XRP;
+            }
 
             // Create the account.
             std::uint32_t const seqno{
