@@ -223,7 +223,7 @@ finalizeClaimHelper(
     AccountID const& rewardPoolSrc,
     STAmount const& rewardPool,
     std::vector<AccountID> const& rewardAccounts,
-    bool wasLockingChainSend,
+    STXChainBridge::ChainType const srcChain,
     // sle for the claim id (may be an NULL or XChainClaimID or
     // XChainCreateAccountClaimID). Don't read fields that aren't in common with
     // those two types and always check for NULL. Remove on success (if not
@@ -231,15 +231,14 @@ finalizeClaimHelper(
     std::shared_ptr<SLE> const& sleCID,
     beast::Journal j)
 {
+    STXChainBridge::ChainType const dstChain =
+        STXChainBridge::otherChain(srcChain);
     STAmount const thisChainAmount = [&] {
         STAmount r = sendingAmount;
-        auto const issue = wasLockingChainSend ? bridgeSpec.issuingChainIssue()
-                                               : bridgeSpec.lockingChainIssue();
-        r.setIssue(issue);
+        r.setIssue(bridgeSpec.issue(dstChain));
         return r;
     }();
-    auto const& thisDoor = wasLockingChainSend ? bridgeSpec.issuingChainDoor()
-                                               : bridgeSpec.lockingChainDoor();
+    auto const& thisDoor = bridgeSpec.door(dstChain);
 
     auto const thTer = transferHelper(
         psb,
@@ -725,26 +724,24 @@ XChainClaim::doApply()
         return tecINTERNAL;
 
     AccountID const thisDoor = (*sleB)[sfAccount];
-    bool isLockingChain = false;
+
+    STXChainBridge::ChainType dstChain = STXChainBridge::ChainType::locking;
     {
         if (thisDoor == bridgeSpec.lockingChainDoor())
-            isLockingChain = true;
+            dstChain = STXChainBridge::ChainType::locking;
         else if (thisDoor == bridgeSpec.issuingChainDoor())
-            isLockingChain = false;
+            dstChain = STXChainBridge::ChainType::issuing;
         else
             return tecINTERNAL;
     }
+    STXChainBridge::ChainType const srcChain =
+        STXChainBridge::otherChain(dstChain);
 
     auto const sendingAmount = [&]() -> STAmount {
         STAmount r(thisChainAmount);
-        if (isLockingChain)
-            r.setIssue(bridgeSpec.issuingChainIssue());
-        else
-            r.setIssue(bridgeSpec.lockingChainIssue());
+        r.setIssue(bridgeSpec.issue(srcChain));
         return r;
     }();
-
-    auto const wasLockingChainSend = !isLockingChain;
 
     auto const [signersList, quorum, slTer] =
         getSignersListAndQuorum(ctx_.view(), *sleB, ctx_.journal);
@@ -756,7 +753,10 @@ XChainClaim::doApply()
         sleCID->getFieldArray(sfXChainClaimAttestations)};
 
     auto claimR = curAtts.onClaim(
-        sendingAmount, wasLockingChainSend, quorum, signersList);
+        sendingAmount,
+        /*wasLockingChainSend*/ srcChain == STXChainBridge::ChainType::locking,
+        quorum,
+        signersList);
     if (!claimR.has_value())
         return claimR.error();
 
@@ -775,7 +775,7 @@ XChainClaim::doApply()
         rewardPoolSrc,
         (*sleCID)[sfSignatureReward],
         rewardAccounts,
-        wasLockingChainSend,
+        srcChain,
         sleCID,
         ctx_.journal);
     if (!isTesSuccess(r))
@@ -1089,7 +1089,7 @@ XChainAddAttestation::applyClaims(
     STXChainAttestationBatch::TClaims::const_iterator attBegin,
     STXChainAttestationBatch::TClaims::const_iterator attEnd,
     STXChainBridge const& bridgeSpec,
-    bool isLockingChain,
+    STXChainBridge::ChainType const srcChain,
     std::unordered_map<AccountID, std::uint32_t> const& signersList,
     std::uint32_t quorum)
 {
@@ -1124,7 +1124,15 @@ XChainAddAttestation::applyClaims(
     {
         return tecXCHAIN_SENDING_ACCOUNT_MISMATCH;
     }
-    if (attBegin->wasLockingChainSend == isLockingChain)
+
+    STXChainBridge::ChainType const dstChain =
+        STXChainBridge::otherChain(srcChain);
+
+    STXChainBridge::ChainType const attDstChain = attBegin->wasLockingChainSend
+        ? STXChainBridge::ChainType::issuing
+        : STXChainBridge::ChainType::locking;
+
+    if (attDstChain != dstChain)
     {
         return tecXCHAIN_WRONG_CHAIN;
     }
@@ -1152,7 +1160,7 @@ XChainAddAttestation::applyClaims(
             rewardPoolSrc,
             (*sleCID)[sfSignatureReward],
             *rewardAccounts,
-            attBegin->wasLockingChainSend,
+            srcChain,
             sleCID,
             ctx_.journal);
         if (!isTesSuccess(r))
@@ -1172,7 +1180,7 @@ XChainAddAttestation::applyCreateAccountAtt(
     Keylet const& doorK,
     STXChainBridge const& bridgeSpec,
     Keylet const& bridgeK,
-    bool isLockingChain,
+    STXChainBridge::ChainType const srcChain,
     std::unordered_map<AccountID, std::uint32_t> const& signersList,
     std::uint32_t quorum)
 {
@@ -1201,7 +1209,14 @@ XChainAddAttestation::applyCreateAccountAtt(
         return tecXCHAIN_ACCOUNT_CREATE_TOO_MANY;
     }
 
-    if (attBegin->wasLockingChainSend == isLockingChain)
+    STXChainBridge::ChainType const dstChain =
+        STXChainBridge::otherChain(srcChain);
+
+    STXChainBridge::ChainType const attDstChain = attBegin->wasLockingChainSend
+        ? STXChainBridge::ChainType::issuing
+        : STXChainBridge::ChainType::locking;
+
+    if (attDstChain != dstChain)
     {
         return tecXCHAIN_WRONG_CHAIN;
     }
@@ -1273,7 +1288,7 @@ XChainAddAttestation::applyCreateAccountAtt(
             /*rewardPoolSrc*/ doorAccount,
             attBegin->rewardAmount,
             *rewardAccounts,
-            attBegin->wasLockingChainSend,
+            srcChain,
             sleCID,
             ctx_.journal);
         if (!isTesSuccess(r))
@@ -1335,15 +1350,18 @@ XChainAddAttestation::doApply()
     }
     AccountID const thisDoor = (*sleB)[sfAccount];
     auto const doorK = keylet::account(thisDoor);
-    bool isLockingChain = false;
+
+    STXChainBridge::ChainType dstChain = STXChainBridge::ChainType::locking;
     {
         if (thisDoor == bridgeSpec.lockingChainDoor())
-            isLockingChain = true;
+            dstChain = STXChainBridge::ChainType::locking;
         else if (thisDoor == bridgeSpec.issuingChainDoor())
-            isLockingChain = false;
+            dstChain = STXChainBridge::ChainType::issuing;
         else
             return tecINTERNAL;
     }
+    STXChainBridge::ChainType const srcChain =
+        STXChainBridge::otherChain(dstChain);
 
     // signersList is a map from account id to weights
     auto const [signersList, quorum, slTer] =
@@ -1366,7 +1384,7 @@ XChainAddAttestation::doApply()
                         doorK,
                         bridgeSpec,
                         bridgeK,
-                        isLockingChain,
+                        srcChain,
                         signersList,
                         quorum);
                 });
@@ -1390,7 +1408,7 @@ XChainAddAttestation::doApply()
                         batchStart,
                         batchEnd,
                         bridgeSpec,
-                        isLockingChain,
+                        srcChain,
                         signersList,
                         quorum);
                 });
@@ -1480,32 +1498,23 @@ XChainCreateAccount::preclaim(PreclaimContext const& ctx)
         return tecXCHAIN_SELF_COMMIT;
     }
 
-    bool isLockingChain = false;
+    STXChainBridge::ChainType srcChain = STXChainBridge::ChainType::locking;
     {
         if (thisDoor == bridgeSpec.lockingChainDoor())
-            isLockingChain = true;
+            srcChain = STXChainBridge::ChainType::locking;
         else if (thisDoor == bridgeSpec.issuingChainDoor())
-            isLockingChain = false;
+            srcChain = STXChainBridge::ChainType::issuing;
         else
             return tecINTERNAL;
     }
+    STXChainBridge::ChainType const dstChain =
+        STXChainBridge::otherChain(srcChain);
 
-    if (isLockingChain)
-    {
-        if (bridgeSpec.lockingChainIssue() != ctx.tx[sfAmount].issue())
-            return tecBAD_XCHAIN_TRANSFER_ISSUE;
+    if (bridgeSpec.issue(srcChain) != ctx.tx[sfAmount].issue())
+        return tecBAD_XCHAIN_TRANSFER_ISSUE;
 
-        if (!isXRP(bridgeSpec.issuingChainIssue()))
-            return tecXCHAIN_CREATE_ACCOUNT_NONXRP_ISSUE;
-    }
-    else
-    {
-        if (bridgeSpec.issuingChainIssue() != ctx.tx[sfAmount].issue())
-            return tecBAD_XCHAIN_TRANSFER_ISSUE;
-
-        if (!isXRP(bridgeSpec.lockingChainIssue()))
-            return tecXCHAIN_CREATE_ACCOUNT_NONXRP_ISSUE;
-    }
+    if (!isXRP(bridgeSpec.issue(dstChain)))
+        return tecXCHAIN_CREATE_ACCOUNT_NONXRP_ISSUE;
 
     return tesSUCCESS;
 }

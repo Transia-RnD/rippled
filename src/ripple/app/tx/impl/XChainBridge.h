@@ -166,7 +166,7 @@ private:
         STXChainAttestationBatch::TClaims::const_iterator attBegin,
         STXChainAttestationBatch::TClaims::const_iterator attEnd,
         STXChainBridge const& bridgeSpec,
-        bool isLockingChain,
+        STXChainBridge::ChainType const srcChain,
         std::unordered_map<AccountID, std::uint32_t> const& signersList,
         std::uint32_t quorum);
 
@@ -180,7 +180,7 @@ private:
         Keylet const& doorK,
         STXChainBridge const& bridgeSpec,
         Keylet const& bridgeK,
-        bool isLockingChain,
+        STXChainBridge::ChainType const srcChain,
         std::unordered_map<AccountID, std::uint32_t> const& signersList,
         std::uint32_t quorum);
 };

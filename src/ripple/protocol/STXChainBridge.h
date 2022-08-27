@@ -39,6 +39,10 @@ class STXChainBridge final : public STBase
 public:
     using value_type = STXChainBridge;
 
+    enum class ChainType { locking, issuing };
+    static ChainType
+    otherChain(ChainType ct);
+
     STXChainBridge();
 
     explicit STXChainBridge(SField const& name);
@@ -76,6 +80,12 @@ public:
 
     Issue const&
     issuingChainIssue() const;
+
+    AccountID const&
+    door(ChainType ct) const;
+
+    Issue const&
+    issue(ChainType ct) const;
 
     SerializedTypeID
     getSType() const override;
@@ -174,6 +184,30 @@ inline STXChainBridge::value_type const&
 STXChainBridge::value() const noexcept
 {
     return *this;
+}
+
+inline AccountID const&
+STXChainBridge::door(ChainType ct) const
+{
+    if (ct == ChainType::locking)
+        return lockingChainDoor();
+    return issuingChainDoor();
+}
+
+inline Issue const&
+STXChainBridge::issue(ChainType ct) const
+{
+    if (ct == ChainType::locking)
+        return lockingChainIssue();
+    return issuingChainIssue();
+}
+
+inline STXChainBridge::ChainType
+STXChainBridge::otherChain(ChainType ct)
+{
+    if (ct == ChainType::locking)
+        return ChainType::issuing;
+    return ChainType::locking;
 }
 
 }  // namespace ripple
