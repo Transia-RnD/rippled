@@ -607,8 +607,8 @@ XChainClaim::preflight(PreflightContext const& ctx)
     auto const amount = ctx.tx[sfAmount];
 
     if (amount.signum() <= 0 ||
-        amount.issue() != bridgeSpec.lockingChainIssue() ||
-        amount.issue() != bridgeSpec.issuingChainIssue())
+        (amount.issue() != bridgeSpec.lockingChainIssue() &&
+         amount.issue() != bridgeSpec.issuingChainIssue()))
     {
         return temBAD_AMOUNT;
     }
