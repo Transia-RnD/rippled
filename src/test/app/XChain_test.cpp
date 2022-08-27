@@ -455,7 +455,7 @@ struct XChain_test : public beast::unit_test::suite,
         };
 
         std::apply([&](auto const&... lc) { (apply_ics(lc, ics), ...); }, lcs);
-#if 0
+
         // optional output of matrix results in markdown format
         // ----------------------------------------------------
         if (!markdown_output)
@@ -495,7 +495,7 @@ struct XChain_test : public beast::unit_test::suite,
             res += "| :--- | ";
             std::apply(
                 [&](auto const&... ic) {
-                    ((ic.first, res += ":---: |  "), ...);
+                    (((void)ic.first, res += ":---: |  "), ...);
                 },
                 ics);
             res += "\n";
@@ -531,7 +531,6 @@ struct XChain_test : public beast::unit_test::suite,
         {
             ofs << "{ " << std::get<0>(t) << ", " << std::get<1>(t) << "}\n,";
         }
-#endif
     }
 
     void
