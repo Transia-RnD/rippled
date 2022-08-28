@@ -163,6 +163,8 @@ until that's in)
 
 * Add a batch of attestations where one has an invalid signature. The entire transaction should fail.
 
+* Add attestations that are inconsistent with eachother for the same claim id/create count
+
 * Test combinations of the following when adding a batch of attestations for different claim ids:
 All the claim id exist
 One claim id exists and other has already been claimed

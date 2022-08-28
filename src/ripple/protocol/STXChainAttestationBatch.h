@@ -27,6 +27,7 @@
 #include <ripple/protocol/SField.h>
 #include <ripple/protocol/STBase.h>
 #include <ripple/protocol/STXChainBridge.h>
+#include <ripple/protocol/SecretKey.h>
 
 #include <boost/container/flat_set.hpp>
 #include <boost/container/vector.hpp>
@@ -108,6 +109,17 @@ struct AttestationClaim : AttestationBase
         std::uint64_t claimID_,
         std::optional<AccountID> const& dst_);
 
+    explicit AttestationClaim(
+        STXChainBridge const& bridge,
+        PublicKey const& publicKey_,
+        SecretKey const& secretKey_,
+        AccountID const& sendingAccount_,
+        STAmount const& sendingAmount_,
+        AccountID const& rewardAccount_,
+        bool wasLockingChainSend_,
+        std::uint64_t claimID_,
+        std::optional<AccountID> const& dst_);
+
     explicit AttestationClaim(STObject const& o);
     explicit AttestationClaim(Json::Value const& v);
 
@@ -167,6 +179,18 @@ struct AttestationCreateAccount : AttestationBase
     explicit AttestationCreateAccount(
         PublicKey const& publicKey_,
         Buffer signature_,
+        AccountID const& sendingAccount_,
+        STAmount const& sendingAmount_,
+        STAmount const& rewardAmount_,
+        AccountID const& rewardAccount_,
+        bool wasLockingChainSend_,
+        std::uint64_t createCount_,
+        AccountID const& toCreate_);
+
+    explicit AttestationCreateAccount(
+        STXChainBridge const& bridge,
+        PublicKey const& publicKey_,
+        SecretKey const& secretKey_,
         AccountID const& sendingAccount_,
         STAmount const& sendingAmount_,
         STAmount const& rewardAmount_,

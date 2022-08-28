@@ -140,6 +140,30 @@ AttestationClaim::AttestationClaim(
 {
 }
 
+AttestationClaim::AttestationClaim(
+    STXChainBridge const& bridge,
+    PublicKey const& publicKey_,
+    SecretKey const& secretKey_,
+    AccountID const& sendingAccount_,
+    STAmount const& sendingAmount_,
+    AccountID const& rewardAccount_,
+    bool wasLockingChainSend_,
+    std::uint64_t claimID_,
+    std::optional<AccountID> const& dst_)
+    : AttestationClaim{
+          publicKey_,
+          Buffer{},
+          sendingAccount_,
+          sendingAmount_,
+          rewardAccount_,
+          wasLockingChainSend_,
+          claimID_,
+          dst_}
+{
+    auto const toSign = message(bridge);
+    signature = sign(publicKey_, secretKey_, makeSlice(toSign));
+}
+
 AttestationClaim::AttestationClaim(STObject const& o)
     : AttestationBase(o), claimID{o[sfXChainClaimID]}, dst{o[~sfDestination]}
 {
@@ -256,6 +280,32 @@ AttestationCreateAccount::AttestationCreateAccount(
     , toCreate{toCreate_}
     , rewardAmount{rewardAmount_}
 {
+}
+
+AttestationCreateAccount::AttestationCreateAccount(
+    STXChainBridge const& bridge,
+    PublicKey const& publicKey_,
+    SecretKey const& secretKey_,
+    AccountID const& sendingAccount_,
+    STAmount const& sendingAmount_,
+    STAmount const& rewardAmount_,
+    AccountID const& rewardAccount_,
+    bool wasLockingChainSend_,
+    std::uint64_t createCount_,
+    AccountID const& toCreate_)
+    : AttestationCreateAccount{
+          publicKey_,
+          Buffer{},
+          sendingAccount_,
+          sendingAmount_,
+          rewardAmount_,
+          rewardAccount_,
+          wasLockingChainSend_,
+          createCount_,
+          toCreate_}
+{
+    auto const toSign = message(bridge);
+    signature = sign(publicKey_, secretKey_, makeSlice(toSign));
 }
 
 STObject
@@ -440,7 +490,8 @@ STXChainAttestationBatch::STXChainAttestationBatch(
             {
                 Throw<std::runtime_error>(
                     "XChainClaimAttesationBatch contains a "
-                    "XChainClaimAttestationBatchElement that is not an object");
+                    "XChainClaimAttestationBatchElement that is not an "
+                    "object");
             }
             claims_.emplace(elem);
         }
@@ -452,7 +503,8 @@ STXChainAttestationBatch::STXChainAttestationBatch(
         if (!createAccounts.isArray())
         {
             Throw<std::runtime_error>(
-                "STXChainAttestationBatch XChainCreateAccountAttesationBatch "
+                "STXChainAttestationBatch "
+                "XChainCreateAccountAttesationBatch "
                 "must be an array.");
         }
         creates_.reserve(createAccounts.size());
@@ -471,7 +523,8 @@ STXChainAttestationBatch::STXChainAttestationBatch(
             {
                 Throw<std::runtime_error>(
                     "XChainCreateAccountAttesationBatch contains a "
-                    "XChainCreateAccountAttestationBatchElement that is not an "
+                    "XChainCreateAccountAttestationBatchElement that is "
+                    "not an "
                     "object");
             }
             creates_.emplace(elem);
