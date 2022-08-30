@@ -73,6 +73,7 @@ struct xEnv : public jtx::XChainBridgeObjects
             // Signer's list must match the attestation signers
             // env_(jtx::signers(Account::master, signers.size(), signers));
         }
+        env_.close();
     }
 
     xEnv&
@@ -810,6 +811,7 @@ struct XChain_test : public beast::unit_test::suite,
         using namespace jtx;
         XRPAmount res0 = reserve(0);
         XRPAmount res1 = reserve(1);
+        XRPAmount res2 = reserve(2);
         XRPAmount tx_fee = txFee();
 
         testcase("Bridge Commit");
@@ -860,15 +862,50 @@ struct XChain_test : public beast::unit_test::suite,
             .tx(xchain_commit(mcuAlice, jvb, 1, res0 + one_xrp, scBob),
                 ter(tecINSUFFICIENT_FUNDS));
 
-#if 0
-        auto jvb_mcuBob = bridge(mcuBob, mcuBob["USD"], scBob, scBob["USD"]);
+        auto jvb_USD = bridge(mcDoor, mcUSD, scGw, scUSD);
+
+        // commit sent from iou issuer (mcGw) succeeds - should it?
         xEnv(*this)
-            .fund(res1, mcuBob)
-            .tx(create_bridge(mcuBob, jvb_mcuBob))
+            .tx(trust(mcDoor, mcUSD(10000)))  // door needs to have a trustline
+            .tx(create_bridge(mcDoor, jvb_USD))
             .close()
-            .tx(xchain_commit(mcuBob, jvb_mcuBob, 1, mcuBob["USD"](1), scBob),
-                ter(tecINSUFFICIENT_FUNDS));
-#endif
+            .tx(xchain_commit(mcGw, jvb_USD, 1, mcUSD(1), scBob));
+
+        // commit sent from door - should it succeed? <todo check>
+        xEnv(*this)
+            .tx(trust(mcDoor, mcUSD(10000)))  // door needs to have a trustline
+            .tx(create_bridge(mcDoor, jvb_USD))
+            .close()
+            .tx(xchain_commit(mcDoor, jvb_USD, 1, mcUSD(1), scBob));
+
+        // commit sent from mcAlice which has no IOU balance => should fail
+        xEnv(*this)
+            .tx(trust(mcDoor, mcUSD(10000)))  // door needs to have a trustline
+            .tx(create_bridge(mcDoor, jvb_USD))
+            .close()
+            .tx(xchain_commit(mcAlice, jvb_USD, 1, mcUSD(1), scBob),
+                ter(terNO_LINE));
+
+        // commit sent from mcAlice which has no IOU balance => should fail
+        // just changed the destination to scGw (which is the door account and
+        // may not make much sense)
+        xEnv(*this)
+            .tx(trust(mcDoor, mcUSD(10000)))  // door needs to have a trustline
+            .tx(create_bridge(mcDoor, jvb_USD))
+            .close()
+            .tx(xchain_commit(mcAlice, jvb_USD, 1, mcUSD(1), scGw),
+                ter(terNO_LINE));
+
+        // commit sent from mcAlice which has a IOU balance => should succeed
+        xEnv(*this)
+            .tx(trust(mcDoor, mcUSD(10000)))
+            .tx(trust(mcAlice, mcUSD(10000)))
+            .close()
+            .tx(pay(mcGw, mcAlice, mcUSD(10)))
+            .tx(create_bridge(mcDoor, jvb_USD))
+            .close()
+            //.tx(pay(mcAlice, mcDoor, mcUSD(10)));
+            .tx(xchain_commit(mcAlice, jvb_USD, 1, mcUSD(10), scAlice));
     }
 
     void
