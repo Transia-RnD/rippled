@@ -132,36 +132,58 @@ struct BalanceTransfer
 
     balance from_;
     balance to_;
-    std::vector<balance> reward_;
+    balance payor_;                        // pays the rewards
+    std::vector<balance> reward_accounts;  // receives the reward
+    XRPAmount txFees_;
 
     BalanceTransfer(
         T& env,
         jtx::Account const& from_acct,
         jtx::Account const& to_acct,
-        std::vector<jtx::Account> const& payees)
-        : from_(env, from_acct), to_(env, to_acct), reward_([&]() {
+        jtx::Account const& payor,
+        std::vector<jtx::Account> const& payees,
+        bool withClaim)
+        : from_(env, from_acct)
+        , to_(env, to_acct)
+        , payor_(env, payor)
+        , reward_accounts([&]() {
             std::vector<balance> r;
             r.reserve(payees.size());
             for (auto& ra : payees)
                 r.emplace_back(env, ra);
             return r;
         }())
+        , txFees_(withClaim ? env.env_.current()->fees().base : XRPAmount(0))
     {
     }
 
     bool
-    has_happened(STAmount const& amt, STAmount const& reward)
+    check_most_balances(STAmount const& amt, STAmount const& reward)
     {
         return from_.diff() == -amt && to_.diff() == amt &&
-            std::all_of(reward_.begin(), reward_.end(), [&](const balance& b) {
-                   return b.diff() == reward;
-               });
+            std::all_of(
+                   reward_accounts.begin(),
+                   reward_accounts.end(),
+                   [&](const balance& b) { return b.diff() == reward; });
+    }
+
+    bool
+    has_happened(
+        STAmount const& amt,
+        STAmount const& reward,
+        bool check_payer = true)
+    {
+        auto reward_cost =
+            multiply(reward, STAmount(reward_accounts.size()), reward.issue());
+        return check_most_balances(amt, reward) &&
+            (!check_payer || payor_.diff() == -(reward_cost + txFees_));
     }
 
     bool
     has_not_happened()
     {
-        return has_happened(STAmount(0), STAmount(0));
+        return check_most_balances(STAmount(0), STAmount(0)) &&
+            payor_.diff() <= txFees_;  // could have paid fee for failed claim
     }
 };
 
@@ -273,10 +295,8 @@ struct XChain_test : public beast::unit_test::suite,
     }
 
     void
-    testBridgeCreateMatrix(bool markdown_output = true)
+    testBridgeCreateMatrix()
     {
-        XRPAmount res1 = reserve(1);
-
         using namespace jtx;
         testcase("Bridge Create Matrix");
 
@@ -409,17 +429,48 @@ struct XChain_test : public beast::unit_test::suite,
                 })};
 
         std::vector<std::pair<int, int>> expected_result{
-            {0, 0},       {-259, -259}, {-259, -259}, {-259, -259},
-            {-259, -259}, {-259, -259}, {-259, -259}, {0, 0},
-            {-259, -259}, {-259, -259}, {-259, -259}, {-259, -259},
-            {-259, -259}, {-259, -259}, {133, 0},     {-259, -259},
-            {-259, -259}, {-259, -259}, {-259, -259}, {-259, -259},
-            {-259, -259}, {0, 0},       {-259, -259}, {-259, -259},
-            {-259, -259}, {-259, -259}, {-259, -259}, {-259, -259},
-            {133, 0},     {-259, -259}, {-259, -259}, {-259, -259},
-            {-259, -259}, {-259, -259}, {-259, -259}, {-259, -259},
-            {-259, -259}, {-259, -259}, {-259, -259}, {-259, -259},
-            {-259, -259}, {0, 0}};
+            {tesSUCCESS, tesSUCCESS},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {tesSUCCESS, tesSUCCESS},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {tecNO_ISSUER, tesSUCCESS},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {tesSUCCESS, tesSUCCESS},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {tecNO_ISSUER, tesSUCCESS},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {temSIDECHAIN_BAD_ISSUES, temSIDECHAIN_BAD_ISSUES},
+            {tesSUCCESS, tesSUCCESS}};
 
         std::vector<std::tuple<TER, TER, bool>> test_result;
 
@@ -457,11 +508,9 @@ struct XChain_test : public beast::unit_test::suite,
 
         std::apply([&](auto const&... lc) { (apply_ics(lc, ics), ...); }, lcs);
 
+#if GENERATE_MTX_OUTPUT
         // optional output of matrix results in markdown format
         // ----------------------------------------------------
-        if (!markdown_output)
-            return;
-
         std::string fname{std::tmpnam(nullptr)};
         fname += ".md";
         std::cout << "Markdown output for matrix test: " << fname << "\n";
@@ -530,15 +579,15 @@ struct XChain_test : public beast::unit_test::suite,
         std::ofstream ofs(ter_fname);
         for (auto& t : test_result)
         {
-            ofs << "{ " << std::get<0>(t) << ", " << std::get<1>(t) << "}\n,";
+            ofs << "{ " << std::string(transToken(std::get<0>(t))) << ", "
+                << std::string(transToken(std::get<1>(t))) << "}\n,";
         }
+#endif
     }
 
     void
     testBridgeModify()
     {
-        XRPAmount res1 = reserve(1);
-
         using namespace jtx;
         testcase("Bridge Modify");
 
@@ -612,7 +661,8 @@ struct XChain_test : public beast::unit_test::suite,
             std::uint32_t const claimID = 1;
             mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
 
-            BalanceTransfer transfer(scEnv, Account::master, scBob, payees);
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
 
             Json::Value batch = attestation_claim_batch(
                 jvb, mcAlice, amt, payees, true, claimID, dst, signers);
@@ -656,7 +706,8 @@ struct XChain_test : public beast::unit_test::suite,
             scEnv.tx(bridge_modify(Account::master, jvb, XRP(2), XRP(10)))
                 .close();
 
-            BalanceTransfer transfer(scEnv, Account::master, scBob, payees);
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
 
             Json::Value batch = attestation_claim_batch(
                 jvb, mcAlice, amt, payees, true, claimID, dst, signers);
@@ -705,7 +756,8 @@ struct XChain_test : public beast::unit_test::suite,
                     Account::master, alt_signers.size(), alt_signers))
                 .close();
 
-            BalanceTransfer transfer(scEnv, Account::master, scBob, payees);
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
 
             // submit claim using outdated signers - should fail
             Json::Value batch = attestation_claim_batch(
@@ -744,7 +796,7 @@ struct XChain_test : public beast::unit_test::suite,
 
             // make sure the transfer went through as we sent attestations using
             // new signers
-            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+            BEAST_EXPECT(transfer.has_happened(amt, split_reward, false));
         }
     }
 
@@ -752,9 +804,7 @@ struct XChain_test : public beast::unit_test::suite,
     testBridgeCreateClaimID()
     {
         using namespace jtx;
-        XRPAmount res0 = reserve(0);
         XRPAmount res1 = reserve(1);
-        XRPAmount tx_fee = txFee();
 
         testcase("Bridge Create ClaimID");
 
@@ -810,9 +860,6 @@ struct XChain_test : public beast::unit_test::suite,
     {
         using namespace jtx;
         XRPAmount res0 = reserve(0);
-        XRPAmount res1 = reserve(1);
-        XRPAmount res2 = reserve(2);
-        XRPAmount tx_fee = txFee();
 
         testcase("Bridge Commit");
 
@@ -871,12 +918,13 @@ struct XChain_test : public beast::unit_test::suite,
             .close()
             .tx(xchain_commit(mcGw, jvb_USD, 1, mcUSD(1), scBob));
 
-        // commit sent from door - should it succeed? <todo check>
+        // commit to a door account from the door account. This should fail.
         xEnv(*this)
             .tx(trust(mcDoor, mcUSD(10000)))  // door needs to have a trustline
             .tx(create_bridge(mcDoor, jvb_USD))
             .close()
-            .tx(xchain_commit(mcDoor, jvb_USD, 1, mcUSD(1), scBob));
+            .tx(xchain_commit(mcDoor, jvb_USD, 1, mcUSD(1), scBob),
+                ter(tecXCHAIN_SELF_COMMIT));
 
         // commit sent from mcAlice which has no IOU balance => should fail
         xEnv(*this)
@@ -912,15 +960,49 @@ struct XChain_test : public beast::unit_test::suite,
     testBridgeAddAttestation()
     {
         using namespace jtx;
-        XRPAmount res0 = reserve(0);
-        XRPAmount res1 = reserve(1);
-        XRPAmount tx_fee = txFee();
 
-        using namespace jtx;
         testcase("Bridge Add Attestation");
+
+        // ++++++++++++todo
 
         // Add an attestation to a claim id that has already reached quorum.
         // This should succeed and share in the reward.
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+        }
 
         // Add a batch of attestations where one has an invalid signature. The
         // entire transaction should fail.
@@ -972,7 +1054,6 @@ struct XChain_test : public beast::unit_test::suite,
         using namespace jtx;
 
         XRPAmount res0 = reserve(0);
-        XRPAmount res1 = reserve(1);
         XRPAmount tx_fee = txFee();
 
         testcase("Bridge Claim");
@@ -999,7 +1080,8 @@ struct XChain_test : public beast::unit_test::suite,
             std::uint32_t const claimID = 1;
             mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
 
-            BalanceTransfer transfer(scEnv, Account::master, scBob, payees);
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
 
             auto batch = attestation_claim_batch(
                 jvb, mcAlice, amt, payees, true, claimID, dst, signers);
@@ -1016,25 +1098,792 @@ struct XChain_test : public beast::unit_test::suite,
 
             BEAST_EXPECT(transfer.has_happened(amt, split_reward));
         }
+
+        // Claim against non-existent bridge
+        // ---------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            auto jvb_unknown =
+                bridge(mcBob, xrpIssue(), Account::master, xrpIssue());
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(
+                        scAlice, jvb_unknown, reward, mcAlice),
+                    ter(tecNO_ENTRY))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv
+                .tx(xchain_commit(mcAlice, jvb_unknown, claimID, amt, dst),
+                    ter(tecNO_ENTRY))
+                .close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb_unknown, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv
+                .tx(xchain_add_attestation_batch(scAttester, batch),
+                    ter(tecNO_ENTRY))
+                .close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb_unknown, claimID, amt, scBob),
+                        ter(tecNO_ENTRY))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+
+        // Claim against non-existent claim id
+        // -----------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            // attest using non-existent claim id
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, 999, dst, signers);
+            scEnv
+                .tx(xchain_add_attestation_batch(scAttester, batch),
+                    ter(tecXCHAIN_NO_CLAIM_ID))
+                .close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // claim using non-existent claim id
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb, 999, amt, scBob),
+                        ter(tecXCHAIN_NO_CLAIM_ID))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+
+        // Claim against a claim id owned by another account
+        // -------------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            // submit attestations to the wrong account (scGw instead of
+            // scAlice)
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // submit a claim transaction with the wrong account (scGw
+                // instead of scAlice)
+                scEnv
+                    .tx(xchain_claim(scGw, jvb, claimID, amt, scBob),
+                        ter(tecXCHAIN_BAD_CLAIM_ID))
+                    .close();
+                BEAST_EXPECT(transfer.has_not_happened());
+            }
+            else
+            {
+                BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+            }
+        }
+
+        // Claim against a claim id with no attestations
+        // ---------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            // don't send any attestations
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb, claimID, amt, scBob),
+                        ter(tecXCHAIN_CLAIM_NO_QUORUM))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+
+        // Claim against a claim id with attestations, but not enough to make a
+        // quorum
+        // --------------------------------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto tooFew = quorum - 1;
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers, tooFew);
+
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb, claimID, amt, scBob),
+                        ter(tecXCHAIN_CLAIM_NO_QUORUM))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+
+        // Claim id of zero
+        // ----------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, 0, dst, signers);
+
+            scEnv
+                .tx(xchain_add_attestation_batch(scAttester, batch),
+                    ter(tecXCHAIN_NO_CLAIM_ID))
+                .close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb, 0, amt, scBob),
+                        ter(tecXCHAIN_NO_CLAIM_ID))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+
+        // Claim issue that does not match the expected issue on the bridge
+        // (either LockingChainIssue or IssuingChainIssue, depending on the
+        // chain). The claim id should already have enough attestations to reach
+        // a quorum for this amount (for a different issuer).
+        // ---------------------------------------------------------------------
+        for (auto withClaim : {true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb, claimID, scUSD(1000), scBob),
+                        ter(temBAD_AMOUNT))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+        // Claim to a destination that does not already exist on the chain
+        // -----------------------------------------------------------------
+        for (auto withClaim : {true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb, claimID, amt, scuBob),
+                        ter(tecNO_DST))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+
+        // Claim where the claim id owner does not have enough XRP to pay the
+        // reward
+        // ------------------------------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+            STAmount huge_reward{XRP(20000)};
+            BEAST_EXPECT(huge_reward > scEnv.balance(scAlice).value());
+
+            scEnv.tx(create_bridge(Account::master, jvb, huge_reward))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, huge_reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            if (withClaim)
+            {
+                scEnv.tx(xchain_add_attestation_batch(scAttester, batch))
+                    .close();
+
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb, claimID, amt, scBob),
+                        ter(tecINSUFFICIENT_FUNDS))
+                    .close();
+            }
+            else
+            {
+                scEnv
+                    .tx(xchain_add_attestation_batch(scAttester, batch),
+                        ter(tecINSUFFICIENT_FUNDS))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+
+        // Claim where the claim id owner has enough XRP to pay the reward, but
+        // it would put his balance below the reserve
+        // --------------------------------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .fund(
+                    res0 + reward, scuAlice)  // just not enough because of fees
+                .close()
+                .tx(xchain_create_claim_id(scuAlice, jvb, reward, mcAlice),
+                    ter(tecINSUFFICIENT_RESERVE))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scuAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv
+                .tx(xchain_add_attestation_batch(scAttester, batch),
+                    ter(tecXCHAIN_NO_CLAIM_ID))
+                .close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv
+                    .tx(xchain_claim(scuAlice, jvb, claimID, amt, scBob),
+                        ter(tecXCHAIN_NO_CLAIM_ID))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+
+        // Pay to an account with deposit auth set
+        // ---------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .tx(fset("scBob", asfDepositAuth))  // set deposit auth
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            if (withClaim)
+            {
+                scEnv.tx(xchain_add_attestation_batch(scAttester, batch))
+                    .close();
+
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb, claimID, amt, scBob),
+                        ter(tecNO_PERMISSION))
+                    .close();
+            }
+            else
+            {
+                scEnv
+                    .tx(xchain_add_attestation_batch(scAttester, batch),
+                        ter(tecNO_PERMISSION))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+
+        // Claim where the amount different from what is attested to
+        // ---------------------------------------------------------
+        for (auto withClaim : {true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // claim wrong amount
+                scEnv
+                    .tx(xchain_claim(scAlice, jvb, claimID, one_xrp, scBob),
+                        ter(tecXCHAIN_CLAIM_NO_QUORUM))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+
+        // Verify that rewards are paid from the account that owns the claim id
+        // --------------------------------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+            Balance scAlice_bal(scEnv, scAlice);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            STAmount claim_cost = reward;
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+                claim_cost += tx_fee;
+            }
+
+            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+            BEAST_EXPECT(
+                scAlice_bal.diff() == -claim_cost);  // because reward % 5 == 0
+        }
+
+        // Verify that if a reward is not evenly divisible amung the reward
+        // accounts, the remaining amount goes to the claim id owner.
+        // ----------------------------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb, tiny_reward)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb, tiny_reward))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, tiny_reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, payees, withClaim);
+            Balance scAlice_bal(scEnv, scAlice);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+            STAmount claim_cost = tiny_reward;
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+                claim_cost += tx_fee;
+            }
+
+            BEAST_EXPECT(transfer.has_happened(amt, tiny_reward_split));
+            BEAST_EXPECT(
+                scAlice_bal.diff() == -(claim_cost - tiny_reward_remainder));
+        }
+
+        // If a reward distribution fails for one of the reward accounts (the
+        // reward account doesn't exist or has deposit auth set), then the txn
+        // should still succeed, but that portion should go to the claim id
+        // owner.
+        // -------------------------------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            std::vector<Account> alt_payees = payees;
+            alt_payees.back() = Account("inexistent");
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, alt_payees, true, claimID, dst, signers);
+
+            alt_payees.resize(alt_payees.size() - 1);  // last payee is bad acct
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, alt_payees, withClaim);
+
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+        }
+
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            std::vector<Account> alt_payees = payees;
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .tx(fset(alt_payees.back(), asfDepositAuth))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, alt_payees, true, claimID, dst, signers);
+
+            alt_payees.resize(
+                alt_payees.size() - 1);  // last payee has deposit auth
+            BalanceTransfer transfer(
+                scEnv, Account::master, scBob, scAlice, alt_payees, withClaim);
+
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_happened(amt, split_reward));
+        }
+
+#if 0
+        // +++++++++++++++++++++++
+
+        // Verify that if a batch of attestations brings the signatures over
+        // quorum (say the quorum is 4 and there are 5 attestations) then the
+        // reward should be split amung the five accounts.
+        // ------------------------------------------------------------------
+        for (auto withClaim : {false, true})
+        {
+            xEnv mcEnv(*this);
+            xEnv scEnv(*this, true);
+
+            mcEnv.tx(create_bridge(mcDoor, jvb)).close();
+
+            scEnv.tx(create_bridge(Account::master, jvb))
+                .tx(jtx::signers(Account::master, signers.size(), signers))
+                .close()
+                .tx(xchain_create_claim_id(scAlice, jvb, reward, mcAlice))
+                .close();
+
+            auto dst(withClaim ? std::nullopt : std::optional<Account>{scBob});
+            auto const amt = XRP(1000);
+            std::uint32_t const claimID = 1;
+            mcEnv.tx(xchain_commit(mcAlice, jvb, claimID, amt, dst)).close();
+
+            BalanceTransfer transfer(scEnv, Account::master, scBob, scAlice, payees, withClaim);
+
+            auto batch = attestation_claim_batch(
+                jvb, mcAlice, amt, payees, true, claimID, dst, signers);
+            scEnv.tx(xchain_add_attestation_batch(scAttester, batch)).close();
+
+            if (withClaim)
+            {
+                BEAST_EXPECT(transfer.has_not_happened());
+
+                // need to submit a claim transactions
+                scEnv.tx(xchain_claim(scAlice, jvb, claimID, amt, scBob))
+                    .close();
+            }
+
+            BEAST_EXPECT(transfer.has_not_happened());
+        }
+#endif
     }
 
     void
     testBridgeCreateAccount()
     {
-        XRPAmount res0 = reserve(0);
-        XRPAmount res1 = reserve(1);
-
         using namespace jtx;
+
         testcase("Bridge Create Account");
     }
 
     void
     testBridgeDeleteDoor()
     {
-        XRPAmount res0 = reserve(0);
-        XRPAmount res1 = reserve(1);
-
         using namespace jtx;
+
         testcase("Bridge Delete Door Account");
 
         // Deleting a account that owns bridge should fail
@@ -1046,7 +1895,7 @@ struct XChain_test : public beast::unit_test::suite,
     run() override
     {
         testBridgeCreate();
-        testBridgeCreateMatrix(false);
+        testBridgeCreateMatrix();
         testBridgeModify();
         testBridgeCreateClaimID();
         testBridgeCommit();
