@@ -237,9 +237,10 @@ CONSTRUCT_TYPED_SFIELD(sfMinimumOffer,          "MinimumOffer",         AMOUNT, 
 CONSTRUCT_TYPED_SFIELD(sfRippleEscrow,          "RippleEscrow",         AMOUNT,    17);
 CONSTRUCT_TYPED_SFIELD(sfDeliveredAmount,       "DeliveredAmount",      AMOUNT,    18);
 CONSTRUCT_TYPED_SFIELD(sfNFTokenBrokerFee,      "NFTokenBrokerFee",     AMOUNT,    19);
-CONSTRUCT_TYPED_SFIELD(sfXChainFee,             "XChainFee",            AMOUNT,    20);
-CONSTRUCT_TYPED_SFIELD(sfSignatureReward,       "SignatureReward",      AMOUNT,    21);
-CONSTRUCT_TYPED_SFIELD(sfMinAccountCreateAmount, "MinAccountCreateAmount", AMOUNT, 22);
+    // 20 - 27 are used by AMMs
+CONSTRUCT_TYPED_SFIELD(sfXChainFee,             "XChainFee",            AMOUNT,    28);
+CONSTRUCT_TYPED_SFIELD(sfSignatureReward,       "SignatureReward",      AMOUNT,    29);
+CONSTRUCT_TYPED_SFIELD(sfMinAccountCreateAmount, "MinAccountCreateAmount", AMOUNT, 30);
 
 // Reserve 20 & 21 for Hooks
 
@@ -350,22 +351,23 @@ CONSTRUCT_UNTYPED_SFIELD(sfHookExecution,       "HookExecution",        OBJECT, 
 CONSTRUCT_UNTYPED_SFIELD(sfHookDefinition,      "HookDefinition",       OBJECT,    22);
 CONSTRUCT_UNTYPED_SFIELD(sfHookParameter,       "HookParameter",        OBJECT,    23);
 CONSTRUCT_UNTYPED_SFIELD(sfHookGrant,           "HookGrant",            OBJECT,    24);
-CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimProofSig, "XChainClaimProofSig",  OBJECT,    25);
+    // 25 - 31 are used by AMMs
+CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimProofSig, "XChainClaimProofSig",  OBJECT,    32);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountProofSig,
                                                 "XChainCreateAccountProofSig",
-                                                                        OBJECT,    26);
+                                                                        OBJECT,    33);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainAttestationBatchElement,
                                                  "XChainAttestationBatchElement",
-                                                                        OBJECT,    27);
+                                                                        OBJECT,    34);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimAttestationBatchElement,
                                                  "XChainClaimAttestationBatchElement",
-                                                                        OBJECT,    28);
+                                                                        OBJECT,    35);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountAttestationBatchElement,
                                                  "XChainCreateAccountAttestationBatchElement",
-                                                                        OBJECT,    29);
+                                                                        OBJECT,    36);
 CONSTRUCT_UNTYPED_SFIELD(sfXChainAttestationBatchInner,
                                                  "XChainAttestationBatchInner",
-                                                                        OBJECT,    30);
+                                                                        OBJECT,    37);
 
 // array of objects
 //                                                                            ARRAY/1 is reserved for end of array
@@ -480,4 +482,3 @@ SField::getField(std::string const& fieldName)
 }
 
 }  // namespace ripple
-   // ripple
