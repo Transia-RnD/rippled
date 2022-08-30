@@ -19,7 +19,6 @@
 
 #include <ripple/protocol/LedgerFormats.h>
 #include <ripple/protocol/jss.h>
-#include "ripple/protocol/SField.h"
 #include <utility>
 
 namespace ripple {
@@ -256,7 +255,7 @@ LedgerFormats::LedgerFormats()
     add(jss::NFTokenOffer,
         ltNFTOKEN_OFFER,
         {
-            {sfAccount,              soeREQUIRED},
+            {sfOwner,                soeREQUIRED},
             {sfNFTokenID,            soeREQUIRED},
             {sfAmount,               soeREQUIRED},
             {sfOwnerNode,            soeREQUIRED},
