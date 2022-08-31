@@ -24,6 +24,7 @@
 #include <ripple/protocol/ErrorCodes.h>
 #include <ripple/protocol/STXChainBridge.h>
 #include <ripple/protocol/jss.h>
+#include "ripple/protocol/AccountID.h"
 #include <test/jtx.h>
 #include <test/jtx/attester.h>
 #include <test/jtx/multisign.h>
@@ -257,7 +258,7 @@ class LedgerRPC_XChain_test : public beast::unit_test::suite,
             auto r = jrr[jss::node];
 
             BEAST_EXPECT(r.isMember(jss::Account));
-            BEAST_EXPECT(r[jss::Account] == scDoor.human());
+            BEAST_EXPECT(r[jss::Account] == Account::master.human());
 
             BEAST_EXPECT(r.isMember(sfXChainAccountCreateCount.jsonName));
             BEAST_EXPECT(r[sfXChainAccountCreateCount.jsonName].asInt() == 1);
