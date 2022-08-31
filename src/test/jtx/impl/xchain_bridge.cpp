@@ -59,10 +59,10 @@ bridge_rpc(
     Issue const& issuingChainIssue)
 {
     Json::Value jv;
-    jv[jss::locking_chain_door] = lockingChainDoor.human();
-    jv[jss::locking_chain_issue] = to_json(lockingChainIssue);
-    jv[jss::issuing_chain_door] = issuingChainDoor.human();
-    jv[jss::issuing_chain_issue] = to_json(issuingChainIssue);
+    jv[jss::LockingChainDoor] = lockingChainDoor.human();
+    jv[jss::LockingChainIssue] = to_json(lockingChainIssue);
+    jv[jss::IssuingChainDoor] = issuingChainDoor.human();
+    jv[jss::IssuingChainIssue] = to_json(issuingChainIssue);
     return jv;
 }
 

@@ -332,8 +332,6 @@ JSS(ip);                   // in: Connect, out: OverlayImpl
 JSS(issuer);               // in: RipplePathFind, Subscribe,
                            //     Unsubscribe, BookOffers
                            // out: STPathSet, STAmount
-JSS(issuing_chain_door);   // in: LedgerEntry
-JSS(issuing_chain_issue);  // in: LedgerEntry
 JSS(was_src_chain_send);   // in: sidechain
 JSS(job);
 JSS(job_queue);
@@ -394,8 +392,6 @@ JSS(local_txs);                   // out: GetCounts
 JSS(local_static_keys);           // out: ValidatorList
 JSS(low);                         // out: BookChanges
 JSS(lowest_sequence);             // out: AccountInfo
-JSS(locking_chain_door);          // in: LedgerEntry
-JSS(locking_chain_issue);         // in: LedgerEntry
 JSS(lowest_ticket);               // out: AccountInfo
 JSS(majority);                    // out: RPC feature
 JSS(manifest);                    // out: ValidatorInfo, Manifest
