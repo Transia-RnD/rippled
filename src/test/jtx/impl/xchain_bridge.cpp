@@ -431,14 +431,14 @@ XChainBridgeObjects::createBridgeObjects(Env& mcEnv, Env& scEnv)
 
     // Signer's list must match the attestation signers
     mcEnv(jtx::signers(mcDoor, signers.size(), signers));
-    scEnv(jtx::signers(scDoor, signers.size(), signers));
+    scEnv(jtx::signers(Account::master, signers.size(), signers));
 
     // create XRP bridges in both direction
     auto const reward = XRP(1);
     STAmount const minCreate = XRP(20);
 
     mcEnv(bridge_create(mcDoor, jvb, reward, minCreate));
-    scEnv(bridge_create(scDoor, jvb, reward, minCreate));
+    scEnv(bridge_create(Account::master, jvb, reward, minCreate));
     mcEnv.close();
     scEnv.close();
 }
