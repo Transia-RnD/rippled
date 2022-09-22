@@ -50,7 +50,6 @@ target_sources (xrpl_core PRIVATE
   src/ripple/basics/impl/FileUtilities.cpp
   src/ripple/basics/impl/IOUAmount.cpp
   src/ripple/basics/impl/Log.cpp
-  src/ripple/basics/impl/strHex.cpp
   src/ripple/basics/impl/StringUtilities.cpp
   #[===============================[
     main sources:
@@ -82,6 +81,7 @@ target_sources (xrpl_core PRIVATE
   src/ripple/protocol/impl/PublicKey.cpp
   src/ripple/protocol/impl/Quality.cpp
   src/ripple/protocol/impl/Rate2.cpp
+  src/ripple/protocol/impl/Rules.cpp
   src/ripple/protocol/impl/SField.cpp
   src/ripple/protocol/impl/SOTemplate.cpp
   src/ripple/protocol/impl/STAccount.cpp
@@ -155,7 +155,9 @@ install (
     src/ripple/basics/MathUtilities.h
     src/ripple/basics/safe_cast.h
     src/ripple/basics/Slice.h
+    src/ripple/basics/spinlock.h
     src/ripple/basics/StringUtilities.h
+    src/ripple/basics/ThreadSafetyAnalysis.h
     src/ripple/basics/ToString.h
     src/ripple/basics/UnorderedContainers.h
     src/ripple/basics/XRPAmount.h
@@ -209,6 +211,7 @@ install (
     src/ripple/protocol/PublicKey.h
     src/ripple/protocol/Quality.h
     src/ripple/protocol/Rate.h
+    src/ripple/protocol/Rules.h
     src/ripple/protocol/SField.h
     src/ripple/protocol/SOTemplate.h
     src/ripple/protocol/STAccount.h
@@ -400,13 +403,18 @@ target_sources (rippled PRIVATE
   src/ripple/app/paths/impl/DirectStep.cpp
   src/ripple/app/paths/impl/PaySteps.cpp
   src/ripple/app/paths/impl/XRPEndpointStep.cpp
-  src/ripple/app/rdb/backend/RelationalDBInterfacePostgres.cpp
-  src/ripple/app/rdb/backend/RelationalDBInterfaceSqlite.cpp
-  src/ripple/app/rdb/impl/RelationalDBInterface.cpp
-  src/ripple/app/rdb/impl/RelationalDBInterface_global.cpp
-  src/ripple/app/rdb/impl/RelationalDBInterface_nodes.cpp
-  src/ripple/app/rdb/impl/RelationalDBInterface_postgres.cpp
-  src/ripple/app/rdb/impl/RelationalDBInterface_shards.cpp
+  src/ripple/app/rdb/backend/detail/impl/Node.cpp
+  src/ripple/app/rdb/backend/detail/impl/Shard.cpp
+  src/ripple/app/rdb/backend/impl/PostgresDatabase.cpp
+  src/ripple/app/rdb/backend/impl/SQLiteDatabase.cpp
+  src/ripple/app/rdb/impl/Download.cpp
+  src/ripple/app/rdb/impl/PeerFinder.cpp
+  src/ripple/app/rdb/impl/RelationalDatabase.cpp
+  src/ripple/app/rdb/impl/ShardArchive.cpp
+  src/ripple/app/rdb/impl/State.cpp
+  src/ripple/app/rdb/impl/UnitaryShard.cpp
+  src/ripple/app/rdb/impl/Vacuum.cpp
+  src/ripple/app/rdb/impl/Wallet.cpp
   src/ripple/app/tx/impl/ApplyContext.cpp
   src/ripple/app/tx/impl/BookTip.cpp
   src/ripple/app/tx/impl/CancelCheck.cpp
@@ -572,7 +580,6 @@ target_sources (rippled PRIVATE
   src/ripple/rpc/handlers/AccountObjects.cpp
   src/ripple/rpc/handlers/AccountOffers.cpp
   src/ripple/rpc/handlers/AccountTx.cpp
-  src/ripple/rpc/handlers/AccountTxOld.cpp
   src/ripple/rpc/handlers/BlackList.cpp
   src/ripple/rpc/handlers/BookOffers.cpp
   src/ripple/rpc/handlers/CanDelete.cpp
