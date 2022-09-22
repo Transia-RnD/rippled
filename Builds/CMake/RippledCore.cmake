@@ -291,23 +291,23 @@ install (
 if (tests)
   install (
     FILES
-      src/ripple/beast/unit_test/amount.hpp
-      src/ripple/beast/unit_test/dstream.hpp
-      src/ripple/beast/unit_test/global_suites.hpp
-      src/ripple/beast/unit_test/match.hpp
-      src/ripple/beast/unit_test/recorder.hpp
-      src/ripple/beast/unit_test/reporter.hpp
-      src/ripple/beast/unit_test/results.hpp
-      src/ripple/beast/unit_test/runner.hpp
-      src/ripple/beast/unit_test/suite.hpp
-      src/ripple/beast/unit_test/suite_info.hpp
-      src/ripple/beast/unit_test/suite_list.hpp
-      src/ripple/beast/unit_test/thread.hpp
-    DESTINATION include/ripple/beast/extras/unit_test)
+      src/beast/extras/beast/unit_test/amount.hpp
+      src/beast/extras/beast/unit_test/dstream.hpp
+      src/beast/extras/beast/unit_test/global_suites.hpp
+      src/beast/extras/beast/unit_test/match.hpp
+      src/beast/extras/beast/unit_test/recorder.hpp
+      src/beast/extras/beast/unit_test/reporter.hpp
+      src/beast/extras/beast/unit_test/results.hpp
+      src/beast/extras/beast/unit_test/runner.hpp
+      src/beast/extras/beast/unit_test/suite.hpp
+      src/beast/extras/beast/unit_test/suite_info.hpp
+      src/beast/extras/beast/unit_test/suite_list.hpp
+      src/beast/extras/beast/unit_test/thread.hpp
+    DESTINATION include/beast/unit_test)
   install (
     FILES
-      src/ripple/beast/unit_test/detail/const_container.hpp
-    DESTINATION include/ripple/beast/unit_test/detail)
+      src/beast/extras/beast/unit_test/detail/const_container.hpp
+    DESTINATION include/beast/unit_test/detail)
 endif () #tests
 #[===================================================================[
    rippled executable
@@ -1009,11 +1009,13 @@ message(STATUS "Reporting mode build: rippled renamed ${BIN_NAME}")
   target_compile_definitions(rippled PRIVATE RIPPLED_REPORTING)
 endif()
 
-# any files that don't play well with unity should be added here
-if (tests)
-  set_source_files_properties(
-    # these two seem to produce conflicts in beast teardown template methods
-    src/test/rpc/ValidatorRPC_test.cpp
-    src/test/rpc/ShardArchiveHandler_test.cpp
-    PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE)
-endif () #tests
+if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.16)
+  # any files that don't play well with unity should be added here
+  if (tests)
+    set_source_files_properties(
+      # these two seem to produce conflicts in beast teardown template methods
+      src/test/rpc/ValidatorRPC_test.cpp
+      src/test/rpc/ShardArchiveHandler_test.cpp
+      PROPERTIES SKIP_UNITY_BUILD_INCLUSION TRUE)
+  endif () #tests
+endif ()
