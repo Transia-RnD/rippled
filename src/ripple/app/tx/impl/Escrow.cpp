@@ -241,7 +241,7 @@ EscrowCreate::doApply()
         // preflight will prevent this ever firing, included
         // defensively for completeness
         if (!ctx_.view().rules().enabled(featurePaychanAndEscrowForTokens))
-            return tefINTERNAL;
+            return temDISABLED;
 
         // check if the escrow is capable of being
         // finished before we allow it to be created
@@ -342,7 +342,7 @@ EscrowCreate::doApply()
     else 
     {
         if (!ctx_.view().rules().enabled(featurePaychanAndEscrowForTokens) || !sleLine)
-            return tefINTERNAL;
+            return temDISABLED;
 
         // do the lock-up for real now
         TER result =
@@ -565,7 +565,7 @@ EscrowFinish::doApply()
     if (!isXRP(amount))
     {
         if (!ctx_.view().rules().enabled(featurePaychanAndEscrowForTokens))
-            return tefINTERNAL;
+            return temDISABLED;
         
         // perform a dry run of the transfer before we 
         // change anything on-ledger
@@ -704,7 +704,7 @@ EscrowCancel::doApply()
     if (!isXRP(amount))
     {
         if (!ctx_.view().rules().enabled(featurePaychanAndEscrowForTokens))
-            return tefINTERNAL;
+            return temDISABLED;
 
         sleLine =
             ctx_.view().peek(
@@ -754,7 +754,7 @@ EscrowCancel::doApply()
     else
     {
         if (!ctx_.view().rules().enabled(featurePaychanAndEscrowForTokens))
-            return tefINTERNAL;
+            return temDISABLED;
 
         // unlock previously locked tokens from source line
         TER result =

@@ -127,7 +127,7 @@ closeChannel(
     if (!isXRP(amount))
     {
         if (!view.rules().enabled(featurePaychanAndEscrowForTokens))
-            return tefINTERNAL;
+            return temDISABLED;
 
         sleLine =
             view.peek(keylet::line(src, amount.getIssuer(), amount.getCurrency()));
@@ -232,7 +232,7 @@ PayChanCreate::preflight(PreflightContext const& ctx)
     if (!isXRP(amount))
     {
         if (!ctx.rules.enabled(featurePaychanAndEscrowForTokens))
-            return temBAD_AMOUNT;
+            return temDISABLED;
 
         if (!isLegalNet(amount))
             return temBAD_AMOUNT;
@@ -244,7 +244,7 @@ PayChanCreate::preflight(PreflightContext const& ctx)
         {
             JLOG(ctx.j.trace())
                 << "Malformed transaction: Cannot paychan own tokens to self.";
-            return temDST_IS_SRC;
+            return temBAD_SRC_ACCOUNT;
         }
     }
 
@@ -280,12 +280,16 @@ PayChanCreate::preclaim(PreclaimContext const& ctx)
     auto const dst = ctx.tx[sfDestination];
 
     // Check reserve and funds availability
-    if (isXRP(amount) && balance < reserve + ctx.tx[sfAmount])
-        return tecUNFUNDED;
+    if (isXRP(amount))
+    {
+        if (balance < reserve + STAmount(ctx_.tx[sfAmount]).xrp())
+            return tecUNFUNDED;
+        // pass
+    }
     else
     {
         if (!ctx.view.rules().enabled(featurePaychanAndEscrowForTokens))
-            return tecINTERNAL;
+            return temDISABLED;
 
         // check for any possible bars to a channel existing
         // between these accounts for this asset
@@ -407,7 +411,7 @@ PayChanCreate::doApply()
     else
     {
         if (!ctx_.view().rules().enabled(featurePaychanAndEscrowForTokens))
-            return tefINTERNAL;
+            return temDISABLED;
 
         auto sleLine =
             ctx_.view().peek(keylet::line(account, amount.getIssuer(), amount.getCurrency()));
@@ -429,7 +433,7 @@ PayChanCreate::doApply()
             << result;
 
         if (!isTesSuccess(result))
-            return tefINTERNAL;
+            return result;
     }
     
     adjustOwnerCount(ctx_.view(), sle, 1, ctx_.journal);
@@ -584,7 +588,7 @@ PayChanFund::doApply()
     else
     {
         if (!ctx_.view().rules().enabled(featurePaychanAndEscrowForTokens))
-            return tefINTERNAL;
+            return temDISABLED;
 
 
         TER result =
@@ -601,7 +605,7 @@ PayChanFund::doApply()
             << result;
 
         if (!isTesSuccess(result))
-            return tefINTERNAL;
+            return result;
     }
 
     (*slep)[sfAmount] = (*slep)[sfAmount] + ctx_.tx[sfAmount];
@@ -772,7 +776,7 @@ PayChanClaim::doApply()
             // RH NOTE: there's no ledger modification before this point so
             // no reason to do a dry run first
             if (!ctx_.view().rules().enabled(featurePaychanAndEscrowForTokens))
-                return tefINTERNAL;
+                return temDISABLED;
 
             auto sleSrcAcc = ctx_.view().peek(keylet::account(src));
             TER result =
