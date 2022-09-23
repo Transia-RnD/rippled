@@ -570,7 +570,6 @@ trustAdjustLockedBalance(
         return tecUNFUNDED_PAYMENT;
     }
 
-    // sanity check should never be negative
     if (finalLockedBalance < beast::zero)
         return tecINTERNAL;
    
