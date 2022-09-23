@@ -284,8 +284,7 @@ PayChanCreate::preclaim(PreclaimContext const& ctx)
     {
         return tecUNFUNDED;
     }
-    else
-    {
+    else if !isXRP(amount) {
         if (!ctx.view.rules().enabled(featurePaychanAndEscrowForTokens))
             return temDISABLED;
 
@@ -574,7 +573,6 @@ PayChanFund::doApply()
     if (balance < reserve)
         return tecINSUFFICIENT_RESERVE;
 
-
     if (isXRP(amount))
     {
         if (balance < reserve + amount)
@@ -587,7 +585,6 @@ PayChanFund::doApply()
     {
         if (!ctx_.view().rules().enabled(featurePaychanAndEscrowForTokens))
             return temDISABLED;
-
 
         TER result =
             trustAdjustLockedBalance(
