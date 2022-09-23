@@ -270,7 +270,7 @@ PayChanCreate::preclaim(PreclaimContext const& ctx)
 
     STAmount const amount {ctx.tx[sfAmount]};
 
-    auto const balance = (*sle)[sfBalance];
+    auto const balance = STAmount((*sle)[sfBalance]).xrp();
     auto const reserve =
         ctx.view.fees().accountReserve((*sle)[sfOwnerCount] + 1);
 
@@ -280,11 +280,9 @@ PayChanCreate::preclaim(PreclaimContext const& ctx)
     auto const dst = ctx.tx[sfDestination];
 
     // Check reserve and funds availability
-    if (isXRP(amount))
+    if (isXRP(amount) && balance < reserve + amount)
     {
-        if (balance < reserve + STAmount(ctx_.tx[sfAmount]).xrp())
-            return tecUNFUNDED;
-        // pass
+        return tecUNFUNDED;
     }
     else
     {
