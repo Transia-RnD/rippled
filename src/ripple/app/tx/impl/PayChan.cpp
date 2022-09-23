@@ -284,7 +284,7 @@ PayChanCreate::preclaim(PreclaimContext const& ctx)
     {
         return tecUNFUNDED;
     }
-    else if !isXRP(amount) {
+    else if (!isXRP(amount)) {
         if (!ctx.view.rules().enabled(featurePaychanAndEscrowForTokens))
             return temDISABLED;
 
