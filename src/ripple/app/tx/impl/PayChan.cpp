@@ -270,7 +270,7 @@ PayChanCreate::preclaim(PreclaimContext const& ctx)
 
     STAmount const amount {ctx.tx[sfAmount]};
 
-    auto const balance = STAmount((*sle)[sfBalance]).xrp();
+    auto const balance = (*sle)[sfBalance];
     auto const reserve =
         ctx.view.fees().accountReserve((*sle)[sfOwnerCount] + 1);
 
