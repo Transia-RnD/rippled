@@ -2926,20 +2926,19 @@ class NFToken_test : public beast::unit_test::suite
             BEAST_EXPECT(ownerCount(env, minter) == 1);
             BEAST_EXPECT(ownerCount(env, buyer) == 2);
 
-            // Broker is successful when destination is buyer.
-            env(token::brokerOffers(
-                broker, offerMinterToBuyer, offerBuyerToMinter));
+            // Buyer is successful when destination is buyer.
+            env(token::acceptBuyOffer(buyer, offerMinterToBuyer));
             env.close();
             BEAST_EXPECT(ownerCount(env, issuer) == 1);
             BEAST_EXPECT(ownerCount(env, minter) == 1);
-            BEAST_EXPECT(ownerCount(env, buyer) == 0);
+            BEAST_EXPECT(ownerCount(env, buyer) == 1);
 
             // Clean out the unconsumed offer.
             env(token::cancelOffer(issuer, {offerIssuerToBuyer}));
             env.close();
             BEAST_EXPECT(ownerCount(env, issuer) == 0);
             BEAST_EXPECT(ownerCount(env, minter) == 1);
-            BEAST_EXPECT(ownerCount(env, buyer) == 0);
+            BEAST_EXPECT(ownerCount(env, buyer) == 1);
         }
 
         // Show that if a buy and a sell offer both have the same destination,
@@ -2965,7 +2964,7 @@ class NFToken_test : public beast::unit_test::suite
             env.close();
             BEAST_EXPECT(ownerCount(env, issuer) == 0);
             BEAST_EXPECT(ownerCount(env, minter) == 2);
-            BEAST_EXPECT(ownerCount(env, buyer) == 1);
+            BEAST_EXPECT(ownerCount(env, buyer) == 2);
 
             // Broker is successful if they are the destination of both offers.
             env(token::brokerOffers(
@@ -2973,7 +2972,7 @@ class NFToken_test : public beast::unit_test::suite
             env.close();
             BEAST_EXPECT(ownerCount(env, issuer) == 0);
             BEAST_EXPECT(ownerCount(env, minter) == 0);
-            BEAST_EXPECT(ownerCount(env, buyer) == 1);
+            BEAST_EXPECT(ownerCount(env, buyer) == 2);
         }
     }
 
@@ -4316,6 +4315,109 @@ class NFToken_test : public beast::unit_test::suite
     }
 
     void
+    testBrokeredAcceptDest(FeatureBitset features)
+    {
+        testcase("Brokered NFT offer accept w/ destination");
+
+        using namespace test::jtx;
+
+        Env env{*this, features};
+
+        Account const minter{"minter"};
+        Account const buyer{"buyer"};
+        Account const broker{"broker"};
+
+        env.fund(XRP(1000), minter, buyer, broker);
+        env.close();
+
+        // Lambda that mints an NFT and returns the nftID.
+        auto mintNFT = [&env, &minter](std::uint16_t xferFee = 0) {
+            uint256 const nftID =
+                token::getNextID(env, minter, 0, tfTransferable, xferFee);
+            env(token::mint(minter, 0),
+                token::xferFee(xferFee),
+                txflags(tfTransferable));
+            env.close();
+            return nftID;
+        };
+        // test buyer is destination on sell offer
+        {
+            uint256 const nftID = mintNFT();
+
+            // buyer creates their offer.
+            uint256 const buyOfferIndex =
+                keylet::nftoffer(buyer, env.seq(buyer)).key;
+            env(token::createOffer(buyer, nftID, XRP(315)),
+                token::owner(minter));
+            env.close();
+
+            // minter creates their offer.
+            uint256 const sellOfferIndex =
+                keylet::nftoffer(minter, env.seq(minter)).key;
+            env(token::createOffer(minter, nftID, XRP(0)),
+                token::destination(buyer),
+                txflags(tfSellNFToken));
+            env.close();
+
+            auto const minterBalance = env.balance(minter);
+            auto const buyerBalance = env.balance(buyer);
+            auto const brokerBalance = env.balance(broker);
+
+            // Broker is not destination
+            env(token::brokerOffers(broker, buyOfferIndex, sellOfferIndex),
+                ter(tecNFTOKEN_BUY_SELL_MISMATCH));
+            env.close();
+
+            // Buyer is destination can accept sell
+            env(token::acceptSellOffer(buyer, sellOfferIndex));
+            env.close();
+
+            BEAST_EXPECT(env.balance(minter) == minterBalance);
+            BEAST_EXPECT(env.balance(buyer) == buyerBalance - drops(10));
+            BEAST_EXPECT(env.balance(broker) == brokerBalance - drops(10));
+
+            // Burn the NFT so the next test starts with a clean state.
+            env(token::burn(buyer, nftID));
+            env.close();
+        }
+        // test broker is destination on sell offer
+        {
+            uint256 const nftID = mintNFT();
+
+            // buyer creates their offer.
+            uint256 const buyOfferIndex =
+                keylet::nftoffer(buyer, env.seq(buyer)).key;
+            env(token::createOffer(buyer, nftID, XRP(315)),
+                token::owner(minter));
+            env.close();
+
+            // minter creates their offer.
+            uint256 const sellOfferIndex =
+                keylet::nftoffer(minter, env.seq(minter)).key;
+            env(token::createOffer(minter, nftID, XRP(0)),
+                token::destination(broker),
+                txflags(tfSellNFToken));
+            env.close();
+
+            auto const minterBalance = env.balance(minter);
+            auto const buyerBalance = env.balance(buyer);
+            auto const brokerBalance = env.balance(broker);
+
+            // Broker is destination
+            env(token::brokerOffers(broker, buyOfferIndex, sellOfferIndex));
+            env.close();
+
+            BEAST_EXPECT(env.balance(minter) == minterBalance + XRP(315));
+            BEAST_EXPECT(env.balance(buyer) == buyerBalance - XRP(315));
+            BEAST_EXPECT(env.balance(broker) == brokerBalance - drops(10));
+
+            // Burn the NFT so the next test starts with a clean state.
+            env(token::burn(buyer, nftID));
+            env.close();
+        }
+    }
+
+    void
     testNFTokenOfferOwner(FeatureBitset features)
     {
         // Verify the Owner field of an offer behaves as expected.
@@ -5065,6 +5167,7 @@ class NFToken_test : public beast::unit_test::suite
         testCancelOffers(features);
         testCancelTooManyOffers(features);
         testBrokeredAccept(features);
+        testBrokeredAcceptDest(features);
         testNFTokenOfferOwner(features);
         testNFTokenWithTickets(features);
         testNFTokenDeleteAccount(features);
