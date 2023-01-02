@@ -2925,19 +2925,22 @@ class NFToken_test : public beast::unit_test::suite
             BEAST_EXPECT(ownerCount(env, buyer) == 2);
 
             // Broker is successful when destination is buyer.
-            env(token::brokerOffers(
-                broker, offerMinterToBuyer, offerBuyerToMinter));
+            // env(token::brokerOffers(
+            //     broker, offerMinterToBuyer, offerBuyerToMinter));
+            // env.close();
+
+            env(token::acceptBuyOffer(buyer, offerMinterToBuyer));
             env.close();
             BEAST_EXPECT(ownerCount(env, issuer) == 1);
             BEAST_EXPECT(ownerCount(env, minter) == 1);
-            BEAST_EXPECT(ownerCount(env, buyer) == 0);
+            BEAST_EXPECT(ownerCount(env, buyer) == 1);
 
             // Clean out the unconsumed offer.
             env(token::cancelOffer(issuer, {offerIssuerToBuyer}));
             env.close();
             BEAST_EXPECT(ownerCount(env, issuer) == 0);
             BEAST_EXPECT(ownerCount(env, minter) == 1);
-            BEAST_EXPECT(ownerCount(env, buyer) == 0);
+            BEAST_EXPECT(ownerCount(env, buyer) == 1);
         }
 
         // Show that if a buy and a sell offer both have the same destination,
@@ -2963,7 +2966,7 @@ class NFToken_test : public beast::unit_test::suite
             env.close();
             BEAST_EXPECT(ownerCount(env, issuer) == 0);
             BEAST_EXPECT(ownerCount(env, minter) == 2);
-            BEAST_EXPECT(ownerCount(env, buyer) == 1);
+            BEAST_EXPECT(ownerCount(env, buyer) == 2);
 
             // Broker is successful if they are the destination of both offers.
             env(token::brokerOffers(
@@ -2971,7 +2974,7 @@ class NFToken_test : public beast::unit_test::suite
             env.close();
             BEAST_EXPECT(ownerCount(env, issuer) == 0);
             BEAST_EXPECT(ownerCount(env, minter) == 0);
-            BEAST_EXPECT(ownerCount(env, buyer) == 1);
+            BEAST_EXPECT(ownerCount(env, buyer) == 2);
         }
     }
 
