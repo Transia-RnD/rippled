@@ -113,18 +113,18 @@ NFTokenAcceptOffer::preclaim(PreclaimContext const& ctx)
             return tecINSUFFICIENT_PAYMENT;
 
         // If the buyer specified a destination, that destination must be
-        // the seller or the broker.
+        // the broker.
         if (auto const dest = bo->at(~sfDestination))
         {
-            if (*dest != so->at(sfOwner) && *dest != ctx.tx[sfAccount])
+            if (*dest != ctx.tx[sfAccount])
                 return tecNFTOKEN_BUY_SELL_MISMATCH;
         }
 
         // If the seller specified a destination, that destination must be
-        // the buyer or the broker.
+        // the broker.
         if (auto const dest = so->at(~sfDestination))
         {
-            if (*dest != bo->at(sfOwner) && *dest != ctx.tx[sfAccount])
+            if (*dest != ctx.tx[sfAccount])
                 return tecNFTOKEN_BUY_SELL_MISMATCH;
         }
 
