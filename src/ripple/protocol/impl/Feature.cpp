@@ -454,6 +454,7 @@ REGISTER_FEATURE(DisallowIncoming,              Supported::yes, DefaultVote::no)
 REGISTER_FEATURE(XRPFees,                       Supported::yes, DefaultVote::no);
 REGISTER_FIX    (fixUniversalNumber,            Supported::yes, DefaultVote::yes);
 REGISTER_FIX    (fixUniversalNumber,            Supported::yes, DefaultVote::no);
+REGISTER_FIX    (fixUnburnableNFToken,          Supported::yes, DefaultVote::no);
 REGISTER_FEATURE(XChainBridge,                  Supported::no,  DefaultVote::no);
 
 // The following amendments have been active for at least two years. Their
