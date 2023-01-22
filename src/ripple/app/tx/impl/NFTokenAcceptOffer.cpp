@@ -124,7 +124,7 @@ NFTokenAcceptOffer::preclaim(PreclaimContext const& ctx)
         // the buyer or the broker.
         if (auto const dest = so->at(~sfDestination))
         {
-            if (*dest != bo->at(sfOwner) && *dest != ctx.tx[sfAccount])
+            if (*dest != so->at(sfOwner) && *dest != ctx.tx[sfAccount])
                 return tecNFTOKEN_BUY_SELL_MISMATCH;
         }
 
