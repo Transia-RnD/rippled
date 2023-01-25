@@ -433,120 +433,135 @@ $(function() {
 <div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;        testcase &lt;&lt; <span class="stringliteral">&quot;no zero escrow&quot;</span>;</div>
 <div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160; </div>
 <div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#ac9c80dfb3ad12c584b8d1c1b38764dc0">doInvariantCheck</a>(</div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;            {{<span class="stringliteral">&quot;XRP net change of -1000000 doesn&#39;t match fee 0&quot;</span>},</div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;             {<span class="stringliteral">&quot;escrow specifies invalid amount&quot;</span>}},</div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;            [](Account <span class="keyword">const</span>&amp; A1, Account <span class="keyword">const</span>&amp;, <a class="code" href="classripple_1_1ApplyContext.html">ApplyContext</a>&amp; ac) {</div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;                <span class="comment">// escrow with negative amount</span></div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;                <span class="keyword">auto</span> <span class="keyword">const</span> sle = ac.view().peek(<a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A1.id()));</div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;                <span class="keywordflow">if</span> (!sle)</div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;                    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;                <span class="keyword">auto</span> sleNew = std::make_shared&lt;SLE&gt;(</div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;                    <a class="code" href="namespaceripple_1_1keylet.html#ab8e22fa493e990a1fdcb5bb3d2cfbfa2">keylet::escrow</a>(A1, (*sle)[<a class="code" href="namespaceripple.html#a586714bf3cbbbb406d6f169742bce0d5">sfSequence</a>] + 2));</div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;                sleNew-&gt;setFieldAmount(<a class="code" href="namespaceripple.html#a29758397ce451beaa436c3a9dfc83030">sfAmount</a>, XRP(-1));</div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;            {{<span class="stringliteral">&quot;Cannot return non-native STAmount as XRPAmount&quot;</span>}},</div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;            [](Account <span class="keyword">const</span>&amp; A1, Account <span class="keyword">const</span>&amp; A2, <a class="code" href="classripple_1_1ApplyContext.html">ApplyContext</a>&amp; ac) {</div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;                <span class="comment">// escrow with nonnative amount</span></div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;                <span class="keyword">auto</span> <span class="keyword">const</span> sle = ac.view().peek(<a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A1.id()));</div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;                <span class="keywordflow">if</span> (!sle)</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;                    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;                <span class="keyword">auto</span> sleNew = std::make_shared&lt;SLE&gt;(</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;                    <a class="code" href="namespaceripple_1_1keylet.html#ab8e22fa493e990a1fdcb5bb3d2cfbfa2">keylet::escrow</a>(A1, (*sle)[<a class="code" href="namespaceripple.html#a586714bf3cbbbb406d6f169742bce0d5">sfSequence</a>] + 2));</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;                <a class="code" href="classripple_1_1STAmount.html">STAmount</a> nonNative(A2[<span class="stringliteral">&quot;USD&quot;</span>](51));</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;                sleNew-&gt;setFieldAmount(<a class="code" href="namespaceripple.html#a29758397ce451beaa436c3a9dfc83030">sfAmount</a>, nonNative);</div>
 <div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;                ac.view().insert(sleNew);</div>
 <div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;            });</div>
 <div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160; </div>
 <div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#ac9c80dfb3ad12c584b8d1c1b38764dc0">doInvariantCheck</a>(</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;            {{<span class="stringliteral">&quot;XRP net change was positive: 100000000000000001&quot;</span>},</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;            {{<span class="stringliteral">&quot;XRP net change of -1000000 doesn&#39;t match fee 0&quot;</span>},</div>
 <div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;             {<span class="stringliteral">&quot;escrow specifies invalid amount&quot;</span>}},</div>
 <div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;            [](Account <span class="keyword">const</span>&amp; A1, Account <span class="keyword">const</span>&amp;, <a class="code" href="classripple_1_1ApplyContext.html">ApplyContext</a>&amp; ac) {</div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;                <span class="comment">// escrow with too-large amount</span></div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;                <span class="comment">// escrow with negative amount</span></div>
 <div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;                <span class="keyword">auto</span> <span class="keyword">const</span> sle = ac.view().peek(<a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A1.id()));</div>
 <div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;                <span class="keywordflow">if</span> (!sle)</div>
 <div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;                    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;                <span class="keyword">auto</span> sleNew = std::make_shared&lt;SLE&gt;(</div>
 <div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;                    <a class="code" href="namespaceripple_1_1keylet.html#ab8e22fa493e990a1fdcb5bb3d2cfbfa2">keylet::escrow</a>(A1, (*sle)[<a class="code" href="namespaceripple.html#a586714bf3cbbbb406d6f169742bce0d5">sfSequence</a>] + 2));</div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;                <span class="comment">// Use `drops(1)` to bypass a call to STAmount::canonicalize</span></div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;                <span class="comment">// with an invalid value</span></div>
-<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;                sleNew-&gt;setFieldAmount(<a class="code" href="namespaceripple.html#a29758397ce451beaa436c3a9dfc83030">sfAmount</a>, <a class="code" href="namespaceripple.html#a55a2a537e79363b71783d5f6eaca5abf">INITIAL_XRP</a> + drops(1));</div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;                ac.view().insert(sleNew);</div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;            });</div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;    }</div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160; </div>
-<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;    <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00398"></a><span class="lineno"><a class="line" href="classripple_1_1Invariants__test.html#a6bf3df5da63fbcdeede0865dfa8d0abc">  398</a></span>&#160;    <a class="code" href="classripple_1_1Invariants__test.html#a6bf3df5da63fbcdeede0865dfa8d0abc">testValidNewAccountRoot</a>()</div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;    {</div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;        <span class="keyword">using namespace </span>test::jtx;</div>
-<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;        testcase &lt;&lt; <span class="stringliteral">&quot;valid new account root&quot;</span>;</div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160; </div>
-<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#ac9c80dfb3ad12c584b8d1c1b38764dc0">doInvariantCheck</a>(</div>
-<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;            {{<span class="stringliteral">&quot;account root created by a non-Payment&quot;</span>}},</div>
-<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;            [](Account <span class="keyword">const</span>&amp;, Account <span class="keyword">const</span>&amp;, <a class="code" href="classripple_1_1ApplyContext.html">ApplyContext</a>&amp; ac) {</div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;                <span class="comment">// Insert a new account root created by a non-payment into</span></div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;                <span class="comment">// the view.</span></div>
-<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;                <span class="keyword">const</span> Account A3{<span class="stringliteral">&quot;A3&quot;</span>};</div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;                <a class="code" href="structripple_1_1Keylet.html">Keylet</a> <span class="keyword">const</span> acctKeylet = <a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A3);</div>
-<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;                <span class="keyword">auto</span> <span class="keyword">const</span> sleNew = std::make_shared&lt;SLE&gt;(acctKeylet);</div>
-<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;                ac.view().insert(sleNew);</div>
-<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;            });</div>
-<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160; </div>
-<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#ac9c80dfb3ad12c584b8d1c1b38764dc0">doInvariantCheck</a>(</div>
-<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;            {{<span class="stringliteral">&quot;multiple accounts created in a single transaction&quot;</span>}},</div>
-<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;            [](Account <span class="keyword">const</span>&amp;, Account <span class="keyword">const</span>&amp;, <a class="code" href="classripple_1_1ApplyContext.html">ApplyContext</a>&amp; ac) {</div>
-<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;                <span class="comment">// Insert two new account roots into the view.</span></div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;                {</div>
-<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;                    <span class="keyword">const</span> Account A3{<span class="stringliteral">&quot;A3&quot;</span>};</div>
-<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;                    <a class="code" href="structripple_1_1Keylet.html">Keylet</a> <span class="keyword">const</span> acctKeylet = <a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A3);</div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;                    <span class="keyword">auto</span> <span class="keyword">const</span> sleA3 = std::make_shared&lt;SLE&gt;(acctKeylet);</div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;                    ac.view().insert(sleA3);</div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;                }</div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;                {</div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;                    <span class="keyword">const</span> Account A4{<span class="stringliteral">&quot;A4&quot;</span>};</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;                    <a class="code" href="structripple_1_1Keylet.html">Keylet</a> <span class="keyword">const</span> acctKeylet = <a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A4);</div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;                    <span class="keyword">auto</span> <span class="keyword">const</span> sleA4 = std::make_shared&lt;SLE&gt;(acctKeylet);</div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;                    ac.view().insert(sleA4);</div>
-<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;                }</div>
-<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;            });</div>
-<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160; </div>
-<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#ac9c80dfb3ad12c584b8d1c1b38764dc0">doInvariantCheck</a>(</div>
-<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;            {{<span class="stringliteral">&quot;account created with wrong starting sequence number&quot;</span>}},</div>
-<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;            [](Account <span class="keyword">const</span>&amp;, Account <span class="keyword">const</span>&amp;, <a class="code" href="classripple_1_1ApplyContext.html">ApplyContext</a>&amp; ac) {</div>
-<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;                <span class="comment">// Insert a new account root with the wrong starting sequence.</span></div>
-<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;                <span class="keyword">const</span> Account A3{<span class="stringliteral">&quot;A3&quot;</span>};</div>
-<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;                <a class="code" href="structripple_1_1Keylet.html">Keylet</a> <span class="keyword">const</span> acctKeylet = <a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A3);</div>
-<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;                <span class="keyword">auto</span> <span class="keyword">const</span> sleNew = std::make_shared&lt;SLE&gt;(acctKeylet);</div>
-<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;                sleNew-&gt;setFieldU32(<a class="code" href="namespaceripple.html#a586714bf3cbbbb406d6f169742bce0d5">sfSequence</a>, ac.view().seq() + 1);</div>
-<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;                ac.view().insert(sleNew);</div>
-<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;            },</div>
-<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;            <a class="code" href="classripple_1_1XRPAmount.html">XRPAmount</a>{},</div>
-<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;            <a class="code" href="classripple_1_1STTx.html">STTx</a>{<a class="code" href="namespaceripple.html#a2ce3074a39ea65126b82fc59baf43126ace21e6721f555ecd4ebf9b2c104a7a21">ttPAYMENT</a>, [](<a class="code" href="classripple_1_1STObject.html">STObject</a>&amp; tx) {}});</div>
-<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;    }</div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;                sleNew-&gt;setFieldAmount(<a class="code" href="namespaceripple.html#a29758397ce451beaa436c3a9dfc83030">sfAmount</a>, XRP(-1));</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;                ac.view().insert(sleNew);</div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;            });</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160; </div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#ac9c80dfb3ad12c584b8d1c1b38764dc0">doInvariantCheck</a>(</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;            {{<span class="stringliteral">&quot;XRP net change was positive: 100000000000000001&quot;</span>},</div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;             {<span class="stringliteral">&quot;escrow specifies invalid amount&quot;</span>}},</div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;            [](Account <span class="keyword">const</span>&amp; A1, Account <span class="keyword">const</span>&amp;, <a class="code" href="classripple_1_1ApplyContext.html">ApplyContext</a>&amp; ac) {</div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;                <span class="comment">// escrow with too-large amount</span></div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;                <span class="keyword">auto</span> <span class="keyword">const</span> sle = ac.view().peek(<a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A1.id()));</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;                <span class="keywordflow">if</span> (!sle)</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;                    <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;                <span class="keyword">auto</span> sleNew = std::make_shared&lt;SLE&gt;(</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;                    <a class="code" href="namespaceripple_1_1keylet.html#ab8e22fa493e990a1fdcb5bb3d2cfbfa2">keylet::escrow</a>(A1, (*sle)[<a class="code" href="namespaceripple.html#a586714bf3cbbbb406d6f169742bce0d5">sfSequence</a>] + 2));</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;                <span class="comment">// Use `drops(1)` to bypass a call to STAmount::canonicalize</span></div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;                <span class="comment">// with an invalid value</span></div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;                sleNew-&gt;setFieldAmount(<a class="code" href="namespaceripple.html#a29758397ce451beaa436c3a9dfc83030">sfAmount</a>, <a class="code" href="namespaceripple.html#a55a2a537e79363b71783d5f6eaca5abf">INITIAL_XRP</a> + drops(1));</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;                ac.view().insert(sleNew);</div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;            });</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;    }</div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160; </div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;    <span class="keywordtype">void</span></div>
+<div class="line"><a name="l00413"></a><span class="lineno"><a class="line" href="classripple_1_1Invariants__test.html#a6bf3df5da63fbcdeede0865dfa8d0abc">  413</a></span>&#160;    <a class="code" href="classripple_1_1Invariants__test.html#a6bf3df5da63fbcdeede0865dfa8d0abc">testValidNewAccountRoot</a>()</div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;    {</div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;        <span class="keyword">using namespace </span>test::jtx;</div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;        testcase &lt;&lt; <span class="stringliteral">&quot;valid new account root&quot;</span>;</div>
+<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160; </div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#ac9c80dfb3ad12c584b8d1c1b38764dc0">doInvariantCheck</a>(</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;            {{<span class="stringliteral">&quot;account root created by a non-Payment&quot;</span>}},</div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;            [](Account <span class="keyword">const</span>&amp;, Account <span class="keyword">const</span>&amp;, <a class="code" href="classripple_1_1ApplyContext.html">ApplyContext</a>&amp; ac) {</div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;                <span class="comment">// Insert a new account root created by a non-payment into</span></div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;                <span class="comment">// the view.</span></div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;                <span class="keyword">const</span> Account A3{<span class="stringliteral">&quot;A3&quot;</span>};</div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;                <a class="code" href="structripple_1_1Keylet.html">Keylet</a> <span class="keyword">const</span> acctKeylet = <a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A3);</div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;                <span class="keyword">auto</span> <span class="keyword">const</span> sleNew = std::make_shared&lt;SLE&gt;(acctKeylet);</div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;                ac.view().insert(sleNew);</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;            });</div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160; </div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#ac9c80dfb3ad12c584b8d1c1b38764dc0">doInvariantCheck</a>(</div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;            {{<span class="stringliteral">&quot;multiple accounts created in a single transaction&quot;</span>}},</div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;            [](Account <span class="keyword">const</span>&amp;, Account <span class="keyword">const</span>&amp;, <a class="code" href="classripple_1_1ApplyContext.html">ApplyContext</a>&amp; ac) {</div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;                <span class="comment">// Insert two new account roots into the view.</span></div>
+<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;                {</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;                    <span class="keyword">const</span> Account A3{<span class="stringliteral">&quot;A3&quot;</span>};</div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;                    <a class="code" href="structripple_1_1Keylet.html">Keylet</a> <span class="keyword">const</span> acctKeylet = <a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A3);</div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;                    <span class="keyword">auto</span> <span class="keyword">const</span> sleA3 = std::make_shared&lt;SLE&gt;(acctKeylet);</div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;                    ac.view().insert(sleA3);</div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;                }</div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;                {</div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;                    <span class="keyword">const</span> Account A4{<span class="stringliteral">&quot;A4&quot;</span>};</div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;                    <a class="code" href="structripple_1_1Keylet.html">Keylet</a> <span class="keyword">const</span> acctKeylet = <a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A4);</div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;                    <span class="keyword">auto</span> <span class="keyword">const</span> sleA4 = std::make_shared&lt;SLE&gt;(acctKeylet);</div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;                    ac.view().insert(sleA4);</div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;                }</div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;            });</div>
 <div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160; </div>
-<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;    <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00451"></a><span class="lineno"><a class="line" href="classripple_1_1Invariants__test.html#aa45827abfbd6d88dfddc3d51e7a5eaf7">  451</a></span>&#160;    <a class="code" href="classripple_1_1Invariants__test.html#aa45827abfbd6d88dfddc3d51e7a5eaf7">run</a>()<span class="keyword"> override</span></div>
-<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;<span class="keyword">    </span>{</div>
-<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a89b8f0bcc5ae7c1513f4c20139a22755">testXRPNotCreated</a>();</div>
-<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a183797e076a9b648f55884e26c6ff4d7">testAccountRootsNotRemoved</a>();</div>
-<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a9176f0c1d99ab8afb9720c80edc4336b">testTypesMatch</a>();</div>
-<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#af085322b41e9d0ebc80fc07741c7ee87">testNoXRPTrustLine</a>();</div>
-<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a744d3c7607ad66f7d6bfdf3d9ef39176">testXRPBalanceCheck</a>();</div>
-<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a56ba287b24a49e1de2c1f5bf7af4b1b7">testTransactionFeeCheck</a>();</div>
-<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a351b2675ce83a445d1dd526a30e49485">testNoBadOffers</a>();</div>
-<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a0c8f3e40f24834396d84eae65f3c035e">testNoZeroEscrow</a>();</div>
-<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a6bf3df5da63fbcdeede0865dfa8d0abc">testValidNewAccountRoot</a>();</div>
+<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#ac9c80dfb3ad12c584b8d1c1b38764dc0">doInvariantCheck</a>(</div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;            {{<span class="stringliteral">&quot;account created with wrong starting sequence number&quot;</span>}},</div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;            [](Account <span class="keyword">const</span>&amp;, Account <span class="keyword">const</span>&amp;, <a class="code" href="classripple_1_1ApplyContext.html">ApplyContext</a>&amp; ac) {</div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;                <span class="comment">// Insert a new account root with the wrong starting sequence.</span></div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;                <span class="keyword">const</span> Account A3{<span class="stringliteral">&quot;A3&quot;</span>};</div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;                <a class="code" href="structripple_1_1Keylet.html">Keylet</a> <span class="keyword">const</span> acctKeylet = <a class="code" href="namespaceripple_1_1keylet.html#a50c370db96b4fdcdd202d9c2c38afce9">keylet::account</a>(A3);</div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;                <span class="keyword">auto</span> <span class="keyword">const</span> sleNew = std::make_shared&lt;SLE&gt;(acctKeylet);</div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;                sleNew-&gt;setFieldU32(<a class="code" href="namespaceripple.html#a586714bf3cbbbb406d6f169742bce0d5">sfSequence</a>, ac.view().seq() + 1);</div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;                ac.view().insert(sleNew);</div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;            },</div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;            <a class="code" href="classripple_1_1XRPAmount.html">XRPAmount</a>{},</div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;            <a class="code" href="classripple_1_1STTx.html">STTx</a>{<a class="code" href="namespaceripple.html#a2ce3074a39ea65126b82fc59baf43126ace21e6721f555ecd4ebf9b2c104a7a21">ttPAYMENT</a>, [](<a class="code" href="classripple_1_1STObject.html">STObject</a>&amp; tx) {}});</div>
 <div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;    }</div>
-<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;};</div>
-<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160; </div>
-<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;<a class="code" href="namespaceripple.html#a2701412a11b118c19256a4c901db2938">BEAST_DEFINE_TESTSUITE</a>(Invariants, ledger, <a class="code" href="namespaceripple.html">ripple</a>);</div>
-<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160; </div>
-<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;}  <span class="comment">// namespace ripple</span></div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160; </div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;    <span class="keywordtype">void</span></div>
+<div class="line"><a name="l00466"></a><span class="lineno"><a class="line" href="classripple_1_1Invariants__test.html#aa45827abfbd6d88dfddc3d51e7a5eaf7">  466</a></span>&#160;    <a class="code" href="classripple_1_1Invariants__test.html#aa45827abfbd6d88dfddc3d51e7a5eaf7">run</a>()<span class="keyword"> override</span></div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a89b8f0bcc5ae7c1513f4c20139a22755">testXRPNotCreated</a>();</div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a183797e076a9b648f55884e26c6ff4d7">testAccountRootsNotRemoved</a>();</div>
+<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a9176f0c1d99ab8afb9720c80edc4336b">testTypesMatch</a>();</div>
+<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#af085322b41e9d0ebc80fc07741c7ee87">testNoXRPTrustLine</a>();</div>
+<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a744d3c7607ad66f7d6bfdf3d9ef39176">testXRPBalanceCheck</a>();</div>
+<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a56ba287b24a49e1de2c1f5bf7af4b1b7">testTransactionFeeCheck</a>();</div>
+<div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a351b2675ce83a445d1dd526a30e49485">testNoBadOffers</a>();</div>
+<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a0c8f3e40f24834396d84eae65f3c035e">testNoZeroEscrow</a>();</div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;        <a class="code" href="classripple_1_1Invariants__test.html#a6bf3df5da63fbcdeede0865dfa8d0abc">testValidNewAccountRoot</a>();</div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;    }</div>
+<div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;};</div>
+<div class="line"><a name="l00479"></a><span class="lineno">  479</span>&#160; </div>
+<div class="line"><a name="l00480"></a><span class="lineno">  480</span>&#160;<a class="code" href="namespaceripple.html#a2701412a11b118c19256a4c901db2938">BEAST_DEFINE_TESTSUITE</a>(Invariants, ledger, <a class="code" href="namespaceripple.html">ripple</a>);</div>
+<div class="line"><a name="l00481"></a><span class="lineno">  481</span>&#160; </div>
+<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;}  <span class="comment">// namespace ripple</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassripple_1_1Invariants__test_html_a89b8f0bcc5ae7c1513f4c20139a22755"><div class="ttname"><a href="classripple_1_1Invariants__test.html#a89b8f0bcc5ae7c1513f4c20139a22755">ripple::Invariants_test::testXRPNotCreated</a></div><div class="ttdeci">void testXRPNotCreated()</div><div class="ttdef"><b>Definition:</b> <a href="Invariants__test_8cpp_source.html#l00098">Invariants_test.cpp:98</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a2ce3074a39ea65126b82fc59baf43126aed9a372250602ac95e4428846335fcf6"><div class="ttname"><a href="namespaceripple.html#a2ce3074a39ea65126b82fc59baf43126aed9a372250602ac95e4428846335fcf6">ripple::ttACCOUNT_DELETE</a></div><div class="ttdeci">@ ttACCOUNT_DELETE</div><div class="ttdoc">This transaction type deletes an existing account.</div><div class="ttdef"><b>Definition:</b> <a href="TxFormats_8h_source.html#l00122">TxFormats.h:122</a></div></div>
 <div class="ttc" id="anamespaceripple_1_1test_1_1jtx_html_a37cf35ddf6bc8f4c6cbfa3fba57d6815"><div class="ttname"><a href="namespaceripple_1_1test_1_1jtx.html#a37cf35ddf6bc8f4c6cbfa3fba57d6815">ripple::test::jtx::XRP</a></div><div class="ttdeci">const XRP_t XRP</div><div class="ttdoc">Converts to XRP Issue or STAmount.</div><div class="ttdef"><b>Definition:</b> <a href="amount_8cpp_source.html#l00105">amount.cpp:105</a></div></div>
 <div class="ttc" id="anamespaceripple_html_ac151bf19e1f4daae2b04c65c65117139aa28c736ec52242ffe39aaa030db1accd"><div class="ttname"><a href="namespaceripple.html#ac151bf19e1f4daae2b04c65c65117139aa28c736ec52242ffe39aaa030db1accd">ripple::ltTICKET</a></div><div class="ttdeci">@ ltTICKET</div><div class="ttdoc">A ledger object which describes a ticket.</div><div class="ttdef"><b>Definition:</b> <a href="LedgerFormats_8h_source.html#l00080">LedgerFormats.h:80</a></div></div>
-<div class="ttc" id="aclassripple_1_1Invariants__test_html_aa45827abfbd6d88dfddc3d51e7a5eaf7"><div class="ttname"><a href="classripple_1_1Invariants__test.html#aa45827abfbd6d88dfddc3d51e7a5eaf7">ripple::Invariants_test::run</a></div><div class="ttdeci">void run() override</div><div class="ttdef"><b>Definition:</b> <a href="Invariants__test_8cpp_source.html#l00451">Invariants_test.cpp:451</a></div></div>
+<div class="ttc" id="aclassripple_1_1Invariants__test_html_aa45827abfbd6d88dfddc3d51e7a5eaf7"><div class="ttname"><a href="classripple_1_1Invariants__test.html#aa45827abfbd6d88dfddc3d51e7a5eaf7">ripple::Invariants_test::run</a></div><div class="ttdeci">void run() override</div><div class="ttdef"><b>Definition:</b> <a href="Invariants__test_8cpp_source.html#l00466">Invariants_test.cpp:466</a></div></div>
 <div class="ttc" id="astructripple_1_1Keylet_html"><div class="ttname"><a href="structripple_1_1Keylet.html">ripple::Keylet</a></div><div class="ttdoc">A pair of SHAMap key and LedgerEntryType.</div><div class="ttdef"><b>Definition:</b> <a href="Keylet_8h_source.html#l00038">Keylet.h:38</a></div></div>
 <div class="ttc" id="anamespaceripple_html_aa298e929e02f59c2b05a30ee8805b38caa7dccd25363fdff0d363bd16553d1c84"><div class="ttname"><a href="namespaceripple.html#aa298e929e02f59c2b05a30ee8805b38caa7dccd25363fdff0d363bd16553d1c84">ripple::tecINVARIANT_FAILED</a></div><div class="ttdeci">@ tecINVARIANT_FAILED</div><div class="ttdef"><b>Definition:</b> <a href="TER_8h_source.html#l00277">TER.h:277</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a2701412a11b118c19256a4c901db2938"><div class="ttname"><a href="namespaceripple.html#a2701412a11b118c19256a4c901db2938">ripple::BEAST_DEFINE_TESTSUITE</a></div><div class="ttdeci">BEAST_DEFINE_TESTSUITE(AccountTxPaging, app, ripple)</div></div>
 <div class="ttc" id="anamespaceripple_html_a29758397ce451beaa436c3a9dfc83030"><div class="ttname"><a href="namespaceripple.html#a29758397ce451beaa436c3a9dfc83030">ripple::sfAmount</a></div><div class="ttdeci">const SF_AMOUNT sfAmount</div></div>
-<div class="ttc" id="aclassripple_1_1Invariants__test_html_a6bf3df5da63fbcdeede0865dfa8d0abc"><div class="ttname"><a href="classripple_1_1Invariants__test.html#a6bf3df5da63fbcdeede0865dfa8d0abc">ripple::Invariants_test::testValidNewAccountRoot</a></div><div class="ttdeci">void testValidNewAccountRoot()</div><div class="ttdef"><b>Definition:</b> <a href="Invariants__test_8cpp_source.html#l00398">Invariants_test.cpp:398</a></div></div>
+<div class="ttc" id="aclassripple_1_1Invariants__test_html_a6bf3df5da63fbcdeede0865dfa8d0abc"><div class="ttname"><a href="classripple_1_1Invariants__test.html#a6bf3df5da63fbcdeede0865dfa8d0abc">ripple::Invariants_test::testValidNewAccountRoot</a></div><div class="ttdeci">void testValidNewAccountRoot()</div><div class="ttdef"><b>Definition:</b> <a href="Invariants__test_8cpp_source.html#l00413">Invariants_test.cpp:413</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a75cb21d7f1df42f2fdc8efddb79b63f4a5de771586af2869a8ef8bac2731fd456"><div class="ttname"><a href="namespaceripple.html#a75cb21d7f1df42f2fdc8efddb79b63f4a5de771586af2869a8ef8bac2731fd456">ripple::tefINVARIANT_FAILED</a></div><div class="ttdeci">@ tefINVARIANT_FAILED</div><div class="ttdef"><b>Definition:</b> <a href="TER_8h_source.html#l00162">TER.h:162</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a586714bf3cbbbb406d6f169742bce0d5"><div class="ttname"><a href="namespaceripple.html#a586714bf3cbbbb406d6f169742bce0d5">ripple::sfSequence</a></div><div class="ttdeci">const SF_UINT32 sfSequence</div></div>
 <div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt; std::string &gt;</a></div></div>
