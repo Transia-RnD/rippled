@@ -26,14 +26,9 @@ namespace test {
 
 class SetTrust_test : public beast::unit_test::suite
 {
-    FeatureBitset const disallowIncoming{featureDisallowIncoming};
-
 public:
     void
-    testFreeTrustlines(
-        FeatureBitset features,
-        bool thirdLineCreatesLE,
-        bool createOnHighAcct)
+    testFreeTrustlines(bool thirdLineCreatesLE, bool createOnHighAcct)
     {
         if (thirdLineCreatesLE)
             testcase("Allow two free trustlines");
@@ -41,7 +36,7 @@ public:
             testcase("Dynamic reserve for trustline");
 
         using namespace jtx;
-        Env env(*this, features);
+        Env env(*this);
 
         auto const gwA = Account{"gwA"};
         auto const gwB = Account{"gwB"};
@@ -112,14 +107,14 @@ public:
     }
 
     void
-    testTicketSetTrust(FeatureBitset features)
+    testTicketSetTrust()
     {
         testcase("SetTrust using a ticket");
 
         using namespace jtx;
 
         //  Verify that TrustSet transactions can use tickets.
-        Env env{*this, features};
+        Env env{*this};
         auto const gw = Account{"gateway"};
         auto const alice = Account{"alice"};
         auto const USD = gw["USD"];
@@ -157,12 +152,12 @@ public:
     }
 
     void
-    testMalformedTransaction(FeatureBitset features)
+    testMalformedTransaction()
     {
         testcase("SetTrust checks for malformed transactions");
 
         using namespace jtx;
-        Env env{*this, features};
+        Env env{*this};
 
         auto const gw = Account{"gateway"};
         auto const alice = Account{"alice"};
@@ -204,17 +199,14 @@ public:
     }
 
     void
-    testModifyQualityOfTrustline(
-        FeatureBitset features,
-        bool createQuality,
-        bool createOnHighAcct)
+    testModifyQualityOfTrustline(bool createQuality, bool createOnHighAcct)
     {
         testcase << "SetTrust " << (createQuality ? "creates" : "removes")
                  << " quality of trustline for "
                  << (createOnHighAcct ? "high" : "low") << " account";
 
         using namespace jtx;
-        Env env{*this, features};
+        Env env{*this};
 
         auto const alice = Account{"alice"};
         auto const bob = Account{"bob"};
@@ -257,119 +249,20 @@ public:
     }
 
     void
-    testDisallowIncoming(FeatureBitset features)
+    run() override
     {
-        testcase("Create trustline with disallow incoming");
-
-        using namespace test::jtx;
-
-        // test flag doesn't set unless amendment enabled
-        {
-            Env env{*this, features - disallowIncoming};
-            Account const alice{"alice"};
-            env.fund(XRP(10000), alice);
-            env(fset(alice, asfDisallowIncomingTrustline));
-            env.close();
-            auto const sle = env.le(alice);
-            uint32_t flags = sle->getFlags();
-            BEAST_EXPECT(!(flags & lsfDisallowIncomingTrustline));
-        }
-
-        Env env{*this, features | disallowIncoming};
-
-        auto const gw = Account{"gateway"};
-        auto const alice = Account{"alice"};
-        auto const bob = Account{"bob"};
-        auto const USD = gw["USD"];
-
-        env.fund(XRP(10000), gw, alice, bob);
-        env.close();
-
-        // Set flag on gateway
-        env(fset(gw, asfDisallowIncomingTrustline));
-        env.close();
-
-        // Create a trustline which will fail
-        env(trust(alice, USD(1000)), ter(tecNO_PERMISSION));
-        env.close();
-
-        // Unset the flag
-        env(fclear(gw, asfDisallowIncomingTrustline));
-        env.close();
-
-        // Create a trustline which will now succeed
-        env(trust(alice, USD(1000)));
-        env.close();
-
-        // Now the payment succeeds.
-        env(pay(gw, alice, USD(200)));
-        env.close();
-
-        // Set flag on gateway again
-        env(fset(gw, asfDisallowIncomingTrustline));
-        env.close();
-
-        // Destroy the balance by sending it back
-        env(pay(gw, alice, USD(200)));
-        env.close();
-
-        // The trustline still exists in default state
-        // So a further payment should work
-        env(pay(gw, alice, USD(200)));
-        env.close();
-
-        // Also set the flag on bob
-        env(fset(bob, asfDisallowIncomingTrustline));
-        env.close();
-
-        // But now bob can't open a trustline because he didn't already have one
-        env(trust(bob, USD(1000)), ter(tecNO_PERMISSION));
-        env.close();
-
-        // The gateway also can't open this trustline because bob has the flag
-        // set
-        env(trust(gw, bob["USD"](1000)), ter(tecNO_PERMISSION));
-        env.close();
-
-        // Unset the flag only on the gateway
-        env(fclear(gw, asfDisallowIncomingTrustline));
-        env.close();
-
-        // Now bob can open a trustline
-        env(trust(bob, USD(1000)));
-        env.close();
-
-        // And the gateway can send bob a balance
-        env(pay(gw, bob, USD(200)));
-        env.close();
-    }
-
-    void
-    testWithFeats(FeatureBitset features)
-    {
-        testFreeTrustlines(features, true, false);
-        testFreeTrustlines(features, false, true);
-        testFreeTrustlines(features, false, true);
+        testFreeTrustlines(true, false);
+        testFreeTrustlines(false, true);
+        testFreeTrustlines(false, true);
         // true, true case doesn't matter since creating a trustline ledger
         // entry requires reserve from the creator
         // independent of hi/low account ids for endpoints
-        testTicketSetTrust(features);
-        testMalformedTransaction(features);
-        testModifyQualityOfTrustline(features, false, false);
-        testModifyQualityOfTrustline(features, false, true);
-        testModifyQualityOfTrustline(features, true, false);
-        testModifyQualityOfTrustline(features, true, true);
-        testDisallowIncoming(features);
-    }
-
-public:
-    void
-    run() override
-    {
-        using namespace test::jtx;
-        auto const sa = supported_amendments();
-        testWithFeats(sa - disallowIncoming);
-        testWithFeats(sa);
+        testTicketSetTrust();
+        testMalformedTransaction();
+        testModifyQualityOfTrustline(false, false);
+        testModifyQualityOfTrustline(false, true);
+        testModifyQualityOfTrustline(true, false);
+        testModifyQualityOfTrustline(true, true);
     }
 };
 BEAST_DEFINE_TESTSUITE(SetTrust, app, ripple);

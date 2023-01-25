@@ -1396,7 +1396,16 @@ struct RPCCallImp
             // callbackFuncP.
 
             // Receive reply
-            if (strData.empty())
+            if (iStatus == 401)
+                Throw<std::runtime_error>(
+                    "incorrect rpcuser or rpcpassword (authorization failed)");
+            else if (
+                (iStatus >= 400) && (iStatus != 400) && (iStatus != 404) &&
+                (iStatus != 500))  // ?
+                Throw<std::runtime_error>(
+                    std::string("server returned HTTP error ") +
+                    std::to_string(iStatus));
+            else if (strData.empty())
                 Throw<std::runtime_error>("no response from server");
 
             // Parse reply
