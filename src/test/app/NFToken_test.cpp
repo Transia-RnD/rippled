@@ -2684,7 +2684,7 @@ class NFToken_test : public beast::unit_test::suite
 
         using namespace test::jtx;
 
-        Env env{*this, features | fixNFTokenBrokerAccept};
+        Env env{*this, features};
 
         Account const issuer{"issuer"};
         Account const minter{"minter"};
@@ -2955,16 +2955,17 @@ class NFToken_test : public beast::unit_test::suite
                         ter(tecNFTOKEN_BUY_SELL_MISMATCH));
                 
                 env(token::acceptBuyOffer(buyer, offerMinterToBuyer));
+                env.close();
                 
+                // Clean out the unconsumed offer.
+                env(token::cancelOffer(buyer, {offerBuyerToMinter}));
+                env.close();
                 BEAST_EXPECT(ownerCount(env, issuer) == 1);
                 BEAST_EXPECT(ownerCount(env, minter) == 1);
                 BEAST_EXPECT(ownerCount(env, buyer) == 0);
 
                 // Clean out the unconsumed offer.
                 env(token::cancelOffer(issuer, {offerIssuerToBuyer}));
-                // Clean out the unconsumed offer.
-                env(token::cancelOffer(issuer, {offerBuyerToMinter}));
-                env.close();
                 BEAST_EXPECT(ownerCount(env, issuer) == 0);
                 BEAST_EXPECT(ownerCount(env, minter) == 1);
                 BEAST_EXPECT(ownerCount(env, buyer) == 0);

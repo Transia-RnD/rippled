@@ -113,7 +113,7 @@ NFTokenAcceptOffer::preclaim(PreclaimContext const& ctx)
             return tecINSUFFICIENT_PAYMENT;
 
         // fixNFTokenBrokerAccept: Enabled
-        if (view.rules().enabled(fixNFTokenBrokerAccept)) {
+        if (ctx.view.rules().enabled(fixNFTokenBrokerAccept)) {
             // If the buyer specified a destination
             if (auto const dest = bo->at(~sfDestination))
             {
