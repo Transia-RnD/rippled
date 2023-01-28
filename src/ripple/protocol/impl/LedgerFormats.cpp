@@ -274,6 +274,7 @@ LedgerFormats::LedgerFormats()
             {sfOwnerNode,            soeREQUIRED},
             {sfIssuer,               soeREQUIRED},
             {sfURI,                  soeREQUIRED},
+            {sfDigest,               soeOPTIONAL},
             {sfAmount,               soeOPTIONAL},
             {sfDestination,          soeOPTIONAL},
             {sfPreviousTxnID,        soeREQUIRED},
