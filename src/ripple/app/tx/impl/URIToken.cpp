@@ -40,16 +40,31 @@ namespace ripple {
 
 inline URIOperation inferOperation(STTx const& tx)
 {
-    uint32_t const flags = tx.getFlags();
+
+    // fields
     bool const hasDigest = tx.isFieldPresent(sfDigest);
     bool const hasURI = tx.isFieldPresent(sfURI);
-    bool const hasBurnFlag = flags == tfBurn;
     bool const hasID  = tx.isFieldPresent(sfURITokenID);
     bool const hasAmt = tx.isFieldPresent(sfAmount);
     bool const hasDst = tx.isFieldPresent(sfDestination);
+
+    // flags
+    uint32_t const flags = tx.getFlags();
+    bool const hasBurnFlag = flags == tfBurn;
     bool const hasSellFlag = flags == tfSell;
-    bool const hasBurnableFlag = flags == tfBurnable;
+    // bool const hasBurnableFlag = flags == tfBurnable;
     bool const blankFlags = flags == 0;
+
+    // std::cout << "HAS DIGEST: " << hasDigest << "\n";
+    // std::cout << "HAS URI: " << hasURI << "\n";
+    // std::cout << "HAS ID: " << hasID << "\n";
+    // std::cout << "HAS AMOUNT: " << hasAmt << "\n";
+    // std::cout << "HAS DEST: " << hasDst << "\n";
+    
+    // std::cout << "HAS BURN FLAG: " << hasBurnFlag << "\n";
+    // std::cout << "HAS SELL FLAG: " << hasSellFlag << "\n";
+    // std::cout << "HAS BURNABLE FLAG: " << hasBurnableFlag << "\n";
+    // std::cout << "BLANK FLAGS: " << blankFlags << "\n";
 
     uint16_t combination =
         (hasDigest       ? 0b100000000U : 0) +
@@ -59,17 +74,29 @@ inline URIOperation inferOperation(STTx const& tx)
         (hasAmt          ? 0b000010000U : 0) +
         (hasDst          ? 0b000001000U : 0) +
         (hasSellFlag     ? 0b000000100U : 0) +
-        (hasBurnableFlag ? 0b000000010U : 0) +
+        // (hasBurnableFlag ? 0b000000010U : 0) +
         (blankFlags      ? 0b000000001U : 0);
 
+    // std::cout << "COMBINATION: " << combination << "\n";
+    // MINT
+    // std::cout << "URI 1: " << 0b110000001U << "\n";
+    // std::cout << "URI 2: " << 0b110000010U << "\n";
+    // std::cout << "URI 3: " << 0b010000001U << "\n";
+    // std::cout << "URI 4: " << 0b010000000U << "\n";
+    // std::cout << "URI 5: " << 0b010000010U << "\n";
+    // BURN
+    // std::cout << "URI 6: " << 0b011100001U << "\n";
+    // std::cout << "URI 7: " << 0b001100000U << "\n";
     switch (combination)
     {
         case 0b110000001U:
         case 0b110000010U:
         case 0b010000001U:
+        case 0b010000000U:
         case 0b010000010U:
             return URIOperation::Mint;
-        case 0b011100001U:
+        case 0b010100001U:
+        case 0b001100000U:
             return URIOperation::Burn;
         case 0b000110001U:
             return URIOperation::Buy;
@@ -111,6 +138,7 @@ URIToken::preflight(PreflightContext const& ctx)
             (op == URIOperation::Sell ? "Sell" :
             (op == URIOperation::Clear ? "Clear" : "Unknown")))))) << "\n";
 
+    // std::cout << "URI SIZE: " << ctx.tx.getFieldVL(sfURI).size() << "\n";
     if (op == URIOperation::Mint && ctx.tx.getFieldVL(sfURI).size() > 256)
     {
         JLOG(ctx.j.warn())
@@ -156,7 +184,7 @@ URIToken::preclaim(PreclaimContext const& ctx)
     std::optional<AccountID> dest;
 
     std::shared_ptr<SLE const> sleOwner;
-
+    
     if (sleU)
     {
         if (sleU->getFieldU16(sfLedgerEntryType) != ltURI_TOKEN)
