@@ -289,7 +289,7 @@ invoke_preclaim(PreclaimContext const& ctx)
     }
 }
 
-static FeeUnit64
+static XRPAmount
 invoke_calculateBaseFee(ReadView const& view, STTx const& tx)
 {
     switch (tx.getTxnType())
@@ -365,7 +365,7 @@ invoke_calculateBaseFee(ReadView const& view, STTx const& tx)
             return XChainCreateAccountCommit::calculateBaseFee(view, tx);
         default:
             assert(false);
-            return FeeUnit64{0};
+            return XRPAmount{0};
     }
 }
 
@@ -619,7 +619,7 @@ preclaim(
     }
 }
 
-FeeUnit64
+XRPAmount
 calculateBaseFee(ReadView const& view, STTx const& tx)
 {
     return invoke_calculateBaseFee(view, tx);
@@ -628,7 +628,7 @@ calculateBaseFee(ReadView const& view, STTx const& tx)
 XRPAmount
 calculateDefaultBaseFee(ReadView const& view, STTx const& tx)
 {
-    return view.fees().toDrops(Transactor::calculateBaseFee(view, tx));
+    return Transactor::calculateBaseFee(view, tx);
 }
 
 std::pair<TER, bool>

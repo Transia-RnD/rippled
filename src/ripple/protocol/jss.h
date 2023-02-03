@@ -513,8 +513,10 @@ JSS(request);               // RPC
 JSS(requested);             // out: Manifest
 JSS(reservations);          // out: Reservations
 JSS(reserve_base);          // out: NetworkOPs
+JSS(reserve_base_drops);    // out: NetworkOPs
 JSS(reserve_base_xrp);      // out: NetworkOPs
 JSS(reserve_inc);           // out: NetworkOPs
+JSS(reserve_inc_drops);     // out: NetworkOPs
 JSS(reserve_inc_xrp);       // out: NetworkOPs
 JSS(response);              // websocket
 JSS(result);                // RPC
