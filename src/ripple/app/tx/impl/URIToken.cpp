@@ -359,6 +359,10 @@ URIToken::doApply()
             sleU->setAccountID(sfIssuer, account_);
             sleU->setFieldVL(sfURI, ctx_.tx.getFieldVL(sfURI));
 
+            uint32_t leFlags = sleU ? ctx_.tx.getFlags() : 0;
+            if (leFlags == tfBurnable)
+                sleU->setFlag(tfBurnable);
+
             if (ctx_.tx.isFieldPresent(sfDigest))
                 sleU->setFieldH256(sfDigest, ctx_.tx.getFieldH256(sfDigest));
 
