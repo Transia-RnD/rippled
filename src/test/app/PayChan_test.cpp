@@ -744,8 +744,7 @@ struct PayChan_test : public beast::unit_test::suite
             auto const delta = XRP(500);
             auto const reqBal = chanBal + delta;
             assert(reqBal <= chanAmt);
-            auto const sig =
-                signClaimAuth(alice.pk(), alice.sk(), chan, reqBal);
+            auto const sig = signClaimAuth(alice.pk(), alice.sk(), chan, reqBal);
             env(claim(bob, chan, reqBal, std::nullopt, Slice(sig), alice.pk()));
             BEAST_EXPECT(channelBalance(*env.current(), chan) == reqBal);
             auto const feeDrops = env.current()->fees().base;
@@ -2428,12 +2427,10 @@ struct PayChan_test : public beast::unit_test::suite
             auto const chan = channel(alice, bob, env.seq(alice));
             env(create(alice, bob, channelFunds, settleDelay, pk, cancelAfter));
             BEAST_EXPECT(channelExists(*env.current(), chan));
-
             auto chanBal = channelBalance(*env.current(), chan);
             auto chanAmt = channelAmount(*env.current(), chan);
             BEAST_EXPECT(chanBal == USD(0));
             BEAST_EXPECT(chanAmt == USD(1000));
-
             env.close(cancelAfter);
             {
                 // dst cannot claim after cancelAfter

@@ -2437,7 +2437,6 @@ struct Escrow_test : public beast::unit_test::suite
             env(pay(gw, alice, USD(5000)));
             env(pay(gw, bob, USD(5000)));
             env.close();
-
             auto const seq = env.seq(alice);
             env(escrow(alice, alice, USD(1000)),
                 condition(cb2),
@@ -2493,7 +2492,6 @@ struct Escrow_test : public beast::unit_test::suite
             env(pay(gw, alice, USD(5000)));
             env(pay(gw, bob, USD(5000)));
             env.close();
-
             auto const seq = env.seq(alice);
             env(escrow(alice, alice, USD(1000)),
                 condition(cb3),
@@ -2615,7 +2613,6 @@ struct Escrow_test : public beast::unit_test::suite
             env(pay(gw, bob, USD(5000)));
             env(pay(gw, carol, USD(5000)));
             env.close();
-
             auto const seq = env.seq(alice);
             BEAST_EXPECT((*env.le(alice))[sfOwnerCount] == 1);
             env(escrow(alice, carol, USD(1000)),
@@ -2705,7 +2702,6 @@ struct Escrow_test : public beast::unit_test::suite
             env(pay(gw, bob, USD(5000)));
             env(pay(gw, carol, USD(5000)));
             env.close();
-
             auto const seq = env.seq(alice);
             BEAST_EXPECT((*env.le(alice))[sfOwnerCount] == 1);
             env(escrow(alice, carol, USD(1000)),

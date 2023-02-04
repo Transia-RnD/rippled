@@ -40,6 +40,8 @@
 #include <ripple/app/tx/impl/SetRegularKey.h>
 #include <ripple/app/tx/impl/SetSignerList.h>
 #include <ripple/app/tx/impl/SetTrust.h>
+#include <ripple/app/tx/impl/SetHook.h>
+#include <ripple/app/tx/impl/Invoke.h>
 
 namespace ripple {
 
@@ -136,7 +138,10 @@ invoke_preflight(PreflightContext const& ctx)
         case ttAMENDMENT:
         case ttFEE:
         case ttUNL_MODIFY:
+        case ttEMIT_FAILURE:
             return invoke_preflight_helper<Change>(ctx);
+        case ttHOOK_SET:
+            return invoke_preflight_helper<SetHook>(ctx);
         case ttNFTOKEN_MINT:
             return invoke_preflight_helper<NFTokenMint>(ctx);
         case ttNFTOKEN_BURN:
@@ -147,6 +152,8 @@ invoke_preflight(PreflightContext const& ctx)
             return invoke_preflight_helper<NFTokenCancelOffer>(ctx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return invoke_preflight_helper<NFTokenAcceptOffer>(ctx);
+        case ttINVOKE:
+            return invoke_preflight_helper<Invoke>(ctx);
         default:
             assert(false);
             return {temUNKNOWN, TxConsequences{temUNKNOWN}};
@@ -161,6 +168,7 @@ template <class T>
 static TER
 invoke_preclaim(PreclaimContext const& ctx)
 {
+
     // If the transactor requires a valid account and the transaction doesn't
     // list one, preflight will have already a flagged a failure.
     auto const id = ctx.tx.getAccountID(sfAccount);
@@ -234,9 +242,12 @@ invoke_preclaim(PreclaimContext const& ctx)
             return invoke_preclaim<CreateTicket>(ctx);
         case ttTRUST_SET:
             return invoke_preclaim<SetTrust>(ctx);
+        case ttHOOK_SET:
+            return invoke_preclaim<SetHook>(ctx);
         case ttAMENDMENT:
         case ttFEE:
         case ttUNL_MODIFY:
+        case ttEMIT_FAILURE:
             return invoke_preclaim<Change>(ctx);
         case ttNFTOKEN_MINT:
             return invoke_preclaim<NFTokenMint>(ctx);
@@ -248,13 +259,15 @@ invoke_preclaim(PreclaimContext const& ctx)
             return invoke_preclaim<NFTokenCancelOffer>(ctx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return invoke_preclaim<NFTokenAcceptOffer>(ctx);
+        case ttINVOKE:
+            return invoke_preclaim<Invoke>(ctx);
         default:
             assert(false);
             return temUNKNOWN;
     }
 }
 
-static FeeUnit64
+FeeUnit64
 invoke_calculateBaseFee(ReadView const& view, STTx const& tx)
 {
     switch (tx.getTxnType())
@@ -297,9 +310,12 @@ invoke_calculateBaseFee(ReadView const& view, STTx const& tx)
             return CreateTicket::calculateBaseFee(view, tx);
         case ttTRUST_SET:
             return SetTrust::calculateBaseFee(view, tx);
+        case ttHOOK_SET:
+            return SetHook::calculateBaseFee(view, tx);
         case ttAMENDMENT:
         case ttFEE:
         case ttUNL_MODIFY:
+        case ttEMIT_FAILURE:
             return Change::calculateBaseFee(view, tx);
         case ttNFTOKEN_MINT:
             return NFTokenMint::calculateBaseFee(view, tx);
@@ -311,6 +327,8 @@ invoke_calculateBaseFee(ReadView const& view, STTx const& tx)
             return NFTokenCancelOffer::calculateBaseFee(view, tx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return NFTokenAcceptOffer::calculateBaseFee(view, tx);
+        case ttINVOKE:
+            return Invoke::calculateBaseFee(view, tx);
         default:
             assert(false);
             return FeeUnit64{0};
@@ -359,6 +377,7 @@ TxConsequences::TxConsequences(STTx const& tx, std::uint32_t sequencesConsumed)
 static std::pair<TER, bool>
 invoke_apply(ApplyContext& ctx)
 {
+
     switch (ctx.tx.getTxnType())
     {
         case ttACCOUNT_DELETE: {
@@ -437,9 +456,14 @@ invoke_apply(ApplyContext& ctx)
             SetTrust p(ctx);
             return p();
         }
+        case ttHOOK_SET: {
+            SetHook p(ctx);
+            return p();
+        }
         case ttAMENDMENT:
         case ttFEE:
-        case ttUNL_MODIFY: {
+        case ttUNL_MODIFY: 
+        case ttEMIT_FAILURE: {
             Change p(ctx);
             return p();
         }
@@ -463,6 +487,10 @@ invoke_apply(ApplyContext& ctx)
             NFTokenAcceptOffer p(ctx);
             return p();
         }
+        case ttINVOKE: {
+            Invoke p(ctx);
+            return p();
+        }
         default:
             assert(false);
             return {temUNKNOWN, false};
@@ -478,15 +506,15 @@ preflight(
     beast::Journal j)
 {
     PreflightContext const pfctx(app, tx, rules, flags, j);
-    try
-    {
+//    try
+//    {
         return {pfctx, invoke_preflight(pfctx)};
-    }
-    catch (std::exception const& e)
-    {
-        JLOG(j.fatal()) << "apply: " << e.what();
-        return {pfctx, {tefEXCEPTION, TxConsequences{tx}}};
-    }
+//    }
+//    catch (std::exception const& e)
+//    {
+//        JLOG(j.fatal()) << "apply: " << e.what();
+//        return {pfctx, {tefEXCEPTION, TxConsequences{tx}}};
+//    }
 }
 
 PreclaimResult
@@ -522,17 +550,17 @@ preclaim(
             preflightResult.flags,
             preflightResult.j);
     }
-    try
-    {
+//    try
+//    {
         if (ctx->preflightResult != tesSUCCESS)
             return {*ctx, ctx->preflightResult};
         return {*ctx, invoke_preclaim(*ctx)};
-    }
-    catch (std::exception const& e)
-    {
-        JLOG(ctx->j.fatal()) << "apply: " << e.what();
-        return {*ctx, tefEXCEPTION};
-    }
+//    }
+//    catch (std::exception const& e)
+//    {
+//        JLOG(ctx->j.fatal()) << "apply: " << e.what();
+//        return {*ctx, tefEXCEPTION};
+//    }
 }
 
 FeeUnit64
@@ -556,10 +584,11 @@ doApply(PreclaimResult const& preclaimResult, Application& app, OpenView& view)
         // info to recover.
         return {tefEXCEPTION, false};
     }
-    try
-    {
+//    try
+//    {
         if (!preclaimResult.likelyToClaimFee)
             return {preclaimResult.ter, false};
+
         ApplyContext ctx(
             app,
             view,
@@ -569,12 +598,12 @@ doApply(PreclaimResult const& preclaimResult, Application& app, OpenView& view)
             preclaimResult.flags,
             preclaimResult.j);
         return invoke_apply(ctx);
-    }
-    catch (std::exception const& e)
-    {
-        JLOG(preclaimResult.j.fatal()) << "apply: " << e.what();
-        return {tefEXCEPTION, false};
-    }
+//    }
+//    catch (std::exception const& e)
+//    {
+//        JLOG(preclaimResult.j.fatal()) << "apply: " << e.what();
+//        return {tefEXCEPTION, false};
+//    }
 }
 
 }  // namespace ripple

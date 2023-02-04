@@ -163,7 +163,10 @@ Env::lookup(AccountID const& id) const
 {
     auto const iter = map_.find(id);
     if (iter == map_.end())
+    {
+        std::cout << "Unknown account: " << id << "\n";
         Throw<std::runtime_error>("Env::lookup:: unknown account ID");
+    }
     return iter->second;
 }
 
@@ -349,10 +352,13 @@ Env::postconditions(JTx const& jt, TER ter, bool didApply)
         !test.expect(
             ter == *jt.ter,
             "apply: Got " + transToken(ter) + " (" + transHuman(ter) +
-                "); Expected " + transToken(*jt.ter) + " (" +
-                transHuman(*jt.ter) + ")"))
+                ") [=" + std::to_string(ter.code_) + "]; Expected " +
+                transToken(*jt.ter) + " (" + transHuman(*jt.ter) + ")"))
     {
         test.log << pretty(jt.jv) << std::endl;
+        auto const& m = meta();
+        if (m)
+            test.log << *m << std::endl;
         // Don't check postconditions if
         // we didn't get the expected result.
         return;
@@ -362,6 +368,9 @@ Env::postconditions(JTx const& jt, TER ter, bool didApply)
         if (trace_ > 0)
             --trace_;
         test.log << pretty(jt.jv) << std::endl;
+        auto const& m = meta();
+        if (m)
+            test.log << *m << std::endl;
     }
     for (auto const& f : jt.require)
         f(*this);
@@ -370,15 +379,25 @@ Env::postconditions(JTx const& jt, TER ter, bool didApply)
 std::shared_ptr<STObject const>
 Env::meta()
 {
-    close();
-    auto const item = closed()->txRead(txid_);
-    return item.second;
+    auto cur = current()->txRead(txid_);
+    if (cur.second)
+        return cur.second;
+    else if (cur.first)
+        close();
+
+    return closed()->txRead(txid_).second;
 }
 
 std::shared_ptr<STTx const>
 Env::tx() const
 {
     return current()->txRead(txid_).first;
+}
+
+uint256
+Env::txid() const
+{
+    return txid_;
 }
 
 void

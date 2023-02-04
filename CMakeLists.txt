@@ -16,6 +16,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(Boost_NO_BOOST_CMAKE ON)
+
 # make GIT_COMMIT_HASH define available to all sources
 find_package(Git)
 if(Git_FOUND)
@@ -118,6 +120,9 @@ if(reporting)
     PostgreSQL::PostgreSQL
   )
 endif()
+include(deps/cassandra)
+include(deps/Postgres)
+include(deps/WasmEdge)
 
 ###
 

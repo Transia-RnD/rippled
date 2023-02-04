@@ -43,6 +43,7 @@
 #include <ripple/protocol/BuildInfo.h>
 #include <ripple/protocol/Feature.h>
 #include <ripple/protocol/digest.h>
+#include <ripple/app/misc/Transaction.h>
 
 #include <algorithm>
 #include <mutex>
@@ -644,7 +645,6 @@ RCLConsensus::Adaptor::doAccept(
             tapNONE,
             "consensus",
             [&](OpenView& view, beast::Journal j) {
-                // Stuff the ledger with transactions from the queue.
                 return app_.getTxQ().accept(app_, view);
             });
 
@@ -768,6 +768,7 @@ RCLConsensus::Adaptor::buildLCL(
             failedTxs,
             j_);
     }();
+
 
     // Update fee computations based on accepted txs
     using namespace std::chrono_literals;

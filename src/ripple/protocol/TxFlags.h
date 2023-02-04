@@ -86,6 +86,7 @@ constexpr std::uint32_t asfDisallowIncomingNFTOffer    = 12;
 constexpr std::uint32_t asfDisallowIncomingCheck       = 13;
 constexpr std::uint32_t asfDisallowIncomingPayChan     = 14;
 constexpr std::uint32_t asfDisallowIncomingTrustline   = 15;
+constexpr std::uint32_t asfTshCollect                  = 11;
 
 // OfferCreate flags:
 constexpr std::uint32_t tfPassive                      = 0x00010000;
@@ -126,6 +127,7 @@ constexpr std::uint32_t const tfBurnable               = 0x00000001;
 constexpr std::uint32_t const tfOnlyXRP                = 0x00000002;
 constexpr std::uint32_t const tfTrustLine              = 0x00000004;
 constexpr std::uint32_t const tfTransferable           = 0x00000008;
+constexpr std::uint32_t const tfStrongTSH              = 0x00008000;
 
 // Prior to fixRemoveNFTokenAutoTrustLine, transfer of an NFToken between
 // accounts allowed a TrustLine to be added to the issuer of that token

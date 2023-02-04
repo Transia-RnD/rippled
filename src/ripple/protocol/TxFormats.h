@@ -122,7 +122,7 @@ enum TxType : std::uint16_t
     ttACCOUNT_DELETE = 21,
 
     /** This transaction type installs a hook. */
-    ttHOOK_SET [[maybe_unused]] = 22,
+    ttHOOK_SET = 22,
 
     /** This transaction mints a new NFT. */
     ttNFTOKEN_MINT = 25,
@@ -138,6 +138,9 @@ enum TxType : std::uint16_t
 
     /** This transaction accepts an existing offer to buy or sell an existing  NFT. */
     ttNFTOKEN_ACCEPT_OFFER = 29,
+
+    /** This transaction invokes a hook, providing arbitrary data. Essentially as a 0 drop payment. **/
+    ttINVOKE = 99,
 
     /** This system-generated transaction type is used to update the status of the various amendments.
 
@@ -156,6 +159,7 @@ enum TxType : std::uint16_t
         For details, see: https://xrpl.org/negative-unl.html
      */
     ttUNL_MODIFY = 102,
+    ttEMIT_FAILURE = 103,
 };
 // clang-format on
 

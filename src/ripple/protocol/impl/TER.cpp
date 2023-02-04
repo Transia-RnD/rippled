@@ -56,7 +56,7 @@ transResults()
         MAKE_ERROR(tecNO_ALTERNATIVE_KEY,            "The operation would remove the ability to sign transactions with the account."),
         MAKE_ERROR(tecNO_REGULAR_KEY,                "Regular key is not set."),
         MAKE_ERROR(tecOVERSIZE,                      "Object exceeded serialization limits."),
-        MAKE_ERROR(tecUNFUNDED,                      "Not enough XRP to satisfy the reserve requirement."),
+        MAKE_ERROR(tecUNFUNDED,                      "Not enough XRP/IC to satisfy the reserve requirement."),
         MAKE_ERROR(tecUNFUNDED_ADD,                  "DEPRECATED."),
         MAKE_ERROR(tecUNFUNDED_OFFER,                "Insufficient balance to fund created offer."),
         MAKE_ERROR(tecUNFUNDED_PAYMENT,              "Insufficient balance to send."),
@@ -89,6 +89,8 @@ transResults()
         MAKE_ERROR(tecOBJECT_NOT_FOUND,              "A requested object could not be located."),
         MAKE_ERROR(tecINSUFFICIENT_PAYMENT,          "The payment is not sufficient."),
         MAKE_ERROR(tecPRECISION_LOSS,                "The amounts used by the transaction cannot interact."),
+        MAKE_ERROR(tecHOOK_REJECTED,                 "Rejected by hook on sending or receiving account."),
+        MAKE_ERROR(tecREQUIRES_FLAG,                 "The transaction or part-thereof requires a flag that wasn't set."),
         MAKE_ERROR(tefALREADY,                     "The exact transaction was already in this ledger."),
         MAKE_ERROR(tefBAD_ADD_AUTH,                "Not authorized to add account."),
         MAKE_ERROR(tefBAD_AUTH,                    "Transaction's public key is not authorized."),
@@ -124,6 +126,10 @@ transResults()
         MAKE_ERROR(telCAN_NOT_QUEUE_BLOCKED,  "Can not queue at this time: blocking transaction in queue."),
         MAKE_ERROR(telCAN_NOT_QUEUE_FEE,      "Can not queue at this time: fee insufficient to replace queued transaction."),
         MAKE_ERROR(telCAN_NOT_QUEUE_FULL,     "Can not queue at this time: queue is full."),
+        MAKE_ERROR(telWRONG_NETWORK,          "Transaction specifies a Network ID that differs from that of the local node."),
+        MAKE_ERROR(telREQUIRES_NETWORK_ID,    "Transactions submitted to this node/network must include a correct NetworkID field."),
+        MAKE_ERROR(telNETWORK_ID_MAKES_TX_NON_CANONICAL, "Transactions submitted to this node/network must NOT include a NetworkID field."),
+        MAKE_ERROR(telNON_LOCAL_EMITTED_TXN, "Emitted transaction cannot be applied because it was not generated locally."),
 
         MAKE_ERROR(temMALFORMED,                 "Malformed transaction."),
         MAKE_ERROR(temBAD_AMOUNT,                "Can only send positive amounts."),
@@ -176,6 +182,7 @@ transResults()
         MAKE_ERROR(terOWNERS,                 "Non-zero owner count."),
         MAKE_ERROR(terQUEUED,                 "Held until escalated fee drops."),
         MAKE_ERROR(terPRE_TICKET,             "Ticket is not yet in ledger."),
+        MAKE_ERROR(terNO_HOOK,                "No hook with that hash exists on the ledger."),
 
         MAKE_ERROR(tesSUCCESS,                "The transaction was applied. Only final in a validated ledger."),
     };

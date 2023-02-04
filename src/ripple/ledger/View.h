@@ -35,11 +35,14 @@
 #include <ripple/protocol/STTx.h>
 #include <ripple/protocol/Serializer.h>
 #include <ripple/protocol/TER.h>
+#include <ripple/protocol/Feature.h>
+#include <ripple/basics/Log.h>
 #include <functional>
 #include <map>
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include <type_traits>
 #include <vector>
 
 namespace ripple {
@@ -353,6 +356,7 @@ trustDelete(
     AccountID const& uHighAccountID,
     beast::Journal j);
 
+
 /** Delete an offer.
 
     Requirements:
@@ -563,7 +567,6 @@ trustAdjustLockedBalance(
 
     if (finalLockedBalance < beast::zero)
         return tecINTERNAL;
-
     // check if there is significant precision loss
     if (!isAddable(balance, deltaAmt) ||
         !isAddable(priorLockedBalance, deltaAmt) ||
@@ -622,7 +625,6 @@ trustTransferAllowed(
     static_assert(
         std::is_same<V, ReadView const>::value ||
         std::is_same<V, ApplyView>::value);
-
     typedef typename std::conditional<
         std::is_same<V, ApplyView>::value,
         std::shared_ptr<SLE>,

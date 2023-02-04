@@ -61,7 +61,8 @@ addLine(Json::Value& jsonLines, RPCTrustLine const& line)
     jPeer[jss::balance] = saBalance.getText();
 
     if (saLockedBalance)
-        jPeer[jss::locked_balance] = saLockedBalance->negative()
+        jPeer[jss::locked_balance] =
+            saLockedBalance->negative() 
             ? (-(*saLockedBalance)).getText()
             : saLockedBalance->getText();
 

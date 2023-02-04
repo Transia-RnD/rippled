@@ -16,7 +16,6 @@
     OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 //==============================================================================
-
 #include <ripple/basics/hardened_hash.h>
 #include <ripple/basics/spinlock.h>
 #include <ripple/protocol/AccountID.h>

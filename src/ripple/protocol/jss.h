@@ -49,16 +49,19 @@ JSS(AccountRoot);            // ledger type.
 JSS(AccountSet);             // transaction type.
 JSS(Amendments);             // ledger type.
 JSS(Amount);                 // in: TransactionSign; field.
+JSS(Authorize);              // field
 JSS(Check);                  // ledger type.
 JSS(CheckCancel);            // transaction type.
 JSS(CheckCash);              // transaction type.
 JSS(CheckCreate);            // transaction type.
 JSS(ClearFlag);              // field.
+JSS(CreateCode);             // field.
 JSS(DeliverMin);             // in: TransactionSign
 JSS(DepositPreauth);         // transaction and ledger type.
 JSS(Destination);            // in: TransactionSign; field.
 JSS(DirectoryNode);          // ledger type.
 JSS(EnableAmendment);        // transaction type.
+JSS(EmitFailure);            // transaction type. (cleanup emit)
 JSS(Escrow);                 // ledger type.
 JSS(EscrowCancel);           // transaction type.
 JSS(EscrowCreate);           // transaction type.
@@ -67,10 +70,24 @@ JSS(Fee);                    // in/out: TransactionSign; field.
 JSS(FeeSettings);            // ledger type.
 JSS(Flags);                  // in/out: TransactionSign; field.
 JSS(incomplete_shards);      // out: OverlayImpl, PeerImp
+JSS(HookApiVersion);         // field
+JSS(HookHash);               // field
+JSS(HookNamespace);          // field
+JSS(HookOn);                 // field
+JSS(Hooks);                  // field
+JSS(HookGrants);             // field
+JSS(HookParameters);         // field
+JSS(HookParameterName);      // field
+JSS(HookParameterValue);     // field
+JSS(HookParameter);          // field
+JSS(HookGrant);              // field
 JSS(Invalid);                //
+JSS(Invoke);                 // transaction type
+JSS(InvoiceID);              // field
 JSS(LastLedgerSequence);     // in: TransactionSign; field
 JSS(LedgerHashes);           // ledger type.
 JSS(LimitAmount);            // field.
+JSS(NetworkID);              // field.
 JSS(NFTokenBurn);            // transaction type.
 JSS(NFTokenMint);            // transaction type.
 JSS(NFTokenOffer);           // ledger type.
@@ -97,6 +114,11 @@ JSS(SendMax);                // in: TransactionSign
 JSS(Sequence);               // in/out: TransactionSign; field.
 JSS(SetFlag);                // field.
 JSS(SetRegularKey);          // transaction type.
+JSS(SetHook);                // transaction type.
+JSS(Hook);                   // ledger type.
+JSS(HookState);              // ledger type.
+JSS(HookDefinition);
+JSS(EmittedTxn);             // ledger type.
 JSS(SignerList);             // ledger type.
 JSS(SignerListSet);          // transaction type.
 JSS(SigningPubKey);          // field.
@@ -261,6 +283,7 @@ JSS(features);              // out: Feature
 JSS(fee);                   // out: NetworkOPs, Peers
 JSS(fee_base);              // out: NetworkOPs
 JSS(fee_div_max);           // in: TransactionSign
+JSS(fee_hooks_feeunits);    // out: Fee rpc call
 JSS(fee_level);             // out: AccountInfo
 JSS(fee_mult_max);          // in: TransactionSign
 JSS(fee_ref);               // out: NetworkOPs
@@ -290,6 +313,7 @@ JSS(high);                  // out: BookChanges
 JSS(highest_sequence);      // out: AccountInfo
 JSS(highest_ticket);        // out: AccountInfo
 JSS(historical_perminute);  // historical_perminute.
+JSS(hook_hash);             // in: LedgerEntry
 JSS(hostid);                // out: NetworkOPs
 JSS(hotwallet);             // in: GatewayBalances
 JSS(id);                    // websocket.
@@ -368,6 +392,8 @@ JSS(load_fee);                    // out: LoadFeeTrackImp, NetworkOPs
 JSS(local);                       // out: resource/Logic.h
 JSS(local_txs);                   // out: GetCounts
 JSS(local_static_keys);           // out: ValidatorList
+JSS(locked_balance);              // out: AccountLines
+JSS(lock_count);                  // out: AccountLines
 JSS(low);                         // out: BookChanges
 JSS(locked_balance);              // out: AccountLines
 JSS(lock_count);                  // out: AccountLines
@@ -398,12 +424,19 @@ JSS(metadata);  // out: TransactionEntry
 JSS(method);    // RPC
 JSS(methods);
 JSS(metrics);                    // out: Peers
+JSS(Memo);                       // Field
+JSS(Memos);                      // Field
+JSS(MemoFormat);                 // Field
+JSS(MemoData);                   // Field
+JSS(MemoType);                   // Field
 JSS(min_count);                  // in: GetCounts
 JSS(min_ledger);                 // in: LedgerCleaner
 JSS(minimum_fee);                // out: TxQ
 JSS(minimum_level);              // out: TxQ
 JSS(missingCommand);             // error
 JSS(name);                       // out: AmendmentTableImpl, PeerImp
+JSS(namespace_entries);          // out: AccountNamespace
+JSS(namespace_id);               // in/out: AccountNamespace
 JSS(needed_state_hashes);        // out: InboundLedger
 JSS(needed_transaction_hashes);  // out: InboundLedger
 JSS(network_id);                 // out: NetworkOPs

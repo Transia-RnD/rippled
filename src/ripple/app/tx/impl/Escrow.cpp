@@ -34,6 +34,8 @@
 #include <ripple/protocol/TxFlags.h>
 #include <ripple/protocol/digest.h>
 #include <ripple/protocol/st.h>
+#include <ripple/protocol/Rate.h>
+
 
 // During an EscrowFinish, the transaction must specify both
 // a condition and a fulfillment. We track whether that
@@ -94,8 +96,8 @@ after(NetClock::time_point now, std::uint32_t mark)
 TxConsequences
 EscrowCreate::makeTxConsequences(PreflightContext const& ctx)
 {
-    return TxConsequences{
-        ctx.tx, isXRP(ctx.tx[sfAmount]) ? ctx.tx[sfAmount].xrp() : beast::zero};
+    return TxConsequences{ctx.tx,
+        isXRP(ctx.tx[sfAmount]) ? ctx.tx[sfAmount].xrp() : beast::zero};
 }
 
 NotTEC
@@ -118,6 +120,13 @@ EscrowCreate::preflight(PreflightContext const& ctx)
 
         if (isFakeXRP(amount))
             return temBAD_CURRENCY;
+
+        if (ctx.tx[sfAccount] == amount.getIssuer())
+        {
+            JLOG(ctx.j.trace())
+                << "Malformed transaction: Cannot escrow own tokens to self.";
+            return temBAD_SRC_ACCOUNT;
+        }
     }
 
     if (ctx.tx[sfAmount] <= beast::zero)
@@ -171,6 +180,7 @@ EscrowCreate::preflight(PreflightContext const& ctx)
 TER
 EscrowCreate::doApply()
 {
+
     auto const closeTime = ctx_.view().info().parentCloseTime;
 
     // Prior to fix1571, the cancel and finish times could be greater
@@ -208,7 +218,18 @@ EscrowCreate::doApply()
     auto const account = ctx_.tx[sfAccount];
     auto const sle = ctx_.view().peek(keylet::account(account));
     if (!sle)
-        return tefINTERNAL;
+        return temDISABLED;
+
+    STAmount const amount {ctx_.tx[sfAmount]};
+
+    std::shared_ptr<SLE> sleLine;
+
+    auto const balance = STAmount((*sle)[sfBalance]).xrp();
+    auto const reserve =
+        ctx_.view().fees().accountReserve((*sle)[sfOwnerCount] + 1);
+
+    if (balance < reserve)
+        return tecINSUFFICIENT_RESERVE;
 
     STAmount const amount{ctx_.tx[sfAmount]};
 
@@ -448,7 +469,21 @@ EscrowFinish::calculateBaseFee(ReadView const& view, STTx const& tx)
 TER
 EscrowFinish::doApply()
 {
-    auto const k = keylet::escrow(ctx_.tx[sfOwner], ctx_.tx[sfOfferSequence]);
+    bool hooksEnabled = view().rules().enabled(featureHooks);
+    
+    if (!hooksEnabled && ctx_.tx.isFieldPresent(sfEscrowID))
+        return temDISABLED;
+    
+    std::optional<uint256> escrowID = ctx_.tx[~sfEscrowID];
+
+    if (escrowID && ctx_.tx[sfOfferSequence] != 0)
+        return temMALFORMED;
+
+    Keylet k =        
+        escrowID
+        ? Keylet(ltESCROW, *escrowID)
+        : keylet::escrow(ctx_.tx[sfOwner], ctx_.tx[sfOfferSequence]);
+
     auto const slep = ctx_.view().peek(k);
     if (!slep)
         return tecNO_TARGET;
@@ -677,7 +712,21 @@ EscrowCancel::preflight(PreflightContext const& ctx)
 TER
 EscrowCancel::doApply()
 {
-    auto const k = keylet::escrow(ctx_.tx[sfOwner], ctx_.tx[sfOfferSequence]);
+    bool hooksEnabled = view().rules().enabled(featureHooks);
+    
+    if (!hooksEnabled && ctx_.tx.isFieldPresent(sfEscrowID))
+        return temDISABLED;
+    
+    std::optional<uint256> escrowID = ctx_.tx[~sfEscrowID];
+
+    if (escrowID && ctx_.tx[sfOfferSequence] != 0)
+        return temMALFORMED;
+
+    Keylet k =        
+        escrowID
+        ? Keylet(ltESCROW, *escrowID)
+        : keylet::escrow(ctx_.tx[sfOwner], ctx_.tx[sfOfferSequence]);
+    
     auto const slep = ctx_.view().peek(k);
     if (!slep)
         return tecNO_TARGET;

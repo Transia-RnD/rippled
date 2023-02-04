@@ -61,6 +61,10 @@ enum TELcodes : TERUnderlyingType {
     telCAN_NOT_QUEUE_BLOCKED,
     telCAN_NOT_QUEUE_FEE,
     telCAN_NOT_QUEUE_FULL,
+    telWRONG_NETWORK,
+    telREQUIRES_NETWORK_ID,
+    telNETWORK_ID_MAKES_TX_NON_CANONICAL,
+    telNON_LOCAL_EMITTED_TXN
 };
 
 //------------------------------------------------------------------------------
@@ -114,6 +118,8 @@ enum TEMcodes : TERUnderlyingType {
     temINVALID_ACCOUNT_ID,
     temCANNOT_PREAUTH_SELF,
     temINVALID_COUNT,
+    temHOOK_DATA_TOO_LARGE,
+    temHOOK_REJECTED,
 
     temUNCERTAIN,  // An internal intermediate result; should never be returned.
     temUNKNOWN,    // An internal intermediate result; should never be returned.
@@ -202,6 +208,7 @@ enum TERcodes : TERUnderlyingType {
     terNO_RIPPLE,    // Rippling not allowed
     terQUEUED,       // Transaction is being held in TxQ until fee drops
     terPRE_TICKET,   // Ticket is not yet in ledger but might be on its way
+    terNO_HOOK       // Transaction requires a non-existent hook definition (referenced by sfHookHash)
 };
 
 //------------------------------------------------------------------------------
@@ -280,7 +287,7 @@ enum TECcodes : TERUnderlyingType {
     tecKILLED = 150,
     tecHAS_OBLIGATIONS = 151,
     tecTOO_SOON = 152,
-    tecHOOK_ERROR [[maybe_unused]] = 153,
+    tecHOOK_REJECTED = 153,
     tecMAX_SEQUENCE_REACHED = 154,
     tecNO_SUITABLE_NFTOKEN_PAGE = 155,
     tecNFTOKEN_BUY_SELL_MISMATCH = 156,
@@ -290,6 +297,7 @@ enum TECcodes : TERUnderlyingType {
     tecOBJECT_NOT_FOUND = 160,
     tecINSUFFICIENT_PAYMENT = 161,
     tecPRECISION_LOSS = 162,
+    tecREQUIRES_FLAG = 163,
 };
 
 //------------------------------------------------------------------------------
@@ -337,9 +345,9 @@ TERtoInt(TECcodes v)
 template <template <typename> class Trait>
 class TERSubset
 {
+public:
     TERUnderlyingType code_;
 
-public:
     // Constructors
     constexpr TERSubset() : code_(tesSUCCESS)
     {

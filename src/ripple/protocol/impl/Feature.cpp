@@ -442,9 +442,11 @@ REGISTER_FEATURE(FlowSortStrands,               Supported::yes, DefaultVote::yes
 REGISTER_FIX    (fixSTAmountCanonicalize,       Supported::yes, DefaultVote::yes);
 REGISTER_FIX    (fixRmSmallIncreasedQOffers,    Supported::yes, DefaultVote::yes);
 REGISTER_FEATURE(CheckCashMakesTrustLine,       Supported::yes, DefaultVote::no);
+REGISTER_FEATURE(Hooks,                         Supported::yes, DefaultVote::no);
 REGISTER_FEATURE(NonFungibleTokensV1,           Supported::yes, DefaultVote::no);
 REGISTER_FEATURE(ExpandedSignerList,            Supported::yes, DefaultVote::no);
 REGISTER_FIX    (fixNFTokenDirV1,               Supported::yes, DefaultVote::no);
+REGISTER_FEATURE(PaychanAndEscrowForTokens,     Supported::yes, DefaultVote::no);
 REGISTER_FIX    (fixNFTokenNegOffer,            Supported::yes, DefaultVote::no);
 REGISTER_FEATURE(NonFungibleTokensV1_1,         Supported::yes, DefaultVote::no);
 REGISTER_FIX    (fixTrustLinesToSelf,           Supported::yes, DefaultVote::no);

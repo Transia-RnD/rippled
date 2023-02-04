@@ -354,6 +354,7 @@ extern SF_UINT16 const sfHookExecutionIndex;
 extern SF_UINT16 const sfHookApiVersion;
 
 // 32-bit integers (common)
+extern SF_UINT32 const sfNetworkID;
 extern SF_UINT32 const sfFlags;
 extern SF_UINT32 const sfSourceTag;
 extern SF_UINT32 const sfSequence;
@@ -414,8 +415,8 @@ extern SF_UINT64 const sfHighNode;
 extern SF_UINT64 const sfDestinationNode;
 extern SF_UINT64 const sfCookie;
 extern SF_UINT64 const sfServerVersion;
-extern SF_UINT64 const sfNFTokenOfferNode;
 extern SF_UINT64 const sfEmitBurden;
+extern SF_UINT64 const sfNFTokenOfferNode;
 
 // 64-bit integers (uncommon)
 extern SF_UINT64 const sfHookOn;
@@ -465,6 +466,8 @@ extern SF_UINT256 const sfHookStateKey;
 extern SF_UINT256 const sfHookHash;
 extern SF_UINT256 const sfHookNamespace;
 extern SF_UINT256 const sfHookSetTxnID;
+extern SF_UINT256 const sfOfferID;
+extern SF_UINT256 const sfEscrowID;
 
 // currency amount (common)
 extern SF_AMOUNT const sfAmount;
@@ -484,6 +487,7 @@ extern SF_AMOUNT const sfMinimumOffer;
 extern SF_AMOUNT const sfRippleEscrow;
 extern SF_AMOUNT const sfDeliveredAmount;
 extern SF_AMOUNT const sfNFTokenBrokerFee;
+extern SF_AMOUNT const sfHookCallbackFee;
 
 // variable length (common)
 extern SF_VL const sfPublicKey;
@@ -512,6 +516,7 @@ extern SF_VL const sfHookStateData;
 extern SF_VL const sfHookReturnString;
 extern SF_VL const sfHookParameterName;
 extern SF_VL const sfHookParameterValue;
+extern SF_VL const sfBlob;
 
 // account
 extern SF_ACCOUNT const sfAccount;
@@ -526,6 +531,7 @@ extern SF_ACCOUNT const sfEmitCallback;
 
 // account (uncommon)
 extern SF_ACCOUNT const sfHookAccount;
+extern SF_ACCOUNT const sfNFTokenMinter;
 
 // path set
 extern SField const sfPaths;
@@ -535,6 +541,7 @@ extern SF_VECTOR256 const sfIndexes;
 extern SF_VECTOR256 const sfHashes;
 extern SF_VECTOR256 const sfAmendments;
 extern SF_VECTOR256 const sfNFTokenOffers;
+extern SF_VECTOR256 const sfHookNamespaces;
 
 // inner object
 // OBJECT/1 is reserved for end of object
@@ -578,7 +585,9 @@ extern SField const sfHooks;
 extern SField const sfMajorities;
 extern SField const sfDisabledValidators;
 extern SField const sfHookExecutions;
+extern SField const sfHookExecution;
 extern SField const sfHookParameters;
+extern SField const sfHooks;
 extern SField const sfHookGrants;
 
 //------------------------------------------------------------------------------

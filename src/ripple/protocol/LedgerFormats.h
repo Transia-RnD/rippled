@@ -205,13 +205,37 @@ enum LedgerEntryType : std::uint16_t
      */
     ltCONTRACT [[deprecated("This object type is not supported and should not be used.")]] = 0x0063,
 
-    /** A legacy, deprecated type.
 
+    /** A legacy, deprecated type.
         \deprecated **This object type is not supported and should not be used.**
                     Support for this type of object was never implemented.
                     No objects of this type were ever created.
      */
     ltGENERATOR_MAP [[deprecated("This object type is not supported and should not be used.")]]  = 0x0067,
+    
+    /** A ledger object which describes an installed hook on an account.
+        
+        \sa keylet::hook
+     */
+    ltHOOK ='H',
+
+    /** A ledger object which describes a stored value (from a k-v pair) for an installed hook.
+    
+        \sa keylet::hookState
+     */
+    ltHOOK_STATE ='v',
+
+    /** A reference-counted ledger object which stores the web assembly bytecode of a hook.
+
+       \sa keylet::hookDefinition
+     */
+    ltHOOK_DEFINITION = 'D',
+
+    /** A ledger object containing a hook-emitted transaction from a previous hook execution.
+
+      \sa keylet::emitted
+     */
+    ltEMITTED_TXN = 'E',
 };
 // clang-format off
 
@@ -231,7 +255,6 @@ enum LedgerSpecificFlags {
     lsfGlobalFreeze = 0x00400000,   // True, all assets frozen
     lsfDefaultRipple =
         0x00800000,               // True, trust lines allow rippling by default
-    lsfDepositAuth = 0x01000000,  // True, all deposits require authorization
 /*  // reserved for Hooks amendment
     lsfTshCollect = 0x02000000,     // True, allow TSH collect-calls to acc hooks
 */
@@ -243,6 +266,9 @@ enum LedgerSpecificFlags {
         0x10000000,               // True, reject new paychans
     lsfDisallowIncomingTrustline =
         0x20000000,               // True, reject new trustlines (only if no issued assets)
+        0x00800000,                 // True, trust lines allow rippling by default
+    lsfDepositAuth = 0x01000000,    // True, all deposits require authorization
+    lsfTshCollect = 0x02000000,     // True, allow TSH collect-calls to acc hooks
 
     // ltOFFER
     lsfPassive = 0x00010000,
@@ -264,6 +290,7 @@ enum LedgerSpecificFlags {
     // ltDIR_NODE
     lsfNFTokenBuyOffers = 0x00000001,
     lsfNFTokenSellOffers = 0x00000002,
+    lsfEmittedDir = 0x00000004,
 
     // ltNFTOKEN_OFFER
     lsfSellNFToken = 0x00000001,

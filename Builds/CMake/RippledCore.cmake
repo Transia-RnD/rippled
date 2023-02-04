@@ -137,6 +137,9 @@ target_link_libraries (xrpl_core
     Ripple::syslibs
     secp256k1::secp256k1
     ed25519::ed25519
+    NIH::secp256k1
+    NIH::ed25519-donna
+    NIH::WasmEdge
     date::date
     Ripple::opts)
 #[=================================[
@@ -438,6 +441,8 @@ target_sources (rippled PRIVATE
   src/ripple/app/tx/impl/Payment.cpp
   src/ripple/app/tx/impl/SetAccount.cpp
   src/ripple/app/tx/impl/SetRegularKey.cpp
+  src/ripple/app/tx/impl/SetHook.cpp
+  src/ripple/app/tx/impl/Invoke.cpp
   src/ripple/app/tx/impl/SetSignerList.cpp
   src/ripple/app/tx/impl/SetTrust.cpp
   src/ripple/app/tx/impl/SignerEntries.cpp
@@ -445,6 +450,7 @@ target_sources (rippled PRIVATE
   src/ripple/app/tx/impl/Transactor.cpp
   src/ripple/app/tx/impl/apply.cpp
   src/ripple/app/tx/impl/applySteps.cpp
+  src/ripple/app/hook/impl/applyHook.cpp
   src/ripple/app/tx/impl/details/NFTokenUtils.cpp
   #[===============================[
      main sources:
@@ -579,6 +585,7 @@ target_sources (rippled PRIVATE
   src/ripple/rpc/handlers/AccountLines.cpp
   src/ripple/rpc/handlers/AccountObjects.cpp
   src/ripple/rpc/handlers/AccountOffers.cpp
+  src/ripple/rpc/handlers/AccountNamespace.cpp
   src/ripple/rpc/handlers/AccountTx.cpp
   src/ripple/rpc/handlers/BlackList.cpp
   src/ripple/rpc/handlers/BookOffers.cpp
@@ -700,6 +707,7 @@ if (tests)
     src/test/app/LoadFeeTrack_test.cpp
     src/test/app/Manifest_test.cpp
     src/test/app/MultiSign_test.cpp
+    src/test/app/NetworkID_test.cpp
     src/test/app/NFToken_test.cpp
     src/test/app/NFTokenBurn_test.cpp
     src/test/app/NFTokenDir_test.cpp
@@ -726,6 +734,7 @@ if (tests)
     src/test/app/ValidatorKeys_test.cpp
     src/test/app/ValidatorList_test.cpp
     src/test/app/ValidatorSite_test.cpp
+    src/test/app/SetHook_test.cpp
     src/test/app/tx/apply_test.cpp
     #[===============================[
        test sources:
@@ -825,6 +834,7 @@ if (tests)
     src/test/jtx/impl/JSONRPCClient.cpp
     src/test/jtx/impl/ManualTimeKeeper.cpp
     src/test/jtx/impl/WSClient.cpp
+    src/test/jtx/impl/hook.cpp
     src/test/jtx/impl/acctdelete.cpp
     src/test/jtx/impl/account_txn_id.cpp
     src/test/jtx/impl/amount.cpp

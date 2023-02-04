@@ -1,3 +1,7 @@
+# Hooks Public Testnet + Documentation
+
+Please see [Hooks Testnet V2](https://hooks-testnet-v2.xrpl-labs.com/) for faucet + documentation + explorer + builder.
+
 # The XRP Ledger
 
 The [XRP Ledger](https://xrpl.org/) is a decentralized cryptographic ledger powered by a network of peer-to-peer nodes. The XRP Ledger uses a novel Byzantine Fault Tolerant consensus algorithm to settle and record transactions in a secure distributed database without a central operator.

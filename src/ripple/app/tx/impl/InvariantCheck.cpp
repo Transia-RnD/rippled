@@ -295,7 +295,8 @@ NoZeroEscrow::finalize(
     beast::Journal const& j)
 {
     // bypass this invariant check for IOU escrows
-    if (bad_ && rv.rules().enabled(featurePaychanAndEscrowForTokens) &&
+    if (bad_ &&
+        rv.rules().enabled(featurePaychanAndEscrowForTokens) &&
         txn.isFieldPresent(sfTransactionType))
     {
         uint16_t tt = txn.getFieldU16(sfTransactionType);
@@ -386,6 +387,10 @@ LedgerEntryTypesMatch::visitEntry(
             case ltCHECK:
             case ltDEPOSIT_PREAUTH:
             case ltNEGATIVE_UNL:
+            case ltHOOK:
+            case ltHOOK_DEFINITION:
+            case ltHOOK_STATE:
+            case ltEMITTED_TXN:
             case ltNFTOKEN_PAGE:
             case ltNFTOKEN_OFFER:
                 break;

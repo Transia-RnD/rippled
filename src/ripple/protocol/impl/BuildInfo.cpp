@@ -35,6 +35,7 @@ namespace BuildInfo {
 // clang-format off
 char const* const versionString = "1.10.0-rc1"
 // clang-format on
+"-hooks"
 
 #if defined(DEBUG) || defined(SANITIZER)
     "+"
