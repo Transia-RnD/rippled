@@ -253,11 +253,8 @@ enum LedgerSpecificFlags {
     lsfDisableMaster = 0x00100000,  // True, force regular key
     lsfNoFreeze = 0x00200000,       // True, cannot freeze ripple states
     lsfGlobalFreeze = 0x00400000,   // True, all assets frozen
-    lsfDefaultRipple =
-        0x00800000,               // True, trust lines allow rippling by default
-/*  // reserved for Hooks amendment
-    lsfTshCollect = 0x02000000,     // True, allow TSH collect-calls to acc hooks
-*/
+    lsfDefaultRipple = 0x00800000,  // True, trust lines allow rippling by default
+    lsfDepositAuth = 0x01000000,  // True, all deposits require authorization
     lsfDisallowIncomingNFTOffer =
         0x04000000,               // True, reject new incoming NFT offers
     lsfDisallowIncomingCheck =
@@ -266,8 +263,6 @@ enum LedgerSpecificFlags {
         0x10000000,               // True, reject new paychans
     lsfDisallowIncomingTrustline =
         0x20000000,               // True, reject new trustlines (only if no issued assets)
-        0x00800000,                 // True, trust lines allow rippling by default
-    lsfDepositAuth = 0x01000000,    // True, all deposits require authorization
     lsfTshCollect = 0x02000000,     // True, allow TSH collect-calls to acc hooks
 
     // ltOFFER
