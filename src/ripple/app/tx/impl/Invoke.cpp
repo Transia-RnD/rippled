@@ -18,10 +18,13 @@
 //==============================================================================
 
 #include <ripple/app/tx/impl/Invoke.h>
-#include <ripple/basics/Log.h>
 #include <ripple/ledger/View.h>
+#include <ripple/app/ledger/Ledger.h>
+#include <ripple/basics/Log.h>
 #include <ripple/protocol/Feature.h>
 #include <ripple/protocol/Indexes.h>
+#include <ripple/protocol/TxFlags.h>
+#include <ripple/protocol/st.h>
 
 namespace ripple {
 
