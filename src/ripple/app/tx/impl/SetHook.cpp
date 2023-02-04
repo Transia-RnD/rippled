@@ -536,8 +536,8 @@ SetHook::calculateBaseFee(ReadView const& view, STTx const& tx)
             continue;
 
         extraFee += FeeUnit64{
-            hook::computeCreationFee(
-                hookSetObj->getFieldVL(sfCreateCode).size())};
+            static_cast<uint64_t>(hook::computeCreationFee(
+                hookSetObj->getFieldVL(sfCreateCode).size()))};
 
         // parameters are billed at the same rate as code bytes
         if (hookSetObj->isFieldPresent(sfHookParameters))
