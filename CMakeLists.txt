@@ -83,6 +83,7 @@ find_package(LibArchive REQUIRED)
 find_package(SOCI REQUIRED)
 find_package(SQLite3 REQUIRED)
 find_package(Snappy REQUIRED)
+find_package(WasmEdge REQUIRED)
 
 option(rocksdb "Enable RocksDB" ON)
 if(rocksdb)
@@ -110,6 +111,7 @@ target_link_libraries(ripple_libs INTERFACE
   secp256k1::secp256k1
   soci::soci
   SQLite::SQLite3
+  wasmedge::wasmedge
 )
 
 if(reporting)
@@ -120,9 +122,6 @@ if(reporting)
     PostgreSQL::PostgreSQL
   )
 endif()
-include(deps/cassandra)
-include(deps/Postgres)
-include(deps/WasmEdge)
 
 ###
 

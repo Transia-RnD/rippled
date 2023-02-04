@@ -36,6 +36,8 @@ class Xrpl(ConanFile):
         'soci/4.0.3',
         'sqlite3/3.38.0',
         'zlib/1.2.12',
+        'llvm-core/13.0.0',
+        'wasmedge/0.11.2'
     ]
 
     default_options = {
