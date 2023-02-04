@@ -20,7 +20,7 @@
 #include <ripple/app/ledger/LedgerMaster.h>
 #include <ripple/protocol/TxFlags.h>
 #include <ripple/protocol/jss.h>
-#include <test/app/SetHook_wasm.h>
+// #include <test/app/SetHook_wasm.h>
 #include <test/jtx.h>
 #include <test/jtx/hook.h>
 #include <unordered_map>
