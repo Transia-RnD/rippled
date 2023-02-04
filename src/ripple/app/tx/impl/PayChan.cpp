@@ -297,55 +297,6 @@ PayChanCreate::preclaim(PreclaimContext const& ctx)
         }
     }
 
-    // Check reserve and funds availability
-    if (isXRP(amount) && balance < reserve + amount)
-    {
-        return tecUNFUNDED;
-    }
-    else if (!isXRP(amount)) {
-        if (!ctx.view.rules().enabled(featurePaychanAndEscrowForTokens))
-            return temDISABLED;
-
-        // check for any possible bars to a channel existing
-        // between these accounts for this asset
-        {
-            TER result = 
-                trustTransferAllowed(
-                    ctx.view,
-                    {account, dst},
-                    amount.issue(),
-                    ctx.j);
-            JLOG(ctx.j.trace())
-                << "PayChanCreate::preclaim trustTransferAllowed result="
-                << result;
-
-            if (!isTesSuccess(result))
-                return result;
-        }
-
-        // check if the amount can be locked
-        {
-            auto sleLine = 
-                ctx.view.read(
-                    keylet::line(account, amount.getIssuer(), amount.getCurrency()));
-            TER result = 
-                trustAdjustLockedBalance(
-                    ctx.view,
-                    sleLine,
-                    amount,
-                    1,
-                    ctx.j,
-                    DryRun);
-            
-            JLOG(ctx.j.trace())
-                << "PayChanCreate::preclaim trustAdjustLockedBalance(dry) result="
-                << result;
-
-            if (!isTesSuccess(result))
-                return result;
-        }
-    }
-
     {
         // Check destination account
         auto const sled = ctx.view.read(keylet::account(dst));
@@ -390,9 +341,8 @@ PayChanCreate::doApply()
     //
     // Note that we we use the value from the sequence or ticket as the
     // payChan sequence.  For more explanation see comments in SeqProxy.h.
-
-    Keylet const payChanKeylet = keylet::payChan(account, dst, seqID(ctx_));
-
+    Keylet const payChanKeylet =
+        keylet::payChan(account, dst, ctx_.tx.getSeqProxy().value());
     auto const slep = std::make_shared<SLE>(payChanKeylet);
 
     // Funds held in this channel
@@ -510,38 +460,6 @@ PayChanFund::doApply()
     auto const slep = ctx_.view().peek(k);
     if (!slep)
         return tecNO_ENTRY;
-    
-    STAmount const amount {ctx_.tx[sfAmount]};
-
-    std::shared_ptr<SLE> sleLine;   // if XRP or featurePaychanAndEscrowForTokens
-                                    // not enabled this remains null
-
-    // if this is a Fund operation on an IOU then perform a dry run here
-    if (!isXRP(amount) &&
-            ctx_.view().rules().enabled(featurePaychanAndEscrowForTokens))
-    {
-        sleLine = ctx_.view().peek(
-            keylet::line(
-                (*slep)[sfAccount], 
-                amount.getIssuer(),
-                amount.getCurrency()));
-
-        TER result =
-            trustAdjustLockedBalance(
-                ctx_.view(),
-                sleLine,
-                amount,
-                1,
-                ctx_.journal,
-                DryRun);
-
-        JLOG(ctx_.journal.trace())
-            << "PayChanFund::doApply trustAdjustLockedBalance(dry) result="
-            << result;
-
-        if (!isTesSuccess(result))
-            return result;
-    }
 
     STAmount const amount{ctx_.tx[sfAmount]};
 
