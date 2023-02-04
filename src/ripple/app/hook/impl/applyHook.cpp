@@ -1,4 +1,5 @@
 #include <ripple/app/hook/applyHook.h>
+#include <ripple/app/tx/impl/ApplyContext.h>
 #include <ripple/basics/Log.h>
 #include <ripple/basics/Slice.h>
 #include <ripple/app/misc/Transaction.h>
@@ -17,6 +18,10 @@
 #include <wasmedge/wasmedge.h>
 #include <ripple/protocol/tokens.h>
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <ripple/app/tx/impl/details/NFTokenUtils.h>
+#include <ripple/protocol/TxFlags.h>
+#include <ripple/app/tx/impl/Transactor.h>
+#include <ripple/app/misc/HashRouter.h>
 
 using namespace ripple;
 
@@ -32,8 +37,8 @@ namespace hook
         if (!tx.isFieldPresent(sfAccount))
             return {};
 
-        std::optional<AccountID> destAcc = tx.at(~sfDestination);
-        std::optional<AccountID> otxnAcc = tx.at(~sfAccount);
+        std::optional<AccountID> destAcc = tx.getAccountID(sfDestination);
+        std::optional<AccountID> otxnAcc = tx.getAccountID(sfAccount);
 
         if (!otxnAcc)
             return {};
