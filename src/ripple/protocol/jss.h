@@ -108,6 +108,7 @@ JSS(TxnSignature);           // field.
 JSS(TransactionType);        // in: TransactionSign.
 JSS(TransferRate);           // in: TransferRate.
 JSS(TrustSet);               // transaction type.
+JSS(URIToken);               // ledger type.
 JSS(aborted);                // out: InboundLedger
 JSS(accepted);               // out: LedgerToJson, OwnerInfo, SubmitTransaction
 JSS(account);                // in/out: many
@@ -621,7 +622,7 @@ JSS(unl);                     // out: UnlList
 JSS(unlimited);               // out: Connection.h
 JSS(uptime);                  // out: GetCounts
 JSS(uri);                     // out: ValidatorSites
-JSS(URIToken);                // LedgerEntry
+JSS(uri_token);               // LedgerEntry
 JSS(url);                     // in/out: Subscribe, Unsubscribe
 JSS(url_password);            // in: Subscribe
 JSS(url_username);            // in: Subscribe
