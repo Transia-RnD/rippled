@@ -85,8 +85,7 @@ struct URIToken_test : public beast::unit_test::suite
         std::cout << name
                   << " BALANCE USD: " << env.balance(account, iou.issue())
                   << "\n";
-        std::cout << name
-                  << " BALANCE LINE: " << lineBalance(env, account, iou)
+        std::cout << name << " BALANCE LINE: " << lineBalance(env, account, iou)
                   << "\n";
     }
 
@@ -105,11 +104,11 @@ struct URIToken_test : public beast::unit_test::suite
     //     if (!slep)
     //         return;
 
-
     //     BEAST_EXPECT(slep->getAccountID(sfOwner) == owner);
     //     BEAST_EXPECT(slep->getAccountID(sfIssuer) == issuer);
     //     BEAST_EXPECT(slep->getFieldVL(sfURI) == uri);
-    //     // std::cout << name << " sfURI: " << slep->getFieldVL(sfURI) << "\n";
+    //     // std::cout << name << " sfURI: " << slep->getFieldVL(sfURI) <<
+    //     "\n";
     //     // std::cout << name << " sfDigest: " << (*slep)[sfDigest] << "\n";
     //     // BEAST_EXPECT(slep->getFieldH256(sfDigest) == digest);
     //     if (slep->getFieldAmount(sfAmount))
@@ -173,7 +172,8 @@ struct URIToken_test : public beast::unit_test::suite
         jtx::Account const& account,
         jtx::IOU const& iou)
     {
-        auto const sle = env.le(keylet::line(account, iou.account, iou.currency));
+        auto const sle =
+            env.le(keylet::line(account, iou.account, iou.currency));
         if (sle && sle->isFieldPresent(sfBalance))
             return (*sle)[sfBalance];
         return STAmount(iou, 0);
@@ -254,7 +254,8 @@ struct URIToken_test : public beast::unit_test::suite
 
         // for (bool const withURIToken : {false, true})
         // {
-        //     // If the URIToken amendment is not enabled, you should not be able
+        //     // If the URIToken amendment is not enabled, you should not be
+        //     able
         //     // to mint, burn, buy, sell or clear uri tokens.
         //     auto const amend = withURIToken
         //         ? features
@@ -266,7 +267,8 @@ struct URIToken_test : public beast::unit_test::suite
         //     std::string const uri(maxTokenURILength, '?');
         //     std::string const id{strHex(tokenid(alice, uri))};
 
-        //     auto const txResult = withURIToken ? ter(tesSUCCESS) : ter(temDISABLED);
+        //     auto const txResult = withURIToken ? ter(tesSUCCESS) :
+        //     ter(temDISABLED);
 
         //     // MINT
         //     env(mint(alice, uri), txResult);
@@ -497,7 +499,7 @@ struct URIToken_test : public beast::unit_test::suite
         std::string const badid{strHex(tokenid(alice, baduri))};
         env(burn(alice, badid), txflags(tfBurn), ter(tecNO_ENTRY));
         env.close();
-        
+
         // todo: delete account for this
         // tecNO_ENTRY - no owner exists
         // env(burn(dave, id), txflags(tfBurn), ter(tecNO_ENTRY));
@@ -564,7 +566,7 @@ struct URIToken_test : public beast::unit_test::suite
         // preclaim
         // tecNO_PERMISSION - invalid account
         env(sell(bob, id, USD(10)), txflags(tfSell), ter(tecNO_PERMISSION));
-        
+
         // todo: delete account for this
         // tecNO_ISSUER - invalid issuer
         // env(sell(alice, id, NUSD(10)), txflags(tfSell), ter(tecNO_ISSUER));
@@ -1486,7 +1488,9 @@ struct URIToken_test : public beast::unit_test::suite
         BEAST_EXPECT(uritokenExists(*env.current(), tokenid(alice, uri)));
 
         // A transaction that generates a tec still consumes its ticket.
-        env(buy(bob, id, USD(10)), ticket::use(bobTicketSeq++), ter(tecINSUFFICIENT_FUNDS));
+        env(buy(bob, id, USD(10)),
+            ticket::use(bobTicketSeq++),
+            ter(tecINSUFFICIENT_FUNDS));
         env.require(tickets(alice, env.seq(alice) - (2 * aliceTicketSeq)));
 
         env(buy(bob, id, USD(10)), ticket::use(bobTicketSeq++));
@@ -1776,7 +1780,6 @@ struct URIToken_test : public beast::unit_test::suite
             env.close();
             BEAST_EXPECT(lineBalance(env, src, USD) == preSrc + delta);
             BEAST_EXPECT(lineBalance(env, dst, USD) == preDst - delta);
-
         }
         // dst < src
         // dst < issuer
@@ -1941,7 +1944,7 @@ struct URIToken_test : public beast::unit_test::suite
             env.close();
             env(fset(gw, asfGlobalFreeze));
             env.close();
-            
+
             // setup mint
             std::string const uri(maxTokenURILength, '?');
             std::string const id{strHex(tokenid(alice, uri))};
@@ -1952,7 +1955,7 @@ struct URIToken_test : public beast::unit_test::suite
             // bob cannot buy
             env(buy(bob, id, USD(10)), ter(tecINSUFFICIENT_FUNDS));
             env.close();
-            
+
             // clear global freeze
             env(fclear(gw, asfGlobalFreeze));
             env.close();
