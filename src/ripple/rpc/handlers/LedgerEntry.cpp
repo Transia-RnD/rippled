@@ -263,8 +263,7 @@ doLedgerEntry(RPC::JsonContext& context)
     {
         expectedType = ltURI_TOKEN;
 
-        if (!uNodeIndex.parseHex(
-                context.params[jss::uri_token].asString()))
+        if (!uNodeIndex.parseHex(context.params[jss::uri_token].asString()))
         {
             uNodeIndex = beast::zero;
             jvResult[jss::error] = "malformedRequest";
