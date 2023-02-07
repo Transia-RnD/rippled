@@ -252,61 +252,7 @@ struct URIToken_test : public beast::unit_test::suite
         auto const alice = Account("alice");
         auto const bob = Account("bob");
 
-        // for (bool const withURIToken : {false, true})
-        // {
-        //     // If the URIToken amendment is not enabled, you should not be
-        //     able
-        //     // to mint, burn, buy, sell or clear uri tokens.
-        //     auto const amend = withURIToken
-        //         ? features
-        //         : features - featureURIToken;
-        //     Env env{*this, amend};
-
-        //     env.fund(XRP(1000), alice, bob);
-
-        //     std::string const uri(maxTokenURILength, '?');
-        //     std::string const id{strHex(tokenid(alice, uri))};
-
-        //     auto const txResult = withURIToken ? ter(tesSUCCESS) :
-        //     ter(temDISABLED);
-
-        //     // MINT
-        //     env(mint(alice, uri), txResult);
-        //     env.close();
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
-
-        //     // SELL
-        //     env(sell(alice, id, XRP(10)), txflags(tfSell), txResult);
-        //     env.close();
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
-
-        //     // BUY
-        //     env(buy(bob, id, XRP(10)), txResult);
-        //     env.close();
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
-
-        //     // SELL
-        //     env(sell(bob, id, XRP(10)), txflags(tfSell), txResult);
-        //     env.close();
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
-
-        //     // CLEAR
-        //     env(clear(bob, id), txResult);
-        //     env.close();
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
-
-        //     // BURN
-        //     env(burn(bob, id), txResult);
-        //     env.close();
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-        //     BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
-        // }
-
+        for (bool const withURIToken : {false, true})
         {
             // If the URIToken amendment is not enabled, you should not be able
             // to mint, burn, buy, sell or clear uri tokens.
@@ -324,83 +270,37 @@ struct URIToken_test : public beast::unit_test::suite
             auto const ownerDir = withURIToken ? 1 : 0;
 
             // MINT
-            env(mint(alice, uri), ter(temDISABLED));
+            env(mint(alice, uri), txResult);
             env.close();
-            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
+            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == ownerDir);
             BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
 
             // SELL
-            env(sell(alice, id, XRP(10)), txflags(tfSell), ter(temDISABLED));
+            env(sell(alice, id, XRP(10)), txflags(tfSell), txResult);
             env.close();
-            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
+            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == ownerDir);
             BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
 
             // BUY
-            env(buy(bob, id, XRP(10)), ter(temDISABLED));
+            env(buy(bob, id, XRP(10)), txResult);
             env.close();
             BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
+            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == ownerDir);
 
             // SELL
-            env(sell(bob, id, XRP(10)), txflags(tfSell), ter(temDISABLED));
+            env(sell(bob, id, XRP(10)), txflags(tfSell), txResult);
             env.close();
             BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
+            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == ownerDir);
 
             // CLEAR
-            env(clear(bob, id), ter(temDISABLED));
+            env(clear(bob, id), txResult);
             env.close();
             BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
+            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == ownerDir);
 
             // BURN
-            // env(burn(bob, id), ter(temDISABLED));
-            // env.close();
-            // BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-            // BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
-        }
-        {
-            // If the URIToken amendment is enabled, you should be able
-            // to mint, burn, buy, sell and clear uri tokens.
-            Env env{*this, features};
-
-            env.fund(XRP(1000), alice, bob);
-
-            std::string const uri(maxTokenURILength, '?');
-            std::string const id{strHex(tokenid(alice, uri))};
-
-            // MINT
-            env(mint(alice, uri));
-            env.close();
-            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 1);
-            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
-
-            // SELL
-            env(sell(alice, id, XRP(10)), txflags(tfSell));
-            env.close();
-            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 1);
-            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
-
-            // BUY
-            env(buy(bob, id, XRP(10)));
-            env.close();
-            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 1);
-
-            // SELL
-            env(sell(bob, id, XRP(10)), txflags(tfSell));
-            env.close();
-            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 1);
-
-            // CLEAR
-            env(clear(bob, id));
-            env.close();
-            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
-            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 1);
-
-            // BURN
-            env(burn(bob, id));
+            env(burn(bob, id), txflags(tfBurn), txResult);
             env.close();
             BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
             BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
@@ -2011,7 +1911,7 @@ struct URIToken_test : public beast::unit_test::suite
     void
     testWithFeats(FeatureBitset features)
     {
-        // testEnabled(features);
+        testEnabled(features);
         testMintInvalid(features);
         testBurnInvalid(features);
         testSellInvalid(features);
