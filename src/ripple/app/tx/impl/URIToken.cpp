@@ -231,7 +231,7 @@ URIToken::preclaim(PreclaimContext const& ctx)
             STAmount const purchaseAmount = ctx.tx[sfAmount];
 
             if (purchaseAmount.issue() != saleAmount->issue())
-                return tecNFTOKEN_BUY_SELL_MISMATCH;
+                return temBAD_CURRENCY;
 
             if (purchaseAmount < saleAmount)
                 return tecINSUFFICIENT_PAYMENT;
@@ -408,7 +408,7 @@ URIToken::doApply()
                 return tecNO_PERMISSION;
 
             if (purchaseAmount.issue() != saleAmount->issue())
-                return tecNFTOKEN_BUY_SELL_MISMATCH;
+                return temBAD_CURRENCY;
 
             std::optional<STAmount> initBuyerBal;
             std::optional<STAmount> initSellerBal;
@@ -441,6 +441,19 @@ URIToken::doApply()
                 // IOU sale
                 STAmount availableFunds{accountFunds(
                     view(), account_, purchaseAmount, fhZERO_IF_FROZEN, j)};
+
+                // check for any possible bars to a buy transaction
+                // between these accounts for this asset
+                {
+                    TER result = trustTransferAllowed(
+                        view(), {account_, *owner}, purchaseAmount.issue(), j);
+                    JLOG(j.trace())
+                        << "URIToken::doApply trustTransferAllowed result="
+                        << result;
+
+                    if (!isTesSuccess(result))
+                        return result;
+                }
 
                 if (purchaseAmount > availableFunds)
                     return tecINSUFFICIENT_FUNDS;
@@ -562,15 +575,17 @@ URIToken::doApply()
                 if (TER const ter = trustCreate(
                         view(),                         // payment sandbox
                         sellerLow,                      // is dest low?
-                        *issuer,                        // source
+                        purchaseAmount.getIssuer(),     // source
                         *owner,                         // destination
                         tlSeller->key,                  // ledger index
-                        sleOwner,                      // Account to add to
+                        sleOwner,                       // Account to add to
                         false,                          // authorize account
                         (sleOwner->getFlags() & lsfDefaultRipple) == 0,
                         false,                          // freeze trust line
                         *dstAmt,                        // initial balance zero
-                        Issue(purchaseAmount.getCurrency(), *owner),      // limit of zero
+                        Issue(
+                            purchaseAmount.getCurrency(), 
+                            *owner),                    // limit of zero
                         0,                              // quality in
                         0,                              // quality out
                         j);                             // journal
@@ -634,7 +649,7 @@ URIToken::doApply()
 
             // if a trustline was created then the ownercount stays the same on
             // the seller +1 TL -1 URIToken
-            if (!lineCreated)
+            if (!lineCreated && !isXRP(purchaseAmount))
                 adjustOwnerCount(view(), sleOwner, -1, j);
 
             // the buyer gets a new object
