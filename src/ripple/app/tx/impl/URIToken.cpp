@@ -29,56 +29,6 @@
 
 namespace ripple {
 
-/*
- * Mint:  URI populated only
- * Burn:  URITokenID populated, Blank but present URI
- * Buy:   URITokenID, Amount
- * Sell:  URITokenID, Amount, [Destination], flags=tfSell,
- * Clear: URITokenID only       (clear current sell offer)
- */
-
-inline URIOperation
-inferOperation(STTx const& tx)
-{
-    bool const hasDigest = tx.isFieldPresent(sfDigest);
-    bool const hasURI = tx.isFieldPresent(sfURI);
-    bool const hasID = tx.isFieldPresent(sfURITokenID);
-    bool const hasAmt = tx.isFieldPresent(sfAmount);
-    bool const hasDst = tx.isFieldPresent(sfDestination);
-
-    uint32_t const flags = tx.getFlags();
-    bool const hasBurnFlag = flags == tfBurn;
-    bool const hasSellFlag = flags == tfSell;
-    bool const hasBurnableFlag = flags == tfBurnable;
-    bool const blankFlags = flags == 0;
-
-    uint16_t combination = (hasDigest ? 0b100000000U : 0) +
-        (hasURI ? 0b010000000U : 0) + (hasBurnFlag ? 0b001000000U : 0) +
-        (hasID ? 0b000100000U : 0) + (hasAmt ? 0b000010000U : 0) +
-        (hasDst ? 0b000001000U : 0) + (hasSellFlag ? 0b000000100U : 0) +
-        (hasBurnableFlag ? 0b000000010U : 0) + (blankFlags ? 0b000000001U : 0);
-
-    switch (combination)
-    {
-        case 0b110000001U:
-        case 0b110000010U:
-        case 0b010000001U:
-        case 0b010000010U:
-            return URIOperation::Mint;
-        case 0b001100000U:
-            return URIOperation::Burn;
-        case 0b000110001U:
-            return URIOperation::Buy;
-        case 0b000110100U:
-        case 0b000111100U:
-            return URIOperation::Sell;
-        case 0b000100001U:
-            return URIOperation::Clear;
-        default:
-            return URIOperation::Invalid;
-    }
-}
-
 NotTEC
 URIToken::preflight(PreflightContext const& ctx)
 {
@@ -89,55 +39,72 @@ URIToken::preflight(PreflightContext const& ctx)
     if (!isTesSuccess(ret))
         return ret;
 
-    auto const op = inferOperation(ctx.tx);
-    if (op == URIOperation::Invalid)
-    {
-        JLOG(ctx.j.warn()) << "Malformed transaction. Check flags/fields, "
-                           << "documentation for how to specify "
-                              "Mint/Burn/Buy/Sell operations.";
-        return temMALFORMED;
-    }
 
-    JLOG(ctx.j.trace())
-        << "URIToken txnid=" << ctx.tx.getTransactionID()
-        << " inferred operation="
-        << (op == URIOperation::Invalid
-                ? "Invalid"
-                : (op == URIOperation::Mint
-                       ? "Mint"
-                       : (op == URIOperation::Burn
-                              ? "Burn"
-                              : (op == URIOperation::Buy
-                                     ? "Buy"
-                                     : (op == URIOperation::Sell
-                                            ? "Sell"
-                                            : (op == URIOperation::Clear
-                                                   ? "Clear"
-                                                   : "Unknown"))))))
-        << "\n";
+    uint32_t flags = ctx.tx.getFlags();
+    uint16_t tt = ctx.tx.getFieldU16(sfTransactionType);
 
-    if (op == URIOperation::Mint && ctx.tx.getFieldVL(sfURI).size() > 256)
+    switch (tt)
     {
-        JLOG(ctx.j.warn())
-            << "Malformed transaction. URI may not exceed 256 bytes.";
-        return temMALFORMED;
-    }
-
-    if (ctx.tx.isFieldPresent(sfAmount))
-    {
-        STAmount const amt = ctx.tx.getFieldAmount(sfAmount);
-        if (!isLegalNet(amt) || amt.signum() <= 0)
+        case ttURITOKEN_MINT:
         {
-            JLOG(ctx.j.warn()) << "Malformed transaction. Negative or invalid "
-                                  "amount specified.";
-            return temBAD_AMOUNT;
+            if (flags & tfURITokenMintMask)
+                return temINVALID_FLAG;
+
+            size_t len = ctx.tx.getFieldVL(sfURI).size();
+            if (len < 1 || len > 256)
+            {
+                JLOG(ctx.j.warn())
+                    << "Malformed transaction. URI must be at least 1 character and no more than 256 characters.";
+                return temMALFORMED;
+            }
+            break;
         }
 
-        if (badCurrency() == amt.getCurrency())
+        case ttURITOKEN_CANCEL_SELL_OFFER:
+        case ttURITOKEN_BURN:
         {
-            JLOG(ctx.j.warn()) << "Malformed transaction. Bad currency.";
-            return temBAD_CURRENCY;
+            if (flags & tfURITokenNonMintMask)
+                return temINVALID_FLAG;
+            break;
         }
+
+        case ttURITOKEN_BUY:
+        case ttURITOKEN_CREATE_SELL_OFFER:
+        {
+            if (flags & tfURITokenNonMintMask)
+                return temINVALID_FLAG;
+
+            auto amt = ctx.tx.getFieldAmount(sfAmount);
+
+            if (!isLegalNet(amt) || amt.signum() < 0)
+            {
+                JLOG(ctx.j.warn())
+                    << "Malformed transaction. Negative or invalid amount/currency specified.";
+                return temBAD_AMOUNT;
+            }
+
+            if (badCurrency() == amt.getCurrency())
+            {
+                JLOG(ctx.j.warn())
+                    << "Malformed transaction. Bad currency.";
+                    return temBAD_CURRENCY;
+            }
+            
+            if (tt == ttURITOKEN_BUY)
+                break;
+
+            if (amt == beast::zero && !ctx.tx.isFieldPresent(sfDestination))
+            {
+                JLOG(ctx.j.warn())
+                    << "Malformed transaction. "
+                    << "If no sell-to destination is specified then a non-zero price must be set.";
+                return temMALFORMED;
+            }
+            break;
+        }
+
+        default:
+            return tefINTERNAL;
     }
 
     return preflight2(ctx);
@@ -146,27 +113,21 @@ URIToken::preflight(PreflightContext const& ctx)
 TER
 URIToken::preclaim(PreclaimContext const& ctx)
 {
-    AccountID const acc = ctx.tx.getAccountID(sfAccount);
-    URIOperation op = inferOperation(ctx.tx);
 
     std::shared_ptr<SLE const> sleU;
-    if (ctx.tx.isFieldPresent(sfURITokenID))
-        sleU = ctx.view.read(
-            Keylet{ltURI_TOKEN, ctx.tx.getFieldH256(sfURITokenID)});
-
     uint32_t leFlags = sleU ? sleU->getFieldU32(sfFlags) : 0;
     std::optional<AccountID> issuer;
     std::optional<AccountID> owner;
     std::optional<STAmount> saleAmount;
     std::optional<AccountID> dest;
-
     std::shared_ptr<SLE const> sleOwner;
 
-    if (sleU)
+    if (ctx.tx.isFieldPresent(sfURITokenID))
     {
-        if (sleU->getFieldU16(sfLedgerEntryType) != ltURI_TOKEN)
+        sleU = ctx.view.read(Keylet {ltURI_TOKEN, ctx.tx.getFieldH256(sfURITokenID)});
+        if (!sleU)
             return tecNO_ENTRY;
-
+        
         owner = sleU->getAccountID(sfOwner);
         issuer = sleU->getAccountID(sfIssuer);
         if (sleU->isFieldPresent(sfAmount))
@@ -183,21 +144,24 @@ URIToken::preclaim(PreclaimContext const& ctx)
             return tecNO_ENTRY;
         }
     }
-    else if (op != URIOperation::Mint)
-        return tecNO_ENTRY;
 
-    switch (op)
+    
+    AccountID const acc = ctx.tx.getAccountID(sfAccount);
+    uint16_t tt = ctx.tx.getFieldU16(sfTransactionType);
+
+    switch (tt)
     {
-        case URIOperation::Mint: {
+        case ttURITOKEN_MINT:
+        {
             // check if this token has already been minted.
             if (ctx.view.exists(
                     keylet::uritoken(acc, ctx.tx.getFieldVL(sfURI))))
                 return tecDUPLICATE;
-
             return tesSUCCESS;
         }
 
-        case URIOperation::Burn: {
+        case ttURITOKEN_BURN:
+        {
             if (leFlags == tfBurnable && acc == *issuer)
             {
                 // pass, the issuer can burn the URIToken if they minted it with
@@ -213,9 +177,10 @@ URIToken::preclaim(PreclaimContext const& ctx)
             return tesSUCCESS;
         }
 
-        case URIOperation::Buy: {
-            // if the owner is the account then the buy operation is a clear
-            // operation and we won't bother to check anything else
+        case ttURITOKEN_BUY:
+        {
+            // if the owner is the account then the buy operation is a clear operation
+            // and we won't bother to check anything else
             if (acc == *owner)
                 return tesSUCCESS;
 
@@ -257,13 +222,16 @@ URIToken::preclaim(PreclaimContext const& ctx)
             return tesSUCCESS;
         }
 
-        case URIOperation::Clear: {
+        case ttURITOKEN_CANCEL_SELL_OFFER:
+        {
             if (acc != *owner)
                 return tecNO_PERMISSION;
 
             return tesSUCCESS;
         }
-        case URIOperation::Sell: {
+
+        case ttURITOKEN_CREATE_SELL_OFFER:
+        {
             if (acc != *owner)
                 return tecNO_PERMISSION;
 
@@ -276,9 +244,10 @@ URIToken::preclaim(PreclaimContext const& ctx)
             return tesSUCCESS;
         }
 
-        default: {
-            JLOG(ctx.j.warn()) << "URIToken txid=" << ctx.tx.getTransactionID()
-                               << " preclaim with URIOperation::Invalid\n";
+        default:
+        {
+            JLOG(ctx.j.warn())
+                << "URIToken txid=" << ctx.tx.getTransactionID() << " preclaim with tt = " << tt << "\n";
             return tecINTERNAL;
         }
     }
@@ -287,14 +256,15 @@ URIToken::preclaim(PreclaimContext const& ctx)
 TER
 URIToken::doApply()
 {
-    auto j = ctx_.app.journal("View");
-    URIOperation op = inferOperation(ctx_.tx);
+    auto j = ctx_.app.journal("View"); 
 
     auto const sle = view().peek(keylet::account(account_));
     if (!sle)
         return tefINTERNAL;
 
-    if (op == URIOperation::Mint || op == URIOperation::Buy)
+    uint16_t tt = ctx_.tx.getFieldU16(sfTransactionType);
+
+    if (tt == ttURITOKEN_MINT || tt == ttURITOKEN_BUY)
     {
         STAmount const reserve{
             view().fees().accountReserve(sle->getFieldU32(sfOwnerCount) + 1)};
@@ -302,6 +272,8 @@ URIToken::doApply()
         if (mPriorBalance - ctx_.tx.getFieldAmount(sfFee).xrp() < reserve)
             return tecINSUFFICIENT_RESERVE;
     }
+
+    uint32_t flags = ctx_.tx.getFlags();
 
     std::shared_ptr<SLE> sleU;
     std::optional<AccountID> issuer;
@@ -311,7 +283,7 @@ URIToken::doApply()
     std::optional<Keylet> kl;
     std::shared_ptr<SLE> sleOwner;
 
-    if (op != URIOperation::Mint)
+    if (tt != ttURITOKEN_MINT)
     {
         kl = Keylet{ltURI_TOKEN, ctx_.tx.getFieldH256(sfURITokenID)};
         sleU = view().peek(*kl);
@@ -340,9 +312,11 @@ URIToken::doApply()
         }
     }
 
-    switch (op)
+    switch (tt)
     {
-        case URIOperation::Mint: {
+        case ttURITOKEN_MINT:
+        {
+
             kl = keylet::uritoken(account_, ctx_.tx.getFieldVL(sfURI));
             if (view().exists(*kl))
                 return tecDUPLICATE;
@@ -357,6 +331,9 @@ URIToken::doApply()
 
             if (ctx_.tx.isFieldPresent(sfDigest))
                 sleU->setFieldH256(sfDigest, ctx_.tx.getFieldH256(sfDigest));
+
+            if (flags & tfBurnable)
+                sleU->setFlag(tfBurnable);
 
             auto const page = view().dirInsert(
                 keylet::ownerDir(account_), *kl, describeOwnerDir(account_));
@@ -374,8 +351,9 @@ URIToken::doApply()
             adjustOwnerCount(view(), sle, 1, j);
             return tesSUCCESS;
         }
-
-        case URIOperation::Clear: {
+        
+        case ttURITOKEN_CANCEL_SELL_OFFER:
+        {
             sleU->makeFieldAbsent(sfAmount);
             if (sleU->isFieldPresent(sfDestination))
                 sleU->makeFieldAbsent(sfDestination);
@@ -383,7 +361,8 @@ URIToken::doApply()
             return tesSUCCESS;
         }
 
-        case URIOperation::Buy: {
+        case ttURITOKEN_BUY:
+        {
             if (account_ == *owner)
             {
                 // this is a clear operation
@@ -711,7 +690,9 @@ URIToken::doApply()
             view().update(sleOwner);
             return tesSUCCESS;
         }
-        case URIOperation::Burn: {
+
+        case ttURITOKEN_BURN:
+        {
             if (sleU->getAccountID(sfOwner) == account_)
             {
                 // pass, owner may always delete own object
@@ -742,7 +723,8 @@ URIToken::doApply()
             return tesSUCCESS;
         }
 
-        case URIOperation::Sell: {
+        case ttURITOKEN_CREATE_SELL_OFFER:
+        {
             if (account_ != *owner)
                 return tecNO_PERMISSION;
 
