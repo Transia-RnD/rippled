@@ -27,15 +27,6 @@
 
 namespace ripple {
 
-enum struct URIOperation : uint8_t {
-    Invalid = 0,
-    Mint = 1,
-    Burn = 2,
-    Buy = 3,
-    Sell = 4,
-    Clear = 5
-};
-
 class URIToken : public Transactor
 {
 public:
