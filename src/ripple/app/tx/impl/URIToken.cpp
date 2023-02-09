@@ -39,14 +39,12 @@ URIToken::preflight(PreflightContext const& ctx)
     if (!isTesSuccess(ret))
         return ret;
 
-
     uint32_t flags = ctx.tx.getFlags();
     uint16_t tt = ctx.tx.getFieldU16(sfTransactionType);
 
     switch (tt)
     {
-        case ttURITOKEN_MINT:
-        {
+        case ttURITOKEN_MINT: {
             if (flags & tfURITokenMintMask)
                 return temINVALID_FLAG;
 
@@ -54,23 +52,22 @@ URIToken::preflight(PreflightContext const& ctx)
             if (len < 1 || len > 256)
             {
                 JLOG(ctx.j.warn())
-                    << "Malformed transaction. URI must be at least 1 character and no more than 256 characters.";
+                    << "Malformed transaction. URI must be at least 1 "
+                       "character and no more than 256 characters.";
                 return temMALFORMED;
             }
             break;
         }
 
         case ttURITOKEN_CANCEL_SELL_OFFER:
-        case ttURITOKEN_BURN:
-        {
+        case ttURITOKEN_BURN: {
             if (flags & tfURITokenNonMintMask)
                 return temINVALID_FLAG;
             break;
         }
 
         case ttURITOKEN_BUY:
-        case ttURITOKEN_CREATE_SELL_OFFER:
-        {
+        case ttURITOKEN_CREATE_SELL_OFFER: {
             if (flags & tfURITokenNonMintMask)
                 return temINVALID_FLAG;
 
@@ -78,26 +75,25 @@ URIToken::preflight(PreflightContext const& ctx)
 
             if (!isLegalNet(amt) || amt.signum() < 0)
             {
-                JLOG(ctx.j.warn())
-                    << "Malformed transaction. Negative or invalid amount/currency specified.";
+                JLOG(ctx.j.warn()) << "Malformed transaction. Negative or "
+                                      "invalid amount/currency specified.";
                 return temBAD_AMOUNT;
             }
 
             if (badCurrency() == amt.getCurrency())
             {
-                JLOG(ctx.j.warn())
-                    << "Malformed transaction. Bad currency.";
-                    return temBAD_CURRENCY;
+                JLOG(ctx.j.warn()) << "Malformed transaction. Bad currency.";
+                return temBAD_CURRENCY;
             }
-            
+
             if (tt == ttURITOKEN_BUY)
                 break;
 
             if (amt == beast::zero && !ctx.tx.isFieldPresent(sfDestination))
             {
-                JLOG(ctx.j.warn())
-                    << "Malformed transaction. "
-                    << "If no sell-to destination is specified then a non-zero price must be set.";
+                JLOG(ctx.j.warn()) << "Malformed transaction. "
+                                   << "If no sell-to destination is specified "
+                                      "then a non-zero price must be set.";
                 return temMALFORMED;
             }
             break;
@@ -113,7 +109,6 @@ URIToken::preflight(PreflightContext const& ctx)
 TER
 URIToken::preclaim(PreclaimContext const& ctx)
 {
-
     std::shared_ptr<SLE const> sleU;
     uint32_t leFlags;
     std::optional<AccountID> issuer;
@@ -124,10 +119,11 @@ URIToken::preclaim(PreclaimContext const& ctx)
 
     if (ctx.tx.isFieldPresent(sfURITokenID))
     {
-        sleU = ctx.view.read(Keylet {ltURI_TOKEN, ctx.tx.getFieldH256(sfURITokenID)});
+        sleU = ctx.view.read(
+            Keylet{ltURI_TOKEN, ctx.tx.getFieldH256(sfURITokenID)});
         if (!sleU)
             return tecNO_ENTRY;
-        
+
         leFlags = sleU ? sleU->getFieldU32(sfFlags) : 0;
         owner = sleU->getAccountID(sfOwner);
         issuer = sleU->getAccountID(sfIssuer);
@@ -146,14 +142,12 @@ URIToken::preclaim(PreclaimContext const& ctx)
         }
     }
 
-    
     AccountID const acc = ctx.tx.getAccountID(sfAccount);
     uint16_t tt = ctx.tx.getFieldU16(sfTransactionType);
 
     switch (tt)
     {
-        case ttURITOKEN_MINT:
-        {
+        case ttURITOKEN_MINT: {
             // check if this token has already been minted.
             if (ctx.view.exists(
                     keylet::uritoken(acc, ctx.tx.getFieldVL(sfURI))))
@@ -161,8 +155,7 @@ URIToken::preclaim(PreclaimContext const& ctx)
             return tesSUCCESS;
         }
 
-        case ttURITOKEN_BURN:
-        {
+        case ttURITOKEN_BURN: {
             if (leFlags == tfBurnable && acc == *issuer)
             {
                 // pass, the issuer can burn the URIToken if they minted it with
@@ -178,10 +171,9 @@ URIToken::preclaim(PreclaimContext const& ctx)
             return tesSUCCESS;
         }
 
-        case ttURITOKEN_BUY:
-        {
-            // if the owner is the account then the buy operation is a clear operation
-            // and we won't bother to check anything else
+        case ttURITOKEN_BUY: {
+            // if the owner is the account then the buy operation is a clear
+            // operation and we won't bother to check anything else
             if (acc == *owner)
                 return tesSUCCESS;
 
@@ -223,16 +215,14 @@ URIToken::preclaim(PreclaimContext const& ctx)
             return tesSUCCESS;
         }
 
-        case ttURITOKEN_CANCEL_SELL_OFFER:
-        {
+        case ttURITOKEN_CANCEL_SELL_OFFER: {
             if (acc != *owner)
                 return tecNO_PERMISSION;
 
             return tesSUCCESS;
         }
 
-        case ttURITOKEN_CREATE_SELL_OFFER:
-        {
+        case ttURITOKEN_CREATE_SELL_OFFER: {
             if (acc != *owner)
                 return tecNO_PERMISSION;
 
@@ -246,10 +236,9 @@ URIToken::preclaim(PreclaimContext const& ctx)
             return tesSUCCESS;
         }
 
-        default:
-        {
-            JLOG(ctx.j.warn())
-                << "URIToken txid=" << ctx.tx.getTransactionID() << " preclaim with tt = " << tt << "\n";
+        default: {
+            JLOG(ctx.j.warn()) << "URIToken txid=" << ctx.tx.getTransactionID()
+                               << " preclaim with tt = " << tt << "\n";
             return tecINTERNAL;
         }
     }
@@ -258,7 +247,7 @@ URIToken::preclaim(PreclaimContext const& ctx)
 TER
 URIToken::doApply()
 {
-    auto j = ctx_.app.journal("View"); 
+    auto j = ctx_.app.journal("View");
 
     auto const sle = view().peek(keylet::account(account_));
     if (!sle)
@@ -316,9 +305,7 @@ URIToken::doApply()
 
     switch (tt)
     {
-        case ttURITOKEN_MINT:
-        {
-
+        case ttURITOKEN_MINT: {
             kl = keylet::uritoken(account_, ctx_.tx.getFieldVL(sfURI));
             if (view().exists(*kl))
                 return tecDUPLICATE;
@@ -350,9 +337,8 @@ URIToken::doApply()
             adjustOwnerCount(view(), sle, 1, j);
             return tesSUCCESS;
         }
-        
-        case ttURITOKEN_CANCEL_SELL_OFFER:
-        {
+
+        case ttURITOKEN_CANCEL_SELL_OFFER: {
             sleU->makeFieldAbsent(sfAmount);
             if (sleU->isFieldPresent(sfDestination))
                 sleU->makeFieldAbsent(sfDestination);
@@ -360,8 +346,7 @@ URIToken::doApply()
             return tesSUCCESS;
         }
 
-        case ttURITOKEN_BUY:
-        {
+        case ttURITOKEN_BUY: {
             if (account_ == *owner)
             {
                 // this is a clear operation
@@ -690,8 +675,7 @@ URIToken::doApply()
             return tesSUCCESS;
         }
 
-        case ttURITOKEN_BURN:
-        {
+        case ttURITOKEN_BURN: {
             if (sleU->getAccountID(sfOwner) == account_)
             {
                 // pass, owner may always delete own object
@@ -722,8 +706,7 @@ URIToken::doApply()
             return tesSUCCESS;
         }
 
-        case ttURITOKEN_CREATE_SELL_OFFER:
-        {
+        case ttURITOKEN_CREATE_SELL_OFFER: {
             if (account_ != *owner)
                 return tecNO_PERMISSION;
 
