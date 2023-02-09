@@ -108,7 +108,12 @@ JSS(TxnSignature);           // field.
 JSS(TransactionType);        // in: TransactionSign.
 JSS(TransferRate);           // in: TransferRate.
 JSS(TrustSet);               // transaction type.
-JSS(URIToken);               // ledger type.
+JSS(URIToken);               // LedgerEntry
+JSS(URITokenMint);           // tx type
+JSS(URITokenBurn);           // tx type
+JSS(URITokenBuy);            // tx type
+JSS(URITokenCreateSellOffer);   // tx type
+JSS(URITokenCancelSellOffer);   // tx type
 JSS(aborted);                // out: InboundLedger
 JSS(accepted);               // out: LedgerToJson, OwnerInfo, SubmitTransaction
 JSS(account);                // in/out: many

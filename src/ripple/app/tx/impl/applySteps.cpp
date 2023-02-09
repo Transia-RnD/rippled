@@ -148,7 +148,11 @@ invoke_preflight(PreflightContext const& ctx)
             return invoke_preflight_helper<NFTokenCancelOffer>(ctx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return invoke_preflight_helper<NFTokenAcceptOffer>(ctx);
-        case ttURI_TOKEN:
+        case ttURITOKEN_MINT:
+        case ttURITOKEN_BURN:
+        case ttURITOKEN_BUY:
+        case ttURITOKEN_CREATE_SELL_OFFER:
+        case ttURITOKEN_CANCEL_SELL_OFFER:
             return invoke_preflight_helper<URIToken>(ctx);
         default:
             assert(false);
@@ -251,7 +255,11 @@ invoke_preclaim(PreclaimContext const& ctx)
             return invoke_preclaim<NFTokenCancelOffer>(ctx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return invoke_preclaim<NFTokenAcceptOffer>(ctx);
-        case ttURI_TOKEN:
+        case ttURITOKEN_MINT:
+        case ttURITOKEN_BURN:
+        case ttURITOKEN_BUY:
+        case ttURITOKEN_CREATE_SELL_OFFER:
+        case ttURITOKEN_CANCEL_SELL_OFFER:
             return invoke_preclaim<URIToken>(ctx);
         default:
             assert(false);
@@ -316,7 +324,11 @@ invoke_calculateBaseFee(ReadView const& view, STTx const& tx)
             return NFTokenCancelOffer::calculateBaseFee(view, tx);
         case ttNFTOKEN_ACCEPT_OFFER:
             return NFTokenAcceptOffer::calculateBaseFee(view, tx);
-        case ttURI_TOKEN:
+        case ttURITOKEN_MINT:
+        case ttURITOKEN_BURN:
+        case ttURITOKEN_BUY:
+        case ttURITOKEN_CREATE_SELL_OFFER:
+        case ttURITOKEN_CANCEL_SELL_OFFER:
             return URIToken::calculateBaseFee(view, tx);
         default:
             assert(false);
@@ -470,7 +482,11 @@ invoke_apply(ApplyContext& ctx)
             NFTokenAcceptOffer p(ctx);
             return p();
         }
-        case ttURI_TOKEN: {
+        case ttURITOKEN_MINT:
+        case ttURITOKEN_BURN:
+        case ttURITOKEN_BUY:
+        case ttURITOKEN_CREATE_SELL_OFFER:
+        case ttURITOKEN_CANCEL_SELL_OFFER: {
             URIToken p(ctx);
             return p();
         }
