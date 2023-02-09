@@ -99,26 +99,22 @@ struct URIToken_test : public beast::unit_test::suite
     }
 
     void
-    debugToken(
-        ReadView const& view,
-        uint256 const& id)
+    debugToken(ReadView const& view, uint256 const& id)
     {
         // debugToken(*env.current(), tid);
         auto const slep = view.read({ltURI_TOKEN, id});
         if (!slep)
             return;
 
-        std::cout << " ---- DEBUG TOKEN ----" << "\n";
+        std::cout << " ---- DEBUG TOKEN ----"
+                  << "\n";
         std::cout << "BURNABLE: " << (slep->getFlags() & tfBurnable) << "\n";
-        std::cout <<  "OWNER: " << slep->getAccountID(sfOwner)
-                  << "\n";
-        std::cout <<  "ISSUER: " << slep->getAccountID(sfIssuer)
-                  << "\n";
+        std::cout << "OWNER: " << slep->getAccountID(sfOwner) << "\n";
+        std::cout << "ISSUER: " << slep->getAccountID(sfIssuer) << "\n";
         // std::cout <<  " sfURI: " << slep->getFieldVL(sfURI) << "\n";
         // std::cout <<  " sfDigest: " << (*slep)[sfDigest] << "\n";
         if (slep->getFieldAmount(sfAmount))
-            std::cout <<  "AMOUNT: " << slep->getFieldAmount(sfAmount)
-                      << "\n";
+            std::cout << "AMOUNT: " << slep->getFieldAmount(sfAmount) << "\n";
 
         if (slep->getFieldAmount(sfAmount))
             std::cout << "DESTINATION: " << slep->getAccountID(sfDestination)
@@ -146,11 +142,11 @@ struct URIToken_test : public beast::unit_test::suite
         BEAST_EXPECT(slep->getAccountID(sfOwner) == owner);
         BEAST_EXPECT(slep->getAccountID(sfIssuer) == issuer);
         // BEAST_EXPECT(slep->getFieldVL(sfURI).size() > uri.size());
-        
+
         // test the ledger object optionals
-        if(burnable)
+        if (burnable)
             BEAST_EXPECT(slep->getFlags() & tfBurnable);
-        
+
         if (amount != STAmount{0})
             BEAST_EXPECT(slep->getFieldAmount(sfAmount) == amount);
 
@@ -391,8 +387,9 @@ struct URIToken_test : public beast::unit_test::suite
 
             // env(mint(alice, uri), ter(tecDIR_FULL));
             // env.close();
-            // auto const reserveFee = 
-            //     env.current()->fees().accountReserve(ownerDirCount(*env.current(), alice));
+            // auto const reserveFee =
+            //     env.current()->fees().accountReserve(ownerDirCount(*env.current(),
+            //     alice));
             // std::cout << "RESERVE FEE: " << reserveFee << "\n";
             // debugXrp(env, "alice", alice);
         }
@@ -498,7 +495,7 @@ struct URIToken_test : public beast::unit_test::suite
         // temBAD_CURRENCY - bad currency
         IOU const BAD{gw, badCurrency()};
         env(sell(alice, id, BAD(10)), ter(temBAD_CURRENCY));
-        
+
         // temMALFORMED - no destination and 0 value
         env(sell(alice, id, USD(0)), ter(temMALFORMED));
         env.close();
