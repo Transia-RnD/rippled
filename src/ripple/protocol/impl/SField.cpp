@@ -89,6 +89,7 @@ CONSTRUCT_TYPED_SFIELD(sfTransactionResult,     "TransactionResult",    UINT8,  
 CONSTRUCT_TYPED_SFIELD(sfTickSize,              "TickSize",             UINT8,     16);
 CONSTRUCT_TYPED_SFIELD(sfUNLModifyDisabling,    "UNLModifyDisabling",   UINT8,     17);
 CONSTRUCT_TYPED_SFIELD(sfHookResult,            "HookResult",           UINT8,     18);
+CONSTRUCT_TYPED_SFIELD(sfWasLockingChainSend,   "WasLockingChainSend",  UINT8,     19);
 
 // 16-bit integers
 CONSTRUCT_TYPED_SFIELD(sfLedgerEntryType,       "LedgerEntryType",      UINT16,     1, SField::sMD_Never);
@@ -168,10 +169,13 @@ CONSTRUCT_TYPED_SFIELD(sfNFTokenOfferNode,      "NFTokenOfferNode",     UINT64, 
 CONSTRUCT_TYPED_SFIELD(sfEmitBurden,            "EmitBurden",           UINT64,    13);
 
 // 64-bit integers (uncommon)
-CONSTRUCT_TYPED_SFIELD(sfHookOn,                "HookOn",               UINT64,    16);
-CONSTRUCT_TYPED_SFIELD(sfHookInstructionCount,  "HookInstructionCount", UINT64,    17);
-CONSTRUCT_TYPED_SFIELD(sfHookReturnCode,        "HookReturnCode",       UINT64,    18);
-CONSTRUCT_TYPED_SFIELD(sfReferenceCount,        "ReferenceCount",       UINT64,    19);
+CONSTRUCT_TYPED_SFIELD(sfHookOn,                   "HookOn",                   UINT64, 16);
+CONSTRUCT_TYPED_SFIELD(sfHookInstructionCount,     "HookInstructionCount",     UINT64, 17);
+CONSTRUCT_TYPED_SFIELD(sfHookReturnCode,           "HookReturnCode",           UINT64, 18);
+CONSTRUCT_TYPED_SFIELD(sfReferenceCount,           "ReferenceCount",           UINT64, 19);
+CONSTRUCT_TYPED_SFIELD(sfXChainClaimID,            "XChainClaimID",            UINT64, 20);
+CONSTRUCT_TYPED_SFIELD(sfXChainAccountCreateCount, "XChainAccountCreateCount", UINT64, 21);
+CONSTRUCT_TYPED_SFIELD(sfXChainAccountClaimCount,  "XChainAccountClaimCount",  UINT64, 22);
 
 // 128-bit
 CONSTRUCT_TYPED_SFIELD(sfEmailHash,             "EmailHash",            UINT128,    1);
@@ -235,6 +239,9 @@ CONSTRUCT_TYPED_SFIELD(sfRippleEscrow,          "RippleEscrow",         AMOUNT, 
 CONSTRUCT_TYPED_SFIELD(sfDeliveredAmount,       "DeliveredAmount",      AMOUNT,    18);
 CONSTRUCT_TYPED_SFIELD(sfNFTokenBrokerFee,      "NFTokenBrokerFee",     AMOUNT,    19);
 CONSTRUCT_TYPED_SFIELD(sfLockedBalance,         "LockedBalance",        AMOUNT,    21);
+    // 20 - 27 are used by AMMs
+CONSTRUCT_TYPED_SFIELD(sfSignatureReward,       "SignatureReward",      AMOUNT,    29);
+CONSTRUCT_TYPED_SFIELD(sfMinAccountCreateAmount, "MinAccountCreateAmount", AMOUNT, 30);
 
 // variable length (common)
 CONSTRUCT_TYPED_SFIELD(sfPublicKey,             "PublicKey",            VL,         1);
@@ -278,6 +285,12 @@ CONSTRUCT_TYPED_SFIELD(sfEmitCallback,          "EmitCallback",         ACCOUNT,
 
 // account (uncommon)
 CONSTRUCT_TYPED_SFIELD(sfHookAccount,           "HookAccount",          ACCOUNT,   16);
+CONSTRUCT_TYPED_SFIELD(sfOtherChainSource,      "OtherChainSource",     ACCOUNT,   18);
+CONSTRUCT_TYPED_SFIELD(sfOtherChainDestination, "OtherChainDestination",ACCOUNT,   19);
+CONSTRUCT_TYPED_SFIELD(sfAttestationSignerAccount, "AttestationSignerAccount", ACCOUNT, 20);
+CONSTRUCT_TYPED_SFIELD(sfAttestationRewardAccount, "AttestationRewardAccount", ACCOUNT, 21);
+CONSTRUCT_TYPED_SFIELD(sfLockingChainDoor,      "LockingChainDoor",     ACCOUNT,   22);
+CONSTRUCT_TYPED_SFIELD(sfIssuingChainDoor,      "IssuingChainDoor",     ACCOUNT,   23);
 
 // vector of 256-bit
 CONSTRUCT_TYPED_SFIELD(sfIndexes,               "Indexes",              VECTOR256,  1, SField::sMD_Never);
@@ -287,6 +300,14 @@ CONSTRUCT_TYPED_SFIELD(sfNFTokenOffers,         "NFTokenOffers",        VECTOR25
 
 // path set
 CONSTRUCT_UNTYPED_SFIELD(sfPaths,               "Paths",                PATHSET,    1);
+
+// Issue
+CONSTRUCT_TYPED_SFIELD(sfLockingChainIssue,      "LockingChainIssue",   ISSUE, 1);
+CONSTRUCT_TYPED_SFIELD(sfIssuingChainIssue,      "IssuingChainIssue",   ISSUE, 2);
+
+// Bridge
+CONSTRUCT_TYPED_SFIELD(sfXChainBridge,           "XChainBridge",        XCHAIN_BRIDGE,
+                                                                               1);
 
 // inner object
 // OBJECT/1 is reserved for end of object
@@ -314,6 +335,17 @@ CONSTRUCT_UNTYPED_SFIELD(sfHookExecution,       "HookExecution",        OBJECT, 
 CONSTRUCT_UNTYPED_SFIELD(sfHookDefinition,      "HookDefinition",       OBJECT,    22);
 CONSTRUCT_UNTYPED_SFIELD(sfHookParameter,       "HookParameter",        OBJECT,    23);
 CONSTRUCT_UNTYPED_SFIELD(sfHookGrant,           "HookGrant",            OBJECT,    24);
+    // 25 - 31 are used by AMMs
+CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimProofSig, "XChainClaimProofSig",  OBJECT,    32);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountProofSig,
+                                                "XChainCreateAccountProofSig",
+                                                                        OBJECT,    33);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimAttestationBatchElement,
+                                                 "XChainClaimAttestationBatchElement",
+                                                                        OBJECT,    34);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountAttestationBatchElement,
+                                                 "XChainCreateAccountAttestationBatchElement",
+                                                                        OBJECT,    35);
 
 // array of objects
 //                                                                            ARRAY/1 is reserved for end of array
@@ -334,6 +366,18 @@ CONSTRUCT_UNTYPED_SFIELD(sfDisabledValidators,  "DisabledValidators",   ARRAY,  
 CONSTRUCT_UNTYPED_SFIELD(sfHookExecutions,      "HookExecutions",       ARRAY,     18);
 CONSTRUCT_UNTYPED_SFIELD(sfHookParameters,      "HookParameters",       ARRAY,     19);
 CONSTRUCT_UNTYPED_SFIELD(sfHookGrants,          "HookGrants",           ARRAY,     20);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimAttestationBatch,
+                                                 "XChainClaimAttestationBatch",
+                                                                        ARRAY,     21);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountAttestationBatch,
+                                                 "XChainCreateAccountAttestationBatch",
+                                                                        ARRAY,     22);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainClaimAttestations,
+                                                 "XChainClaimAttestations",
+                                                                        ARRAY,     23);
+CONSTRUCT_UNTYPED_SFIELD(sfXChainCreateAccountAttestations,
+                                                 "XChainCreateAccountAttestations",
+                                                                        ARRAY,     24);
 
 // clang-format on
 

@@ -19,6 +19,10 @@
 
 #include <ripple/protocol/Issue.h>
 
+#include <ripple/protocol/AccountID.h>
+#include <ripple/protocol/UintTypes.h>
+#include <ripple/protocol/jss.h>
+
 namespace ripple {
 
 bool
@@ -34,6 +38,67 @@ to_string(Issue const& ac)
         return to_string(ac.currency);
 
     return to_string(ac.account) + "/" + to_string(ac.currency);
+}
+
+Json::Value
+to_json(Issue const& is)
+{
+    Json::Value jv;
+    jv[jss::currency] = to_string(is.currency);
+    if (!isXRP(is.currency))
+        jv[jss::issuer] = toBase58(is.account);
+    return jv;
+}
+
+Issue
+issueFromJson(Json::Value const& v)
+{
+    if (!v.isObject())
+    {
+        Throw<std::runtime_error>(
+            "issueFromJson can only be specified with a 'object' or string "
+            "Json value");
+    }
+
+    Json::Value const curStr = v[jss::currency];
+    Json::Value const issStr = v[jss::issuer];
+
+    if (!curStr.isString())
+    {
+        Throw<std::runtime_error>(
+            "issueFromJson currency must be a string Json value");
+    }
+
+    auto const currency = to_currency(curStr.asString());
+    if (currency == badCurrency() || currency == noCurrency())
+    {
+        Throw<std::runtime_error>(
+            "issueFromJson currency must be a valid currency");
+    }
+
+    if (isXRP(currency))
+    {
+        if (!issStr.isNull())
+        {
+            Throw<std::runtime_error>("Issue, XRP should not have issuer");
+        }
+        return xrpIssue();
+    }
+
+    if (!issStr.isString())
+    {
+        Throw<std::runtime_error>(
+            "issueFromJson issuer must be a string Json value");
+    }
+    auto const issuer = parseBase58<AccountID>(issStr.asString());
+
+    if (!issuer)
+    {
+        Throw<std::runtime_error>(
+            "issueFromJson issuer must be a valid account");
+    }
+
+    return Issue{currency, *issuer};
 }
 
 std::ostream&

@@ -205,7 +205,8 @@ doAccountObjects(RPC::JsonContext& context)
             {jss::check, ltCHECK},
             {jss::escrow, ltESCROW},
             {jss::payment_channel, ltPAYCHAN},
-            {jss::state, ltRIPPLE_STATE}};
+            {jss::state, ltRIPPLE_STATE},
+            {jss::bridge, ltBRIDGE}};
 
         typeFilter.emplace();
         typeFilter->reserve(std::size(deletionBlockers));

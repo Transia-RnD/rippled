@@ -18,9 +18,13 @@
 //==============================================================================
 
 #include <ripple/protocol/Indexes.h>
+#include <ripple/protocol/LedgerFormats.h>
+#include <ripple/protocol/SField.h>
+#include <ripple/protocol/STXChainBridge.h>
 #include <ripple/protocol/SeqProxy.h>
 #include <ripple/protocol/digest.h>
 #include <ripple/protocol/nftPageMask.h>
+
 #include <algorithm>
 #include <cassert>
 
@@ -63,6 +67,9 @@ enum class LedgerNameSpace : std::uint16_t {
     NFTOKEN_OFFER = 'q',
     NFTOKEN_BUY_OFFERS = 'h',
     NFTOKEN_SELL_OFFERS = 'i',
+    BRIDGE = 'H',
+    XCHAIN_SEQ = 'Q',
+    XCHAIN_CREATE_ACCOUNT_SEQ = 'K',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
@@ -367,6 +374,41 @@ Keylet
 nft_sells(uint256 const& id) noexcept
 {
     return {ltDIR_NODE, indexHash(LedgerNameSpace::NFTOKEN_SELL_OFFERS, id)};
+}
+
+Keylet
+bridge(AccountID const& door)
+{
+    // There can be at most one brige per door account
+    return {ltBRIDGE, indexHash(LedgerNameSpace::BRIDGE, door)};
+}
+
+Keylet
+xChainClaimID(STXChainBridge const& bridge, std::uint64_t seq)
+{
+    return {
+        ltXCHAIN_CLAIM_ID,
+        indexHash(
+            LedgerNameSpace::XCHAIN_SEQ,
+            bridge.lockingChainDoor(),
+            bridge.lockingChainIssue(),
+            bridge.issuingChainDoor(),
+            bridge.issuingChainIssue(),
+            seq)};
+}
+
+Keylet
+xChainCreateAccountClaimID(STXChainBridge const& bridge, std::uint64_t seq)
+{
+    return {
+        ltXCHAIN_CREATE_ACCOUNT_CLAIM_ID,
+        indexHash(
+            LedgerNameSpace::XCHAIN_CREATE_ACCOUNT_SEQ,
+            bridge.lockingChainDoor(),
+            bridge.lockingChainIssue(),
+            bridge.issuingChainDoor(),
+            bridge.issuingChainIssue(),
+            seq)};
 }
 
 }  // namespace keylet

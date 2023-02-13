@@ -26,6 +26,7 @@
 #include <ripple/protocol/Feature.h>
 #include <ripple/protocol/STArray.h>
 #include <ripple/protocol/SystemParameters.h>
+#include <ripple/protocol/TxFormats.h>
 #include <ripple/protocol/nftPageMask.h>
 
 namespace ripple {
@@ -388,6 +389,9 @@ LedgerEntryTypesMatch::visitEntry(
             case ltNEGATIVE_UNL:
             case ltNFTOKEN_PAGE:
             case ltNFTOKEN_OFFER:
+            case ltBRIDGE:
+            case ltXCHAIN_CLAIM_ID:
+            case ltXCHAIN_CREATE_ACCOUNT_CLAIM_ID:
                 break;
             default:
                 invalidTypeAdded_ = true;
@@ -488,7 +492,10 @@ ValidNewAccountRoot::finalize(
     }
 
     // From this point on we know exactly one account was created.
-    if (tx.getTxnType() == ttPAYMENT && result == tesSUCCESS)
+    if ((tx.getTxnType() == ttPAYMENT ||
+         tx.getTxnType() == ttXCHAIN_ADD_CLAIM_ATTESTATION ||
+         tx.getTxnType() == ttXCHAIN_ADD_ACCOUNT_CREATE_ATTESTATION) &&
+        result == tesSUCCESS)
     {
         std::uint32_t const startingSeq{
             view.rules().enabled(featureDeletableAccounts) ? view.seq() : 1};
