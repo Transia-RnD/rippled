@@ -324,6 +324,7 @@ enum TECcodes : TERUnderlyingType {
     tecXCHAIN_ACCOUNT_CREATE_TOO_MANY = 183,
     tecXCHAIN_PAYMENT_FAILED = 184,
     tecXCHAIN_SELF_COMMIT = 185,
+    tecPRECISION_LOSS = 186,
 };
 
 //------------------------------------------------------------------------------

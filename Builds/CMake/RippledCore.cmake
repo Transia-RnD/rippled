@@ -139,8 +139,8 @@ target_link_libraries (xrpl_core
     OpenSSL::Crypto
     Ripple::boost
     Ripple::syslibs
-    NIH::secp256k1
-    NIH::ed25519-donna
+    secp256k1::secp256k1
+    ed25519::ed25519
     date::date
     Ripple::opts)
 #[=================================[
@@ -922,6 +922,7 @@ if (tests)
     src/test/protocol/InnerObjectFormats_test.cpp
     src/test/protocol/Issue_test.cpp
     src/test/protocol/Hooks_test.cpp
+    src/test/protocol/Memo_test.cpp
     src/test/protocol/PublicKey_test.cpp
     src/test/protocol/Quality_test.cpp
     src/test/protocol/STAccount_test.cpp
