@@ -21,6 +21,7 @@ bin/project-cache.jam
 
 # Ignore object files.
 *.o
+.build
 build
 .nih_c
 tags
@@ -102,6 +103,7 @@ Builds/VisualStudio2015/*.sdf
 *.pdb
 .vs/
 CMakeSettings.json
+CMakeUserPresets.json
 compile_commands.json
 .clangd
 packages
