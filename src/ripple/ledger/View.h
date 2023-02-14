@@ -506,35 +506,35 @@ trustTransferAllowed(
 
             if (flags & flagIssuerFreeze)
             {
-                // JLOG(j.trace()) << "trustTransferAllowed: "
-                //                 << "parties=[" << parties << "], "
-                //                 << "issuer: " << issue.account << " "
-                //                 << "has freeze on party: " << p;
+                JLOG(j.trace()) << "trustTransferAllowed: "
+                                // << "parties=[" << parties << "], "
+                                << "issuer: " << issue.account << " "
+                                << "has freeze on party: " << p;
                 return tecFROZEN;
             }
 
             // if called with more than one party then any party
             // that has a noripple on the issuer side of their tl
             // blocks any possible xfer
-            // if (parties.size() > 1 && (flags & flagIssuerNoRipple))
-            // {
-            //     // JLOG(j.trace()) << "trustTransferAllowed: "
-            //     //                 << "parties=[" << parties << "], "
-            //     //                 << "issuer: " << issue.account << " "
-            //     //                 << "has noRipple on party: " << p;
-            //     return tecPATH_DRY;
-            // }
+            if (parties.size() > 1 && (flags & flagIssuerNoRipple))
+            {
+                JLOG(j.trace()) << "trustTransferAllowed: "
+                                // << "parties=[" << parties << "], "
+                                << "issuer: " << issue.account << " "
+                                << "has noRipple on party: " << p;
+                return tecPATH_DRY;
+            }
 
             // every party involved must be on an authed trustline if
             // the issuer has specified lsfRequireAuth
             if (requireAuth && !(flags & flagIssuerAuth))
             {
-                // JLOG(j.trace()) << "trustTransferAllowed: "
-                //                 << "parties=[" << parties << "], "
-                //                 << "issuer: " << issue.account << " "
-                //                 << "requires TL auth which "
-                //                 << "party: " << p << " "
-                //                 << "does not possess.";
+                JLOG(j.trace()) << "trustTransferAllowed: "
+                                // << "parties=[" << parties << "], "
+                                << "issuer: " << issue.account << " "
+                                << "requires TL auth which "
+                                << "party: " << p << " "
+                                << "does not possess.";
                 return tecNO_AUTH;
             }
         }
