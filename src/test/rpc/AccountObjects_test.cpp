@@ -517,7 +517,7 @@ public:
             // Create a uri token.
             std::string const uri(maxTokenURILength, '?');
             Json::Value jfURIToken;
-            jfURIToken[jss::TransactionType] = jss::URIToken;
+            jfURIToken[jss::TransactionType] = jss::URITokenMint;
             jfURIToken[jss::Flags] = tfBurnable;
             jfURIToken[jss::Account] = gw.human();
             jfURIToken[jss::uri] = strHex(uri);
