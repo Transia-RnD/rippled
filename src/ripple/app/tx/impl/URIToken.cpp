@@ -410,6 +410,8 @@ URIToken::doApply()
 
             bool const sellerLow = purchaseAmount.getIssuer() > *owner;
             bool const buyerLow = purchaseAmount.getIssuer() > account_;
+            bool sellerIssuer = purchaseAmount.getIssuer() == *owner;
+            bool buyerIssuer = purchaseAmount.getIssuer() == account_;
 
             // check if the seller has listed it at all
             if (!saleAmount)
@@ -456,6 +458,12 @@ URIToken::doApply()
 
                 // check for any possible bars to a buy transaction
                 // between these accounts for this asset
+                
+                if (buyerIssuer)
+                {
+                    // pass: issuer does not create own trustline
+                }
+                else
                 {
                     TER result = trustTransferAllowed(
                         view(), {account_, *owner}, purchaseAmount.issue(), j);
@@ -483,7 +491,11 @@ URIToken::doApply()
                 sleDstLine = view().peek(*tlSeller);
                 sleSrcLine = view().peek(tlBuyer);
 
-                if (!sleDstLine)
+                if (sellerIssuer)
+                {
+                    // pass: issuer does not create own trustline
+                } 
+                else if (!sleDstLine)
                 {
                     // they do not, so we can create one if they have sufficient
                     // reserve
@@ -500,21 +512,29 @@ URIToken::doApply()
                         return tecNO_LINE_INSUF_RESERVE;
                     }
                 }
+                
+                if (buyerIssuer)
+                {
+                    // pass: issuer does not adjust own trustline
+                    initBuyerBal = purchaseAmount.zeroed();
+                    finBuyerBal = purchaseAmount.zeroed();
+                }
+                else
+                {
+                    // remove from buyer
+                    initBuyerBal = buyerLow ? ((*sleSrcLine)[sfBalance])
+                                            : -((*sleSrcLine)[sfBalance]);
+                    finBuyerBal = *initBuyerBal - purchaseAmount;
+                }
 
-                // remove from buyer
-                initBuyerBal = buyerLow ? ((*sleSrcLine)[sfBalance])
-                                        : -((*sleSrcLine)[sfBalance]);
-                finBuyerBal = *initBuyerBal - purchaseAmount;
-
-                // compute amount to deliver
+                dstAmt = purchaseAmount;
                 static Rate const parityRate(QUALITY_ONE);
                 auto xferRate = transferRate(view(), saleAmount->getIssuer());
-                dstAmt = xferRate == parityRate ? purchaseAmount
-                                                : multiplyRound(
-                                                      purchaseAmount,
-                                                      xferRate,
-                                                      purchaseAmount.issue(),
-                                                      true);
+                if (!sellerIssuer && !buyerIssuer && xferRate != parityRate)
+                {
+                    dstAmt = multiplyRound(
+                        purchaseAmount, xferRate, purchaseAmount.issue(), true);
+                }
 
                 initSellerBal = !sleDstLine
                     ? purchaseAmount.zeroed()
@@ -582,7 +602,7 @@ URIToken::doApply()
             // fail for a variety of reasons. If it does fail we need to remove
             // the dir entry we just added to the buyer before we leave.
             bool lineCreated = false;
-            if (!isXRP(purchaseAmount) && !sleDstLine)
+            if (!isXRP(purchaseAmount) && !sleDstLine && !sellerIssuer)
             {
                 // clang-format off
                 if (TER const ter = trustCreate(
@@ -692,6 +712,10 @@ URIToken::doApply()
                 sleSrcLine->setFieldAmount(
                     sfBalance, buyerLow ? *finBuyerBal : -(*finBuyerBal));
             }
+            else if (buyerIssuer)
+            {
+                // pass: buyer is issuer, no update required.
+            }
             else
                 return tecINTERNAL;
 
@@ -710,6 +734,10 @@ URIToken::doApply()
             else if (lineCreated)
             {
                 // pass, the TL already has this balance set on it at creation
+            }
+            else if (sellerIssuer)
+            {
+                // pass: seller is issuer, no update required.
             }
             else
                 return tecINTERNAL;
