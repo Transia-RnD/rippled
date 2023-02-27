@@ -46,6 +46,21 @@ namespace RPC {
 
 struct JsonContext;
 
+struct CTID
+{
+    uint32_t ledger_seq;
+    uint16_t txn_index;
+    uint16_t network_id;
+};
+
+std::optional<std::string>
+encodeCTID(uint32_t ledger_seq, uint16_t txn_index, uint16_t network_id) noexcept;
+
+// template <typename T>
+// decodeCTID(const T ctid) noexcept;
+std::optional<std::tuple<uint32_t, uint16_t, uint16_t>>
+decodeCTID(std::string const&) noexcept;
+
 /** Get an AccountID from an account ID or public key. */
 std::optional<AccountID>
 accountFromStringStrict(std::string const&);
