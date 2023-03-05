@@ -21,6 +21,7 @@ bin/project-cache.jam
 
 # Ignore object files.
 *.o
+.build
 build
 .nih_c
 tags
