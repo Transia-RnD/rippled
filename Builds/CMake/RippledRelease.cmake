@@ -2,6 +2,12 @@
    package/container targets - (optional)
 #]===================================================================]
 
+# Early return if the `containers` directory is missing,
+# e.g. when we are building a Conan package.
+if(NOT EXISTS containers)
+  return()
+endif()
+
 if (is_root_project)
   if (NOT DOCKER)
     find_program (DOCKER docker)
@@ -16,7 +22,19 @@ if (is_root_project)
     message (STATUS "using [${container_label}] as build container tag...")
 
     file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/packages)
-
+    if (is_linux)
+      execute_process (COMMAND id -u
+        OUTPUT_VARIABLE DOCKER_USER_ID
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+      message (STATUS "docker local user id: ${DOCKER_USER_ID}")
+      execute_process (COMMAND id -g
+        OUTPUT_VARIABLE DOCKER_GROUP_ID
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+      message (STATUS "docker local group id: ${DOCKER_GROUP_ID}")
+    endif ()
+    if (DOCKER_USER_ID AND DOCKER_GROUP_ID)
+      set(map_user TRUE)
+    endif ()
     #[===================================================================[
         rpm
     #]===================================================================]

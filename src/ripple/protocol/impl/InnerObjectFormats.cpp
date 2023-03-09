@@ -18,6 +18,8 @@
 //==============================================================================
 
 #include <ripple/protocol/InnerObjectFormats.h>
+#include <ripple/protocol/SField.h>
+#include <ripple/protocol/SOTemplate.h>
 
 namespace ripple {
 
@@ -58,6 +60,58 @@ InnerObjectFormats::InnerObjectFormats()
         {
             {sfNFTokenID, soeREQUIRED},
             {sfURI, soeOPTIONAL},
+        });
+
+    add(sfXChainClaimAttestationBatchElement.jsonName.c_str(),
+        sfXChainClaimAttestationBatchElement.getCode(),
+        {
+            {sfAttestationSignerAccount, soeREQUIRED},
+            {sfPublicKey, soeREQUIRED},
+            {sfSignature, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfAccount, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfXChainClaimID, soeREQUIRED},
+            {sfDestination, soeOPTIONAL},
+        });
+
+    add(sfXChainCreateAccountAttestationBatchElement.jsonName.c_str(),
+        sfXChainCreateAccountAttestationBatchElement.getCode(),
+        {
+            {sfAttestationSignerAccount, soeREQUIRED},
+            {sfPublicKey, soeREQUIRED},
+            {sfSignature, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfAccount, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfXChainAccountCreateCount, soeREQUIRED},
+            {sfDestination, soeREQUIRED},
+            {sfSignatureReward, soeREQUIRED},
+        });
+
+    add(sfXChainClaimProofSig.jsonName.c_str(),
+        sfXChainClaimProofSig.getCode(),
+        {
+            {sfAttestationSignerAccount, soeREQUIRED},
+            {sfPublicKey, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfDestination, soeOPTIONAL},
+        });
+
+    add(sfXChainCreateAccountProofSig.jsonName.c_str(),
+        sfXChainCreateAccountProofSig.getCode(),
+        {
+            {sfAttestationSignerAccount, soeREQUIRED},
+            {sfPublicKey, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfSignatureReward, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfDestination, soeREQUIRED},
         });
 }
 

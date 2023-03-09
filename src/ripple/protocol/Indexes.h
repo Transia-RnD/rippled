@@ -26,6 +26,7 @@
 #include <ripple/protocol/LedgerFormats.h>
 #include <ripple/protocol/Protocol.h>
 #include <ripple/protocol/PublicKey.h>
+#include <ripple/protocol/STXChainBridge.h>
 #include <ripple/protocol/Serializer.h>
 #include <ripple/protocol/UintTypes.h>
 #include <cstdint>
@@ -262,6 +263,15 @@ nft_buys(uint256 const& id) noexcept;
 /** The directory of sell offers for the specified NFT */
 Keylet
 nft_sells(uint256 const& id) noexcept;
+
+Keylet
+bridge(AccountID const& door);
+
+Keylet
+xChainClaimID(STXChainBridge const& bridge, std::uint64_t seq);
+
+Keylet
+xChainCreateAccountClaimID(STXChainBridge const& bridge, std::uint64_t seq);
 
 }  // namespace keylet
 

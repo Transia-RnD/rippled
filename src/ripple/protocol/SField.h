@@ -22,6 +22,7 @@
 
 #include <ripple/basics/safe_cast.h>
 #include <ripple/json/json_value.h>
+
 #include <cstdint>
 #include <map>
 #include <utility>
@@ -42,11 +43,13 @@ Some fields have a different meaning for their
 // Forwards
 class STAccount;
 class STAmount;
+class STIssue;
 class STBlob;
 template <int>
 class STBitString;
 template <class>
 class STInteger;
+class STXChainBridge;
 class STVector256;
 
 enum SerializedTypeID {
@@ -76,6 +79,8 @@ enum SerializedTypeID {
     STI_UINT192 = 21,
     STI_UINT384 = 22,
     STI_UINT512 = 23,
+    STI_ISSUE = 24,
+    STI_XCHAIN_BRIDGE = 25,
 
     // high level types
     // cannot be serialized inside other types
@@ -318,8 +323,10 @@ using SF_UINT512 = TypedField<STBitString<512>>;
 
 using SF_ACCOUNT = TypedField<STAccount>;
 using SF_AMOUNT = TypedField<STAmount>;
+using SF_ISSUE = TypedField<STIssue>;
 using SF_VL = TypedField<STBlob>;
 using SF_VECTOR256 = TypedField<STVector256>;
+using SF_XCHAIN_BRIDGE = TypedField<STXChainBridge>;
 
 //------------------------------------------------------------------------------
 
@@ -334,6 +341,7 @@ extern SField const sfMetadata;
 extern SF_UINT8 const sfCloseResolution;
 extern SF_UINT8 const sfMethod;
 extern SF_UINT8 const sfTransactionResult;
+extern SF_UINT8 const sfWasLockingChainSend;
 
 // 8-bit integers (uncommon)
 extern SF_UINT8 const sfTickSize;
@@ -421,6 +429,9 @@ extern SF_UINT64 const sfHookOn;
 extern SF_UINT64 const sfHookInstructionCount;
 extern SF_UINT64 const sfHookReturnCode;
 extern SF_UINT64 const sfReferenceCount;
+extern SF_UINT64 const sfXChainClaimID;
+extern SF_UINT64 const sfXChainAccountCreateCount;
+extern SF_UINT64 const sfXChainAccountClaimCount;
 
 // 128-bit
 extern SF_UINT128 const sfEmailHash;
@@ -482,6 +493,8 @@ extern SF_AMOUNT const sfMinimumOffer;
 extern SF_AMOUNT const sfRippleEscrow;
 extern SF_AMOUNT const sfDeliveredAmount;
 extern SF_AMOUNT const sfNFTokenBrokerFee;
+extern SF_AMOUNT const sfSignatureReward;
+extern SF_AMOUNT const sfMinAccountCreateAmount;
 
 // currency amount (fees)
 extern SF_AMOUNT const sfBaseFeeDrops;
@@ -529,9 +542,22 @@ extern SF_ACCOUNT const sfEmitCallback;
 
 // account (uncommon)
 extern SF_ACCOUNT const sfHookAccount;
+extern SF_ACCOUNT const sfOtherChainSource;
+extern SF_ACCOUNT const sfOtherChainDestination;
+extern SF_ACCOUNT const sfAttestationSignerAccount;
+extern SF_ACCOUNT const sfAttestationRewardAccount;
+extern SF_ACCOUNT const sfLockingChainDoor;
+extern SF_ACCOUNT const sfIssuingChainDoor;
 
 // path set
 extern SField const sfPaths;
+
+// bridge
+extern SF_XCHAIN_BRIDGE const sfXChainBridge;
+
+// issues
+extern SF_ISSUE const sfLockingChainIssue;
+extern SF_ISSUE const sfIssuingChainIssue;
 
 // vector of 256-bit
 extern SF_VECTOR256 const sfIndexes;
@@ -563,6 +589,10 @@ extern SField const sfHookExecution;
 extern SField const sfHookDefinition;
 extern SField const sfHookParameter;
 extern SField const sfHookGrant;
+extern SField const sfXChainClaimProofSig;
+extern SField const sfXChainCreateAccountProofSig;
+extern SField const sfXChainClaimAttestationBatchElement;
+extern SField const sfXChainCreateAccountAttestationBatchElement;
 
 // array of objects (common)
 // ARRAY/1 is reserved for end of array
@@ -583,6 +613,10 @@ extern SField const sfDisabledValidators;
 extern SField const sfHookExecutions;
 extern SField const sfHookParameters;
 extern SField const sfHookGrants;
+extern SField const sfXChainClaimAttestationBatch;
+extern SField const sfXChainCreateAccountAttestationBatch;
+extern SField const sfXChainClaimAttestations;
+extern SField const sfXChainCreateAccountAttestations;
 
 //------------------------------------------------------------------------------
 

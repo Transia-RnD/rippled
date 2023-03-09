@@ -25,6 +25,7 @@
 #include <ripple/basics/LocalValue.h>
 #include <ripple/basics/Number.h>
 #include <ripple/basics/XRPAmount.h>
+#include <ripple/json/json_get_or_throw.h>
 #include <ripple/protocol/Issue.h>
 #include <ripple/protocol/SField.h>
 #include <ripple/protocol/STBase.h>
@@ -124,6 +125,8 @@ public:
         bool negative = false);
 
     explicit STAmount(std::uint64_t mantissa = 0, bool negative = false);
+
+    explicit STAmount(SField const& name, STAmount const& amt);
 
     STAmount(
         Issue const& issue,
@@ -560,4 +563,18 @@ private:
 
 }  // namespace ripple
 
+//------------------------------------------------------------------------------
+namespace Json {
+template <>
+inline ripple::STAmount
+getOrThrow(Json::Value const& v, ripple::SField const& field)
+{
+    using namespace ripple;
+    Json::StaticString const& key = field.getJsonName();
+    if (!v.isMember(key))
+        Throw<JsonMissingKeyError>(key);
+    Json::Value const& inner = v[key];
+    return amountFromJson(field, inner);
+}
+}  // namespace Json
 #endif
