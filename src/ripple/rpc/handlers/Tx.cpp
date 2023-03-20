@@ -40,7 +40,10 @@ namespace ripple {
 // }
 
 std::optional<std::string>
-encodeCTID(uint32_t ledger_seq, uint16_t txn_index, uint16_t network_id) noexcept
+encodeCTID(
+    uint32_t ledger_seq,
+    uint16_t txn_index,
+    uint16_t network_id) noexcept
 {
     if (ledger_seq > 0xFFFFFFF)
         return {};
@@ -50,7 +53,8 @@ encodeCTID(uint32_t ledger_seq, uint16_t txn_index, uint16_t network_id) noexcep
         (static_cast<uint64_t>(txn_index) << 16) + network_id;
 
     std::stringstream buffer;
-    buffer << std::hex << std::uppercase << std::setfill('0') << std::setw(16) << ctidValue;
+    buffer << std::hex << std::uppercase << std::setfill('0') << std::setw(16)
+           << ctidValue;
     return {buffer.str()};
 }
 
@@ -58,10 +62,10 @@ template <typename T>
 std::optional<std::tuple<uint32_t, uint16_t, uint16_t>>
 decodeCTID(const T ctid) noexcept
 {
-    uint64_t ctidValue {0};
-    if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, char *> ||
-            std::is_same_v<T, const char *> ||
-            std::is_same_v<T, std::string_view>)
+    uint64_t ctidValue{0};
+    if constexpr (
+        std::is_same_v<T, std::string> || std::is_same_v<T, char*> ||
+        std::is_same_v<T, const char*> || std::is_same_v<T, std::string_view>)
     {
         const std::string ctidString(ctid);
 
@@ -79,7 +83,7 @@ decodeCTID(const T ctid) noexcept
         return {};
 
     if (ctidValue > 0xFFFFFFFFFFFFFFFFULL ||
-            (ctidValue & 0xF000000000000000ULL) != 0xC000000000000000ULL)
+        (ctidValue & 0xF000000000000000ULL) != 0xC000000000000000ULL)
         return {};
 
     uint32_t ledger_seq = (ctidValue >> 32) & 0xFFFFFFFUL;
@@ -126,16 +130,19 @@ doTxPostgres(RPC::Context& context, TxArgs const& args)
         Throw<std::runtime_error>(
             "Called doTxPostgres yet not in reporting mode");
     }
-    
+
     TxResult res;
     res.searchedAll = TxSearched::unknown;
-    
-    if (!args.hash)
-        return {res, {rpcNOT_IMPL, "Use of CTIDs on reporting mode is not currently supported."}};
 
+    if (!args.hash)
+        return {
+            res,
+            {rpcNOT_IMPL,
+             "Use of CTIDs on reporting mode is not currently supported."}};
 
     JLOG(context.j.debug()) << "Fetching from postgres";
-    Transaction::Locator locator = Transaction::locate(*(args.hash), context.app);
+    Transaction::Locator locator =
+        Transaction::locate(*(args.hash), context.app);
 
     std::pair<std::shared_ptr<STTx const>, std::shared_ptr<STObject const>>
         pair;
@@ -258,14 +265,14 @@ doTxHelp(RPC::Context& context, TxArgs args)
 
     if (args.ctid)
     {
-        args.hash = 
-            context.app.getLedgerMaster().
-                txnIDfromIndex(args.ctid->first, args.ctid->second);
-        
+        args.hash = context.app.getLedgerMaster().txnIDfromIndex(
+            args.ctid->first, args.ctid->second);
+
         if (args.hash)
-            range = ClosedInterval<uint32_t>(args.ctid->first, args.ctid->second);
+            range =
+                ClosedInterval<uint32_t>(args.ctid->first, args.ctid->second);
     }
-    
+
     if (args.ledgerRange)
     {
         v = context.app.getMasterTransaction().fetch(*(args.hash), range, ec);
@@ -321,8 +328,7 @@ doTxHelp(RPC::Context& context, TxArgs args)
         uint32_t netID = context.app.config().NETWORK_ID;
 
         if (txnIdx <= 0xFFFFU && netID < 0xFFFFU && lgrSeq < 0xFFFFFFFUL)
-            result.ctid =
-                encodeCTID(lgrSeq, (uint16_t)txnIdx, (uint16_t)netID);
+            result.ctid = encodeCTID(lgrSeq, (uint16_t)txnIdx, (uint16_t)netID);
     }
 
     return {result, rpcSUCCESS};
@@ -393,10 +399,10 @@ doTxJson(RPC::JsonContext& context)
 
     TxArgs args;
 
-    if (context.params.isMember(jss::transaction) && context.params.isMember(jss::ctid))
+    if (context.params.isMember(jss::transaction) &&
+        context.params.isMember(jss::ctid))
         // specifying both is ambiguous
         return rpcError(rpcINVALID_PARAMS);
-
 
     if (context.params.isMember(jss::transaction))
     {
@@ -404,7 +410,9 @@ doTxJson(RPC::JsonContext& context)
         if (!hash.parseHex(context.params[jss::transaction].asString()))
             return rpcError(rpcNOT_IMPL);
         args.hash = hash;
-    } else if (context.params.isMember(jss::ctid)) {
+    }
+    else if (context.params.isMember(jss::ctid))
+    {
         auto ctid = decodeCTID(context.params[jss::ctid].asString());
         if (!ctid)
             return rpcError(rpcINVALID_PARAMS);
@@ -413,9 +421,10 @@ doTxJson(RPC::JsonContext& context)
         if (net_id != context.app.config().NETWORK_ID)
         {
             std::stringstream out;
-            out << "Wrong network. You should submit this request to a node running on NetworkID: " << net_id;
-            return RPC::make_error(
-                rpcWRONG_NETWORK, out.str());
+            out << "Wrong network. You should submit this request to a node "
+                   "running on NetworkID: "
+                << net_id;
+            return RPC::make_error(rpcWRONG_NETWORK, out.str());
         }
         args.ctid = {lgr_seq, txn_idx};
     }

@@ -6520,11 +6520,11 @@ updateAPIVersionString(const char* const req)
 std::unique_ptr<Config>
 makeNetworkConfig(uint32_t networkID)
 {
-   using namespace test::jtx;
-   return envconfig([&](std::unique_ptr<Config> cfg) {
-      cfg->NETWORK_ID = networkID;
-      return cfg;
-   });
+    using namespace test::jtx;
+    return envconfig([&](std::unique_ptr<Config> cfg) {
+        cfg->NETWORK_ID = networkID;
+        return cfg;
+    });
 }
 
 class RPCCall_test : public beast::unit_test::suite
@@ -6535,7 +6535,8 @@ public:
     {
         testcase << "RPCCall";
 
-        test::jtx::Env env(*this, makeNetworkConfig(11111));  // Used only for its Journal.
+        test::jtx::Env env(
+            *this, makeNetworkConfig(11111));  // Used only for its Journal.
 
         // For each RPCCall test.
         for (RPCCallTestData const& rpcCallTest : rpcCallTestArray)

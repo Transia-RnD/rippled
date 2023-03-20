@@ -20,17 +20,20 @@
 #ifndef RIPPLE_RPC_CTID_H_INCLUDED
 #define RIPPLE_RPC_CTID_H_INCLUDED
 
-#include <sstream>
+#include <boost/algorithm/string/predicate.hpp>
 #include <optional>
 #include <regex>
-#include <boost/algorithm/string/predicate.hpp>
+#include <sstream>
 
 namespace ripple {
 
 namespace RPC {
 
 std::optional<std::string>
-encodeCTID(uint32_t ledger_seq, uint16_t txn_index, uint16_t network_id) noexcept
+encodeCTID(
+    uint32_t ledger_seq,
+    uint16_t txn_index,
+    uint16_t network_id) noexcept
 {
     if (ledger_seq > 0xFFFFFFF)
         return {};
@@ -40,7 +43,8 @@ encodeCTID(uint32_t ledger_seq, uint16_t txn_index, uint16_t network_id) noexcep
         (static_cast<uint64_t>(txn_index) << 16) + network_id;
 
     std::stringstream buffer;
-    buffer << std::hex << std::uppercase << std::setfill('0') << std::setw(16) << ctidValue;
+    buffer << std::hex << std::uppercase << std::setfill('0') << std::setw(16)
+           << ctidValue;
     return {buffer.str()};
 }
 
@@ -48,10 +52,10 @@ template <typename T>
 std::optional<std::tuple<uint32_t, uint16_t, uint16_t>>
 decodeCTID(const T ctid) noexcept
 {
-    uint64_t ctidValue {0};
-    if constexpr (std::is_same_v<T, std::string> || std::is_same_v<T, char *> ||
-            std::is_same_v<T, const char *> ||
-            std::is_same_v<T, std::string_view>)
+    uint64_t ctidValue{0};
+    if constexpr (
+        std::is_same_v<T, std::string> || std::is_same_v<T, char*> ||
+        std::is_same_v<T, const char*> || std::is_same_v<T, std::string_view>)
     {
         const std::string ctidString(ctid);
 
@@ -69,7 +73,7 @@ decodeCTID(const T ctid) noexcept
         return {};
 
     if (ctidValue > 0xFFFFFFFFFFFFFFFFULL ||
-            (ctidValue & 0xF000000000000000ULL) != 0xC000000000000000ULL)
+        (ctidValue & 0xF000000000000000ULL) != 0xC000000000000000ULL)
         return {};
 
     uint32_t ledger_seq = (ctidValue >> 32) & 0xFFFFFFFUL;

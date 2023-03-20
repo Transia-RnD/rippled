@@ -35,7 +35,6 @@
 #include <ripple/resource/Fees.h>
 #include <regex>
 
-
 namespace ripple {
 namespace RPC {
 

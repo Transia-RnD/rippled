@@ -20,12 +20,12 @@
 #include <ripple/app/rdb/backend/SQLiteDatabase.h>
 #include <ripple/protocol/ErrorCodes.h>
 #include <ripple/protocol/jss.h>
+#include <ripple/rpc/CTID.h>
+#include <optional>
 #include <test/jtx.h>
 #include <test/jtx/Env.h>
 #include <test/jtx/envconfig.h>
-#include <optional>
 #include <tuple>
-#include <ripple/rpc/CTID.h>
 
 namespace ripple {
 
@@ -349,7 +349,8 @@ class Transaction_test : public beast::unit_test::suite
         }
 
         auto const tx = env.jt(noop(alice), seq(env.seq(alice))).stx;
-        auto const ctid = *RPC::encodeCTID(endLegSeq, tx->getSeqProxy().value(), netID);
+        auto const ctid =
+            *RPC::encodeCTID(endLegSeq, tx->getSeqProxy().value(), netID);
         for (int deltaEndSeq = 0; deltaEndSeq < 3; ++deltaEndSeq)
         {
             auto const result = env.rpc(
@@ -412,10 +413,7 @@ class Transaction_test : public beast::unit_test::suite
         // field. (Tests parameter parsing)
         {
             auto const result = env.rpc(
-                COMMAND,
-                ctid,
-                to_string(startLegSeq),
-                to_string(endLegSeq));
+                COMMAND, ctid, to_string(startLegSeq), to_string(endLegSeq));
 
             BEAST_EXPECT(
                 result[jss::result][jss::status] == jss::error &&
@@ -489,12 +487,8 @@ class Transaction_test : public beast::unit_test::suite
 
         // Provide an invalid range: (min < 0, max < 0)
         {
-            auto const result = env.rpc(
-                COMMAND,
-                ctid,
-                BINARY,
-                to_string(-20),
-                to_string(-10));
+            auto const result =
+                env.rpc(COMMAND, ctid, BINARY, to_string(-20), to_string(-10));
 
             BEAST_EXPECT(
                 result[jss::result][jss::status] == jss::error &&
@@ -505,11 +499,7 @@ class Transaction_test : public beast::unit_test::suite
 
         // Provide an invalid range: (only one value)
         {
-            auto const result = env.rpc(
-                COMMAND,
-                ctid,
-                BINARY,
-                to_string(20));
+            auto const result = env.rpc(COMMAND, ctid, BINARY, to_string(20));
 
             BEAST_EXPECT(
                 result[jss::result][jss::status] == jss::error &&
@@ -520,8 +510,7 @@ class Transaction_test : public beast::unit_test::suite
 
         // Provide an invalid range: (only one value)
         {
-            auto const result = env.rpc(
-                COMMAND, ctid, to_string(20));
+            auto const result = env.rpc(COMMAND, ctid, to_string(20));
 
             // Since we only provided one value for the range,
             // the interface parses it as a false binary flag,
@@ -559,38 +548,48 @@ class Transaction_test : public beast::unit_test::suite
         using std::to_string;
 
         Env env{*this, makeNetworkConfig(11111)};
-        
+
         // Test case 1: Valid input values
         auto const expected11 = std::optional<std::string>("CFFFFFFFFFFFFFFF");
-        BEAST_EXPECT(RPC::encodeCTID(0xFFFFFFFUL, 0xFFFFU, 0xFFFFU) == expected11);
+        BEAST_EXPECT(
+            RPC::encodeCTID(0xFFFFFFFUL, 0xFFFFU, 0xFFFFU) == expected11);
         auto const expected12 = std::optional<std::string>("C000000000000000");
         BEAST_EXPECT(RPC::encodeCTID(0, 0, 0) == expected12);
         auto const expected13 = std::optional<std::string>("C000000100020003");
         BEAST_EXPECT(RPC::encodeCTID(1U, 2U, 3U) == expected13);
         auto const expected14 = std::optional<std::string>("C0CA2AA7326FFFFF");
         BEAST_EXPECT(RPC::encodeCTID(13249191UL, 12911U, 65535U) == expected14);
-        
+
         // Test case 2: ledger_seq greater than 0xFFFFFFF
         BEAST_EXPECT(!RPC::encodeCTID(0x10000000UL, 0xFFFFU, 0xFFFFU));
-        
+
         // Test case 3: txn_index greater than 0xFFFF
         // this test case is impossible in c++ due to the type, left in for
         // completeness
         auto const expected3 = std::optional<std::string>("CFFFFFFF0000FFFF");
-        BEAST_EXPECT(RPC::encodeCTID(0xFFFFFFF, (uint16_t)0x10000, 0xFFFF) == expected3);
-        
+        BEAST_EXPECT(
+            RPC::encodeCTID(0xFFFFFFF, (uint16_t)0x10000, 0xFFFF) == expected3);
+
         // Test case 4: network_id greater than 0xFFFF
         // this test case is impossible in c++ due to the type, left in for
-        // completeness 
+        // completeness
         auto const expected4 = std::optional<std::string>("CFFFFFFFFFFF0000");
-        BEAST_EXPECT(RPC::encodeCTID(0xFFFFFFFUL, 0xFFFFU, (uint16_t)0x10000U) == expected4);
+        BEAST_EXPECT(
+            RPC::encodeCTID(0xFFFFFFFUL, 0xFFFFU, (uint16_t)0x10000U) ==
+            expected4);
 
         // Test case 5: Valid input values
-        auto const expected51 = std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(std::make_tuple(0, 0, 0));
+        auto const expected51 =
+            std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                std::make_tuple(0, 0, 0));
         BEAST_EXPECT(RPC::decodeCTID("C000000000000000") == expected51);
-        auto const expected52 = std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(std::make_tuple(1U, 2U, 3U));
+        auto const expected52 =
+            std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                std::make_tuple(1U, 2U, 3U));
         BEAST_EXPECT(RPC::decodeCTID("C000000100020003") == expected52);
-        auto const expected53 = std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(std::make_tuple(13249191UL, 12911U, 49221U));
+        auto const expected53 =
+            std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                std::make_tuple(13249191UL, 12911U, 49221U));
         BEAST_EXPECT(RPC::decodeCTID("C0CA2AA7326FC045") == expected53);
 
         // Test case 6: ctid not a string or big int
@@ -609,25 +608,30 @@ class Transaction_test : public beast::unit_test::suite
         BEAST_EXPECT(!RPC::decodeCTID("FFFFFFFFFFFFFFFF"));
 
         // Test case 11: Valid input values
-        BEAST_EXPECT((RPC::decodeCTID(0xCFFFFFFFFFFFFFFFULL) ==
-                std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
-                    std::make_tuple(0xFFFFFFFUL, 0xFFFFU, 0xFFFFU))));
-        BEAST_EXPECT((RPC::decodeCTID(0xC000000000000000ULL) ==
-                std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
-                    std::make_tuple(0, 0, 0))));
-        BEAST_EXPECT((RPC::decodeCTID(0xC000000100020003ULL) ==
-                std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
-                    std::make_tuple(1U, 2U, 3U))));
-        BEAST_EXPECT((RPC::decodeCTID(0xC0CA2AA7326FC045ULL) ==
-                std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
-                    std::make_tuple(13249191UL, 12911U, 49221U))));
+        BEAST_EXPECT(
+            (RPC::decodeCTID(0xCFFFFFFFFFFFFFFFULL) ==
+             std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                 std::make_tuple(0xFFFFFFFUL, 0xFFFFU, 0xFFFFU))));
+        BEAST_EXPECT(
+            (RPC::decodeCTID(0xC000000000000000ULL) ==
+             std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                 std::make_tuple(0, 0, 0))));
+        BEAST_EXPECT(
+            (RPC::decodeCTID(0xC000000100020003ULL) ==
+             std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                 std::make_tuple(1U, 2U, 3U))));
+        BEAST_EXPECT(
+            (RPC::decodeCTID(0xC0CA2AA7326FC045ULL) ==
+             std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                 std::make_tuple(13249191UL, 12911U, 49221U))));
 
         // Test case 12: ctid not exactly 16 nibbles
         BEAST_EXPECT(!RPC::decodeCTID(0xC003FFFFFFFFFFF));
 
         // Test case 13: ctid too large to be a valid CTID value
-        // this test case is not possible in c++ because it would overflow the type,
-        // left in for completeness BEAST_EXPECT(!RPC::decodeCTID(0xCFFFFFFFFFFFFFFFFULL));
+        // this test case is not possible in c++ because it would overflow the
+        // type, left in for completeness
+        // BEAST_EXPECT(!RPC::decodeCTID(0xCFFFFFFFFFFFFFFFFULL));
 
         // Test case 14: ctid doesn't start with a C nibble
         BEAST_EXPECT(!RPC::decodeCTID(0xFFFFFFFFFFFFFFFFULL));
@@ -662,7 +666,7 @@ class Transaction_test : public beast::unit_test::suite
             BEAST_EXPECT(jrr[jss::ctid] == ctid);
             BEAST_EXPECT(jrr[jss::hash]);
         }
-        
+
         // test that if the network is 65535 the ctid is not in the response
         {
             Env env{*this, makeNetworkConfig(65535)};

@@ -71,34 +71,43 @@ class LedgerMaster_test : public beast::unit_test::suite
         {
             std::uint32_t ledgerSeq = -1;
             std::uint32_t txnIndex = 0;
-            auto result = env.app().getLedgerMaster().txnIDfromIndex(ledgerSeq, txnIndex);
+            auto result =
+                env.app().getLedgerMaster().txnIDfromIndex(ledgerSeq, txnIndex);
             BEAST_EXPECT(!result);
         }
         // test not in ledger
         {
             uint32_t txnIndex = metas[0]->getFieldU32(sfTransactionIndex);
-            auto result = env.app().getLedgerMaster().txnIDfromIndex(0, txnIndex);
+            auto result =
+                env.app().getLedgerMaster().txnIDfromIndex(0, txnIndex);
             BEAST_EXPECT(!result);
         }
         // test empty ledger
         {
-            auto result = env.app().getLedgerMaster().txnIDfromIndex(endLegSeq, 0);
+            auto result =
+                env.app().getLedgerMaster().txnIDfromIndex(endLegSeq, 0);
             BEAST_EXPECT(!result);
         }
         // ended without result
         {
             uint32_t txnIndex = metas[0]->getFieldU32(sfTransactionIndex);
-            auto result = env.app().getLedgerMaster().txnIDfromIndex(endLegSeq + 1, txnIndex);
+            auto result = env.app().getLedgerMaster().txnIDfromIndex(
+                endLegSeq + 1, txnIndex);
             BEAST_EXPECT(!result);
         }
         // success
         {
             uint32_t txnIndex = metas[0]->getFieldU32(sfTransactionIndex);
-            auto result = env.app().getLedgerMaster().txnIDfromIndex(startLegSeq, txnIndex);
+            auto result = env.app().getLedgerMaster().txnIDfromIndex(
+                startLegSeq, txnIndex);
             std::cout << "R: " << *result << "\n";
-            BEAST_EXPECT(*result == uint256("277F4FD89C20B92457FEF05FF63F6405563AD0563C73D967A2972772679ADC65"));
+            BEAST_EXPECT(
+                *result ==
+                uint256("277F4FD89C20B92457FEF05FF63F6405563AD0563C73D967A29727"
+                        "72679ADC65"));
         }
     }
+
 public:
     void
     run() override
