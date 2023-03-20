@@ -25,6 +25,7 @@
 #include <test/jtx/envconfig.h>
 #include <optional>
 #include <tuple>
+#include <ripple/rpc/CTID.h>
 
 namespace ripple {
 
@@ -338,8 +339,6 @@ class Transaction_test : public beast::unit_test::suite
                 to_string(startLegSeq),
                 to_string(endLegSeq));
 
-            // std::cout << "TX: " << result[jss::result][jss::tx] << "\n";
-            // std::cout << "META: " << result[jss::result][jss::meta] << "\n";
             BEAST_EXPECT(result[jss::result][jss::status] == jss::success);
             BEAST_EXPECT(
                 result[jss::result][jss::tx] ==
@@ -349,8 +348,9 @@ class Transaction_test : public beast::unit_test::suite
                 strHex(meta->getSerializer().getData()));
         }
 
-        auto const ctid = *RPC::encodeCTID(endLegSeq, env.seq(alice), netID);
-        for (int deltaEndSeq = 0; deltaEndSeq < 2; ++deltaEndSeq)
+        auto const tx = env.jt(noop(alice), seq(env.seq(alice))).stx;
+        auto const ctid = *RPC::encodeCTID(endLegSeq, tx->getSeqProxy().value(), netID);
+        for (int deltaEndSeq = 0; deltaEndSeq < 3; ++deltaEndSeq)
         {
             auto const result = env.rpc(
                 COMMAND,
@@ -359,8 +359,6 @@ class Transaction_test : public beast::unit_test::suite
                 to_string(startLegSeq),
                 to_string(endLegSeq + deltaEndSeq));
 
-            std::cout << "R: " << result[jss::result] << "\n";
-            std::cout << "CTID: " << ctid << "\n";
             BEAST_EXPECT(
                 result[jss::result][jss::status] == jss::error &&
                 result[jss::result][jss::error] == NOT_FOUND);
@@ -374,7 +372,7 @@ class Transaction_test : public beast::unit_test::suite
         // Find transactions outside of provided range.
         for (size_t i = 0; i < txns.size(); ++i)
         {
-            auto const& tx = txns[i];
+            // auto const& tx = txns[i];
             auto const& meta = metas[i];
             uint32_t txnIdx = meta->getFieldU32(sfTransactionIndex);
             auto const result = env.rpc(
@@ -579,61 +577,60 @@ class Transaction_test : public beast::unit_test::suite
         // this test case is impossible in c++ due to the type, left in for
         // completeness
         auto const expected3 = std::optional<std::string>("CFFFFFFF0000FFFF");
-        BEAST_EXPECT(RPC::encodeCTID(0xFFFFFFF, 0x10000, 0xFFFF) == expected3);
+        BEAST_EXPECT(RPC::encodeCTID(0xFFFFFFF, (uint16_t)0x10000, 0xFFFF) == expected3);
         
         // Test case 4: network_id greater than 0xFFFF
         // this test case is impossible in c++ due to the type, left in for
         // completeness 
         auto const expected4 = std::optional<std::string>("CFFFFFFFFFFF0000");
-        BEAST_EXPECT(RPC::encodeCTID(0xFFFFFFFUL, 0xFFFFU, 0x10000U) == expected4);
+        BEAST_EXPECT(RPC::encodeCTID(0xFFFFFFFUL, 0xFFFFU, (uint16_t)0x10000U) == expected4);
 
-        // // Test case 5: Valid input values
-        // auto const expected51 = std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(std::make_tuple(0, 0, 0));
-        // BEAST_EXPECT(RPC::decodeCTID("C000000000000000") == expected51);
-        // auto const expected52 = std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(std::make_tuple(1U, 2U, 3U));
-        // BEAST_EXPECT(RPC::decodeCTID("C000000100020003") == expected52);
-        // auto const expected53 = std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(std::make_tuple(13249191UL, 12911U, 49221U));
-        // BEAST_EXPECT(RPC::decodeCTID("C0CA2AA7326FC045") == expected53);
+        // Test case 5: Valid input values
+        auto const expected51 = std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(std::make_tuple(0, 0, 0));
+        BEAST_EXPECT(RPC::decodeCTID("C000000000000000") == expected51);
+        auto const expected52 = std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(std::make_tuple(1U, 2U, 3U));
+        BEAST_EXPECT(RPC::decodeCTID("C000000100020003") == expected52);
+        auto const expected53 = std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(std::make_tuple(13249191UL, 12911U, 49221U));
+        BEAST_EXPECT(RPC::decodeCTID("C0CA2AA7326FC045") == expected53);
 
         // Test case 6: ctid not a string or big int
-        // BEAST_EXPECT(!RPC::decodeCTID(0xCFF));
+        BEAST_EXPECT(!RPC::decodeCTID(0xCFF));
 
         // Test case 7: ctid not a hexadecimal string
-        auto const myvar = RPC::decodeCTID("C003FFFFFFFFFFFG");
-        // BEAST_EXPECT(!RPC::decodeCTID("C003FFFFFFFFFFFG"));
+        BEAST_EXPECT(!RPC::decodeCTID("C003FFFFFFFFFFFG"));
 
         // Test case 8: ctid not exactly 16 nibbles
-        // BEAST_EXPECT(!RPC::decodeCTID("C003FFFFFFFFFFF"));
+        BEAST_EXPECT(!RPC::decodeCTID("C003FFFFFFFFFFF"));
 
         // Test case 9: ctid too large to be a valid CTID value
-        // BEAST_EXPECT(!RPC::decodeCTID("CFFFFFFFFFFFFFFFF"));
+        BEAST_EXPECT(!RPC::decodeCTID("CFFFFFFFFFFFFFFFF"));
 
         // Test case 10: ctid doesn't start with a C nibble
-        // BEAST_EXPECT(!RPC::decodeCTID("FFFFFFFFFFFFFFFF"));
+        BEAST_EXPECT(!RPC::decodeCTID("FFFFFFFFFFFFFFFF"));
 
         // Test case 11: Valid input values
-        // BEAST_EXPECT((RPC::decodeCTID(0xCFFFFFFFFFFFFFFFULL) ==
-        //         std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
-        //             std::make_tuple(0xFFFFFFFUL, 0xFFFFU, 0xFFFFU))));
-        // BEAST_EXPECT((RPC::decodeCTID(0xC000000000000000ULL) ==
-        //         std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
-        //             std::make_tuple(0, 0, 0))));
-        // BEAST_EXPECT((RPC::decodeCTID(0xC000000100020003ULL) ==
-        //         std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
-        //             std::make_tuple(1U, 2U, 3U))));
-        // BEAST_EXPECT((RPC::decodeCTID(0xC0CA2AA7326FC045ULL) ==
-        //         std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
-        //             std::make_tuple(13249191UL, 12911U, 49221U))));
+        BEAST_EXPECT((RPC::decodeCTID(0xCFFFFFFFFFFFFFFFULL) ==
+                std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                    std::make_tuple(0xFFFFFFFUL, 0xFFFFU, 0xFFFFU))));
+        BEAST_EXPECT((RPC::decodeCTID(0xC000000000000000ULL) ==
+                std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                    std::make_tuple(0, 0, 0))));
+        BEAST_EXPECT((RPC::decodeCTID(0xC000000100020003ULL) ==
+                std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                    std::make_tuple(1U, 2U, 3U))));
+        BEAST_EXPECT((RPC::decodeCTID(0xC0CA2AA7326FC045ULL) ==
+                std::optional<std::tuple<int32_t, uint16_t, uint16_t>>(
+                    std::make_tuple(13249191UL, 12911U, 49221U))));
 
-        // // Test case 12: ctid not exactly 16 nibbles
-        // BEAST_EXPECT(!RPC::decodeCTID(0xC003FFFFFFFFFFF));
+        // Test case 12: ctid not exactly 16 nibbles
+        BEAST_EXPECT(!RPC::decodeCTID(0xC003FFFFFFFFFFF));
 
-        // // Test case 13: ctid too large to be a valid CTID value
-        // // this test case is not possible in c++ because it would overflow the type,
-        // // left in for completeness BEAST_EXPECT(!RPC::decodeCTID(0xCFFFFFFFFFFFFFFFFULL));
+        // Test case 13: ctid too large to be a valid CTID value
+        // this test case is not possible in c++ because it would overflow the type,
+        // left in for completeness BEAST_EXPECT(!RPC::decodeCTID(0xCFFFFFFFFFFFFFFFFULL));
 
-        // // Test case 14: ctid doesn't start with a C nibble
-        // BEAST_EXPECT(!RPC::decodeCTID(0xFFFFFFFFFFFFFFFFULL));
+        // Test case 14: ctid doesn't start with a C nibble
+        BEAST_EXPECT(!RPC::decodeCTID(0xFFFFFFFFFFFFFFFFULL));
     }
 
     void
@@ -702,10 +699,10 @@ public:
     void
     testWithFeats(FeatureBitset features)
     {
-        // testRangeRequest(features);
-        // testRangeCTIDRequest(features);
+        testRangeRequest(features);
+        testRangeCTIDRequest(features);
         testCTIDValidation(features);
-        // testCTIDRPC(features);
+        testCTIDRPC(features);
     }
 };
 
