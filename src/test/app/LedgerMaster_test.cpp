@@ -100,7 +100,6 @@ class LedgerMaster_test : public beast::unit_test::suite
             uint32_t txnIndex = metas[0]->getFieldU32(sfTransactionIndex);
             auto result = env.app().getLedgerMaster().txnIDfromIndex(
                 startLegSeq, txnIndex);
-            std::cout << "R: " << *result << "\n";
             BEAST_EXPECT(
                 *result ==
                 uint256("277F4FD89C20B92457FEF05FF63F6405563AD0563C73D967A29727"
