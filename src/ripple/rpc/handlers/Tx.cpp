@@ -261,9 +261,9 @@ doTxHelp(RPC::Context& context, TxArgs args)
         args.hash = 
             context.app.getLedgerMaster().
                 txnIDfromIndex(args.ctid->first, args.ctid->second);
-        if (!args.hash)
-            return {result, rpcTXN_NOT_FOUND};
-        range = ClosedInterval<uint32_t>(args.ctid->first, args.ctid->second);
+        
+        if (args.hash)
+            range = ClosedInterval<uint32_t>(args.ctid->first, args.ctid->second);
     }
     
     if (args.ledgerRange)
