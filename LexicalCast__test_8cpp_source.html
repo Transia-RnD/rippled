@@ -292,86 +292,88 @@ $(function() {
 <div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160; </div>
 <div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;            expect(<a class="code" href="namespacebeast.html#aeb241ed2f4422ea57283956ca58c5d42">lexicalCastChecked</a>(out, <span class="stringliteral">&quot;-0&quot;</span>), <span class="stringliteral">&quot;0&quot;</span>);</div>
 <div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;            expect(<a class="code" href="namespacebeast.html#aeb241ed2f4422ea57283956ca58c5d42">lexicalCastChecked</a>(out, <span class="stringliteral">&quot;0&quot;</span>), <span class="stringliteral">&quot;0&quot;</span>);</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;        }</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160; </div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;        {</div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;            <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint32_t</a> out;</div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160; </div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;            expect(!<a class="code" href="namespacebeast.html#aeb241ed2f4422ea57283956ca58c5d42">lexicalCastChecked</a>(out, <span class="stringliteral">&quot;-0&quot;</span>), <span class="stringliteral">&quot;0&quot;</span>);</div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;            expect(<a class="code" href="namespacebeast.html#aeb241ed2f4422ea57283956ca58c5d42">lexicalCastChecked</a>(out, <span class="stringliteral">&quot;0&quot;</span>), <span class="stringliteral">&quot;0&quot;</span>);</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;        }</div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;    }</div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160; </div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00235"></a><span class="lineno"><a class="line" href="classbeast_1_1LexicalCast__test.html#adcceb60b37acb1f198ce444113684ccf">  235</a></span>&#160;    <a class="code" href="classbeast_1_1LexicalCast__test.html#adcceb60b37acb1f198ce444113684ccf">testEntireRange</a>()</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    {</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;        testcase(<span class="stringliteral">&quot;entire range&quot;</span>);</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160; </div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int32_t</a> i = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/min.html">std::numeric_limits&lt;std::int16_t&gt;::min</a>();</div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> <span class="keyword">const</span> empty(<span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160; </div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;        <span class="keywordflow">while</span> (i &lt;= <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits&lt;std::int16_t&gt;::max</a>())</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;        {</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;            <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int16_t</a> j = <span class="keyword">static_cast&lt;</span><a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int16_t</a><span class="keyword">&gt;</span>(i);</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160; </div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;            <span class="keyword">auto</span> actual = <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string/to_string.html">std::to_string</a>(j);</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;            expect(<a class="code" href="namespacebeast.html#aeb241ed2f4422ea57283956ca58c5d42">lexicalCastChecked</a>(out, <span class="stringliteral">&quot;+0&quot;</span>), <span class="stringliteral">&quot;0&quot;</span>);</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;        }</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160; </div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;        {</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;            <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint32_t</a> out;</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160; </div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;            expect(!<a class="code" href="namespacebeast.html#aeb241ed2f4422ea57283956ca58c5d42">lexicalCastChecked</a>(out, <span class="stringliteral">&quot;-0&quot;</span>), <span class="stringliteral">&quot;0&quot;</span>);</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;            expect(<a class="code" href="namespacebeast.html#aeb241ed2f4422ea57283956ca58c5d42">lexicalCastChecked</a>(out, <span class="stringliteral">&quot;0&quot;</span>), <span class="stringliteral">&quot;0&quot;</span>);</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;            expect(<a class="code" href="namespacebeast.html#aeb241ed2f4422ea57283956ca58c5d42">lexicalCastChecked</a>(out, <span class="stringliteral">&quot;+0&quot;</span>), <span class="stringliteral">&quot;0&quot;</span>);</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;        }</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;    }</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160; </div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;    <span class="keywordtype">void</span></div>
+<div class="line"><a name="l00237"></a><span class="lineno"><a class="line" href="classbeast_1_1LexicalCast__test.html#adcceb60b37acb1f198ce444113684ccf">  237</a></span>&#160;    <a class="code" href="classbeast_1_1LexicalCast__test.html#adcceb60b37acb1f198ce444113684ccf">testEntireRange</a>()</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    {</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;        testcase(<span class="stringliteral">&quot;entire range&quot;</span>);</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160; </div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int32_t</a> i = <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits/min.html">std::numeric_limits&lt;std::int16_t&gt;::min</a>();</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> <span class="keyword">const</span> empty(<span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160; </div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;        <span class="keywordflow">while</span> (i &lt;= <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits&lt;std::int16_t&gt;::max</a>())</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;        {</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;            <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int16_t</a> j = <span class="keyword">static_cast&lt;</span><a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int16_t</a><span class="keyword">&gt;</span>(i);</div>
 <div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160; </div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;            <span class="keyword">auto</span> result = <a class="code" href="namespacebeast.html#a67b02c0e029d6e8394e8832e74c95f27">lexicalCast</a>(j, empty);</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;            <span class="keyword">auto</span> actual = <a class="codeRef" href="http://en.cppreference.com/w/cpp/string/basic_string/to_string.html">std::to_string</a>(j);</div>
 <div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160; </div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;            expect(result == actual, actual + <span class="stringliteral">&quot; (string to integer)&quot;</span>);</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;            <span class="keyword">auto</span> result = <a class="code" href="namespacebeast.html#a67b02c0e029d6e8394e8832e74c95f27">lexicalCast</a>(j, empty);</div>
 <div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160; </div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;            <span class="keywordflow">if</span> (result == actual)</div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;            {</div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;                <span class="keyword">auto</span> number = lexicalCast&lt;std::int16_t&gt;(result);</div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160; </div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;                <span class="keywordflow">if</span> (number != j)</div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;                    expect(<span class="keyword">false</span>, actual + <span class="stringliteral">&quot; (integer to string)&quot;</span>);</div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;            }</div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160; </div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;            i++;</div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;        }</div>
-<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;    }</div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160; </div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;    <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00265"></a><span class="lineno"><a class="line" href="classbeast_1_1LexicalCast__test.html#a3a65007e05f36be181a559d928f35e06">  265</a></span>&#160;    <a class="code" href="classbeast_1_1LexicalCast__test.html#a3a65007e05f36be181a559d928f35e06">run</a>()<span class="keyword"> override</span></div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;<span class="keyword">    </span>{</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a> <span class="keyword">const</span> seedValue = 50;</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160; </div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;        <a class="code" href="classbeast_1_1detail_1_1xor__shift__engine.html">xor_shift_engine</a> r(seedValue);</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;            expect(result == actual, actual + <span class="stringliteral">&quot; (string to integer)&quot;</span>);</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160; </div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;            <span class="keywordflow">if</span> (result == actual)</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;            {</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;                <span class="keyword">auto</span> number = lexicalCast&lt;std::int16_t&gt;(result);</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160; </div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;                <span class="keywordflow">if</span> (number != j)</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;                    expect(<span class="keyword">false</span>, actual + <span class="stringliteral">&quot; (integer to string)&quot;</span>);</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;            }</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160; </div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;            i++;</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;        }</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;    }</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160; </div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <span class="keywordtype">void</span></div>
+<div class="line"><a name="l00267"></a><span class="lineno"><a class="line" href="classbeast_1_1LexicalCast__test.html#a3a65007e05f36be181a559d928f35e06">  267</a></span>&#160;    <a class="code" href="classbeast_1_1LexicalCast__test.html#a3a65007e05f36be181a559d928f35e06">run</a>()<span class="keyword"> override</span></div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;        <a class="codeRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a> <span class="keyword">const</span> seedValue = 50;</div>
 <div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160; </div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;        testIntegers&lt;int&gt;(r);</div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;        testIntegers&lt;unsigned int&gt;(r);</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        testIntegers&lt;short&gt;(r);</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        testIntegers&lt;unsigned short&gt;(r);</div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;        testIntegers&lt;std::int32_t&gt;(r);</div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        testIntegers&lt;std::uint32_t&gt;(r);</div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;        testIntegers&lt;std::int64_t&gt;(r);</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        testIntegers&lt;std::uint64_t&gt;(r);</div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160; </div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#aeeed5a03ad3a4ae92df67ce5880d5c01">testPathologies</a>();</div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#a5a1240966c76ea29b168f9407691eb51">testConversionOverflows</a>();</div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#a3ca9000970fb30fae644a95a07f4931f">testConversionUnderflows</a>();</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#a17893a56c64295c7bfe5b20089cd0c17">testThrowingConversions</a>();</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#a78e9bd964ba34456171358b10c8a1941">testZero</a>();</div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#a01ae02e1e63e347757718f686d8a6c7d">testEdgeCases</a>();</div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#adcceb60b37acb1f198ce444113684ccf">testEntireRange</a>();</div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;    }</div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;};</div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160; </div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<a class="code" href="namespacebeast.html#acf354b548fbcd87bc88d817eeb675e82">BEAST_DEFINE_TESTSUITE</a>(LexicalCast, beast_core, <a class="code" href="namespacebeast.html">beast</a>);</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;        <a class="code" href="classbeast_1_1detail_1_1xor__shift__engine.html">xor_shift_engine</a> r(seedValue);</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160; </div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        testIntegers&lt;int&gt;(r);</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        testIntegers&lt;unsigned int&gt;(r);</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;        testIntegers&lt;short&gt;(r);</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        testIntegers&lt;unsigned short&gt;(r);</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;        testIntegers&lt;std::int32_t&gt;(r);</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        testIntegers&lt;std::uint32_t&gt;(r);</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        testIntegers&lt;std::int64_t&gt;(r);</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        testIntegers&lt;std::uint64_t&gt;(r);</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160; </div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#aeeed5a03ad3a4ae92df67ce5880d5c01">testPathologies</a>();</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#a5a1240966c76ea29b168f9407691eb51">testConversionOverflows</a>();</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#a3ca9000970fb30fae644a95a07f4931f">testConversionUnderflows</a>();</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#a17893a56c64295c7bfe5b20089cd0c17">testThrowingConversions</a>();</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#a78e9bd964ba34456171358b10c8a1941">testZero</a>();</div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#a01ae02e1e63e347757718f686d8a6c7d">testEdgeCases</a>();</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;        <a class="code" href="classbeast_1_1LexicalCast__test.html#adcceb60b37acb1f198ce444113684ccf">testEntireRange</a>();</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;    }</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;};</div>
 <div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160; </div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;}  <span class="comment">// namespace beast</span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<a class="code" href="namespacebeast.html#acf354b548fbcd87bc88d817eeb675e82">BEAST_DEFINE_TESTSUITE</a>(LexicalCast, beast_core, <a class="code" href="namespacebeast.html">beast</a>);</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160; </div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;}  <span class="comment">// namespace beast</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_a707f7c4897e636203d04ac9a0dad3b0a"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#a707f7c4897e636203d04ac9a0dad3b0a">beast::LexicalCast_test::testInteger</a></div><div class="ttdeci">void testInteger(IntType in)</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00038">LexicalCast_test.cpp:38</a></div></div>
-<div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_a3a65007e05f36be181a559d928f35e06"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#a3a65007e05f36be181a559d928f35e06">beast::LexicalCast_test::run</a></div><div class="ttdeci">void run() override</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00265">LexicalCast_test.cpp:265</a></div></div>
+<div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_a3a65007e05f36be181a559d928f35e06"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#a3a65007e05f36be181a559d928f35e06">beast::LexicalCast_test::run</a></div><div class="ttdeci">void run() override</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00267">LexicalCast_test.cpp:267</a></div></div>
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html">beast::LexicalCast_test</a></div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00026">LexicalCast_test.cpp:26</a></div></div>
 <div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div><div class="ttdoc">STL class.</div></div>
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_a3ca9000970fb30fae644a95a07f4931f"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#a3ca9000970fb30fae644a95a07f4931f">beast::LexicalCast_test::testConversionUnderflows</a></div><div class="ttdeci">void testConversionUnderflows()</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00107">LexicalCast_test.cpp:107</a></div></div>
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_aeeed5a03ad3a4ae92df67ce5880d5c01"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#aeeed5a03ad3a4ae92df67ce5880d5c01">beast::LexicalCast_test::testPathologies</a></div><div class="ttdeci">void testPathologies()</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00075">LexicalCast_test.cpp:75</a></div></div>
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_a5cb80da378b6746beed37d2d3324dc2d"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#a5cb80da378b6746beed37d2d3324dc2d">beast::LexicalCast_test::tryEdgeCase</a></div><div class="ttdeci">bool tryEdgeCase(std::string const &amp;s)</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00120">LexicalCast_test.cpp:120</a></div></div>
-<div class="ttc" id="anamespacebeast_html_a67b02c0e029d6e8394e8832e74c95f27"><div class="ttname"><a href="namespacebeast.html#a67b02c0e029d6e8394e8832e74c95f27">beast::lexicalCast</a></div><div class="ttdeci">Out lexicalCast(In in, Out defaultValue=Out())</div><div class="ttdoc">Convert from one type to another.</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast_8h_source.html#l00190">LexicalCast.h:190</a></div></div>
+<div class="ttc" id="anamespacebeast_html_a67b02c0e029d6e8394e8832e74c95f27"><div class="ttname"><a href="namespacebeast.html#a67b02c0e029d6e8394e8832e74c95f27">beast::lexicalCast</a></div><div class="ttdeci">Out lexicalCast(In in, Out defaultValue=Out())</div><div class="ttdoc">Convert from one type to another.</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast_8h_source.html#l00296">LexicalCast.h:296</a></div></div>
 <div class="ttc" id="abasic_stringstream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/io/basic_stringstream.html">std::stringstream</a></div><div class="ttdoc">STL class.</div></div>
-<div class="ttc" id="astructbeast_1_1BadLexicalCast_html"><div class="ttname"><a href="structbeast_1_1BadLexicalCast.html">beast::BadLexicalCast</a></div><div class="ttdoc">Thrown when a conversion is not possible with LexicalCast.</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast_8h_source.html#l00152">LexicalCast.h:152</a></div></div>
+<div class="ttc" id="astructbeast_1_1BadLexicalCast_html"><div class="ttname"><a href="structbeast_1_1BadLexicalCast.html">beast::BadLexicalCast</a></div><div class="ttdoc">Thrown when a conversion is not possible with LexicalCast.</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast_8h_source.html#l00256">LexicalCast.h:256</a></div></div>
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_ab816733e35797d88be465ccc78c62e2e"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#ab816733e35797d88be465ccc78c62e2e">beast::LexicalCast_test::tryBadConvert</a></div><div class="ttdeci">void tryBadConvert(std::string const &amp;s)</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00090">LexicalCast_test.cpp:90</a></div></div>
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_a01ae02e1e63e347757718f686d8a6c7d"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#a01ae02e1e63e347757718f686d8a6c7d">beast::LexicalCast_test::testEdgeCases</a></div><div class="ttdeci">void testEdgeCases()</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00133">LexicalCast_test.cpp:133</a></div></div>
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_a17893a56c64295c7bfe5b20089cd0c17"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#a17893a56c64295c7bfe5b20089cd0c17">beast::LexicalCast_test::testThrowingConversions</a></div><div class="ttdeci">void testThrowingConversions()</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00195">LexicalCast_test.cpp:195</a></div></div>
@@ -381,13 +383,13 @@ $(function() {
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_a9de96e86bd710b8c06cb4608d8e80b19"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#a9de96e86bd710b8c06cb4608d8e80b19">beast::LexicalCast_test::testThrowConvert</a></div><div class="ttdeci">void testThrowConvert(std::string const &amp;s, bool success)</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00176">LexicalCast_test.cpp:176</a></div></div>
 <div class="ttc" id="ainteger_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/integer.html">std::int32_t</a></div></div>
 <div class="ttc" id="amin_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits/min.html">std::numeric_limits::min</a></div><div class="ttdeci">T min(T... args)</div></div>
-<div class="ttc" id="anamespacebeast_html_aeb241ed2f4422ea57283956ca58c5d42"><div class="ttname"><a href="namespacebeast.html#aeb241ed2f4422ea57283956ca58c5d42">beast::lexicalCastChecked</a></div><div class="ttdeci">bool lexicalCastChecked(Out &amp;out, In in)</div><div class="ttdoc">Intelligently convert from one type to another.</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast_8h_source.html#l00162">LexicalCast.h:162</a></div></div>
+<div class="ttc" id="anamespacebeast_html_aeb241ed2f4422ea57283956ca58c5d42"><div class="ttname"><a href="namespacebeast.html#aeb241ed2f4422ea57283956ca58c5d42">beast::lexicalCastChecked</a></div><div class="ttdeci">bool lexicalCastChecked(Out &amp;out, In in)</div><div class="ttdoc">Intelligently convert from one type to another.</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast_8h_source.html#l00266">LexicalCast.h:266</a></div></div>
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_a0e57d70bd0e0ab896bc42b822cde0902"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#a0e57d70bd0e0ab896bc42b822cde0902">beast::LexicalCast_test::testIntegers</a></div><div class="ttdeci">void testIntegers(xor_shift_engine &amp;r)</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00050">LexicalCast_test.cpp:50</a></div></div>
 <div class="ttc" id="astr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/io/basic_stringstream/str.html">std::stringstream::str</a></div><div class="ttdeci">T str(T... args)</div></div>
 <div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_a5a1240966c76ea29b168f9407691eb51"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#a5a1240966c76ea29b168f9407691eb51">beast::LexicalCast_test::testConversionOverflows</a></div><div class="ttdeci">void testConversionOverflows()</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00097">LexicalCast_test.cpp:97</a></div></div>
 <div class="ttc" id="aclassbeast_1_1detail_1_1xor__shift__engine_html"><div class="ttname"><a href="classbeast_1_1detail_1_1xor__shift__engine.html">beast::detail::xor_shift_engine</a></div><div class="ttdef"><b>Definition:</b> <a href="xor__shift__engine_8h_source.html#l00032">xor_shift_engine.h:32</a></div></div>
 <div class="ttc" id="anamespacebeast_html_acf354b548fbcd87bc88d817eeb675e82"><div class="ttname"><a href="namespacebeast.html#acf354b548fbcd87bc88d817eeb675e82">beast::BEAST_DEFINE_TESTSUITE</a></div><div class="ttdeci">BEAST_DEFINE_TESTSUITE(aged_set, container, beast)</div></div>
-<div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_adcceb60b37acb1f198ce444113684ccf"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#adcceb60b37acb1f198ce444113684ccf">beast::LexicalCast_test::testEntireRange</a></div><div class="ttdeci">void testEntireRange()</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00235">LexicalCast_test.cpp:235</a></div></div>
+<div class="ttc" id="aclassbeast_1_1LexicalCast__test_html_adcceb60b37acb1f198ce444113684ccf"><div class="ttname"><a href="classbeast_1_1LexicalCast__test.html#adcceb60b37acb1f198ce444113684ccf">beast::LexicalCast_test::testEntireRange</a></div><div class="ttdeci">void testEntireRange()</div><div class="ttdef"><b>Definition:</b> <a href="LexicalCast__test_8cpp_source.html#l00237">LexicalCast_test.cpp:237</a></div></div>
 <div class="ttc" id="anumeric_limits_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/numeric_limits.html">std::numeric_limits</a></div></div>
 <div class="ttc" id="anamespacebeast_html"><div class="ttname"><a href="namespacebeast.html">beast</a></div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00641">base_uint.h:641</a></div></div>
 <!-- start footer part -->
