@@ -411,6 +411,13 @@ class RCLConsensus
             RCLCxLedger const& ledger,
             RCLTxSet const& txns,
             bool proposing);
+    
+        void
+        generateXPOPs(
+            RCLCxLedger const& lgr,
+            std::vector<std::shared_ptr<STTx const>> const& txns,
+            std::vector<std::shared_ptr<STValidation>> const& validations);
+
     };
 
 public:
@@ -519,6 +526,8 @@ public:
     {
         return adaptor_.parms();
     }
+
+
 
 private:
     // Since Consensus does not provide intrinsic thread-safety, this mutex

@@ -439,6 +439,52 @@ RCLConsensus::Adaptor::onAccept(
 }
 
 void
+RCLConsensus::Adaptor::generateXPOPs(
+    RCLCxLedger const& lgr,
+    std::vector<std::shared_ptr<STTx const>> const& txns,
+    std::vector<std::shared_ptr<STValidation>> const& validations)
+{
+    Json::Value ledger;
+    Json::Value validation;
+
+    LedgerInfo const& info = lgr.ledger_->info();
+
+    ledger[jss::index] = to_string(info.seq);
+    ledger[jss::coins] = to_string(info.drops);
+    ledger[jss::phash] = to_string(info.parentHash);
+    ledger[jss::txroot] = to_string(info.txHash);
+    ledger[jss::acroot] = to_string(info.accountHash);
+    ledger[jss::pclose] = info.parentCloseTime.time_since_epoch().count();
+    ledger[jss::close] = info.closeTime.time_since_epoch().count();
+    ledger[jss::cres] =  info.closeTimeResolution.count();
+    ledger[jss::flags] = info.closeFlags;
+    
+
+    Json::Value data;
+    for (auto const& validation: validations)
+    {
+        if (auto master = app_.validators().getListedKey(validation->getSignerPublic()); master)
+             data[toBase58(TokenType::NodePublic, *master)] =
+                 strHex(validation->getSerialized());
+    }
+
+    validation[jss::data] = data;
+
+    Json::Value transaction;
+    transaction[jss::blob] =;
+    transaction[jss::meta] =;
+    
+    Json::Value result;
+
+    result[jss::ledger] = ledger;
+    result[jss::validation] = validation;
+    result[jss::transaction] = transaction;
+
+    std::cout << "generate xpops called for lgr seq: " << lgr.seq() << "\n";
+    std::cout << "result: \n" << result << "\n";
+}
+
+void
 RCLConsensus::Adaptor::doAccept(
     Result const& result,
     RCLCxLedger const& prevLedger,
@@ -491,12 +537,44 @@ RCLConsensus::Adaptor::doAccept(
 
     JLOG(j_.debug()) << "Building canonical tx set: " << retriableTxs.key();
 
+    // populate this vec with txns that have "proof" in the start of a memodata value
+    // for these we will generate xpops in a moment
+    std::vector<std::shared_ptr<STTx const>> xpop_txns;
+
+    // RH UPTO: change the above to just store txnids, then get the full txn + meta 
+    // from the built ledger at the bottom, and pass that to xpop generator
+    // at this point in the code there is no Transactor application
     for (auto const& item : *result.txns.map_)
     {
         try
         {
-            retriableTxs.insert(
-                std::make_shared<STTx const>(SerialIter{item.slice()}));
+            auto tx = std::make_shared<STTx const>(SerialIter{item.slice()});
+            retriableTxs.insert(tx);
+            if (tx->isFieldPresent(sfMemos))
+            {
+                auto const& memos = tx->getFieldArray(sfMemos);
+                for (auto const& memo : memos)
+                {
+                    if (memo.isFieldPresent(sfMemoData))
+                    {
+                        auto optData = memo.getFieldVL(sfMemoData);
+
+                        bool found = true;
+                        for (int i = 0; i < 5; i++)
+                        {
+                            if (optData[i] != ("proof")[i] &&
+                                optData[i] != ("PROOF")[i])
+                            {
+                                found = false;
+                                break;
+                            }
+                        }
+
+                        if (found)
+                            xpop_txns.push_back(tx);
+                    }
+                }
+            }
             JLOG(j_.debug()) << "    Tx: " << item.key();
         }
         catch (std::exception const& ex)
@@ -704,6 +782,17 @@ RCLConsensus::Adaptor::doAccept(
 
         app_.timeKeeper().adjustCloseTime(offset);
     }
+
+    std::cout << "should we generate xpops?" 
+        << " xpop_txns.size() = " << xpop_txns.size() 
+        << " haveCorrectLCL = " << haveCorrectLCL 
+        << " result.state = " << (result.state == ConsensusState::Yes) 
+        << " standalone = " << app_.config().standalone() << "\n";
+
+    // generate xpops
+    if (!xpop_txns.empty() && haveCorrectLCL && (result.state == ConsensusState::Yes || app_.config().standalone()))
+        generateXPOPs(built, xpop_txns, 
+            app_.getValidations().getTrustedForLedger(built.id(), built.seq()));
 }
 
 void

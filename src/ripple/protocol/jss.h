@@ -205,6 +205,15 @@ JSS(currentShardIndex);      // out: NodeToShardStatus
 JSS(currency);               // in: paths/PathRequest, STAmount
                              // out: STPathSet, STAmount,
                              //      AccountLines
+                             //
+JSS(acroot);
+JSS(coins);
+JSS(cres);
+JSS(pclose);
+JSS(phash);
+JSS(txroot);
+JSS(validation);
+
 JSS(current);                // out: OwnerInfo
 JSS(current_activities);
 JSS(current_ledger_size);     // out: TxQ
