@@ -213,6 +213,7 @@ JSS(pclose);
 JSS(phash);
 JSS(txroot);
 JSS(validation);
+JSS(children);
 
 JSS(current);                // out: OwnerInfo
 JSS(current_activities);

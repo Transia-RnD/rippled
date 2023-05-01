@@ -440,16 +440,18 @@ RCLConsensus::Adaptor::onAccept(
 
 void
 RCLConsensus::Adaptor::generateXPOPs(
-    RCLCxLedger const& lgr,
-    std::vector<std::shared_ptr<STTx const>> const& txns,
+    Ledger const& lgr,
+    std::vector<uint256> const& txns,
     std::vector<std::shared_ptr<STValidation>> const& validations)
 {
     Json::Value ledger;
     Json::Value validation;
 
-    LedgerInfo const& info = lgr.ledger_->info();
+    std::cout << "generate xpops called for lgr seq: " << lgr.seq() << "\n";
 
-    ledger[jss::index] = to_string(info.seq);
+    LedgerInfo const& info = lgr.info();
+
+    ledger[jss::index] = info.seq;
     ledger[jss::coins] = to_string(info.drops);
     ledger[jss::phash] = to_string(info.parentHash);
     ledger[jss::txroot] = to_string(info.txHash);
@@ -461,7 +463,7 @@ RCLConsensus::Adaptor::generateXPOPs(
     
 
     Json::Value data;
-    for (auto const& validation: validations)
+    for (auto const& validation : validations)
     {
         if (auto master = app_.validators().getListedKey(validation->getSignerPublic()); master)
              data[toBase58(TokenType::NodePublic, *master)] =
@@ -470,18 +472,86 @@ RCLConsensus::Adaptor::generateXPOPs(
 
     validation[jss::data] = data;
 
-    Json::Value transaction;
-    transaction[jss::blob] =;
-    transaction[jss::meta] =;
+    // RH TODO: validation[jss::unl] =  (from first VL)
+
+
+
+    Json::Value txproof;
+    txproof[jss::children] = Json::objectValue;
+    txproof[jss::hash] = "";
+    txproof[jss::key] = "0000000000000000000000000000000000000000000000000000000000000000";
+
+    auto const& txMap = lgr.txMap();
+    for (auto const& item : txMap)
+    {
+        auto hash = strHex(item.key());
+        Json::Value* ptr = &txproof;
+        uint8_t upto = 0;
+        bool error = true;
+        for (char const nibble_raw : hash)
+        {
+            std::string nibble = "A";
+            nibble.data()[0] = nibble_raw;
+            // place each txn at the first available spot in the tree
+            if (!(*ptr)[jss::children][nibble])
+            {
+                Json::Value node;
+                node[jss::children] = Json::objectValue;
+                node[jss::hash] = strHex(sha512Half(HashPrefix::txNode, item.slice(), item.key()));
+                node[jss::key] = hash;
+                (*ptr)[jss::children][nibble] = node;
+                error = false;
+                break;
+            }
+
+            // inserting new nodes as needed until one can be placed
+            if (((*ptr)[jss::children][nibble][jss::children]).size() == 0u)
+            {
+                // create new node
+                Json::Value oldnode = (*ptr)[jss::children][nibble];
+                std::string newnibble = oldnode[jss::key].asString().substr(upto + 1, 1);
+                Json::Value node;
+                node[jss::children] = Json::objectValue;
+                node[jss::hash] = "";
+                node[jss::key] = hash.substr(0, upto + 1);
+                (*ptr)[jss::children][nibble] = node;
+                (*ptr)[jss::children][nibble][jss::children][newnibble] = oldnode;
+            }
+            
+            ptr = &((*ptr)[jss::children][nibble]);
+            upto++;
+        }
+
+        if (error)
+            printf("Error inserting txns for xpop proof\n");
+    }
+
+    for (auto const& txid : txns)
+    {
+        auto const& item = txMap.peekItem(txid);
+        if (!item)
+            continue;
+        SerialIter sit(item->slice());
+        Slice tx = sit.getSlice(sit.getVLDataLength());
+        Slice meta = sit.getSlice(sit.getVLDataLength());
+
+        Json::Value transaction;
+        transaction[jss::blob] = strHex(tx);
+        transaction[jss::meta] = strHex(meta);
+        transaction[jss::proof] = txproof; 
+
+        // RH UPTO: account[blob] account[proof] for account root
+
+        Json::Value result;
+        result[jss::ledger] = ledger;
+        result[jss::validation] = validation;
+        result[jss::transaction] = transaction;
     
-    Json::Value result;
+        std::cout << "xpop for " << txid << ": " << result << "\n";
 
-    result[jss::ledger] = ledger;
-    result[jss::validation] = validation;
-    result[jss::transaction] = transaction;
+    }
 
-    std::cout << "generate xpops called for lgr seq: " << lgr.seq() << "\n";
-    std::cout << "result: \n" << result << "\n";
+    
 }
 
 void
@@ -539,7 +609,7 @@ RCLConsensus::Adaptor::doAccept(
 
     // populate this vec with txns that have "proof" in the start of a memodata value
     // for these we will generate xpops in a moment
-    std::vector<std::shared_ptr<STTx const>> xpop_txns;
+    std::vector<uint256> xpopTxs;
 
     // RH UPTO: change the above to just store txnids, then get the full txn + meta 
     // from the built ledger at the bottom, and pass that to xpop generator
@@ -559,19 +629,19 @@ RCLConsensus::Adaptor::doAccept(
                     {
                         auto optData = memo.getFieldVL(sfMemoData);
 
-                        bool found = true;
+                        bool hasProofMemo = true;
                         for (int i = 0; i < 5; i++)
                         {
                             if (optData[i] != ("proof")[i] &&
                                 optData[i] != ("PROOF")[i])
                             {
-                                found = false;
+                                hasProofMemo = false;
                                 break;
                             }
                         }
 
-                        if (found)
-                            xpop_txns.push_back(tx);
+                        if (hasProofMemo)
+                            xpopTxs.push_back(tx->getTransactionID());
                     }
                 }
             }
@@ -784,15 +854,19 @@ RCLConsensus::Adaptor::doAccept(
     }
 
     std::cout << "should we generate xpops?" 
-        << " xpop_txns.size() = " << xpop_txns.size() 
+        << " xpopTxs.size() = " << xpopTxs.size() 
         << " haveCorrectLCL = " << haveCorrectLCL 
         << " result.state = " << (result.state == ConsensusState::Yes) 
         << " standalone = " << app_.config().standalone() << "\n";
 
     // generate xpops
-    if (!xpop_txns.empty() && haveCorrectLCL && (result.state == ConsensusState::Yes || app_.config().standalone()))
-        generateXPOPs(built, xpop_txns, 
-            app_.getValidations().getTrustedForLedger(built.id(), built.seq()));
+    if (!xpopTxs.empty() && haveCorrectLCL && (result.state == ConsensusState::Yes || app_.config().standalone()))
+    {
+        generateXPOPs(
+                *(built.ledger_),
+                xpopTxs, 
+                app_.getValidations().getTrustedForLedger(built.id(), built.seq()));
+    }
 }
 
 void
