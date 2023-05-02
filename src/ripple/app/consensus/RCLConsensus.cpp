@@ -460,7 +460,7 @@ RCLConsensus::Adaptor::generateXPOPs(
     ledger[jss::close] = info.closeTime.time_since_epoch().count();
     ledger[jss::cres] =  info.closeTimeResolution.count();
     ledger[jss::flags] = info.closeFlags;
-    
+
 
     Json::Value data;
     for (auto const& validation : validations)
@@ -493,7 +493,7 @@ RCLConsensus::Adaptor::generateXPOPs(
             std::string nibble = "A";
             nibble.data()[0] = nibble_raw;
             // place each txn at the first available spot in the tree
-            if (!(*ptr)[jss::children][nibble])
+            if (!(*ptr)[jss::children].isMember(nibble))
             {
                 Json::Value node;
                 node[jss::children] = Json::objectValue;
@@ -517,7 +517,7 @@ RCLConsensus::Adaptor::generateXPOPs(
                 (*ptr)[jss::children][nibble] = node;
                 (*ptr)[jss::children][nibble][jss::children][newnibble] = oldnode;
             }
-            
+
             ptr = &((*ptr)[jss::children][nibble]);
             upto++;
         }
@@ -525,6 +525,48 @@ RCLConsensus::Adaptor::generateXPOPs(
         if (error)
             printf("Error inserting txns for xpop proof\n");
     }
+
+    std::cout << "txproof precompute: " << txproof << "\n";
+    std::cout << "txproof precompute: " << txproof << "\n";
+    ([](Json::Value& root) -> void
+    {
+        auto const compute_impl = [](Json::Value& tree, int depth, auto const& compute_tree) -> uint256
+        {
+            //innerNode
+            const uint256 nullhash;
+
+            sha512_half_hasher h;
+            using beast::hash_append;
+            hash_append(h,  ripple::HashPrefix::innerNode);
+            // iterate 16 nodes
+            for (uint8_t i = 0; i < 16; ++i)
+            {
+                const char hex[] = "0123456789ABCDEF";
+                std::string nibble = "A";
+                nibble.data()[0] = hex[i];
+
+                if (!tree[jss::children].isMember(nibble))
+                    hash_append(h, nullhash);
+                else if (tree[jss::children][nibble][jss::children].size() == 0u)
+                {
+                    uint256 hash;
+                    hash.parseHex(tree[jss::children][nibble][jss::hash].asString());
+                    hash_append(h, hash);
+                }
+                else
+                    hash_append(h, compute_tree(tree[jss::children][nibble], depth + 1, compute_tree));
+            }
+
+            uint256 const hash = static_cast<uint256>(h);
+            tree[jss::hash] = to_string(hash);
+            std::cout << "computed hash depth: " << depth << ": " << tree[jss::hash].asString() << "\n";
+            return hash;
+        };
+
+        compute_impl(root, 0, compute_impl);
+    })(txproof);
+    
+    std::cout << "txproof postcompute: " << txproof << "\n";
 
     for (auto const& txid : txns)
     {
@@ -538,7 +580,7 @@ RCLConsensus::Adaptor::generateXPOPs(
         Json::Value transaction;
         transaction[jss::blob] = strHex(tx);
         transaction[jss::meta] = strHex(meta);
-        transaction[jss::proof] = txproof; 
+        transaction[jss::proof] = txproof;
 
         // RH UPTO: account[blob] account[proof] for account root
 
@@ -546,12 +588,12 @@ RCLConsensus::Adaptor::generateXPOPs(
         result[jss::ledger] = ledger;
         result[jss::validation] = validation;
         result[jss::transaction] = transaction;
-    
+
         std::cout << "xpop for " << txid << ": " << result << "\n";
 
     }
 
-    
+
 }
 
 void
@@ -611,7 +653,7 @@ RCLConsensus::Adaptor::doAccept(
     // for these we will generate xpops in a moment
     std::vector<uint256> xpopTxs;
 
-    // RH UPTO: change the above to just store txnids, then get the full txn + meta 
+    // RH UPTO: change the above to just store txnids, then get the full txn + meta
     // from the built ledger at the bottom, and pass that to xpop generator
     // at this point in the code there is no Transactor application
     for (auto const& item : *result.txns.map_)
@@ -853,10 +895,10 @@ RCLConsensus::Adaptor::doAccept(
         app_.timeKeeper().adjustCloseTime(offset);
     }
 
-    std::cout << "should we generate xpops?" 
-        << " xpopTxs.size() = " << xpopTxs.size() 
-        << " haveCorrectLCL = " << haveCorrectLCL 
-        << " result.state = " << (result.state == ConsensusState::Yes) 
+    std::cout << "should we generate xpops?"
+        << " xpopTxs.size() = " << xpopTxs.size()
+        << " haveCorrectLCL = " << haveCorrectLCL
+        << " result.state = " << (result.state == ConsensusState::Yes)
         << " standalone = " << app_.config().standalone() << "\n";
 
     // generate xpops
@@ -864,7 +906,7 @@ RCLConsensus::Adaptor::doAccept(
     {
         generateXPOPs(
                 *(built.ledger_),
-                xpopTxs, 
+                xpopTxs,
                 app_.getValidations().getTrustedForLedger(built.id(), built.seq()));
     }
 }
