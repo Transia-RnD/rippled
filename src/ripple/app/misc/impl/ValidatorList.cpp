@@ -1982,4 +1982,36 @@ ValidatorList::negativeUNLFilter(
     return ret;
 }
 
+
+std::optional<Json::Value>
+ValidatorList::getFirstPublisherListJson()
+{
+    shared_lock lock(mutex_);
+    if (publisherLists_.empty())
+    {
+        std::cout << "publisherLists_ empty\n";
+        return {};
+    }
+   
+    Json::Value ret;
+    
+    auto list = *publisherLists_.begin();
+
+    if (firstPublisherListJsonCache_ && firstPublisherListJsonCache_->first == list.second.current.hash)
+        return firstPublisherListJsonCache_->second;
+
+    // cache miss, set cache and return
+
+    auto const& current = list.second.current;
+    
+    ret[jss::public_key] = strHex(list.first);
+    ret[jss::manifest] = current.rawManifest ? *(current.rawManifest) : list.second.rawManifest;
+    ret[jss::signature] = current.rawSignature;
+    ret[jss::blob] = current.rawBlob;
+    ret[jss::version] = list.second.rawVersion;
+
+    firstPublisherListJsonCache_ = {current.hash, ret};
+    return ret;
+}
+
 }  // namespace ripple

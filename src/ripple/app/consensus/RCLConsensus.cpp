@@ -449,6 +449,14 @@ RCLConsensus::Adaptor::generateXPOPs(
 
     std::cout << "generate xpops called for lgr seq: " << lgr.seq() << "\n";
 
+    auto unl = app_.validators().getFirstPublisherListJson();
+
+    if (!unl)
+    {
+        std::cout << "Cannot generate XPOPs, no VL set.\n";
+        return; 
+    }
+
     LedgerInfo const& info = lgr.info();
 
     ledger[jss::index] = info.seq;
@@ -471,10 +479,7 @@ RCLConsensus::Adaptor::generateXPOPs(
     }
 
     validation[jss::data] = data;
-
-    // RH TODO: validation[jss::unl] =  (from first VL)
-
-
+    validation[jss::unl] = *unl;
 
     Json::Value txproof;
     txproof[jss::children] = Json::objectValue;
@@ -490,8 +495,7 @@ RCLConsensus::Adaptor::generateXPOPs(
         bool error = true;
         for (char const nibble_raw : hash)
         {
-            std::string nibble = "A";
-            nibble.data()[0] = nibble_raw;
+            std::string nibble (1, nibble_raw);
             // place each txn at the first available spot in the tree
             if (!(*ptr)[jss::children].isMember(nibble))
             {
@@ -526,8 +530,6 @@ RCLConsensus::Adaptor::generateXPOPs(
             printf("Error inserting txns for xpop proof\n");
     }
 
-    std::cout << "txproof precompute: " << txproof << "\n";
-    std::cout << "txproof precompute: " << txproof << "\n";
     ([](Json::Value& root) -> void
     {
         auto const compute_impl = [](Json::Value& tree, int depth, auto const& compute_tree) -> uint256
@@ -542,8 +544,7 @@ RCLConsensus::Adaptor::generateXPOPs(
             for (uint8_t i = 0; i < 16; ++i)
             {
                 const char hex[] = "0123456789ABCDEF";
-                std::string nibble = "A";
-                nibble.data()[0] = hex[i];
+                std::string nibble (1, hex[i]);
 
                 if (!tree[jss::children].isMember(nibble))
                     hash_append(h, nullhash);
@@ -565,9 +566,7 @@ RCLConsensus::Adaptor::generateXPOPs(
 
         compute_impl(root, 0, compute_impl);
     })(txproof);
-    
-    std::cout << "txproof postcompute: " << txproof << "\n";
-
+   
     for (auto const& txid : txns)
     {
         auto const& item = txMap.peekItem(txid);
@@ -582,7 +581,7 @@ RCLConsensus::Adaptor::generateXPOPs(
         transaction[jss::meta] = strHex(meta);
         transaction[jss::proof] = txproof;
 
-        // RH UPTO: account[blob] account[proof] for account root
+        // RH UPTO: ValidatorLists getAvailable (find first key) provide as validation.unl
 
         Json::Value result;
         result[jss::ledger] = ledger;

@@ -260,6 +260,8 @@ class ValidatorList
     // Prefix of the file name used to store cache files.
     static const std::string filePrefix_;
 
+    std::optional<std::pair<uint256 /* hash */, Json::Value>> firstPublisherListJsonCache_;
+
 public:
     ValidatorList(
         ManifestCache& validatorManifests,
@@ -625,6 +627,10 @@ public:
         boost::beast::string_view const& pubKey,
         std::optional<std::uint32_t> forceVersion = {});
 
+
+    std::optional<Json::Value>
+    getFirstPublisherListJson();
+
     /** Return the number of configured validator list sites. */
     std::size_t
     count() const;
@@ -889,6 +895,7 @@ private:
         std::size_t unlSize,
         std::size_t effectiveUnlSize,
         std::size_t seenSize);
+
 };
 
 // hashing helpers
