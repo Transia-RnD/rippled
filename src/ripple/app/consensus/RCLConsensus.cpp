@@ -473,9 +473,10 @@ RCLConsensus::Adaptor::generateXPOPs(
     Json::Value data;
     for (auto const& validation : validations)
     {
-        if (auto master = app_.validators().getListedKey(validation->getSignerPublic()); master)
-             data[toBase58(TokenType::NodePublic, *master)] =
-                 strHex(validation->getSerialized());
+        //if (auto master = app_.validators().getListedKey(validation->getSignerPublic()); master)
+        if (validation->isTrusted())
+            data[toBase58(TokenType::NodePublic, validation->getSignerPublic())] =
+                strHex(validation->getSerialized());
     }
 
     validation[jss::data] = data;
@@ -648,44 +649,12 @@ RCLConsensus::Adaptor::doAccept(
 
     JLOG(j_.debug()) << "Building canonical tx set: " << retriableTxs.key();
 
-    // populate this vec with txns that have "proof" in the start of a memodata value
-    // for these we will generate xpops in a moment
-    std::vector<uint256> xpopTxs;
-
-    // RH UPTO: change the above to just store txnids, then get the full txn + meta
-    // from the built ledger at the bottom, and pass that to xpop generator
-    // at this point in the code there is no Transactor application
     for (auto const& item : *result.txns.map_)
     {
         try
         {
             auto tx = std::make_shared<STTx const>(SerialIter{item.slice()});
             retriableTxs.insert(tx);
-            if (tx->isFieldPresent(sfMemos))
-            {
-                auto const& memos = tx->getFieldArray(sfMemos);
-                for (auto const& memo : memos)
-                {
-                    if (memo.isFieldPresent(sfMemoData))
-                    {
-                        auto optData = memo.getFieldVL(sfMemoData);
-
-                        bool hasProofMemo = true;
-                        for (int i = 0; i < 5; i++)
-                        {
-                            if (optData[i] != ("proof")[i] &&
-                                optData[i] != ("PROOF")[i])
-                            {
-                                hasProofMemo = false;
-                                break;
-                            }
-                        }
-
-                        if (hasProofMemo)
-                            xpopTxs.push_back(tx->getTransactionID());
-                    }
-                }
-            }
             JLOG(j_.debug()) << "    Tx: " << item.key();
         }
         catch (std::exception const& ex)
@@ -845,6 +814,69 @@ RCLConsensus::Adaptor::doAccept(
         app_.getOPs().reportFeeChange();
     }
 
+    std::cout << "should we generate xpops?"
+        << " haveCorrectLCL = " << haveCorrectLCL
+        << " result.state = " << (result.state == ConsensusState::Yes)
+        << " standalone = " << app_.config().standalone() << "\n";
+    // Are there any marked txn's in the LCL that we need to generate XPOPs for
+    if (haveCorrectLCL && (result.state == ConsensusState::Yes || app_.config().standalone()))
+    {
+        // populate this vec with txns that have "proof" in the start of a memodata value
+        // for these we will generate xpops in a moment
+        std::vector<uint256> xpopTxs;
+
+        auto lgr = ledgerMaster_.getValidatedLedger();
+
+        auto const& txMap = lgr->txMap();
+
+        if (lgr)
+        for (auto const& item : txMap)
+        {
+
+            SerialIter sit(item.slice());
+            auto tx = std::make_shared<STTx const>(SerialIter{sit.getSlice(sit.getVLDataLength())});
+
+            if (tx->isFieldPresent(sfMemos))
+            {
+                auto const& memos = tx->getFieldArray(sfMemos);
+                for (auto const& memo : memos)
+                {
+                    if (memo.isFieldPresent(sfMemoData))
+                    {
+                        auto optData = memo.getFieldVL(sfMemoData);
+
+                        bool hasProofMemo = true;
+                        for (int i = 0; i < 5; i++)
+                        {
+                            if (optData[i] != ("proof")[i] &&
+                                optData[i] != ("PROOF")[i])
+                            {
+                                hasProofMemo = false;
+                                break;
+                            }
+                        }
+
+                        if (hasProofMemo)
+                            xpopTxs.push_back(tx->getTransactionID());
+                    }
+                }
+            }
+        }
+    
+        std::cout << "should we generate xpops?"
+            << " xpopTxs.size() = " << xpopTxs.size() << "\n";
+
+    
+        // generate xpops
+        if (!xpopTxs.empty())
+            generateXPOPs(
+                *lgr,
+                xpopTxs,
+                app_.getValidations().getTrustedForLedger(lgr->info().hash, lgr->info().seq));
+
+    }
+
+
     //-------------------------------------------------------------------------
     {
         ledgerMaster_.switchLCL(built.ledger_);
@@ -894,20 +926,6 @@ RCLConsensus::Adaptor::doAccept(
         app_.timeKeeper().adjustCloseTime(offset);
     }
 
-    std::cout << "should we generate xpops?"
-        << " xpopTxs.size() = " << xpopTxs.size()
-        << " haveCorrectLCL = " << haveCorrectLCL
-        << " result.state = " << (result.state == ConsensusState::Yes)
-        << " standalone = " << app_.config().standalone() << "\n";
-
-    // generate xpops
-    if (!xpopTxs.empty() && haveCorrectLCL && (result.state == ConsensusState::Yes || app_.config().standalone()))
-    {
-        generateXPOPs(
-                *(built.ledger_),
-                xpopTxs,
-                app_.getValidations().getTrustedForLedger(built.id(), built.seq()));
-    }
 }
 
 void
