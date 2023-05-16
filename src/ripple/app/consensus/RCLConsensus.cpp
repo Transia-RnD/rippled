@@ -518,7 +518,7 @@ RCLConsensus::Adaptor::generateXPOPs(
                 Json::Value node;
                 node[jss::children] = Json::objectValue;
                 node[jss::hash] = "";
-                node[jss::key] = hash.substr(0, upto + 1);
+                node[jss::key] = hash.substr(0, upto + 1) + std::string(63 - upto, '0');
                 (*ptr)[jss::children][nibble] = node;
                 (*ptr)[jss::children][nibble][jss::children][newnibble] = oldnode;
             }
