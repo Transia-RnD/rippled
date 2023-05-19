@@ -149,6 +149,8 @@ public:
     std::vector<std::string> IPS;           // Peer IPs from rippled.cfg.
     std::vector<std::string> IPS_FIXED;     // Fixed Peer IPs from rippled.cfg.
     std::vector<std::string> SNTP_SERVERS;  // SNTP servers from rippled.cfg.
+    
+    std::string XPOP_DIR;                   // where XPOPs are written to (should be a mounted remote fs)
 
     enum StartUpType { FRESH, NORMAL, LOAD, LOAD_FILE, REPLAY, NETWORK };
     StartUpType START_UP = NORMAL;

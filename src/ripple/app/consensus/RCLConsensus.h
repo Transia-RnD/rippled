@@ -414,6 +414,7 @@ class RCLConsensus
     
         void
         generateXPOPs(
+            std::string const& outputDir,
             Ledger const& lgr,
             std::vector<uint256> const& txns,
             std::vector<std::shared_ptr<STValidation>> const& validations);

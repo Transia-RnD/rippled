@@ -43,9 +43,12 @@
 #include <ripple/protocol/BuildInfo.h>
 #include <ripple/protocol/Feature.h>
 #include <ripple/protocol/digest.h>
-
+#include <filesystem>
+#include <iostream>
 #include <algorithm>
 #include <mutex>
+#include <unistd.h>
+#include <ripple/json/to_string.h>
 
 namespace ripple {
 
@@ -440,6 +443,7 @@ RCLConsensus::Adaptor::onAccept(
 
 void
 RCLConsensus::Adaptor::generateXPOPs(
+    std::string const& outputDir,
     Ledger const& lgr,
     std::vector<uint256> const& txns,
     std::vector<std::shared_ptr<STValidation>> const& validations)
@@ -583,11 +587,59 @@ RCLConsensus::Adaptor::generateXPOPs(
         transaction[jss::proof] = txproof;
 
         // RH UPTO: ValidatorLists getAvailable (find first key) provide as validation.unl
-
         Json::Value result;
         result[jss::ledger] = ledger;
         result[jss::validation] = validation;
         result[jss::transaction] = transaction;
+
+        // write to file
+
+        std::string xpopStr = to_string(result);
+        std::string fn = 
+            outputDir + std::filesystem::path::preferred_separator + strHex(txid);
+
+        
+
+        try
+        {
+            static const std::string hostname = ([](void) -> std::string
+            {
+                char hostname[1024];
+                gethostname(hostname, 1023);
+                hostname[1023] = '\0';
+                return std::string(hostname);
+            })();
+
+            // if we're the first write the file
+
+            if (!std::filesystem::exists(fn) || std::filesystem::file_size(fn) == 0)
+            {
+                std::ofstream outFile(fn, std::ios::out | std::ios::binary);
+                if (outFile)
+                    outFile.write(xpopStr.data(), xpopStr.size());
+            }
+            
+            if (std::filesystem::file_size(fn) <= 0)
+                throw std::runtime_error("file was zero size or didn't exist");
+
+
+            // write one for just this host
+            fn += "-" + hostname;
+            {
+                std::ofstream outFile(fn, std::ios::out | std::ios::binary);
+                if (outFile)
+                    outFile.write(xpopStr.data(), xpopStr.size());
+            }
+            
+            if (!std::filesystem::exists(fn) || std::filesystem::file_size(fn) == 0)
+                throw std::runtime_error("file was zero size or didn't exist");
+
+
+        }
+        catch (std::filesystem::filesystem_error& e)
+        {
+            JLOG(j_.fatal()) << "Failed to write XPOP " + fn + " (" + e.what() + ")";
+        }
 
         std::cout << "xpop for " << txid << ": " << result << "\n";
 
@@ -836,7 +888,9 @@ RCLConsensus::Adaptor::doAccept(
             SerialIter sit(item.slice());
             auto tx = std::make_shared<STTx const>(SerialIter{sit.getSlice(sit.getVLDataLength())});
 
-            if (tx->isFieldPresent(sfMemos))
+            if (tx->isFieldPresent(sfOperationLimit))
+                xpopTxs.push_back(tx->getTransactionID());
+            else if (tx->isFieldPresent(sfMemos))
             {
                 auto const& memos = tx->getFieldArray(sfMemos);
                 for (auto const& memo : memos)
@@ -870,6 +924,7 @@ RCLConsensus::Adaptor::doAccept(
         // generate xpops
         if (!xpopTxs.empty())
             generateXPOPs(
+                app_.config().XPOP_DIR,
                 *lgr,
                 xpopTxs,
                 app_.getValidations().getTrustedForLedger(lgr->info().hash, lgr->info().seq));

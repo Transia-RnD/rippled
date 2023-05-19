@@ -495,6 +495,9 @@ Config::loadFromString(std::string const& fileContents)
         }
     }
 
+    if (!getSingleSection(secConfig, SECTION_XPOP_DIR, XPOP_DIR, j_))
+        Throw<std::runtime_error>("Missing config section [" SECTION_XPOP_DIR "]");
+
     std::string strTemp;
 
     if (getSingleSection(secConfig, SECTION_NETWORK_ID, strTemp, j_))
