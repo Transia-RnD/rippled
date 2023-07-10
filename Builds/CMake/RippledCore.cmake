@@ -732,6 +732,7 @@ target_sources (rippled PRIVATE
   #]===============================]
 if (tests)
   target_sources (rippled PRIVATE
+    src/test/app/consensus/GenerateXPOP_test.cpp
     src/test/app/AccountDelete_test.cpp
     src/test/app/AccountTxPaging_test.cpp
     src/test/app/AmendmentTable_test.cpp
