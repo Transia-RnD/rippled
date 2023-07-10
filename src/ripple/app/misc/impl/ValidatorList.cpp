@@ -1988,10 +1988,7 @@ ValidatorList::getFirstPublisherListJson()
 {
     shared_lock lock(mutex_);
     if (publisherLists_.empty())
-    {
-        std::cout << "publisherLists_ empty\n";
         return {};
-    }
    
     Json::Value ret;
     

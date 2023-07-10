@@ -17,10 +17,12 @@
 */
 //==============================================================================
 
+#include <ripple/app/main/BasicApp.h>
 #include <ripple/app/misc/ValidatorList.h>
 #include <ripple/basics/Slice.h>
 #include <ripple/basics/base64.h>
 #include <ripple/basics/strHex.h>
+#include <ripple/core/ConfigSections.h>
 #include <ripple/overlay/impl/ProtocolMessage.h>
 #include <ripple/protocol/HashPrefix.h>
 #include <ripple/protocol/PublicKey.h>
@@ -30,6 +32,7 @@
 #include <ripple/protocol/jss.h>
 #include <ripple/protocol/messages.h>
 #include <test/jtx.h>
+#include <test/jtx/TrustedPublisherServer.h>
 
 #include <boost/beast/core/multi_buffer.hpp>
 
@@ -2410,6 +2413,76 @@ private:
             {{108, {6}}, {108, {7}}, {110, {10}}, {110, {12}}});
     }
 
+    std::unique_ptr<Config>
+    makeVLConfig()
+    {
+        using namespace jtx;
+        using namespace std::string_literals;
+
+        std::vector<TrustedPublisherServer::Validator> validators1 = {
+            TrustedPublisherServer::randomValidator(),
+            TrustedPublisherServer::randomValidator()};
+
+        // Manage single-thread io_service for server.
+        BasicApp worker{1};
+        using namespace std::chrono_literals;
+        NetClock::time_point const validUntil{3600s};
+        NetClock::time_point const validFrom2{validUntil - 60s};
+        NetClock::time_point const validUntil2{validFrom2 + 3600s};
+        auto server1 = make_TrustedPublisherServer(
+            worker.get_io_service(),
+            validators1,
+            validUntil,
+            {{validFrom2, validUntil2}},
+            false,
+            1,
+            false);
+            
+        std::string siteURI1 =
+                "http://"s + getEnvLocalhostAddr() + ":1234/validators1";
+        return envconfig([&](std::unique_ptr<Config> cfg) {
+            cfg->section(SECTION_VALIDATOR_LIST_SITES).append(siteURI1);
+            cfg->section(SECTION_VALIDATOR_LIST_KEYS).append(strHex(server1->publisherPublic()));
+            cfg->XPOP_DIR = "xpop";
+            return cfg;
+        });
+    }
+
+    void testGetFirstPublisherListJson()
+    {
+        testcase("getFirstPublisherListJson");
+
+        using namespace test::jtx;
+        using namespace std::literals;
+
+        // Test case 1: publisherLists_ is empty
+        {
+            test::jtx::Env env{*this};
+            auto const unl = env.app().validators().getFirstPublisherListJson();
+            BEAST_EXPECT(!unl.has_value());
+        }
+
+        // Test case 2: publisherLists_ is not empty
+        {
+            test::jtx::Env env{*this, makeVLConfig()};
+            auto const unl = env.app().validators().getFirstPublisherListJson();
+            BEAST_EXPECT(unl.has_value());
+        }
+
+        // Test case 3: publisherLists_ is from cache
+        {
+            test::jtx::Env env{*this, makeVLConfig()};
+            auto const unl = env.app().validators().getFirstPublisherListJson();
+            BEAST_EXPECT(unl.has_value());
+            auto const public_key = (*unl)[jss::public_key];
+            BEAST_EXPECT(public_key != nullptr);
+            auto const unl1 = env.app().validators().getFirstPublisherListJson();
+            BEAST_EXPECT(unl1.has_value());
+            BEAST_EXPECT((*unl1)[jss::public_key] == public_key);
+            // DA TODO: Change Publisher List and verify updated cached
+        }
+    }
+
 public:
     void
     run() override
@@ -2423,6 +2496,7 @@ public:
         testNegativeUNL();
         testSha512Hash();
         testBuildMessages();
+        testGetFirstPublisherListJson();
     }
 };  // namespace test
 
