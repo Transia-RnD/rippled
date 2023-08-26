@@ -146,6 +146,9 @@ $(function() {
 <li>lastPublish_
 : <a class="el" href="classripple_1_1ReportingETL.html#a510316a584720d4b8eaf9c08574ecbb4">ripple::ReportingETL</a>
 </li>
+<li>lastPurchasePrice_
+: <a class="el" href="classripple_1_1test_1_1jtx_1_1AMM.html#a6e054aa935ddb33c8ff55f4b1174ce88">ripple::test::jtx::AMM</a>
+</li>
 <li>lastRefreshStatus
 : <a class="el" href="structripple_1_1ValidatorSite_1_1Site.html#aaf3427a73198dc6d781fadf44d68e79e">ripple::ValidatorSite::Site</a>
 </li>
@@ -346,13 +349,6 @@ $(function() {
 : <a class="el" href="classripple_1_1test_1_1Offer__test.html#a2da3f4f3102477b7989247eb9d1f0965">ripple::test::Offer_test</a>
 , <a class="el" href="classripple_1_1test_1_1ReducedOffer__test.html#adbbb6c66961c38262652f2738557b645">ripple::test::ReducedOffer_test</a>
 </li>
-<li>ledgerEntryRoot()
-: <a class="el" href="classripple_1_1test_1_1Offer__test.html#a313924b94feb7eb9831b19eb415670e1">ripple::test::Offer_test</a>
-</li>
-<li>ledgerEntryState()
-: <a class="el" href="classripple_1_1test_1_1Offer__test.html#ae32a31643270476559f7e5af09be3989">ripple::test::Offer_test</a>
-, <a class="el" href="classripple_1_1TrustAndBalance__test.html#a8b5e81e2d4c4b2791314c0a9a87ab781">ripple::TrustAndBalance_test</a>
-</li>
 <li>ledgerFile
 : <a class="el" href="structripple_1_1LedgerLoad__test_1_1SetupData.html#a573e25fc310f3cc07a04bd8069f0088a">ripple::LedgerLoad_test::SetupData</a>
 </li>
@@ -374,6 +370,9 @@ $(function() {
 <li>LedgerHash
 : <a class="el" href="classripple_1_1RelationalDatabase.html#ae6ed6a653c43698a1480c0230b1e99aa">ripple::RelationalDatabase</a>
 </li>
+<li>LedgerHeader()
+: <a class="el" href="structripple_1_1LedgerHeader.html#a03771f954fb5b32e330aec50ae5a87de">ripple::LedgerHeader</a>
+</li>
 <li>LedgerHistory()
 : <a class="el" href="classripple_1_1LedgerHistory.html#a38f560ae8e28cf743665f2151b2826a9">ripple::LedgerHistory</a>
 , <a class="el" href="structripple_1_1test_1_1NetworkHistory.html#aa728a0108b8ba4f8fc1e0492517c9178">ripple::test::NetworkHistory</a>
@@ -391,9 +390,6 @@ $(function() {
 </li>
 <li>ledgerIDLE_INTERVAL
 : <a class="el" href="structripple_1_1ConsensusParms.html#a14ceaf40f7aa169b4288a4242d890622">ripple::ConsensusParms</a>
-</li>
-<li>LedgerInfo()
-: <a class="el" href="structripple_1_1LedgerInfo.html#a406a3f6b87aae930392dd895ef334051">ripple::LedgerInfo</a>
 </li>
 <li>LedgerMaster()
 : <a class="el" href="classripple_1_1LedgerMaster.html#a89cbd9daab502b8d03f5aa22e7c39f7e">ripple::LedgerMaster</a>
@@ -462,12 +458,14 @@ $(function() {
 <li>LedgersByHash
 : <a class="el" href="classripple_1_1LedgerHistory.html#a1e34d9ee13455de3ea2f919c202a1e1e">ripple::LedgerHistory</a>
 </li>
-<li>ledgerSeq
-: <a class="el" href="structripple_1_1RelationalDatabase_1_1AccountTxMarker.html#a1fa384a5a48121ff50cd0adf4cb45c96">ripple::RelationalDatabase::AccountTxMarker</a>
+<li>ledgerSeq()
+: <a class="el" href="classripple_1_1ConsensusProposal.html#aab30a6de960572a4f080f0f5cce7bd15">ripple::ConsensusProposal&lt; NodeID_t, LedgerID_t, Position_t, Seq &gt;</a>
+, <a class="el" href="structripple_1_1RelationalDatabase_1_1AccountTxMarker.html#a1fa384a5a48121ff50cd0adf4cb45c96">ripple::RelationalDatabase::AccountTxMarker</a>
 , <a class="el" href="structripple_1_1SkipListAcquire_1_1SkipListData.html#a2a97b8525b86c9e1f99960f93ce9f161">ripple::SkipListAcquire::SkipListData</a>
 </li>
 <li>ledgerSeq_
-: <a class="el" href="classripple_1_1LedgerDeltaAcquire.html#a8cc9baba730fd5ff9ac8e24f3717f1e9">ripple::LedgerDeltaAcquire</a>
+: <a class="el" href="classripple_1_1ConsensusProposal.html#a2554db077d09ca89f772971921d97650">ripple::ConsensusProposal&lt; NodeID_t, LedgerID_t, Position_t, Seq &gt;</a>
+, <a class="el" href="classripple_1_1LedgerDeltaAcquire.html#a8cc9baba730fd5ff9ac8e24f3717f1e9">ripple::LedgerDeltaAcquire</a>
 , <a class="el" href="classripple_1_1RCLValidatedLedger.html#a49bbbf81d38f4bec551eae6176be023f">ripple::RCLValidatedLedger</a>
 , <a class="el" href="classripple_1_1SHAMap.html#acbedaf0be7acd2816e01be821fdc4697">ripple::SHAMap</a>
 </li>
@@ -574,13 +572,21 @@ $(function() {
 : <a class="el" href="classripple_1_1test_1_1jtx_1_1paths.html#a67777e4e1c4a8a4d28895ec06dbef3e5">ripple::test::jtx::paths</a>
 , <a class="el" href="classripple_1_1TOfferStreamBase_1_1StepCounter.html#ad7e354f05f9b5ad4f76af233160efa5a">ripple::TOfferStreamBase&lt; TIn, TOut &gt;::StepCounter</a>
 </li>
+<li>limitIn()
+: <a class="el" href="classripple_1_1AMMOffer.html#a47c9d8c0e8d74d833a2591b303b02c3e">ripple::AMMOffer&lt; TIn, TOut &gt;</a>
+, <a class="el" href="classripple_1_1TOffer.html#a795092096b300371daa1210d468c3407">ripple::TOffer&lt; TIn, TOut &gt;</a>
+</li>
+<li>limitOut()
+: <a class="el" href="classripple_1_1AMMOffer.html#a3757f92066ba7fa0fcf4b8964b00dfa4">ripple::AMMOffer&lt; TIn, TOut &gt;</a>
+, <a class="el" href="classripple_1_1TOffer.html#acaac0d34c05f6cf2a71175191a82742d">ripple::TOffer&lt; TIn, TOut &gt;</a>
+</li>
 <li>limitQuality
 : <a class="el" href="structripple_1_1path_1_1RippleCalc_1_1Input.html#ae29bd31fd5f430c171b84071584f310f">ripple::path::RippleCalc::Input</a>
 , <a class="el" href="structripple_1_1StrandContext.html#ae2eac14aa58ae3e5633ab2f00e4f3603">ripple::StrandContext</a>
 </li>
 <li>limitSelfCrossQuality()
-: <a class="el" href="classripple_1_1BookOfferCrossingStep.html#a8ca9e83de3b815322427a661a0c8ad8d">ripple::BookOfferCrossingStep&lt; TIn, TOut &gt;</a>
-, <a class="el" href="classripple_1_1BookPaymentStep.html#a4ed06be887f24b1eaeac2602be09c344">ripple::BookPaymentStep&lt; TIn, TOut &gt;</a>
+: <a class="el" href="classripple_1_1BookOfferCrossingStep.html#aa37d2f7c09a0adca9513c943664e9254">ripple::BookOfferCrossingStep&lt; TIn, TOut &gt;</a>
+, <a class="el" href="classripple_1_1BookPaymentStep.html#a41697bafb9aea4aee6267fe339f2ee3e">ripple::BookPaymentStep&lt; TIn, TOut &gt;</a>
 </li>
 <li>line
 : <a class="el" href="classripple_1_1RPC_1_1AccountLinesRPC__test.html#a41cb450e1b5d674362ce4c5b4d6b994b">ripple::RPC::AccountLinesRPC_test</a>
@@ -733,14 +739,14 @@ $(function() {
 </li>
 <li>load()
 : <a class="el" href="structripple_1_1JobTypeData.html#aaa507d7f1316a7fd7c5c06f606cd2ed5">ripple::JobTypeData</a>
-, <a class="el" href="classripple_1_1ManifestCache.html#aba96a3ca5f51243e21c858537ef16722">ripple::ManifestCache</a>
+, <a class="el" href="classripple_1_1ManifestCache.html#ac42643e71e254d658a38a61a070864c6">ripple::ManifestCache</a>
 , <a class="el" href="classripple_1_1PeerFinder_1_1Bootcache.html#af7e0a05dc4f863b6eea7124b8bdf548f">ripple::PeerFinder::Bootcache</a>
 , <a class="el" href="classripple_1_1PeerFinder_1_1Logic.html#a44f12287839953f538e2461daa795966">ripple::PeerFinder::Logic&lt; Checker &gt;</a>
 , <a class="el" href="structripple_1_1PeerFinder_1_1PeerFinder__test_1_1TestStore.html#abc1cd4e1acc2137e736f52a4832337cb">ripple::PeerFinder::PeerFinder_test::TestStore</a>
 , <a class="el" href="classripple_1_1PeerFinder_1_1Store.html#ac7438695b75741d34718790f810a6430">ripple::PeerFinder::Store</a>
 , <a class="el" href="classripple_1_1PeerFinder_1_1StoreSqdb.html#a0b20955489e15add9f1c44b8fd0a31d2">ripple::PeerFinder::StoreSqdb</a>
 , <a class="el" href="classripple_1_1PeerReservationTable.html#a9a6fc4cc792f884ab4ff94ef1999cdcb">ripple::PeerReservationTable</a>
-, <a class="el" href="classripple_1_1Transaction.html#a7ac314a4b698a354aeca6e01b11727df">ripple::Transaction</a>
+, <a class="el" href="classripple_1_1Transaction.html#aef98143f190976c94bc64767c632f71a">ripple::Transaction</a>
 , <a class="el" href="classripple_1_1ValidatorList.html#ac26b319f046fcd0af996c60511cd1547">ripple::ValidatorList</a>
 , <a class="el" href="classripple_1_1ValidatorSite.html#a560c7b68b6fcb5c7f1ddb59437110955">ripple::ValidatorSite</a>
 </li>
@@ -892,18 +898,18 @@ $(function() {
 : <a class="el" href="classripple_1_1ValidatorList.html#a7d01331569744f1a083c544a31eec542">ripple::ValidatorList</a>
 </li>
 <li>Locked()
-: <a class="el" href="structripple_1_1perf_1_1Locked.html#a62d89fe63423b4543db01c6a6c57a77b">ripple::perf::Locked&lt; T &gt;</a>
+: <a class="el" href="structripple_1_1perf_1_1Locked.html#ab64373bd9ed9658d141caec3ad131e31">ripple::perf::Locked&lt; T &gt;</a>
 </li>
 <li>LockedSociSession()
-: <a class="el" href="classripple_1_1LockedSociSession.html#a4fe34e529facb4e9e15e0a4fa50c2a0e">ripple::LockedSociSession</a>
+: <a class="el" href="classripple_1_1LockedSociSession.html#a5756acaeb781902c5d71c3bd9ca93b59">ripple::LockedSociSession</a>
 </li>
 <li>LockFreeStack()
-: <a class="el" href="classbeast_1_1LockFreeStack.html#a883b67af0ed5272cf0fb0ed5a979f7e4">beast::LockFreeStack&lt; Element, Tag &gt;</a>
+: <a class="el" href="classbeast_1_1LockFreeStack.html#a77913f72115155984e9341190bfc7310">beast::LockFreeStack&lt; Element, Tag &gt;</a>
 , <a class="el" href="classbeast_1_1LockFreeStack_1_1Node.html#a86a1850447a15181cc2ff8515deef9a0">beast::LockFreeStack&lt; Element, Tag &gt;::Node</a>
 </li>
 <li>LockFreeStackIterator
 : <a class="el" href="classbeast_1_1LockFreeStack_1_1Node.html#adb4cafe474ee3e3549c8d29ded9970b1">beast::LockFreeStack&lt; Element, Tag &gt;::Node</a>
-, <a class="el" href="classbeast_1_1LockFreeStackIterator.html#a68d3cb20385897b30e0cd7ee7955ac84">beast::LockFreeStackIterator&lt; Container, IsConst &gt;</a>
+, <a class="el" href="classbeast_1_1LockFreeStackIterator.html#a86e9d1a3e8009b5cdf60ad13c76b71b1">beast::LockFreeStackIterator&lt; Container, IsConst &gt;</a>
 </li>
 <li>locks_
 : <a class="el" href="classripple_1_1detail_1_1AccountIdCache.html#ae50ec081d3387900b5decb553e61a5b2">ripple::detail::AccountIdCache</a>
@@ -913,6 +919,10 @@ $(function() {
 </li>
 <li>log()
 : <a class="el" href="classbeast_1_1insight_1_1detail_1_1StatsDCollectorImp.html#abb4f0b283f8b3f1935fb17dd6db62304">beast::insight::detail::StatsDCollectorImp</a>
+, <a class="el" href="classripple_1_1test_1_1jtx_1_1AMM.html#a62d83e288719faaef062c61320cabeb0">ripple::test::jtx::AMM</a>
+</li>
+<li>log_
+: <a class="el" href="classripple_1_1test_1_1jtx_1_1AMM.html#abe05a4da48aafd8510c6045b0e311a5a">ripple::test::jtx::AMM</a>
 </li>
 <li>log_flow()
 : <a class="el" href="classripple_1_1BasicTaker.html#a7a0b57fe1406a1b74b8fb7048ab84436">ripple::BasicTaker</a>
@@ -949,7 +959,7 @@ $(function() {
 , <a class="el" href="structripple_1_1DatabaseCon_1_1CheckpointerSetup.html#a27c5a4113ee67b9e186370406b89e452">ripple::DatabaseCon::CheckpointerSetup</a>
 </li>
 <li>Logs()
-: <a class="el" href="classripple_1_1Logs.html#aed438405db16be053ffd4ffc1b48b8d0">ripple::Logs</a>
+: <a class="el" href="classripple_1_1Logs.html#a32fa6b47d686d44887b50d5fd1996de9">ripple::Logs</a>
 </li>
 <li>logs_
 : <a class="el" href="classripple_1_1ApplicationImp.html#aeb56f5eec262129621b143c65f353744">ripple::ApplicationImp</a>
@@ -1015,6 +1025,15 @@ $(function() {
 </li>
 <li>lowQualityOut_
 : <a class="el" href="classripple_1_1RPCTrustLine.html#ad0cd7643052901bb78b248b3270698e8">ripple::RPCTrustLine</a>
+</li>
+<li>lptIssue()
+: <a class="el" href="classripple_1_1test_1_1jtx_1_1AMM.html#a8a8b817de45852e6e1b6dec83570522b">ripple::test::jtx::AMM</a>
+</li>
+<li>lptIssue_
+: <a class="el" href="classripple_1_1test_1_1jtx_1_1AMM.html#a507e17962f812b547cb8486ec2a3d618">ripple::test::jtx::AMM</a>
+</li>
+<li>LPToken()
+: <a class="el" href="classripple_1_1test_1_1jtx_1_1LPToken.html#a008e65cd16ed4df01a31a267bd3b996d">ripple::test::jtx::LPToken</a>
 </li>
 <li>lvs_
 : <a class="el" href="classripple_1_1JobQueue_1_1Coro.html#a9ae6d29e6af4311658bf567baed62561">ripple::JobQueue::Coro</a>
