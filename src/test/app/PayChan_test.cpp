@@ -401,6 +401,52 @@ struct PayChan_test : public beast::unit_test::suite
             BEAST_EXPECT(!channelExists(*env.current(), chan));
             BEAST_EXPECT(env.balance(alice) == preAlice + channelFunds);
         }
+        // fixPayChanV1
+        // CancelAfter should be greater than close time
+        {
+            for (bool const withFixPayChanV1 : {true, false})
+            {
+                auto const amend =
+                    withFixPayChanV1 ? features : features - fixPayChanV1;
+                Env env{*this, amend};
+                env.fund(XRP(10000), alice, bob);
+                env.close();
+
+                auto const pk = alice.pk();
+                auto const settleDelay = 100s;
+                auto const channelFunds = XRP(1000);
+                NetClock::time_point const cancelAfter =
+                    env.current()->info().parentCloseTime - 1s;
+                auto const txResult =
+                    withFixPayChanV1 ? ter(temBAD_EXPIRATION) : ter(tesSUCCESS);
+                env(create(
+                        alice, bob, channelFunds, settleDelay, pk, cancelAfter),
+                    txResult);
+            }
+        }
+        // fixPayChanV1
+        // CancelAfter can be equal to the close time
+        {
+            for (bool const withFixPayChanV1 : {true, false})
+            {
+                auto const amend =
+                    withFixPayChanV1 ? features : features - fixPayChanV1;
+                Env env{*this, amend};
+                env.fund(XRP(10000), alice, bob);
+                env.close();
+
+                auto const pk = alice.pk();
+                auto const settleDelay = 100s;
+                auto const channelFunds = XRP(1000);
+                NetClock::time_point const cancelAfter =
+                    env.current()->info().parentCloseTime;
+                auto const txResult =
+                    withFixPayChanV1 ? ter(tesSUCCESS) : ter(tesSUCCESS);
+                env(create(
+                        alice, bob, channelFunds, settleDelay, pk, cancelAfter),
+                    txResult);
+            }
+        }
     }
 
     void

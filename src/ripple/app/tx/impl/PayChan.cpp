@@ -112,6 +112,18 @@ namespace ripple {
 
 //------------------------------------------------------------------------------
 
+/** Has the specified time passed?
+
+    @param now  the current time
+    @param mark the cutoff point
+    @return true if \a now refers to a time strictly after \a mark, else false.
+*/
+static inline bool
+after(NetClock::time_point now, std::uint32_t mark)
+{
+    return now.time_since_epoch().count() > mark;
+}
+
 static TER
 closeChannel(
     std::shared_ptr<SLE> const& slep,
@@ -270,6 +282,13 @@ PayChanCreate::doApply()
     (*slep)[~sfCancelAfter] = ctx_.tx[~sfCancelAfter];
     (*slep)[~sfSourceTag] = ctx_.tx[~sfSourceTag];
     (*slep)[~sfDestinationTag] = ctx_.tx[~sfDestinationTag];
+
+    if (ctx_.view().rules().enabled(fixPayChanV1))
+    {
+        auto const closeTime = ctx_.view().info().parentCloseTime;
+        if (ctx_.tx[~sfCancelAfter] && after(closeTime, ctx_.tx[sfCancelAfter]))
+            return temBAD_EXPIRATION;
+    }
 
     ctx_.view().insert(slep);
 
