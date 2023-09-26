@@ -67,6 +67,7 @@
 #include <ripple/rpc/DeliveredAmount.h>
 #include <ripple/rpc/ServerHandler.h>
 #include <ripple/rpc/impl/RPCHelpers.h>
+#include <ripple/rpc/CTID.h>
 #include <boost/asio/ip/host_name.hpp>
 #include <boost/asio/steady_timer.hpp>
 
@@ -3097,6 +3098,23 @@ NetworkOPsImp::transJson(
     jvObj[jss::type] = "transaction";
     jvObj[jss::transaction] = transaction.getJson(JsonOptions::none);
 
+    // add CTID where the needed data for it exists
+    if (auto const& lookup = ledger->txRead(transaction.getTransactionID());
+        lookup.second && lookup.second->isFieldPresent(sfTransactionIndex))
+    {
+        uint32_t txnSeq = lookup.second->getFieldU32(sfTransactionIndex);
+        uint32_t netID = app_.config().NETWORK_ID;
+        if (transaction.isFieldPresent(sfNetworkID))
+            netID = transaction.getFieldU32(sfNetworkID);
+
+        if (txnSeq <= 0xFFFFU && netID < 0xFFFFU && ledger->info().seq < 0xFFFFFFFUL)
+        {
+            if (std::optional<std::string> ctid =
+                RPC::encodeCTID(ledger->info().seq, txnSeq, netID); ctid)
+                jvObj[jss::ctid] = *ctid;
+        }
+    }
+
     if (validated)
     {
         jvObj[jss::ledger_index] = ledger->info().seq;
@@ -3104,7 +3122,7 @@ NetworkOPsImp::transJson(
         jvObj[jss::transaction][jss::date] =
             ledger->info().closeTime.time_since_epoch().count();
         jvObj[jss::validated] = true;
-
+        
         // WRITEME: Put the account next seq here
     }
     else
