@@ -287,7 +287,7 @@ PayChanCreate::doApply()
     {
         auto const closeTime = ctx_.view().info().parentCloseTime;
         if (ctx_.tx[~sfCancelAfter] && after(closeTime, ctx_.tx[sfCancelAfter]))
-            return temBAD_EXPIRATION;
+            return tecEXPIRED;
     }
 
     ctx_.view().insert(slep);
