@@ -440,11 +440,9 @@ struct PayChan_test : public beast::unit_test::suite
                 auto const channelFunds = XRP(1000);
                 NetClock::time_point const cancelAfter =
                     env.current()->info().parentCloseTime;
-                auto const txResult =
-                    withFixPayChanV1 ? ter(tesSUCCESS) : ter(tesSUCCESS);
                 env(create(
                         alice, bob, channelFunds, settleDelay, pk, cancelAfter),
-                    txResult);
+                    ter(tesSUCCESS));
             }
         }
     }
