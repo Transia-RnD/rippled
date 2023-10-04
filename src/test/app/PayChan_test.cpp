@@ -418,7 +418,7 @@ struct PayChan_test : public beast::unit_test::suite
                 NetClock::time_point const cancelAfter =
                     env.current()->info().parentCloseTime - 1s;
                 auto const txResult =
-                    withFixPayChanV1 ? ter(temBAD_EXPIRATION) : ter(tesSUCCESS);
+                    withFixPayChanV1 ? ter(tecEXPIRED) : ter(tesSUCCESS);
                 env(create(
                         alice, bob, channelFunds, settleDelay, pk, cancelAfter),
                     txResult);
