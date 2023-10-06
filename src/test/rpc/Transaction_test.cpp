@@ -717,6 +717,60 @@ class Transaction_test : public beast::unit_test::suite
                 "Wrong network. You should submit this request to a node "
                 "running on NetworkID: 21338");
         }
+
+        // test the ctid is returned when network id < 1024
+        {
+            Env env{*this, makeNetworkConfig(2)};
+            uint32_t netID = env.app().config().NETWORK_ID;
+
+            auto const alice = Account("alice");
+            auto const bob = Account("bob");
+
+            env.fund(XRP(10000), alice, bob);
+            env(pay(alice, bob, XRP(10)));
+            env.close();
+
+            auto const ledgerSeq = env.current()->info().seq;
+
+            env(noop(alice), ter(tesSUCCESS));
+            env.close();
+
+            Json::Value params;
+            params[jss::id] = 1;
+            auto const hash = env.tx()->getJson(JsonOptions::none)[jss::hash];
+            params[jss::transaction] = hash;
+            auto jrr = env.rpc("json", "tx", to_string(params))[jss::result];
+            auto const ctid = *RPC::encodeCTID(ledgerSeq, 0, netID);
+            BEAST_EXPECT(jrr[jss::ctid] == ctid);
+            BEAST_EXPECT(jrr[jss::hash] == hash);
+        }
+
+        // test the ctid is returned when network id == 1024
+        {
+            Env env{*this, makeNetworkConfig(1024)};
+            uint32_t netID = env.app().config().NETWORK_ID;
+
+            auto const alice = Account("alice");
+            auto const bob = Account("bob");
+
+            env.fund(XRP(10000), alice, bob);
+            env(pay(alice, bob, XRP(10)));
+            env.close();
+
+            auto const ledgerSeq = env.current()->info().seq;
+
+            env(noop(alice), ter(tesSUCCESS));
+            env.close();
+
+            Json::Value params;
+            params[jss::id] = 1;
+            auto const hash = env.tx()->getJson(JsonOptions::none)[jss::hash];
+            params[jss::transaction] = hash;
+            auto jrr = env.rpc("json", "tx", to_string(params))[jss::result];
+            auto const ctid = *RPC::encodeCTID(ledgerSeq, 0, netID);
+            BEAST_EXPECT(jrr[jss::ctid] == ctid);
+            BEAST_EXPECT(jrr[jss::hash] == hash);
+        }
     }
 
 public:
