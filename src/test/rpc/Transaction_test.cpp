@@ -663,7 +663,8 @@ class Transaction_test : public beast::unit_test::suite
             jsonTx[jss::binary] = false;
             jsonTx[jss::ctid] = ctid;
             jsonTx[jss::id] = 1;
-            auto jrr = env.rpc("json", "tx", to_string(jsonTx))[jss::result];
+            auto const jrr =
+                env.rpc("json", "tx", to_string(jsonTx))[jss::result];
             BEAST_EXPECT(jrr[jss::ctid] == ctid);
             BEAST_EXPECT(jrr[jss::hash]);
         }
@@ -686,7 +687,8 @@ class Transaction_test : public beast::unit_test::suite
             jsonTx[jss::binary] = false;
             jsonTx[jss::ctid] = ctid;
             jsonTx[jss::id] = 1;
-            auto jrr = env.rpc("json", "tx", to_string(jsonTx))[jss::result];
+            auto const jrr =
+                env.rpc("json", "tx", to_string(jsonTx))[jss::result];
             BEAST_EXPECT(!jrr[jss::ctid]);
             BEAST_EXPECT(jrr[jss::hash]);
         }
@@ -709,7 +711,8 @@ class Transaction_test : public beast::unit_test::suite
             jsonTx[jss::binary] = false;
             jsonTx[jss::ctid] = ctid;
             jsonTx[jss::id] = 1;
-            auto jrr = env.rpc("json", "tx", to_string(jsonTx))[jss::result];
+            auto const jrr =
+                env.rpc("json", "tx", to_string(jsonTx))[jss::result];
             BEAST_EXPECT(jrr[jss::error] == "wrongNetwork");
             BEAST_EXPECT(jrr[jss::error_code] == rpcWRONG_NETWORK);
             BEAST_EXPECT(
@@ -739,7 +742,8 @@ class Transaction_test : public beast::unit_test::suite
             params[jss::id] = 1;
             auto const hash = env.tx()->getJson(JsonOptions::none)[jss::hash];
             params[jss::transaction] = hash;
-            auto jrr = env.rpc("json", "tx", to_string(params))[jss::result];
+            auto const jrr =
+                env.rpc("json", "tx", to_string(params))[jss::result];
             auto const ctid = *RPC::encodeCTID(ledgerSeq, 0, netID);
             BEAST_EXPECT(jrr[jss::ctid] == ctid);
             BEAST_EXPECT(jrr[jss::hash] == hash);
@@ -766,7 +770,8 @@ class Transaction_test : public beast::unit_test::suite
             params[jss::id] = 1;
             auto const hash = env.tx()->getJson(JsonOptions::none)[jss::hash];
             params[jss::transaction] = hash;
-            auto jrr = env.rpc("json", "tx", to_string(params))[jss::result];
+            auto const jrr =
+                env.rpc("json", "tx", to_string(params))[jss::result];
             auto const ctid = *RPC::encodeCTID(ledgerSeq, 0, netID);
             BEAST_EXPECT(jrr[jss::ctid] == ctid);
             BEAST_EXPECT(jrr[jss::hash] == hash);
