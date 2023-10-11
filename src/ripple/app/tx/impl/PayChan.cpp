@@ -20,7 +20,6 @@
 #include <ripple/app/tx/impl/PayChan.h>
 #include <ripple/basics/Log.h>
 #include <ripple/basics/XRPAmount.h>
-#include <ripple/basics/chrono.h>
 #include <ripple/ledger/ApplyView.h>
 #include <ripple/ledger/View.h>
 #include <ripple/protocol/Feature.h>
@@ -111,18 +110,6 @@ namespace ripple {
 */
 
 //------------------------------------------------------------------------------
-
-/** Has the specified time passed?
-
-    @param now  the current time
-    @param mark the cutoff point
-    @return true if \a now refers to a time strictly after \a mark, else false.
-*/
-static inline bool
-after(NetClock::time_point now, std::uint32_t mark)
-{
-    return now.time_since_epoch().count() > mark;
-}
 
 static TER
 closeChannel(
