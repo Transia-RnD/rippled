@@ -350,7 +350,7 @@ extern uint256 const fixReducedOffersV1;
 extern uint256 const featureClawback;
 extern uint256 const featureXChainBridge;
 extern uint256 const fixDisallowIncomingV1;
-extern uint256 const fixPayChanV1;
+extern uint256 const fixPayChanCancelAfter;
 
 }  // namespace ripple
 

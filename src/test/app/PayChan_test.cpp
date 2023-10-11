@@ -401,13 +401,14 @@ struct PayChan_test : public beast::unit_test::suite
             BEAST_EXPECT(!channelExists(*env.current(), chan));
             BEAST_EXPECT(env.balance(alice) == preAlice + channelFunds);
         }
-        // fixPayChanV1
+        // fixPayChanCancelAfter
         // CancelAfter should be greater than close time
         {
-            for (bool const withFixPayChanV1 : {true, false})
+            for (bool const withFixPayChan : {true, false})
             {
-                auto const amend =
-                    withFixPayChanV1 ? features : features - fixPayChanV1;
+                auto const amend = withFixPayChan
+                    ? features
+                    : features - fixPayChanCancelAfter;
                 Env env{*this, amend};
                 env.fund(XRP(10000), alice, bob);
                 env.close();
@@ -418,19 +419,20 @@ struct PayChan_test : public beast::unit_test::suite
                 NetClock::time_point const cancelAfter =
                     env.current()->info().parentCloseTime - 1s;
                 auto const txResult =
-                    withFixPayChanV1 ? ter(tecEXPIRED) : ter(tesSUCCESS);
+                    withFixPayChan ? ter(tecEXPIRED) : ter(tesSUCCESS);
                 env(create(
                         alice, bob, channelFunds, settleDelay, pk, cancelAfter),
                     txResult);
             }
         }
-        // fixPayChanV1
+        // fixPayChanCancelAfter
         // CancelAfter can be equal to the close time
         {
-            for (bool const withFixPayChanV1 : {true, false})
+            for (bool const withFixPayChan : {true, false})
             {
-                auto const amend =
-                    withFixPayChanV1 ? features : features - fixPayChanV1;
+                auto const amend = withFixPayChan
+                    ? features
+                    : features - fixPayChanCancelAfter;
                 Env env{*this, amend};
                 env.fund(XRP(10000), alice, bob);
                 env.close();

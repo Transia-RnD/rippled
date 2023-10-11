@@ -270,7 +270,7 @@ PayChanCreate::doApply()
     (*slep)[~sfSourceTag] = ctx_.tx[~sfSourceTag];
     (*slep)[~sfDestinationTag] = ctx_.tx[~sfDestinationTag];
 
-    if (ctx_.view().rules().enabled(fixPayChanV1))
+    if (ctx_.view().rules().enabled(fixPayChanCancelAfter))
     {
         auto const closeTime = ctx_.view().info().parentCloseTime;
         if (ctx_.tx[~sfCancelAfter] && after(closeTime, ctx_.tx[sfCancelAfter]))
