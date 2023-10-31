@@ -636,7 +636,7 @@ class Transaction_test : public beast::unit_test::suite
 
         using namespace test::jtx;
 
-        // Use a Compact Transaction Identifier to request a transaction.
+        // Use a Concise Transaction Identifier to request a transaction.
         for (uint32_t netID : {11111, 65535, 65536})
         {
             Env env{*this, makeNetworkConfig(netID)};
@@ -653,7 +653,7 @@ class Transaction_test : public beast::unit_test::suite
             auto const ctid = RPC::encodeCTID(startLegSeq, 0, netID);
             if (netID > 0xFFFF)
             {
-                // Compact transaction IDs do not support a network ID > 0xFFFF.
+                // Concise transaction IDs do not support a network ID > 0xFFFF.
                 BEAST_EXPECT(ctid == std::nullopt);
                 continue;
             }

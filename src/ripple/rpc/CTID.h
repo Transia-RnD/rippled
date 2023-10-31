@@ -30,13 +30,13 @@ namespace ripple {
 
 namespace RPC {
 
-// CTID stands for Compact Transaction ID.
+// CTID stands for Concise Transaction ID.
 //
 // The CTID comes from XLS-15d: Concise Transaction Identifier #34
 //
 //   https://github.com/XRPLF/XRPL-Standards/discussions/34
 //
-// The Compact Transaction ID provides a way to identify a transaction
+// The Concise Transaction ID provides a way to identify a transaction
 // that includes which network the transaction was submitted to.
 
 inline std::optional<std::string>

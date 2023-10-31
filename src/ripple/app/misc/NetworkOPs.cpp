@@ -3112,13 +3112,13 @@ NetworkOPsImp::transJson(
     }
 
     // add CTID where the needed data for it exists
-    if (auto const& lookup = ledger->txRead(transaction.getTransactionID());
+    if (auto const& lookup = ledger->txRead(transaction->getTransactionID());
         lookup.second && lookup.second->isFieldPresent(sfTransactionIndex))
     {
-        uint32_t txnSeq = lookup.second->getFieldU32(sfTransactionIndex);
+        uint32_t const txnSeq = lookup.second->getFieldU32(sfTransactionIndex);
         uint32_t netID = app_.config().NETWORK_ID;
-        if (transaction.isFieldPresent(sfNetworkID))
-            netID = transaction.getFieldU32(sfNetworkID);
+        if (transaction->isFieldPresent(sfNetworkID))
+            netID = transaction->getFieldU32(sfNetworkID);
 
         if (std::optional<std::string> ctid =
                 RPC::encodeCTID(ledger->info().seq, txnSeq, netID);
