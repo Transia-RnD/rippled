@@ -192,6 +192,12 @@ enum LedgerEntryType : std::uint16_t
     */
     ltDID = 0x0049,
 
+    /** The ledger object which tracks the FS.
+
+       \sa keylet::fs
+    */
+    ltFS = 0x0046,
+
     //---------------------------------------------------------------------------
     /** A special type, matching any ledger entry type.
 

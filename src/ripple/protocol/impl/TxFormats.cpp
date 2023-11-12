@@ -483,6 +483,13 @@ TxFormats::TxFormats()
         commonFields);
 
     add(jss::DIDDelete, ttDID_DELETE, {}, commonFields);
+
+    add(jss::FSPin,
+        ttFS_PIN,
+        {
+            {sfData, soeREQUIRED},
+        },
+        commonFields);
 }
 
 TxFormats const&

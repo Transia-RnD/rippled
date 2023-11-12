@@ -333,10 +333,21 @@ LedgerFormats::LedgerFormats()
             {sfAccount,              soeREQUIRED},
             {sfDIDDocument,          soeOPTIONAL},
             {sfURI,                  soeOPTIONAL},
-            {sfData,          soeOPTIONAL},
+            {sfData,                 soeOPTIONAL},
             {sfOwnerNode,            soeREQUIRED},
             {sfPreviousTxnID,        soeREQUIRED},
             {sfPreviousTxnLgrSeq,    soeREQUIRED}
+        },
+        commonFields);
+    
+    add(jss::FS,
+        ltFS,
+        {
+            {sfOwner,                soeREQUIRED},
+            {sfData,                 soeOPTIONAL},
+            // {sfOwnerNode,         soeREQUIRED},
+            // {sfPreviousTxnID,        soeREQUIRED},
+            // {sfPreviousTxnLgrSeq,    soeREQUIRED}
         },
         commonFields);
     // clang-format on

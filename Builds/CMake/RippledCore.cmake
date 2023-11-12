@@ -522,6 +522,7 @@ target_sources (rippled PRIVATE
   src/ripple/app/tx/impl/DeleteAccount.cpp
   src/ripple/app/tx/impl/DepositPreauth.cpp
   src/ripple/app/tx/impl/DID.cpp
+  src/ripple/app/tx/impl/FSPin.cpp
   src/ripple/app/tx/impl/Escrow.cpp
   src/ripple/app/tx/impl/InvariantCheck.cpp
   src/ripple/app/tx/impl/NFTokenAcceptOffer.cpp
@@ -794,6 +795,7 @@ if (tests)
     src/test/app/FeeVote_test.cpp
     src/test/app/Flow_test.cpp
     src/test/app/Freeze_test.cpp
+    src/test/app/FS_test.cpp
     src/test/app/HashRouter_test.cpp
     src/test/app/LedgerHistory_test.cpp
     src/test/app/LedgerLoad_test.cpp

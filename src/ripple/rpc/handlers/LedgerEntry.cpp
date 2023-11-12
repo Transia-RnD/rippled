@@ -598,6 +598,18 @@ doLedgerEntry(RPC::JsonContext& context)
             else
                 uNodeIndex = keylet::did(*account).key;
         }
+        else if (context.params.isMember(jss::fs))
+        {
+            expectedType = ltFS;
+            if (!context.params[jss::fs].isObject())
+            {
+                if (!uNodeIndex.parseHex(context.params[jss::fs].asString()))
+                {
+                    uNodeIndex = beast::zero;
+                    jvResult[jss::error] = "malformedRequest";
+                }
+            }
+        }
         else
         {
             if (context.params.isMember("params") &&
