@@ -490,6 +490,15 @@ TxFormats::TxFormats()
             {sfData, soeREQUIRED},
         },
         commonFields);
+
+    add(jss::FSNSPin,
+        ttFSNS_PIN,
+        {
+            {sfNickname, soeREQUIRED},
+            {sfRootIndex, soeOPTIONAL},
+            {sfData, soeOPTIONAL},
+        },
+        commonFields);
 }
 
 TxFormats const&

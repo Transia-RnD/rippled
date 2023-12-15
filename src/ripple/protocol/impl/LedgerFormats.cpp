@@ -350,6 +350,17 @@ LedgerFormats::LedgerFormats()
             // {sfPreviousTxnLgrSeq,    soeREQUIRED}
         },
         commonFields);
+
+    add(jss::FSNS,
+        ltFSNS,
+        {
+            {sfOwner,                soeREQUIRED},
+            {sfRootIndex,            soeREQUIRED},
+            // {sfOwnerNode,         soeREQUIRED},
+            // {sfPreviousTxnID,        soeREQUIRED},
+            // {sfPreviousTxnLgrSeq,    soeREQUIRED}
+        },
+        commonFields);
     // clang-format on
 }
 

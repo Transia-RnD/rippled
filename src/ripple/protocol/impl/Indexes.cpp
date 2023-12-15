@@ -73,12 +73,13 @@ enum class LedgerNameSpace : std::uint16_t {
     XCHAIN_CREATE_ACCOUNT_CLAIM_ID = 'K',
     DID = 'I',
     FS = 'F',
+    FSNS = 'n',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
     CONTRACT [[deprecated]] = 'c',
     GENERATOR [[deprecated]] = 'g',
-    NICKNAME [[deprecated]] = 'n',
+    // NICKNAME [[deprecated]] = 'n',
 };
 
 template <class... Args>
@@ -449,6 +450,12 @@ Keylet
 fs(uint256 const& id) noexcept
 {
     return {ltFS, indexHash(LedgerNameSpace::FS, id)};
+}
+
+Keylet
+fsns(uint256 const& ns) noexcept
+{
+    return {ltFSNS, indexHash(LedgerNameSpace::FSNS, ns)};
 }
 
 }  // namespace keylet

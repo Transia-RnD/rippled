@@ -610,6 +610,18 @@ doLedgerEntry(RPC::JsonContext& context)
                 }
             }
         }
+        else if (context.params.isMember(jss::fsns))
+        {
+            expectedType = ltFSNS;
+            if (!context.params[jss::fsns].isObject())
+            {
+                if (!uNodeIndex.parseHex(context.params[jss::fsns].asString()))
+                {
+                    uNodeIndex = beast::zero;
+                    jvResult[jss::error] = "malformedRequest";
+                }
+            }
+        }
         else
         {
             if (context.params.isMember("params") &&

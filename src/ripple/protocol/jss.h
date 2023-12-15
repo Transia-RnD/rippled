@@ -87,7 +87,9 @@ JSS(Fee);                  // in/out: TransactionSign; field.
 JSS(FeeSettings);          // ledger type.
 JSS(Flags);                // in/out: TransactionSign; field.
 JSS(FS);                   // ledger type.
+JSS(FSNS);                 // ledger type.
 JSS(FSPin);                // transaction type.
+JSS(FSNSPin);              // transaction type.
 JSS(incomplete_shards);    // out: OverlayImpl, PeerImp
 JSS(Invalid);              //
 JSS(LastLedgerSequence);   // in: TransactionSign; field
@@ -343,6 +345,7 @@ JSS(full);                  // in: LedgerClearer, handlers/Ledger
 JSS(full_reply);            // out: PathFind
 JSS(fullbelow_size);        // out: GetCounts
 JSS(fs);                    // in: LedgerEntry
+JSS(fsns);                  // in: LedgerEntry
 JSS(good);                  // out: RPCVersion
 JSS(hash);                  // out: NetworkOPs, InboundLedger,
                             //      LedgerToJson, STTx; field

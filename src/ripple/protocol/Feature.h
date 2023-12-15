@@ -302,9 +302,9 @@ foreachFeature(FeatureBitset bs, F&& f)
             f(bitsetIndexToFeature(i));
 }
 
-// extern uint256 const featureOwnerPaysFee;
-// extern uint256 const featureFlow;
-// extern uint256 const featureFlowCross;
+extern uint256 const featureOwnerPaysFee;
+extern uint256 const featureFlow;
+extern uint256 const featureFlowCross;
 extern uint256 const featureCryptoConditionsSuite;
 extern uint256 const fix1513;
 extern uint256 const featureDepositAuth;

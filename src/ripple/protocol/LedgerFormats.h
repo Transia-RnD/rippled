@@ -198,6 +198,12 @@ enum LedgerEntryType : std::uint16_t
     */
     ltFS = 0x0046,
 
+    /** The ledger object which tracks the NS.
+
+       \sa keylet::ns
+    */
+    ltFSNS = 0x006E,
+
     //---------------------------------------------------------------------------
     /** A special type, matching any ledger entry type.
 

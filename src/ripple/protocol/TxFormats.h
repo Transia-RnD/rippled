@@ -193,6 +193,9 @@ enum TxType : std::uint16_t
     /** This transaction type creates an FS */
     ttFS_PIN = 66,
 
+    /** This transaction type creates an FSNS */
+    ttFSNS_PIN = 67,
+
 
     /** This system-generated transaction type is used to update the status of the various amendments.
 
