@@ -67,7 +67,7 @@ Transaction::setStatus(
     std::optional<std::uint32_t> netID)
 {
     mStatus = ts;
-    mInLedger = lseq;
+    mLedgerIndex = lseq;
     if (tseq)
         mTxnSeq = tseq;
     if (netID)
@@ -176,16 +176,26 @@ Transaction::load(
 Json::Value
 Transaction::getJson(JsonOptions options, bool binary) const
 {
-    Json::Value ret(mTransaction->getJson(JsonOptions::none, binary));
+    // Note, we explicitly suppress `include_date` option here
+    Json::Value ret(
+        mTransaction->getJson(options & ~JsonOptions::include_date, binary));
 
-    if (mInLedger)
+    // NOTE Binary STTx::getJson output might not be a JSON object
+    if (ret.isObject() && mLedgerIndex)
     {
-        ret[jss::inLedger] = mInLedger;  // Deprecated.
-        ret[jss::ledger_index] = mInLedger;
-
-        if (options == JsonOptions::include_date)
+        if (!(options & JsonOptions::disable_API_prior_V2))
         {
-            auto ct = mApp.getLedgerMaster().getCloseTimeBySeq(mInLedger);
+            // Behaviour before API version 2
+            ret[jss::inLedger] = mLedgerIndex;
+        }
+
+        // TODO: disable_API_prior_V3 to disable output of both `date` and
+        // `ledger_index` elements (taking precedence over include_date)
+        ret[jss::ledger_index] = mLedgerIndex;
+
+        if (options & JsonOptions::include_date)
+        {
+            auto ct = mApp.getLedgerMaster().getCloseTimeBySeq(mLedgerIndex);
             if (ct)
                 ret[jss::date] = ct->time_since_epoch().count();
         }

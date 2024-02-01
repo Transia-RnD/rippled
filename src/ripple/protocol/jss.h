@@ -230,6 +230,8 @@ JSS(close);                       // out: BookChanges
 JSS(close_flags);                 // out: LedgerToJson
 JSS(close_time);                  // in: Application, out: NetworkOPs,
                                   //      RCLCxPeerPos, LedgerToJson
+JSS(close_time_iso);              // out: Tx, NetworkOPs, TransactionEntry
+                                  //      AccountTx, LedgerToJson
 JSS(close_time_estimated);        // in: Application, out: LedgerToJson
 JSS(close_time_human);            // out: LedgerToJson
 JSS(close_time_offset);           // out: NetworkOPs
@@ -460,6 +462,7 @@ JSS(median_fee);                  // out: TxQ
 JSS(median_level);                // out: TxQ
 JSS(message);                     // error.
 JSS(meta);                        // out: NetworkOPs, AccountTx*, Tx
+JSS(meta_blob);                   // out: NetworkOPs, AccountTx*, Tx
 JSS(metaData);
 JSS(metadata);  // out: TransactionEntry
 JSS(method);    // RPC
@@ -633,7 +636,6 @@ JSS(sub_index);             // in: LedgerEntry
 JSS(subcommand);            // in: PathFind
 JSS(success);               // rpc
 JSS(supported);             // out: AmendmentTableImpl
-JSS(sync_mode);             // in: Submit
 JSS(system_time_offset);    // out: NetworkOPs
 JSS(tag);                   // out: Peers
 JSS(taker);                 // in: Subscribe, BookOffers

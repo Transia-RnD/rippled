@@ -30,7 +30,6 @@
 #include <ripple/core/Config.h>
 #include <ripple/json/json_value.h>
 #include <ripple/json/to_string.h>
-#include <ripple/ledger/CachedSLEs.h>
 #include <ripple/protocol/Feature.h>
 #include <ripple/protocol/Indexes.h>
 #include <ripple/protocol/Issue.h>
@@ -279,6 +278,17 @@ public:
         The command is examined and used to build
         the correct JSON as per the arguments.
     */
+    template <class... Args>
+    Json::Value
+    rpc(unsigned apiVersion,
+        std::unordered_map<std::string, std::string> const& headers,
+        std::string const& cmd,
+        Args&&... args);
+
+    template <class... Args>
+    Json::Value
+    rpc(unsigned apiVersion, std::string const& cmd, Args&&... args);
+
     template <class... Args>
     Json::Value
     rpc(std::unordered_map<std::string, std::string> const& headers,
@@ -655,6 +665,7 @@ protected:
 
     Json::Value
     do_rpc(
+        unsigned apiVersion,
         std::vector<std::string> const& args,
         std::unordered_map<std::string, std::string> const& headers = {});
 
@@ -698,12 +709,39 @@ protected:
 template <class... Args>
 Json::Value
 Env::rpc(
+    unsigned apiVersion,
     std::unordered_map<std::string, std::string> const& headers,
     std::string const& cmd,
     Args&&... args)
 {
     return do_rpc(
-        std::vector<std::string>{cmd, std::forward<Args>(args)...}, headers);
+        apiVersion,
+        std::vector<std::string>{cmd, std::forward<Args>(args)...},
+        headers);
+}
+
+template <class... Args>
+Json::Value
+Env::rpc(unsigned apiVersion, std::string const& cmd, Args&&... args)
+{
+    return rpc(
+        apiVersion,
+        std::unordered_map<std::string, std::string>(),
+        cmd,
+        std::forward<Args>(args)...);
+}
+
+template <class... Args>
+Json::Value
+Env::rpc(
+    std::unordered_map<std::string, std::string> const& headers,
+    std::string const& cmd,
+    Args&&... args)
+{
+    return do_rpc(
+        RPC::apiCommandLineVersion,
+        std::vector<std::string>{cmd, std::forward<Args>(args)...},
+        headers);
 }
 
 template <class... Args>
@@ -743,7 +781,7 @@ void
 forAllApiVersions(VersionedTestCallable auto... testCallable)
 {
     for (auto testVersion = RPC::apiMinimumSupportedVersion;
-         testVersion <= RPC::apiBetaVersion;
+         testVersion <= RPC::apiMaximumValidVersion;
          ++testVersion)
     {
         (..., testCallable(testVersion));
