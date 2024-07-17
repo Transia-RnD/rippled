@@ -173,6 +173,12 @@ public:
     {
     }
 
+    virtual size_t
+    cacheSize() override
+    {
+        return 0;
+    }
+
     LedgerMaster& ledgerSource;
     LedgerMaster& ledgerSink;
     InboundLedgersBehavior bhvr;
@@ -191,7 +197,9 @@ enum class PeerFeature {
 class TestPeer : public Peer
 {
 public:
-    TestPeer(bool enableLedgerReplay) : ledgerReplayEnabled_(enableLedgerReplay)
+    TestPeer(bool enableLedgerReplay)
+        : ledgerReplayEnabled_(enableLedgerReplay)
+        , nodePublicKey_(derivePublicKey(KeyType::ed25519, randomSecretKey()))
     {
     }
 
@@ -231,8 +239,7 @@ public:
     PublicKey const&
     getNodePublic() const override
     {
-        static PublicKey key{};
-        return key;
+        return nodePublicKey_;
     }
     Json::Value
     json() override
@@ -308,6 +315,7 @@ public:
     }
 
     bool ledgerReplayEnabled_;
+    PublicKey nodePublicKey_;
 };
 
 enum class PeerSetBehavior {
@@ -1292,8 +1300,8 @@ struct LedgerReplayer_test : public beast::unit_test::suite
 
         std::uint8_t payload[55] = {
             0x6A, 0x09, 0xE6, 0x67, 0xF3, 0xBC, 0xC9, 0x08, 0xB2};
-        auto item = std::make_shared<SHAMapItem>(
-            uint256(12345), Slice(payload, sizeof(payload)));
+        auto item =
+            make_shamapitem(uint256(12345), Slice(payload, sizeof(payload)));
         skipList->processData(l->seq(), item);
 
         std::vector<TaskStatus> deltaStatuses;

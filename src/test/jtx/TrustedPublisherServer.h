@@ -574,7 +574,7 @@ private:
                 if (ec)
                     break;
 
-                auto path = req.target().to_string();
+                std::string_view const path = req.target();
                 res.insert("Server", "TrustedPublisherServer");
                 res.version(req.version());
                 res.keep_alive(req.keep_alive());
@@ -642,7 +642,7 @@ private:
                     auto const sleep_sec =
                         boost::lexical_cast<unsigned int>(path.substr(7));
                     std::this_thread::sleep_for(
-                        std::chrono::seconds{sleep_sec});
+                        std::chrono::seconds(sleep_sec));
                 }
                 else if (boost::starts_with(path, "/redirect"))
                 {
@@ -677,7 +677,9 @@ private:
                     // unknown request
                     res.result(boost::beast::http::status::not_found);
                     res.insert("Content-Type", "text/html");
-                    res.body() = "The file '" + path + "' was not found";
+                    res.body() = "The file '" + std::string(path) +
+                        "' was not "
+                        "found";
                 }
 
                 if (prepare)

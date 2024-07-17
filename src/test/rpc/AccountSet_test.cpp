@@ -86,11 +86,17 @@ public:
 
                 if (flag == asfDisallowIncomingCheck ||
                     flag == asfDisallowIncomingPayChan ||
-                    flag == asfDisallowIncomingNFTOffer ||
+                    flag == asfDisallowIncomingNFTokenOffer ||
                     flag == asfDisallowIncomingTrustline)
                 {
                     // These flags are part of the DisallowIncoming amendment
                     // and are tested elsewhere
+                    continue;
+                }
+                if (flag == asfAllowTrustLineClawback)
+                {
+                    // The asfAllowTrustLineClawback flag can't be cleared.  It
+                    // is tested elsewhere.
                     continue;
                 }
 

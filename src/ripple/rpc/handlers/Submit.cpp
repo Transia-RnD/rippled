@@ -21,8 +21,8 @@
 #include <ripple/app/misc/HashRouter.h>
 #include <ripple/app/misc/Transaction.h>
 #include <ripple/app/tx/apply.h>
-#include <ripple/net/RPCErr.h>
 #include <ripple/protocol/ErrorCodes.h>
+#include <ripple/protocol/RPCErr.h>
 #include <ripple/resource/Fees.h>
 #include <ripple/rpc/Context.h>
 #include <ripple/rpc/GRPCHandlers.h>
@@ -58,6 +58,7 @@ doSubmit(RPC::JsonContext& context)
 
         auto ret = RPC::transactionSubmit(
             context.params,
+            context.apiVersion,
             failType,
             context.role,
             context.ledgerMaster.getValidatedLedgerAge(),

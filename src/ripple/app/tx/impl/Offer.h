@@ -23,6 +23,7 @@
 #include <ripple/basics/contract.h>
 #include <ripple/ledger/View.h>
 #include <ripple/protocol/Quality.h>
+#include <ripple/protocol/Rules.h>
 #include <ripple/protocol/SField.h>
 #include <ripple/protocol/STLedgerEntry.h>
 #include <ostream>
@@ -71,7 +72,7 @@ public:
         offer is partially filled; Subsequent partial fills will use the
         original quality.
     */
-    Quality const
+    Quality
     quality() const noexcept
     {
         return m_quality;
@@ -125,16 +126,53 @@ public:
         return to_string(m_entry->key());
     }
 
-    uint256
+    std::optional<uint256>
     key() const
     {
         return m_entry->key();
     }
 
-    Issue
+    Issue const&
     issueIn() const;
-    Issue
+    Issue const&
     issueOut() const;
+
+    TAmounts<TIn, TOut>
+    limitOut(
+        TAmounts<TIn, TOut> const& offrAmt,
+        TOut const& limit,
+        bool roundUp) const;
+
+    TAmounts<TIn, TOut>
+    limitIn(TAmounts<TIn, TOut> const& offrAmt, TIn const& limit, bool roundUp)
+        const;
+
+    template <typename... Args>
+    static TER
+    send(Args&&... args);
+
+    bool
+    isFunded() const
+    {
+        // Offer owner is issuer; they have unlimited funds
+        return m_account == issueOut().account;
+    }
+
+    static std::pair<std::uint32_t, std::uint32_t>
+    adjustRates(std::uint32_t ofrInRate, std::uint32_t ofrOutRate)
+    {
+        // CLOB offer pays the transfer fee
+        return {ofrInRate, ofrOutRate};
+    }
+
+    /** Check any required invariant. Limit order book offer
+     * always returns true.
+     */
+    bool
+    checkInvariant(TAmounts<TIn, TOut> const&, beast::Journal j) const
+    {
+        return true;
+    }
 };
 
 using Offer = TOffer<>;
@@ -177,6 +215,48 @@ TOffer<TIn, TOut>::setFieldAmounts()
 #endif
 }
 
+template <class TIn, class TOut>
+TAmounts<TIn, TOut>
+TOffer<TIn, TOut>::limitOut(
+    TAmounts<TIn, TOut> const& offrAmt,
+    TOut const& limit,
+    bool roundUp) const
+{
+    if (auto const& rules = getCurrentTransactionRules();
+        rules && rules->enabled(fixReducedOffersV1))
+        // It turns out that the ceil_out implementation has some slop in
+        // it.  ceil_out_strict removes that slop.  But removing that slop
+        // affects transaction outcomes, so the change must be made using
+        // an amendment.
+        return quality().ceil_out_strict(offrAmt, limit, roundUp);
+    return m_quality.ceil_out(offrAmt, limit);
+}
+
+template <class TIn, class TOut>
+TAmounts<TIn, TOut>
+TOffer<TIn, TOut>::limitIn(
+    TAmounts<TIn, TOut> const& offrAmt,
+    TIn const& limit,
+    bool roundUp) const
+{
+    if (auto const& rules = getCurrentTransactionRules();
+        rules && rules->enabled(fixReducedOffersV2))
+        // It turns out that the ceil_in implementation has some slop in
+        // it.  ceil_in_strict removes that slop.  But removing that slop
+        // affects transaction outcomes, so the change must be made using
+        // an amendment.
+        return quality().ceil_in_strict(offrAmt, limit, roundUp);
+    return m_quality.ceil_in(offrAmt, limit);
+}
+
+template <class TIn, class TOut>
+template <typename... Args>
+TER
+TOffer<TIn, TOut>::send(Args&&... args)
+{
+    return accountSend(std::forward<Args>(args)...);
+}
+
 template <>
 inline void
 TOffer<STAmount, STAmount>::setFieldAmounts()
@@ -210,28 +290,28 @@ TOffer<XRPAmount, IOUAmount>::setFieldAmounts()
 }
 
 template <class TIn, class TOut>
-Issue
+Issue const&
 TOffer<TIn, TOut>::issueIn() const
 {
     return this->issIn_;
 }
 
 template <>
-inline Issue
+inline Issue const&
 TOffer<STAmount, STAmount>::issueIn() const
 {
     return m_amounts.in.issue();
 }
 
 template <class TIn, class TOut>
-Issue
+Issue const&
 TOffer<TIn, TOut>::issueOut() const
 {
     return this->issOut_;
 }
 
 template <>
-inline Issue
+inline Issue const&
 TOffer<STAmount, STAmount>::issueOut() const
 {
     return m_amounts.out.issue();

@@ -17,10 +17,35 @@
 */
 //==============================================================================
 
+#include <ripple/basics/LocalValue.h>
 #include <ripple/protocol/Feature.h>
 #include <ripple/protocol/Rules.h>
 
+#include <optional>
+
 namespace ripple {
+
+namespace {
+// Use a static inside a function to help prevent order-of-initialization issues
+LocalValue<std::optional<Rules>>&
+getCurrentTransactionRulesRef()
+{
+    static LocalValue<std::optional<Rules>> r;
+    return r;
+}
+}  // namespace
+
+std::optional<Rules> const&
+getCurrentTransactionRules()
+{
+    return *getCurrentTransactionRulesRef();
+}
+
+void
+setCurrentTransactionRules(std::optional<Rules> r)
+{
+    *getCurrentTransactionRulesRef() = std::move(r);
+}
 
 class Rules::Impl
 {
@@ -45,6 +70,12 @@ public:
         set_.insert(amendments.begin(), amendments.end());
     }
 
+    std::unordered_set<uint256, beast::uhash<>> const&
+    presets() const
+    {
+        return presets_;
+    }
+
     bool
     enabled(uint256 const& feature) const
     {
@@ -60,6 +91,7 @@ public:
             return true;
         if (!digest_ || !other.digest_)
             return false;
+        assert(presets_ == other.presets_);
         return *digest_ == *other.digest_;
     }
 };
@@ -75,6 +107,12 @@ Rules::Rules(
     STVector256 const& amendments)
     : impl_(std::make_shared<Impl>(presets, digest, amendments))
 {
+}
+
+std::unordered_set<uint256, beast::uhash<>> const&
+Rules::presets() const
+{
+    return impl_->presets();
 }
 
 bool

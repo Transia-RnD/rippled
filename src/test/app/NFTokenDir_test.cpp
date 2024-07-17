@@ -185,13 +185,19 @@ class NFTokenDir_test : public beast::unit_test::suite
                 // Create accounts for all of the seeds and fund those accounts.
                 std::vector<Account> accounts;
                 accounts.reserve(seeds.size());
-                for (std::string_view const& seed : seeds)
+                for (std::string_view seed : seeds)
                 {
                     Account const& account = accounts.emplace_back(
                         Account::base58Seed, std::string(seed));
                     env.fund(XRP(10000), account);
-                    env.close();
+
+                    // Do not close the ledger inside the loop.  If
+                    // fixNFTokenRemint is enabled and accounts are initialized
+                    // at different ledgers, they will have different account
+                    // sequences.  That would cause the accounts to have
+                    // different NFTokenID sequence numbers.
                 }
+                env.close();
 
                 // All of the accounts create one NFT and and offer that NFT to
                 // buyer.
@@ -403,13 +409,19 @@ class NFTokenDir_test : public beast::unit_test::suite
                 // Create accounts for all of the seeds and fund those accounts.
                 std::vector<Account> accounts;
                 accounts.reserve(seeds.size());
-                for (std::string_view const& seed : seeds)
+                for (std::string_view seed : seeds)
                 {
                     Account const& account = accounts.emplace_back(
                         Account::base58Seed, std::string(seed));
                     env.fund(XRP(10000), account);
-                    env.close();
+
+                    // Do not close the ledger inside the loop.  If
+                    // fixNFTokenRemint is enabled and accounts are initialized
+                    // at different ledgers, they will have different account
+                    // sequences.  That would cause the accounts to have
+                    // different NFTokenID sequence numbers.
                 }
+                env.close();
 
                 // All of the accounts create one NFT and and offer that NFT to
                 // buyer.
@@ -647,13 +659,19 @@ class NFTokenDir_test : public beast::unit_test::suite
         // Create accounts for all of the seeds and fund those accounts.
         std::vector<Account> accounts;
         accounts.reserve(seeds.size());
-        for (std::string_view const& seed : seeds)
+        for (std::string_view seed : seeds)
         {
             Account const& account =
                 accounts.emplace_back(Account::base58Seed, std::string(seed));
             env.fund(XRP(10000), account);
-            env.close();
+
+            // Do not close the ledger inside the loop.  If
+            // fixNFTokenRemint is enabled and accounts are initialized
+            // at different ledgers, they will have different account
+            // sequences.  That would cause the accounts to have
+            // different NFTokenID sequence numbers.
         }
+        env.close();
 
         // All of the accounts create one NFT and and offer that NFT to buyer.
         std::vector<uint256> nftIDs;
@@ -822,13 +840,19 @@ class NFTokenDir_test : public beast::unit_test::suite
         // Create accounts for all of the seeds and fund those accounts.
         std::vector<Account> accounts;
         accounts.reserve(seeds.size());
-        for (std::string_view const& seed : seeds)
+        for (std::string_view seed : seeds)
         {
             Account const& account =
                 accounts.emplace_back(Account::base58Seed, std::string(seed));
             env.fund(XRP(10000), account);
-            env.close();
+
+            // Do not close the ledger inside the loop.  If
+            // fixNFTokenRemint is enabled and accounts are initialized
+            // at different ledgers, they will have different account
+            // sequences.  That would cause the accounts to have
+            // different NFTokenID sequence numbers.
         }
+        env.close();
 
         // All of the accounts create seven consecutive NFTs and and offer
         // those NFTs to buyer.
@@ -1078,7 +1102,8 @@ public:
         FeatureBitset const fixNFTDir{
             fixNFTokenDirV1, featureNonFungibleTokensV1_1};
 
-        testWithFeats(all - fixNFTDir);
+        testWithFeats(all - fixNFTDir - fixNFTokenRemint);
+        testWithFeats(all - fixNFTokenRemint);
         testWithFeats(all);
     }
 };

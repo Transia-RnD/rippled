@@ -57,6 +57,12 @@ uri::operator()(Env& env, JTx& jt) const
     jt.jv[sfURI.jsonName] = uri_;
 }
 
+void
+amount::operator()(Env& env, JTx& jt) const
+{
+    jt.jv[sfAmount.jsonName] = amount_.getJson(JsonOptions::none);
+}
+
 uint256
 getNextID(
     jtx::Env const& env,
@@ -68,17 +74,26 @@ getNextID(
     // Get the nftSeq from the account root of the issuer.
     std::uint32_t const nftSeq = {
         env.le(issuer)->at(~sfMintedNFTokens).value_or(0)};
-    return getID(issuer, nfTokenTaxon, nftSeq, flags, xferFee);
+    return token::getID(env, issuer, nfTokenTaxon, nftSeq, flags, xferFee);
 }
 
 uint256
 getID(
+    jtx::Env const& env,
     jtx::Account const& issuer,
     std::uint32_t nfTokenTaxon,
     std::uint32_t nftSeq,
     std::uint16_t flags,
     std::uint16_t xferFee)
 {
+    if (env.current()->rules().enabled(fixNFTokenRemint))
+    {
+        // If fixNFTokenRemint is enabled, we must add issuer's
+        // FirstNFTokenSequence to offset the starting NFT sequence number.
+        nftSeq += env.le(issuer)
+                      ->at(~sfFirstNFTokenSequence)
+                      .value_or(env.seq(issuer));
+    }
     return ripple::NFTokenMint::createNFTokenID(
         flags, xferFee, issuer, nft::toTaxon(nfTokenTaxon), nftSeq);
 }

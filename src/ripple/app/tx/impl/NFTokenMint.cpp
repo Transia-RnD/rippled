@@ -31,10 +31,23 @@
 
 namespace ripple {
 
+static std::uint16_t
+extractNFTokenFlagsFromTxFlags(std::uint32_t txFlags)
+{
+    return static_cast<std::uint16_t>(txFlags & 0x0000FFFF);
+}
+
 NotTEC
 NFTokenMint::preflight(PreflightContext const& ctx)
 {
     if (!ctx.rules.enabled(featureNonFungibleTokensV1))
+        return temDISABLED;
+
+    bool const hasOfferFields = ctx.tx.isFieldPresent(sfAmount) ||
+        ctx.tx.isFieldPresent(sfDestination) ||
+        ctx.tx.isFieldPresent(sfExpiration);
+
+    if (!ctx.rules.enabled(featureNFTokenMintOffer) && hasOfferFields)
         return temDISABLED;
 
     if (auto const ret = preflight1(ctx); !isTesSuccess(ret))
@@ -78,6 +91,29 @@ NFTokenMint::preflight(PreflightContext const& ctx)
     {
         if (uri->length() == 0 || uri->length() > maxTokenURILength)
             return temMALFORMED;
+    }
+
+    if (hasOfferFields)
+    {
+        // The Amount field must be present if either the Destination or
+        // Expiration fields are present.
+        if (!ctx.tx.isFieldPresent(sfAmount))
+            return temMALFORMED;
+
+        // Rely on the common code shared with NFTokenCreateOffer to
+        // do the validation.  We pass tfSellNFToken as the transaction flags
+        // because a Mint is only allowed to create a sell offer.
+        if (NotTEC notTec = nft::tokenOfferCreatePreflight(
+                ctx.tx[sfAccount],
+                ctx.tx[sfAmount],
+                ctx.tx[~sfDestination],
+                ctx.tx[~sfExpiration],
+                extractNFTokenFlagsFromTxFlags(ctx.tx.getFlags()),
+                ctx.rules);
+            !isTesSuccess(notTec))
+        {
+            return notTec;
+        }
     }
 
     return preflight2(ctx);
@@ -146,6 +182,27 @@ NFTokenMint::preclaim(PreclaimContext const& ctx)
             return tecNO_PERMISSION;
     }
 
+    if (ctx.tx.isFieldPresent(sfAmount))
+    {
+        // The Amount field says create an offer for the minted token.
+        if (hasExpired(ctx.view, ctx.tx[~sfExpiration]))
+            return tecEXPIRED;
+
+        // Rely on the common code shared with NFTokenCreateOffer to
+        // do the validation.  We pass tfSellNFToken as the transaction flags
+        // because a Mint is only allowed to create a sell offer.
+        if (TER const ter = nft::tokenOfferCreatePreclaim(
+                ctx.view,
+                ctx.tx[sfAccount],
+                ctx.tx[~sfIssuer].value_or(ctx.tx[sfAccount]),
+                ctx.tx[sfAmount],
+                ctx.tx[~sfDestination],
+                extractNFTokenFlagsFromTxFlags(ctx.tx.getFlags()),
+                ctx.tx[~sfTransferFee].value_or(0),
+                ctx.j);
+            !isTesSuccess(ter))
+            return ter;
+    }
     return tesSUCCESS;
 }
 
@@ -160,15 +217,66 @@ NFTokenMint::doApply()
             // Should not happen.  Checked in preclaim.
             return Unexpected(tecNO_ISSUER);
 
-        // Get the unique sequence number for this token:
-        std::uint32_t const tokenSeq = (*root)[~sfMintedNFTokens].value_or(0);
+        if (!ctx_.view().rules().enabled(fixNFTokenRemint))
         {
-            std::uint32_t const nextTokenSeq = tokenSeq + 1;
-            if (nextTokenSeq < tokenSeq)
-                return Unexpected(tecMAX_SEQUENCE_REACHED);
+            // Get the unique sequence number for this token:
+            std::uint32_t const tokenSeq =
+                (*root)[~sfMintedNFTokens].value_or(0);
+            {
+                std::uint32_t const nextTokenSeq = tokenSeq + 1;
+                if (nextTokenSeq < tokenSeq)
+                    return Unexpected(tecMAX_SEQUENCE_REACHED);
 
-            (*root)[sfMintedNFTokens] = nextTokenSeq;
+                (*root)[sfMintedNFTokens] = nextTokenSeq;
+            }
+            ctx_.view().update(root);
+            return tokenSeq;
         }
+
+        // With fixNFTokenRemint amendment enabled:
+        //
+        // If the issuer hasn't minted an NFToken before we must add a
+        // FirstNFTokenSequence field to the issuer's AccountRoot.  The
+        // value of the FirstNFTokenSequence must equal the issuer's
+        // current account sequence.
+        //
+        // There are three situations:
+        //  o If the first token is being minted by the issuer and
+        //     * If the transaction consumes a Sequence number, then the
+        //       Sequence has been pre-incremented by the time we get here in
+        //       doApply.  We must decrement the value in the Sequence field.
+        //     * Otherwise the transaction uses a Ticket so the Sequence has
+        //       not been pre-incremented.  We use the Sequence value as is.
+        //  o The first token is being minted by an authorized minter.  In
+        //    this case the issuer's Sequence field has been left untouched.
+        //    We use the issuer's Sequence value as is.
+        if (!root->isFieldPresent(sfFirstNFTokenSequence))
+        {
+            std::uint32_t const acctSeq = root->at(sfSequence);
+
+            root->at(sfFirstNFTokenSequence) =
+                ctx_.tx.isFieldPresent(sfIssuer) ||
+                    ctx_.tx.getSeqProxy().isTicket()
+                ? acctSeq
+                : acctSeq - 1;
+        }
+
+        std::uint32_t const mintedNftCnt =
+            (*root)[~sfMintedNFTokens].value_or(0u);
+
+        (*root)[sfMintedNFTokens] = mintedNftCnt + 1u;
+        if ((*root)[sfMintedNFTokens] == 0u)
+            return Unexpected(tecMAX_SEQUENCE_REACHED);
+
+        // Get the unique sequence number of this token by
+        // sfFirstNFTokenSequence + sfMintedNFTokens
+        std::uint32_t const offset = (*root)[sfFirstNFTokenSequence];
+        std::uint32_t const tokenSeq = offset + mintedNftCnt;
+
+        // Check for more overflow cases
+        if (tokenSeq + 1u == 0u || tokenSeq < offset)
+            return Unexpected(tecMAX_SEQUENCE_REACHED);
+
         ctx_.view().update(root);
         return tokenSeq;
     }();
@@ -187,18 +295,16 @@ NFTokenMint::doApply()
         // Should never happen.
         return tecINTERNAL;
 
+    auto const nftokenID = createNFTokenID(
+        extractNFTokenFlagsFromTxFlags(ctx_.tx.getFlags()),
+        ctx_.tx[~sfTransferFee].value_or(0),
+        issuer,
+        nft::toTaxon(ctx_.tx[sfNFTokenTaxon]),
+        tokenSeq.value());
+
     STObject newToken(
-        *nfTokenTemplate,
-        sfNFToken,
-        [this, &issuer, &tokenSeq](STObject& object) {
-            object.setFieldH256(
-                sfNFTokenID,
-                createNFTokenID(
-                    static_cast<std::uint16_t>(ctx_.tx.getFlags() & 0x0000FFFF),
-                    ctx_.tx[~sfTransferFee].value_or(0),
-                    issuer,
-                    nft::toTaxon(ctx_.tx[sfNFTokenTaxon]),
-                    tokenSeq.value()));
+        *nfTokenTemplate, sfNFToken, [this, &nftokenID](STObject& object) {
+            object.setFieldH256(sfNFTokenID, nftokenID);
 
             if (auto const uri = ctx_.tx[~sfURI])
                 object.setFieldVL(sfURI, *uri);
@@ -209,10 +315,29 @@ NFTokenMint::doApply()
         ret != tesSUCCESS)
         return ret;
 
+    if (ctx_.tx.isFieldPresent(sfAmount))
+    {
+        // Rely on the common code shared with NFTokenCreateOffer to create
+        // the offer.  We pass tfSellNFToken as the transaction flags
+        // because a Mint is only allowed to create a sell offer.
+        if (TER const ter = nft::tokenOfferCreateApply(
+                view(),
+                ctx_.tx[sfAccount],
+                ctx_.tx[sfAmount],
+                ctx_.tx[~sfDestination],
+                ctx_.tx[~sfExpiration],
+                ctx_.tx.getSeqProxy(),
+                nftokenID,
+                mPriorBalance,
+                j_);
+            !isTesSuccess(ter))
+            return ter;
+    }
+
     // Only check the reserve if the owner count actually changed.  This
     // allows NFTs to be added to the page (and burn fees) without
     // requiring the reserve to be met each time.  The reserve is
-    // only managed when a new NFT page is added.
+    // only managed when a new NFT page or sell offer is added.
     if (auto const ownerCountAfter =
             view().read(keylet::account(account_))->getFieldU32(sfOwnerCount);
         ownerCountAfter > ownerCountBefore)

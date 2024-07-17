@@ -83,6 +83,21 @@ public:
     operator()(Env&, JTx& jtx) const;
 };
 
+/** Sets the optional amount field on an NFTokenMint. */
+class amount
+{
+private:
+    STAmount const amount_;
+
+public:
+    explicit amount(STAmount const amount) : amount_(amount)
+    {
+    }
+
+    void
+    operator()(Env&, JTx& jtx) const;
+};
+
 /** Get the next NFTokenID that will be issued. */
 uint256
 getNextID(
@@ -95,6 +110,7 @@ getNextID(
 /** Get the NFTokenID for a particular nftSequence. */
 uint256
 getID(
+    jtx::Env const& env,
     jtx::Account const& account,
     std::uint32_t tokenTaxon,
     std::uint32_t nftSeq,

@@ -89,6 +89,7 @@ class Overlay;
 class PathRequests;
 class PendingSaves;
 class PublicKey;
+class ServerHandler;
 class SecretKey;
 class STLedgerEntry;
 class TimeKeeper;
@@ -231,6 +232,8 @@ public:
     getOPs() = 0;
     virtual OrderBookDB&
     getOrderBookDB() = 0;
+    virtual ServerHandler&
+    getServerHandler() = 0;
     virtual TransactionMaster&
     getMasterTransaction() = 0;
     virtual perf::PerfLog&
@@ -239,7 +242,7 @@ public:
     virtual std::pair<PublicKey, SecretKey> const&
     nodeIdentity() = 0;
 
-    virtual PublicKey const&
+    virtual std::optional<PublicKey const>
     getValidationPublicKey() const = 0;
 
     virtual Resource::Manager&
@@ -281,6 +284,9 @@ public:
      * than the last ledger it persisted. */
     virtual LedgerIndex
     getMaxDisallowedLedger() = 0;
+
+    virtual const std::optional<uint256>&
+    trapTxID() const = 0;
 };
 
 std::unique_ptr<Application>

@@ -18,11 +18,16 @@
 //==============================================================================
 
 #include <ripple/protocol/InnerObjectFormats.h>
+#include <ripple/protocol/SField.h>
+#include <ripple/protocol/SOTemplate.h>
 
 namespace ripple {
 
 InnerObjectFormats::InnerObjectFormats()
 {
+    // inner objects with the default fields have to be
+    // constructed with STObject::makeInnerObject()
+
     add(sfSignerEntry.jsonName.c_str(),
         sfSignerEntry.getCode(),
         {
@@ -58,6 +63,89 @@ InnerObjectFormats::InnerObjectFormats()
         {
             {sfNFTokenID, soeREQUIRED},
             {sfURI, soeOPTIONAL},
+        });
+
+    add(sfVoteEntry.jsonName.c_str(),
+        sfVoteEntry.getCode(),
+        {
+            {sfAccount, soeREQUIRED},
+            {sfTradingFee, soeDEFAULT},
+            {sfVoteWeight, soeREQUIRED},
+        });
+
+    add(sfAuctionSlot.jsonName.c_str(),
+        sfAuctionSlot.getCode(),
+        {{sfAccount, soeREQUIRED},
+         {sfExpiration, soeREQUIRED},
+         {sfDiscountedFee, soeDEFAULT},
+         {sfPrice, soeREQUIRED},
+         {sfAuthAccounts, soeOPTIONAL}});
+
+    add(sfXChainClaimAttestationCollectionElement.jsonName.c_str(),
+        sfXChainClaimAttestationCollectionElement.getCode(),
+        {
+            {sfAttestationSignerAccount, soeREQUIRED},
+            {sfPublicKey, soeREQUIRED},
+            {sfSignature, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfAccount, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfXChainClaimID, soeREQUIRED},
+            {sfDestination, soeOPTIONAL},
+        });
+
+    add(sfXChainCreateAccountAttestationCollectionElement.jsonName.c_str(),
+        sfXChainCreateAccountAttestationCollectionElement.getCode(),
+        {
+            {sfAttestationSignerAccount, soeREQUIRED},
+            {sfPublicKey, soeREQUIRED},
+            {sfSignature, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfAccount, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfXChainAccountCreateCount, soeREQUIRED},
+            {sfDestination, soeREQUIRED},
+            {sfSignatureReward, soeREQUIRED},
+        });
+
+    add(sfXChainClaimProofSig.jsonName.c_str(),
+        sfXChainClaimProofSig.getCode(),
+        {
+            {sfAttestationSignerAccount, soeREQUIRED},
+            {sfPublicKey, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfDestination, soeOPTIONAL},
+        });
+
+    add(sfXChainCreateAccountProofSig.jsonName.c_str(),
+        sfXChainCreateAccountProofSig.getCode(),
+        {
+            {sfAttestationSignerAccount, soeREQUIRED},
+            {sfPublicKey, soeREQUIRED},
+            {sfAmount, soeREQUIRED},
+            {sfSignatureReward, soeREQUIRED},
+            {sfAttestationRewardAccount, soeREQUIRED},
+            {sfWasLockingChainSend, soeREQUIRED},
+            {sfDestination, soeREQUIRED},
+        });
+
+    add(sfAuthAccount.jsonName.c_str(),
+        sfAuthAccount.getCode(),
+        {
+            {sfAccount, soeREQUIRED},
+        });
+
+    add(sfPriceData.jsonName.c_str(),
+        sfPriceData.getCode(),
+        {
+            {sfBaseAsset, soeREQUIRED},
+            {sfQuoteAsset, soeREQUIRED},
+            {sfAssetPrice, soeOPTIONAL},
+            {sfScale, soeDEFAULT},
         });
 }
 

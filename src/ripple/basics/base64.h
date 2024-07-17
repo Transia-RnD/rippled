@@ -57,6 +57,7 @@
 #ifndef RIPPLE_BASICS_BASE64_H_INCLUDED
 #define RIPPLE_BASICS_BASE64_H_INCLUDED
 
+#include <cstdint>
 #include <string>
 
 namespace ripple {
@@ -72,7 +73,7 @@ base64_encode(std::string const& s)
 }
 
 std::string
-base64_decode(std::string const& data);
+base64_decode(std::string_view data);
 
 }  // namespace ripple
 
