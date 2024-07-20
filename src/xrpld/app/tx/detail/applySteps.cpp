@@ -51,6 +51,7 @@
 #include <xrpld/app/tx/detail/SetSignerList.h>
 #include <xrpld/app/tx/detail/SetTrust.h>
 #include <xrpld/app/tx/detail/XChainBridge.h>
+#include <xrpld/app/tx/detail/XSetTemplate.h>
 #include <xrpl/protocol/TxFormats.h>
 
 #include <stdexcept>
@@ -165,6 +166,8 @@ with_txn_type(TxType txnType, F&& f)
             return f.template operator()<SetOracle>();
         case ttORACLE_DELETE:
             return f.template operator()<DeleteOracle>();
+        case ttXTEMPLATE_SET:
+            return f.template operator()<XSetTemplate>();
         default:
             throw UnknownTxnType(txnType);
     }

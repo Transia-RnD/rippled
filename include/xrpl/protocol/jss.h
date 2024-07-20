@@ -161,6 +161,8 @@ JSS(XChainCreateClaimID);                // transaction type.
 JSS(XChainModifyBridge);                 // transaction type.
 JSS(XChainOwnedClaimID);                 // ledger type.
 JSS(XChainOwnedCreateAccountClaimID);    // ledger type.
+JSS(XSetTemplate);                       // transaction type.
+JSS(XTemplate);                          // ledger type.
 JSS(aborted);                            // out: InboundLedger
 JSS(accepted);               // out: LedgerToJson, OwnerInfo, SubmitTransaction
 JSS(account);                // in/out: many

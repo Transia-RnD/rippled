@@ -505,6 +505,13 @@ TxFormats::TxFormats()
             {sfOracleDocumentID, soeREQUIRED},
         },
         commonFields);
+    
+    add(jss::XSetTemplate,
+        ttXTEMPLATE_SET,
+        {
+            {sfTemplateField, soeREQUIRED},
+        },
+        commonFields);
 }
 
 TxFormats const&

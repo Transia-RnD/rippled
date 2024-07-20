@@ -73,6 +73,7 @@ enum class LedgerNameSpace : std::uint16_t {
     XCHAIN_CREATE_ACCOUNT_CLAIM_ID = 'K',
     DID = 'I',
     ORACLE = 'R',
+    XTEMPLATE = 'T',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
@@ -449,6 +450,12 @@ Keylet
 oracle(AccountID const& account, std::uint32_t const& documentID) noexcept
 {
     return {ltORACLE, indexHash(LedgerNameSpace::ORACLE, account, documentID)};
+}
+
+Keylet
+xtemplate(AccountID const& account, std::uint32_t const& sequence) noexcept
+{
+    return {ltXTEMPLATE, indexHash(LedgerNameSpace::XTEMPLATE, account, sequence)};
 }
 
 }  // namespace keylet

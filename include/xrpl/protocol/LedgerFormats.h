@@ -196,6 +196,11 @@ enum LedgerEntryType : std::uint16_t
         \sa keylet::oracle
      */
     ltORACLE = 0x0080,
+    
+    /** A ledger object which tracks Template
+        \sa keylet::templatek
+     */
+    ltXTEMPLATE = 0x0081,
 
     //---------------------------------------------------------------------------
     /** A special type, matching any ledger entry type.
