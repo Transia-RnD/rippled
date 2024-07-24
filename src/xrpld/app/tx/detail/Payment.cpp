@@ -331,6 +331,8 @@ Payment::doApply()
         sleDst = std::make_shared<SLE>(k);
         sleDst->setAccountID(sfAccount, uDstAccountID);
         sleDst->setFieldU32(sfSequence, seqno);
+        if (view().rules().enabled(featureSponsorV1) && uTxFlags & tfIsSponsor)
+            sleDst->setAccountID(sfSponsor);
 
         view().insert(sleDst);
     }

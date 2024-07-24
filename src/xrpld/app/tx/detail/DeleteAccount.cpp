@@ -319,7 +319,13 @@ DeleteAccount::doApply()
     auto dst = view().peek(keylet::account(ctx_.tx[sfDestination]));
     assert(dst);
 
-    if (!src || !dst)
+    auto recv = dst;
+    if (view().rules().enabled(featureSponsorV1) && src->isFieldPresent(sfSponsor))
+    {
+        recv = view().peek(keylet::account(src->getAccountID(sfSponsor)));
+    }
+
+    if (!src || !dst || !recv)
         return tefBAD_LEDGER;
 
     Keylet const ownerDirKeylet{keylet::ownerDir(account_)};
@@ -347,7 +353,7 @@ DeleteAccount::doApply()
         return ter;
 
     // Transfer any XRP remaining after the fee is paid to the destination:
-    (*dst)[sfBalance] = (*dst)[sfBalance] + mSourceBalance;
+    (*recv)[sfBalance] = (*recv)[sfBalance] + mSourceBalance;
     (*src)[sfBalance] = (*src)[sfBalance] - mSourceBalance;
     ctx_.deliver(mSourceBalance);
 
