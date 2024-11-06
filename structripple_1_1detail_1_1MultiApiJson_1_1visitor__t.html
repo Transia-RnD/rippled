@@ -92,19 +92,19 @@ requires std::same_as&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp
 requires std::same_as&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cvref.html">std::remove_cvref_t</a>&lt;Json&gt;, <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">MultiApiJson</a>&gt;</td></tr>
 <tr class="memitem:a63d0ed96dd0c6b91c77f6856b21a160a"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structripple_1_1detail_1_1MultiApiJson_1_1visitor__t.html#a63d0ed96dd0c6b91c77f6856b21a160a">operator()</a> (Json &amp;json, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integral_constant.html">std::integral_constant</a>&lt; unsigned int, Version &gt; const, Fn fn) const -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::invoke_result_t</a>&lt; Fn, decltype(json.val[0])&gt;</td></tr>
 <tr class="separator:a63d0ed96dd0c6b91c77f6856b21a160a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab33c899df7eb6ce6fbfc6c3959b144b3"><td class="memTemplParams" colspan="2">template&lt;typename Json , typename Version , typename... Args, typename Fn &gt; <br />
-requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to&lt;Version, unsigned&gt;&amp;&amp; std::same_as&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cvref.html">std::remove_cvref_t</a>&lt;Json&gt;, <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">MultiApiJson</a>&gt;</td></tr>
-<tr class="memitem:ab33c899df7eb6ce6fbfc6c3959b144b3"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structripple_1_1detail_1_1MultiApiJson_1_1visitor__t.html#ab33c899df7eb6ce6fbfc6c3959b144b3">operator()</a> (Json &amp;json, Version version, Fn fn, Args &amp;&amp;... args) const -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::invoke_result_t</a>&lt; Fn, decltype(json.val[0]), Version, Args &amp;&amp;... &gt;</td></tr>
-<tr class="separator:ab33c899df7eb6ce6fbfc6c3959b144b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afcfe47fab322dfbc5f5a4bc1fb96c4a0"><td class="memTemplParams" colspan="2">template&lt;typename Json , typename Version , typename Fn &gt; <br />
-requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to&lt;Version, unsigned&gt;&amp;&amp; std:: same_as&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cvref.html">std::remove_cvref_t</a>&lt;Json&gt;, <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">MultiApiJson</a>&gt;</td></tr>
-<tr class="memitem:afcfe47fab322dfbc5f5a4bc1fb96c4a0"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structripple_1_1detail_1_1MultiApiJson_1_1visitor__t.html#afcfe47fab322dfbc5f5a4bc1fb96c4a0">operator()</a> (Json &amp;json, Version version, Fn fn) const -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::invoke_result_t</a>&lt; Fn, decltype(json.val[0])&gt;</td></tr>
-<tr class="separator:afcfe47fab322dfbc5f5a4bc1fb96c4a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae036dae02c330b528a826e497c8250c8"><td class="memTemplParams" colspan="2">template&lt;typename Json , typename Version , typename... Args, typename Fn &gt; <br />
+requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to&lt;Version, unsigned&gt; &amp;&amp; std::same_as&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cvref.html">std::remove_cvref_t</a>&lt;Json&gt;, <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">MultiApiJson</a>&gt;</td></tr>
+<tr class="memitem:ae036dae02c330b528a826e497c8250c8"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structripple_1_1detail_1_1MultiApiJson_1_1visitor__t.html#ae036dae02c330b528a826e497c8250c8">operator()</a> (Json &amp;json, Version version, Fn fn, Args &amp;&amp;... args) const -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::invoke_result_t</a>&lt; Fn, decltype(json.val[0]), Version, Args &amp;&amp;... &gt;</td></tr>
+<tr class="separator:ae036dae02c330b528a826e497c8250c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4442efb5ba57db6fb7737cba609baf6"><td class="memTemplParams" colspan="2">template&lt;typename Json , typename Version , typename Fn &gt; <br />
+requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to&lt;Version, unsigned&gt; &amp;&amp; std::same_as&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cvref.html">std::remove_cvref_t</a>&lt;Json&gt;, <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">MultiApiJson</a>&gt;</td></tr>
+<tr class="memitem:ad4442efb5ba57db6fb7737cba609baf6"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structripple_1_1detail_1_1MultiApiJson_1_1visitor__t.html#ad4442efb5ba57db6fb7737cba609baf6">operator()</a> (Json &amp;json, Version version, Fn fn) const -&gt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/result_of.html">std::invoke_result_t</a>&lt; Fn, decltype(json.val[0])&gt;</td></tr>
+<tr class="separator:ad4442efb5ba57db6fb7737cba609baf6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><div class="compoundTemplParams">template&lt;unsigned MinVer, unsigned MaxVer&gt;<br />
 struct ripple::detail::MultiApiJson&lt; MinVer, MaxVer &gt;::visitor_t</div>
-<p class="definition">Definition at line <a class="el" href="MultiApiJson_8h_source.html#l00105">105</a> of file <a class="el" href="MultiApiJson_8h_source.html">MultiApiJson.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="MultiApiJson_8h_source.html#l00104">104</a> of file <a class="el" href="MultiApiJson_8h_source.html">MultiApiJson.h</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a5a3e9dc64c355300c3672ff339211c00" name="a5a3e9dc64c355300c3672ff339211c00"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5a3e9dc64c355300c3672ff339211c00">&#9670;&#160;</a></span>operator()() <span class="overload">[1/4]</span></h2>
@@ -196,12 +196,12 @@ requires std::same_as&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="MultiApiJson_8h_source.html#l00137">137</a> of file <a class="el" href="MultiApiJson_8h_source.html">MultiApiJson.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="MultiApiJson_8h_source.html#l00138">138</a> of file <a class="el" href="MultiApiJson_8h_source.html">MultiApiJson.h</a>.</p>
 
 </div>
 </div>
-<a id="ab33c899df7eb6ce6fbfc6c3959b144b3" name="ab33c899df7eb6ce6fbfc6c3959b144b3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab33c899df7eb6ce6fbfc6c3959b144b3">&#9670;&#160;</a></span>operator()() <span class="overload">[3/4]</span></h2>
+<a id="ae036dae02c330b528a826e497c8250c8" name="ae036dae02c330b528a826e497c8250c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae036dae02c330b528a826e497c8250c8">&#9670;&#160;</a></span>operator()() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -209,7 +209,7 @@ requires std::same_as&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp
 template&lt;unsigned MinVer, unsigned MaxVer&gt; </div>
 <div class="memtemplate">
 template&lt;typename Json , typename Version , typename... Args, typename Fn &gt; <br />
-requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to&lt;Version, unsigned&gt;&amp;&amp; std::same_as&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cvref.html">std::remove_cvref_t</a>&lt;Json&gt;, <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">MultiApiJson</a>&gt;</div>
+requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to&lt;Version, unsigned&gt; &amp;&amp; std::same_as&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cvref.html">std::remove_cvref_t</a>&lt;Json&gt;, <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">MultiApiJson</a>&gt;</div>
       <table class="memname">
         <tr>
           <td class="memname">auto <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">ripple::detail::MultiApiJson</a>&lt; MinVer, MaxVer &gt;::visitor_t::operator() </td>
@@ -245,12 +245,12 @@ requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="MultiApiJson_8h_source.html#l00157">157</a> of file <a class="el" href="MultiApiJson_8h_source.html">MultiApiJson.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="MultiApiJson_8h_source.html#l00158">158</a> of file <a class="el" href="MultiApiJson_8h_source.html">MultiApiJson.h</a>.</p>
 
 </div>
 </div>
-<a id="afcfe47fab322dfbc5f5a4bc1fb96c4a0" name="afcfe47fab322dfbc5f5a4bc1fb96c4a0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afcfe47fab322dfbc5f5a4bc1fb96c4a0">&#9670;&#160;</a></span>operator()() <span class="overload">[4/4]</span></h2>
+<a id="ad4442efb5ba57db6fb7737cba609baf6" name="ad4442efb5ba57db6fb7737cba609baf6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad4442efb5ba57db6fb7737cba609baf6">&#9670;&#160;</a></span>operator()() <span class="overload">[4/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -258,7 +258,7 @@ requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to
 template&lt;unsigned MinVer, unsigned MaxVer&gt; </div>
 <div class="memtemplate">
 template&lt;typename Json , typename Version , typename Fn &gt; <br />
-requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to&lt;Version, unsigned&gt;&amp;&amp; std:: same_as&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cvref.html">std::remove_cvref_t</a>&lt;Json&gt;, <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">MultiApiJson</a>&gt;</div>
+requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to&lt;Version, unsigned&gt; &amp;&amp; std::same_as&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/types/remove_cvref.html">std::remove_cvref_t</a>&lt;Json&gt;, <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">MultiApiJson</a>&gt;</div>
       <table class="memname">
         <tr>
           <td class="memname">auto <a class="el" href="structripple_1_1detail_1_1MultiApiJson.html">ripple::detail::MultiApiJson</a>&lt; MinVer, MaxVer &gt;::visitor_t::operator() </td>
@@ -287,7 +287,7 @@ requires (!some_integral_constant&lt;Version&gt;) &amp;&amp; std::convertible_to
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="MultiApiJson_8h_source.html#l00174">174</a> of file <a class="el" href="MultiApiJson_8h_source.html">MultiApiJson.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="MultiApiJson_8h_source.html#l00177">177</a> of file <a class="el" href="MultiApiJson_8h_source.html">MultiApiJson.h</a>.</p>
 
 </div>
 </div>

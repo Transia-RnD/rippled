@@ -101,12 +101,18 @@ Collaboration diagram for ripple::Issue:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a0d3f0ef9f3ef8b22371de5f34740d38f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Issue.html#a0d3f0ef9f3ef8b22371de5f34740d38f">Issue</a> ()</td></tr>
-<tr class="separator:a0d3f0ef9f3ef8b22371de5f34740d38f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab56795de9a4a19f91c2a8129de991b8b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Issue.html#ab56795de9a4a19f91c2a8129de991b8b">Issue</a> ()=default</td></tr>
+<tr class="separator:ab56795de9a4a19f91c2a8129de991b8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca4fa5e360c85db5e4764cadd3aef887"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Issue.html#aca4fa5e360c85db5e4764cadd3aef887">Issue</a> (<a class="el" href="namespaceripple.html#a8792cc3f99463ceba4e96dde34fe17a4">Currency</a> const &amp;c, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;a)</td></tr>
 <tr class="separator:aca4fa5e360c85db5e4764cadd3aef887"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a564723bf4d14d6991f8e039e0be58c19"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Issue.html#a564723bf4d14d6991f8e039e0be58c19">getIssuer</a> () const</td></tr>
+<tr class="separator:a564723bf4d14d6991f8e039e0be58c19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2e58e7c6ac6ca280fa330040b32707ea"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Issue.html#a2e58e7c6ac6ca280fa330040b32707ea">getText</a> () const</td></tr>
 <tr class="separator:a2e58e7c6ac6ca280fa330040b32707ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6801cdebb9eaf7cfd7d1ec83eb9ab82"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Issue.html#ac6801cdebb9eaf7cfd7d1ec83eb9ab82">setJson</a> (<a class="el" href="classJson_1_1Value.html">Json::Value</a> &amp;jv) const</td></tr>
+<tr class="separator:ac6801cdebb9eaf7cfd7d1ec83eb9ab82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8615e07409164d6d0a8084879ad7bc8c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Issue.html#a8615e07409164d6d0a8084879ad7bc8c">native</a> () const</td></tr>
+<tr class="separator:a8615e07409164d6d0a8084879ad7bc8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -121,11 +127,14 @@ Public Attributes</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00035">35</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a0d3f0ef9f3ef8b22371de5f34740d38f" name="a0d3f0ef9f3ef8b22371de5f34740d38f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0d3f0ef9f3ef8b22371de5f34740d38f">&#9670;&#160;</a></span>Issue() <span class="overload">[1/2]</span></h2>
+<a id="ab56795de9a4a19f91c2a8129de991b8b" name="ab56795de9a4a19f91c2a8129de991b8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab56795de9a4a19f91c2a8129de991b8b">&#9670;&#160;</a></span>Issue() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">ripple::Issue::Issue </td>
@@ -134,9 +143,12 @@ Public Attributes</h2></td></tr>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">default</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00041">41</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
 
 </div>
 </div>
@@ -166,11 +178,30 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00045">45</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00043">43</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a564723bf4d14d6991f8e039e0be58c19" name="a564723bf4d14d6991f8e039e0be58c19"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a564723bf4d14d6991f8e039e0be58c19">&#9670;&#160;</a></span>getIssuer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const  &amp; ripple::Issue::getIssuer </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00048">48</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
+
+</div>
+</div>
 <a id="a2e58e7c6ac6ca280fa330040b32707ea" name="a2e58e7c6ac6ca280fa330040b32707ea"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2e58e7c6ac6ca280fa330040b32707ea">&#9670;&#160;</a></span>getText()</h2>
 
@@ -187,6 +218,45 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="Issue_8cpp_source.html#l00030">30</a> of file <a class="el" href="Issue_8cpp_source.html">Issue.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ac6801cdebb9eaf7cfd7d1ec83eb9ab82" name="ac6801cdebb9eaf7cfd7d1ec83eb9ab82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6801cdebb9eaf7cfd7d1ec83eb9ab82">&#9670;&#160;</a></span>setJson()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ripple::Issue::setJson </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classJson_1_1Value.html">Json::Value</a> &amp;&#160;</td>
+          <td class="paramname"><em>jv</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Issue_8cpp_source.html#l00053">53</a> of file <a class="el" href="Issue_8cpp_source.html">Issue.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a8615e07409164d6d0a8084879ad7bc8c" name="a8615e07409164d6d0a8084879ad7bc8c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8615e07409164d6d0a8084879ad7bc8c">&#9670;&#160;</a></span>native()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ripple::Issue::native </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Issue_8cpp_source.html#l00061">61</a> of file <a class="el" href="Issue_8cpp_source.html">Issue.cpp</a>.</p>
 
 </div>
 </div>

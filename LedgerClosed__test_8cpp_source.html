@@ -120,12 +120,12 @@ $(function() {
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>        env.close();</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>        <span class="keyword">auto</span> <span class="keyword">const</span> ar_master = env.le(env.master);</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>        BEAST_EXPECT(ar_master-&gt;getAccountID(<a class="code hl_variable" href="namespaceripple.html#ae6b4f5c2ea3e0ddaaae28e88706a7fe4">sfAccount</a>) == env.master.id());</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        BEAST_EXPECT((*ar_master)[<a class="code hl_variable" href="namespaceripple.html#acfd850aa34a6695ae7e60b7cbece05a5">sfBalance</a>] == drops(99999989999999980));</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>        BEAST_EXPECT(ar_master-&gt;getAccountID(sfAccount) == env.master.id());</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        BEAST_EXPECT((*ar_master)[sfBalance] == drops(99999989999999980));</div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>        <span class="keyword">auto</span> <span class="keyword">const</span> ar_alice = env.le(alice);</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        BEAST_EXPECT(ar_alice-&gt;getAccountID(<a class="code hl_variable" href="namespaceripple.html#ae6b4f5c2ea3e0ddaaae28e88706a7fe4">sfAccount</a>) == alice.id());</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        BEAST_EXPECT((*ar_alice)[<a class="code hl_variable" href="namespaceripple.html#acfd850aa34a6695ae7e60b7cbece05a5">sfBalance</a>] == XRP(10000));</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        BEAST_EXPECT(ar_alice-&gt;getAccountID(sfAccount) == alice.id());</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        BEAST_EXPECT((*ar_alice)[sfBalance] == XRP(10000));</div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
 <div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>        lc_result = env.rpc(<span class="stringliteral">&quot;ledger_closed&quot;</span>)[jss::result];</div>
 <div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>        BEAST_EXPECT(</div>
@@ -150,8 +150,6 @@ $(function() {
 <div class="ttc" id="aclassripple_1_1LedgerClosed__test_html_a0a67e5e963b71cd8637c88ed0f67832d"><div class="ttname"><a href="classripple_1_1LedgerClosed__test.html#a0a67e5e963b71cd8637c88ed0f67832d">ripple::LedgerClosed_test::run</a></div><div class="ttdeci">void run() override</div><div class="ttdoc">Runs the suite.</div><div class="ttdef"><b>Definition:</b> <a href="LedgerClosed__test_8cpp_source.html#l00060">LedgerClosed_test.cpp:60</a></div></div>
 <div class="ttc" id="aclassripple_1_1LedgerClosed__test_html_ac83a6ca1562008fc5de0b99e2b48f8d4"><div class="ttname"><a href="classripple_1_1LedgerClosed__test.html#ac83a6ca1562008fc5de0b99e2b48f8d4">ripple::LedgerClosed_test::testMonitorRoot</a></div><div class="ttdeci">void testMonitorRoot()</div><div class="ttdef"><b>Definition:</b> <a href="LedgerClosed__test_8cpp_source.html#l00030">LedgerClosed_test.cpp:30</a></div></div>
 <div class="ttc" id="anamespaceripple_html"><div class="ttname"><a href="namespaceripple.html">ripple</a></div><div class="ttdoc">Use hash_* containers for keys that do not need a cryptographically secure hashing algorithm.</div><div class="ttdef"><b>Definition:</b> <a href="algorithm_8h_source.html#l00026">algorithm.h:26</a></div></div>
-<div class="ttc" id="anamespaceripple_html_acfd850aa34a6695ae7e60b7cbece05a5"><div class="ttname"><a href="namespaceripple.html#acfd850aa34a6695ae7e60b7cbece05a5">ripple::sfBalance</a></div><div class="ttdeci">SF_AMOUNT const sfBalance</div></div>
-<div class="ttc" id="anamespaceripple_html_ae6b4f5c2ea3e0ddaaae28e88706a7fe4"><div class="ttname"><a href="namespaceripple.html#ae6b4f5c2ea3e0ddaaae28e88706a7fe4">ripple::sfAccount</a></div><div class="ttdeci">SF_ACCOUNT const sfAccount</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -321,190 +321,190 @@ $(function() {
 <div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>.<a class="code hl_function" href="classripple_1_1SField.html#ade495eacddd4ad40287a62f9032fb74c">isUseful</a>(), <span class="stringliteral">&quot;sfGeneric must not be useful&quot;</span>);</div>
 <div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span>        {</div>
 <div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>            <span class="comment">// Try to put sfGeneric in an SOTemplate.</span></div>
-<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>            except&lt;std::runtime_error&gt;([&amp;]() {</div>
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>                <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> elements{{<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>}};</div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>            });</div>
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span>        }</div>
-<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span> </div>
-<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(<a class="code hl_variable" href="namespaceripple.html#a3f8a9da87fa29f4347337cae6fbdcba6">sfInvalid</a>.<a class="code hl_function" href="classripple_1_1SField.html#ade495eacddd4ad40287a62f9032fb74c">isUseful</a>(), <span class="stringliteral">&quot;sfInvalid must not be useful&quot;</span>);</div>
-<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>        {</div>
-<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>            <span class="comment">// Test return of sfInvalid.</span></div>
-<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>            <span class="keyword">auto</span> testInvalid = [<span class="keyword">this</span>](<a class="code hl_enumeration" href="namespaceripple.html#a3e7e3f29aef85bcca06706da54e950fc">SerializedTypeID</a> tid, <span class="keywordtype">int</span> fv) {</div>
-<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>                <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; shouldBeInvalid{<a class="code hl_function" href="classripple_1_1SField.html#ac50e95825ecf10dfd786cb9b8da4ae39">SField::getField</a>(tid, fv)};</div>
-<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>                BEAST_EXPECT(shouldBeInvalid == <a class="code hl_variable" href="namespaceripple.html#a3f8a9da87fa29f4347337cae6fbdcba6">sfInvalid</a>);</div>
-<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>            };</div>
-<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>            testInvalid(STI_VL, 255);</div>
-<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>            testInvalid(STI_UINT256, 255);</div>
-<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>            testInvalid(STI_UINT32, 255);</div>
-<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>            testInvalid(STI_VECTOR256, 255);</div>
-<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>            testInvalid(STI_OBJECT, 255);</div>
-<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>        }</div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>        {</div>
-<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>            <span class="comment">// Try to put sfInvalid in an SOTemplate.</span></div>
-<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>            except&lt;std::runtime_error&gt;([&amp;]() {</div>
-<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>                <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> elements{{<a class="code hl_variable" href="namespaceripple.html#a3f8a9da87fa29f4347337cae6fbdcba6">sfInvalid</a>, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>}};</div>
-<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>            });</div>
-<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>        }</div>
-<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>        {</div>
-<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>            <span class="comment">// Try to put the same SField into an SOTemplate twice.</span></div>
-<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>            except&lt;std::runtime_error&gt;([&amp;]() {</div>
-<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>                <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> elements{</div>
-<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>                    {<a class="code hl_variable" href="namespaceripple.html#ae6b4f5c2ea3e0ddaaae28e88706a7fe4">sfAccount</a>, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>                    {<a class="code hl_variable" href="namespaceripple.html#ae6b4f5c2ea3e0ddaaae28e88706a7fe4">sfAccount</a>, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>                };</div>
-<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>            });</div>
-<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>        }</div>
-<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span> </div>
-<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>        <span class="comment">// Put a variety of SFields of different types in an SOTemplate.</span></div>
-<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>        <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; sfTestVL = <a class="code hl_variable" href="namespaceripple.html#a83042556c6c251db61f5bdec904ddc8e">sfMasterSignature</a>;</div>
-<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>        <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; sfTestH256 = <a class="code hl_variable" href="namespaceripple.html#a8d7c6e2ed80e72898efcf247554af493">sfCheckID</a>;</div>
-<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>        <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; sfTestU32 = <a class="code hl_variable" href="namespaceripple.html#a536c788db75e2d31232b88c1d56a1c69">sfSettleDelay</a>;</div>
-<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>        <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; sfTestV256 = <a class="code hl_variable" href="namespaceripple.html#adcc3924a2f0dadb18c9f875fc2ce2651">sfAmendments</a>;</div>
-<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>        <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; sfTestObject = <a class="code hl_variable" href="namespaceripple.html#aa92490b35b0ff549f7e92e1e51d48035">sfMajority</a>;</div>
-<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span> </div>
-<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>        <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> <span class="keyword">const</span> elements{</div>
-<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>            {<a class="code hl_variable" href="namespaceripple.html#a06b9f7ae163a2994e987048460807197">sfFlags</a>, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
-<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>            {sfTestVL, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
-<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>            {sfTestH256, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">soeOPTIONAL</a>},</div>
-<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>            {sfTestU32, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
-<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span>            {sfTestV256, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">soeOPTIONAL</a>},</div>
-<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>        };</div>
-<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span> </div>
-<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span>        <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> object1(elements, sfTestObject);</div>
-<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>        <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> object2(object1);</div>
-<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span> </div>
-<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
-<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>() != object2.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>(),</div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>            <span class="stringliteral">&quot;STObject error 1&quot;</span>);</div>
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span> </div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
-<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">isFieldPresent</a>(sfTestH256) ||</div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>                !object1.<a class="code hl_function" href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">isFieldPresent</a>(sfTestVL),</div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>            <span class="stringliteral">&quot;STObject error&quot;</span>);</div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>            except&lt;std::runtime_error&gt;(</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>                [&amp;]() { <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> elements{{<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>}}; });</div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span>        }</div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span> </div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(<a class="code hl_variable" href="namespaceripple.html#a3f8a9da87fa29f4347337cae6fbdcba6">sfInvalid</a>.<a class="code hl_function" href="classripple_1_1SField.html#ade495eacddd4ad40287a62f9032fb74c">isUseful</a>(), <span class="stringliteral">&quot;sfInvalid must not be useful&quot;</span>);</div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span>        {</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span>            <span class="comment">// Test return of sfInvalid.</span></div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span>            <span class="keyword">auto</span> testInvalid = [<span class="keyword">this</span>](<a class="code hl_enumeration" href="namespaceripple.html#a3e7e3f29aef85bcca06706da54e950fc">SerializedTypeID</a> tid, <span class="keywordtype">int</span> fv) {</div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span>                <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; shouldBeInvalid{<a class="code hl_function" href="classripple_1_1SField.html#ac50e95825ecf10dfd786cb9b8da4ae39">SField::getField</a>(tid, fv)};</div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span>                BEAST_EXPECT(shouldBeInvalid == <a class="code hl_variable" href="namespaceripple.html#a3f8a9da87fa29f4347337cae6fbdcba6">sfInvalid</a>);</div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span>            };</div>
+<div class="line"><a id="l00257" name="l00257"></a><span class="lineno">  257</span>            testInvalid(STI_VL, 255);</div>
+<div class="line"><a id="l00258" name="l00258"></a><span class="lineno">  258</span>            testInvalid(STI_UINT256, 255);</div>
+<div class="line"><a id="l00259" name="l00259"></a><span class="lineno">  259</span>            testInvalid(STI_UINT32, 255);</div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span>            testInvalid(STI_VECTOR256, 255);</div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>            testInvalid(STI_OBJECT, 255);</div>
+<div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>        }</div>
+<div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>        {</div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>            <span class="comment">// Try to put sfInvalid in an SOTemplate.</span></div>
+<div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>            except&lt;std::runtime_error&gt;(</div>
+<div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>                [&amp;]() { <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> elements{{<a class="code hl_variable" href="namespaceripple.html#a3f8a9da87fa29f4347337cae6fbdcba6">sfInvalid</a>, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>}}; });</div>
+<div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>        }</div>
+<div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span>        {</div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span>            <span class="comment">// Try to put the same SField into an SOTemplate twice.</span></div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span>            except&lt;std::runtime_error&gt;([&amp;]() {</div>
+<div class="line"><a id="l00271" name="l00271"></a><span class="lineno">  271</span>                <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> elements{</div>
+<div class="line"><a id="l00272" name="l00272"></a><span class="lineno">  272</span>                    {sfAccount, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
+<div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span>                    {sfAccount, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>                };</div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>            });</div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>        }</div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span> </div>
+<div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>        <span class="comment">// Put a variety of SFields of different types in an SOTemplate.</span></div>
+<div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span>        <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; sfTestVL = sfMasterSignature;</div>
+<div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>        <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; sfTestH256 = sfCheckID;</div>
+<div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>        <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; sfTestU32 = sfSettleDelay;</div>
+<div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>        <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; sfTestV256 = sfAmendments;</div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>        <a class="code hl_class" href="classripple_1_1SField.html">SField</a> <span class="keyword">const</span>&amp; sfTestObject = sfMajority;</div>
+<div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span> </div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>        <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> <span class="keyword">const</span> elements{</div>
+<div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>            {sfFlags, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
+<div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>            {sfTestVL, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
+<div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span>            {sfTestH256, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">soeOPTIONAL</a>},</div>
+<div class="line"><a id="l00289" name="l00289"></a><span class="lineno">  289</span>            {sfTestU32, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
+<div class="line"><a id="l00290" name="l00290"></a><span class="lineno">  290</span>            {sfTestV256, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">soeOPTIONAL</a>},</div>
+<div class="line"><a id="l00291" name="l00291"></a><span class="lineno">  291</span>        };</div>
+<div class="line"><a id="l00292" name="l00292"></a><span class="lineno">  292</span> </div>
+<div class="line"><a id="l00293" name="l00293"></a><span class="lineno">  293</span>        <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> object1(elements, sfTestObject);</div>
+<div class="line"><a id="l00294" name="l00294"></a><span class="lineno">  294</span>        <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> object2(object1);</div>
+<div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span> </div>
+<div class="line"><a id="l00296" name="l00296"></a><span class="lineno">  296</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
+<div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>() != object2.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>(),</div>
+<div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>            <span class="stringliteral">&quot;STObject error 1&quot;</span>);</div>
+<div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span> </div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">isFieldPresent</a>(sfTestH256) ||</div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>                !object1.<a class="code hl_function" href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">isFieldPresent</a>(sfTestVL),</div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>            <span class="stringliteral">&quot;STObject error&quot;</span>);</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span> </div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>        object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6b5bb43ef723075465e909e54c9d6622">makeFieldPresent</a>(sfTestH256);</div>
 <div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span> </div>
-<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>        object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6b5bb43ef723075465e909e54c9d6622">makeFieldPresent</a>(sfTestH256);</div>
+<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(!object1.<a class="code hl_function" href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">isFieldPresent</a>(sfTestH256), <span class="stringliteral">&quot;STObject Error 2&quot;</span>);</div>
 <div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span> </div>
-<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(!object1.<a class="code hl_function" href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">isFieldPresent</a>(sfTestH256), <span class="stringliteral">&quot;STObject Error 2&quot;</span>);</div>
-<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span> </div>
-<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#af89b6c7fd94c998549037d0c44a068a1">getFieldH256</a>(sfTestH256) != <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a>(), <span class="stringliteral">&quot;STObject error 3&quot;</span>);</div>
-<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span> </div>
-<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>        <span class="keywordflow">if</span> (object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>() == object2.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>())</div>
-<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>        {</div>
-<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>            <a class="code hl_variable" href="classbeast_1_1unit__test_1_1suite.html#a19b8ee0ce850d78834984655ae83b20e">log</a> &lt;&lt; <span class="stringliteral">&quot;O1: &quot;</span> &lt;&lt; object1.<a class="code hl_function" href="classripple_1_1STObject.html#acc2ceb95cdb8fc8b2520aeceabf17553">getJson</a>(<a class="code hl_enumvalue" href="structripple_1_1JsonOptions.html#ab85e43ec84df987200d3355c3ba89f0aa1917451e3686dfe8d5016670eb87ab33">JsonOptions::none</a>) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span></div>
-<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>                &lt;&lt; <span class="stringliteral">&quot;O2: &quot;</span> &lt;&lt; object2.<a class="code hl_function" href="classripple_1_1STObject.html#acc2ceb95cdb8fc8b2520aeceabf17553">getJson</a>(<a class="code hl_enumvalue" href="structripple_1_1JsonOptions.html#ab85e43ec84df987200d3355c3ba89f0aa1917451e3686dfe8d5016670eb87ab33">JsonOptions::none</a>) &lt;&lt; <a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/io/manip/endl.html">std::endl</a>;</div>
-<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#af5ea30f883ad3a2a841af60a9a82c29c">fail</a>(<span class="stringliteral">&quot;STObject error 4&quot;</span>);</div>
-<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>        }</div>
-<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>        <span class="keywordflow">else</span></div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>        {</div>
-<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a5c723fb774d3c25ba877c5b9ce681d6f">pass</a>();</div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>        }</div>
+<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
+<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#af89b6c7fd94c998549037d0c44a068a1">getFieldH256</a>(sfTestH256) != <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a>(), <span class="stringliteral">&quot;STObject error 3&quot;</span>);</div>
+<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span> </div>
+<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>        <span class="keywordflow">if</span> (object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>() == object2.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>())</div>
+<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>        {</div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>            <a class="code hl_variable" href="classbeast_1_1unit__test_1_1suite.html#a19b8ee0ce850d78834984655ae83b20e">log</a> &lt;&lt; <span class="stringliteral">&quot;O1: &quot;</span> &lt;&lt; object1.<a class="code hl_function" href="classripple_1_1STObject.html#acc2ceb95cdb8fc8b2520aeceabf17553">getJson</a>(<a class="code hl_enumvalue" href="structripple_1_1JsonOptions.html#ab85e43ec84df987200d3355c3ba89f0aa1917451e3686dfe8d5016670eb87ab33">JsonOptions::none</a>) &lt;&lt; <span class="charliteral">&#39;\n&#39;</span></div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>                &lt;&lt; <span class="stringliteral">&quot;O2: &quot;</span> &lt;&lt; object2.<a class="code hl_function" href="classripple_1_1STObject.html#acc2ceb95cdb8fc8b2520aeceabf17553">getJson</a>(<a class="code hl_enumvalue" href="structripple_1_1JsonOptions.html#ab85e43ec84df987200d3355c3ba89f0aa1917451e3686dfe8d5016670eb87ab33">JsonOptions::none</a>) &lt;&lt; <a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/io/manip/endl.html">std::endl</a>;</div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#af5ea30f883ad3a2a841af60a9a82c29c">fail</a>(<span class="stringliteral">&quot;STObject error 4&quot;</span>);</div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>        }</div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>        <span class="keywordflow">else</span></div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>        {</div>
+<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a5c723fb774d3c25ba877c5b9ce681d6f">pass</a>();</div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>        }</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span> </div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>        object1.<a class="code hl_function" href="classripple_1_1STObject.html#a624bc6e179ff15ec5f08a4d1c7d1932e">makeFieldAbsent</a>(sfTestH256);</div>
 <div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span> </div>
-<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>        object1.<a class="code hl_function" href="classripple_1_1STObject.html#a624bc6e179ff15ec5f08a4d1c7d1932e">makeFieldAbsent</a>(sfTestH256);</div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(object1.<a class="code hl_function" href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">isFieldPresent</a>(sfTestH256), <span class="stringliteral">&quot;STObject error 5&quot;</span>);</div>
 <div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span> </div>
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(object1.<a class="code hl_function" href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">isFieldPresent</a>(sfTestH256), <span class="stringliteral">&quot;STObject error 5&quot;</span>);</div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(object1.<a class="code hl_function" href="classripple_1_1STObject.html#af5aa57043ec772da30341e3c3b823d7f">getFlags</a>() != 0, <span class="stringliteral">&quot;STObject error 6&quot;</span>);</div>
 <div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span> </div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(object1.<a class="code hl_function" href="classripple_1_1STObject.html#af5aa57043ec772da30341e3c3b823d7f">getFlags</a>() != 0, <span class="stringliteral">&quot;STObject error 6&quot;</span>);</div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span> </div>
-<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
-<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>() != object2.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>(),</div>
-<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>            <span class="stringliteral">&quot;STObject error 7&quot;</span>);</div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>() != object2.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>(),</div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>            <span class="stringliteral">&quot;STObject error 7&quot;</span>);</div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span> </div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>        <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> copy(object1);</div>
 <div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span> </div>
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>        <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> copy(object1);</div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(object1.<a class="code hl_function" href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">isFieldPresent</a>(sfTestH256), <span class="stringliteral">&quot;STObject error 8&quot;</span>);</div>
 <div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span> </div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(object1.<a class="code hl_function" href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">isFieldPresent</a>(sfTestH256), <span class="stringliteral">&quot;STObject error 8&quot;</span>);</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(copy.isFieldPresent(sfTestH256), <span class="stringliteral">&quot;STObject error 9&quot;</span>);</div>
 <div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span> </div>
-<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(copy.isFieldPresent(sfTestH256), <span class="stringliteral">&quot;STObject error 9&quot;</span>);</div>
-<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span> </div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
-<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>() != copy.getSerializer(),</div>
-<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>            <span class="stringliteral">&quot;STObject error 10&quot;</span>);</div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>() != copy.getSerializer(),</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>            <span class="stringliteral">&quot;STObject error 10&quot;</span>);</div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span> </div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>        copy.setFieldU32(sfTestU32, 1);</div>
 <div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span> </div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>        copy.setFieldU32(sfTestU32, 1);</div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span> </div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>() == copy.getSerializer(),</div>
-<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>            <span class="stringliteral">&quot;STObject error 11&quot;</span>);</div>
-<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span> </div>
-<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>        <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 1000; i++)</div>
-<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span>        {</div>
-<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>            <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">Blob</a> j(i, 2);</div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>        <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">getSerializer</a>() == copy.getSerializer(),</div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>            <span class="stringliteral">&quot;STObject error 11&quot;</span>);</div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span> </div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>        <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; 1000; i++)</div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>        {</div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>            <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">Blob</a> j(i, 2);</div>
+<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span> </div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#af1235d307d6f464392a583d0dfaa3cc4">setFieldVL</a>(sfTestVL, j);</div>
 <div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span> </div>
-<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#af1235d307d6f464392a583d0dfaa3cc4">setFieldVL</a>(sfTestVL, j);</div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span> </div>
-<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>            <a class="code hl_class" href="classripple_1_1Serializer.html">Serializer</a> s;</div>
-<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a7adccac3a1b54244ae210afe7c5916e8">add</a>(s);</div>
-<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>            <a class="code hl_class" href="classripple_1_1SerialIter.html">SerialIter</a> it(s.<a class="code hl_function" href="classripple_1_1Serializer.html#a394c3299f6cfcebdaa4bc98ec0c602d6">slice</a>());</div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>            <a class="code hl_class" href="classripple_1_1Serializer.html">Serializer</a> s;</div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a7adccac3a1b54244ae210afe7c5916e8">add</a>(s);</div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>            <a class="code hl_class" href="classripple_1_1SerialIter.html">SerialIter</a> it(s.<a class="code hl_function" href="classripple_1_1Serializer.html#a394c3299f6cfcebdaa4bc98ec0c602d6">slice</a>());</div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span> </div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> object3(elements, it, sfTestObject);</div>
 <div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span> </div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> object3(elements, it, sfTestObject);</div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(object1.<a class="code hl_function" href="classripple_1_1STObject.html#a09be758ae97b9e9e392aa2606cc0559f">getFieldVL</a>(sfTestVL) != j, <span class="stringliteral">&quot;STObject error&quot;</span>);</div>
 <div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span> </div>
-<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(object1.<a class="code hl_function" href="classripple_1_1STObject.html#a09be758ae97b9e9e392aa2606cc0559f">getFieldVL</a>(sfTestVL) != j, <span class="stringliteral">&quot;STObject error&quot;</span>);</div>
-<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span> </div>
-<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(object3.<a class="code hl_function" href="classripple_1_1STObject.html#a09be758ae97b9e9e392aa2606cc0559f">getFieldVL</a>(sfTestVL) != j, <span class="stringliteral">&quot;STObject error&quot;</span>);</div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>        }</div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span> </div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>        {</div>
-<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>            <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;uint256&gt;</a> uints;</div>
-<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>            uints.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/reserve.html">reserve</a>(5);</div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>            <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; uints.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/capacity.html">capacity</a>(); ++i)</div>
-<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>            {</div>
-<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>                uints.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/emplace_back.html">emplace_back</a>(i);</div>
-<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>            }</div>
-<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#abca4224026b9aab088af20801fb63ffa">setFieldV256</a>(sfTestV256, <a class="code hl_class" href="classripple_1_1STVector256.html">STVector256</a>(uints));</div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span> </div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>            <a class="code hl_class" href="classripple_1_1Serializer.html">Serializer</a> s;</div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a7adccac3a1b54244ae210afe7c5916e8">add</a>(s);</div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>            <a class="code hl_class" href="classripple_1_1SerialIter.html">SerialIter</a> it(s.<a class="code hl_function" href="classripple_1_1Serializer.html#a394c3299f6cfcebdaa4bc98ec0c602d6">slice</a>());</div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#a865757d2d9992fb2c91c51e137166e9d">unexpected</a>(object3.<a class="code hl_function" href="classripple_1_1STObject.html#a09be758ae97b9e9e392aa2606cc0559f">getFieldVL</a>(sfTestVL) != j, <span class="stringliteral">&quot;STObject error&quot;</span>);</div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>        }</div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span> </div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>        {</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>            <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;uint256&gt;</a> uints;</div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>            uints.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/reserve.html">reserve</a>(5);</div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>            <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; uints.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/capacity.html">capacity</a>(); ++i)</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>            {</div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>                uints.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/emplace_back.html">emplace_back</a>(i);</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>            }</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#abca4224026b9aab088af20801fb63ffa">setFieldV256</a>(sfTestV256, <a class="code hl_class" href="classripple_1_1STVector256.html">STVector256</a>(uints));</div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span> </div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>            <a class="code hl_class" href="classripple_1_1Serializer.html">Serializer</a> s;</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>            object1.<a class="code hl_function" href="classripple_1_1STObject.html#a7adccac3a1b54244ae210afe7c5916e8">add</a>(s);</div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>            <a class="code hl_class" href="classripple_1_1SerialIter.html">SerialIter</a> it(s.<a class="code hl_function" href="classripple_1_1Serializer.html#a394c3299f6cfcebdaa4bc98ec0c602d6">slice</a>());</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span> </div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> object3(elements, it, sfTestObject);</div>
 <div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span> </div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> object3(elements, it, sfTestObject);</div>
-<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span> </div>
-<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>            <span class="keyword">auto</span> <span class="keyword">const</span>&amp; uints1 = object1.<a class="code hl_function" href="classripple_1_1STObject.html#a5836708d0dcd636193c43419eb724ad5">getFieldV256</a>(sfTestV256);</div>
-<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>            <span class="keyword">auto</span> <span class="keyword">const</span>&amp; uints3 = object3.<a class="code hl_function" href="classripple_1_1STObject.html#a5836708d0dcd636193c43419eb724ad5">getFieldV256</a>(sfTestV256);</div>
-<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span> </div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>            BEAST_EXPECT(uints1 == uints3);</div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>        }</div>
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>    }</div>
-<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span> </div>
-<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>    <span class="comment">// Exercise field accessors</span></div>
-<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno"><a class="line" href="classripple_1_1STObject__test.html#af2c76b8b0fdc0f36bc5a67a0575485a8">  392</a></span>    <a class="code hl_function" href="classripple_1_1STObject__test.html#af2c76b8b0fdc0f36bc5a67a0575485a8">testFields</a>()</div>
-<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>    {</div>
-<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>        <a class="code hl_variable" href="classbeast_1_1unit__test_1_1suite.html#aaa1237d9b85c69d35fe86645cee094b5">testcase</a>(<span class="stringliteral">&quot;fields&quot;</span>);</div>
-<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span> </div>
-<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf1Outer = <a class="code hl_variable" href="namespaceripple.html#a54d99018376be0dde8731d92464f4ec0">sfSequence</a>;</div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf2Outer = <a class="code hl_variable" href="namespaceripple.html#ad39915aad1215c6d076306cc83a8b9b0">sfExpiration</a>;</div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf3Outer = <a class="code hl_variable" href="namespaceripple.html#a1ca10da2dbd492bd01d396044b4b0516">sfQualityIn</a>;</div>
-<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf4 = <a class="code hl_variable" href="namespaceripple.html#a081b6172d36e32f968c50367eb3b642c">sfSignature</a>;</div>
-<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf5 = <a class="code hl_variable" href="namespaceripple.html#abac1f99c7a8f47ef360142378ca355ec">sfPublicKey</a>;</div>
-<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span> </div>
-<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>        <span class="comment">// read free object</span></div>
-<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span> </div>
-<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>        {</div>
-<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>            <span class="keyword">auto</span> <span class="keyword">const</span> st = [&amp;]() {</div>
-<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>                <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> s(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
-<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>                s.<a class="code hl_function" href="classripple_1_1STObject.html#acd1aac04649d694a3524faf2ddebf843">setFieldU32</a>(sf1Outer, 1);</div>
-<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>                s.<a class="code hl_function" href="classripple_1_1STObject.html#acd1aac04649d694a3524faf2ddebf843">setFieldU32</a>(sf2Outer, 2);</div>
-<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>                <span class="keywordflow">return</span> s;</div>
-<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span>            }();</div>
-<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span> </div>
-<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span>            BEAST_EXPECT(st[sf1Outer] == 1);</div>
-<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span>            BEAST_EXPECT(st[sf2Outer] == 2);</div>
-<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span>            except&lt;STObject::FieldErr&gt;([&amp;]() { st[sf3Outer]; });</div>
-<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span>            BEAST_EXPECT(*st[~sf1Outer] == 1);</div>
-<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>            BEAST_EXPECT(*st[~sf2Outer] == 2);</div>
-<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span>            BEAST_EXPECT(st[~sf3Outer] == std::nullopt);</div>
-<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span>            BEAST_EXPECT(!!st[~sf1Outer]);</div>
-<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span>            BEAST_EXPECT(!!st[~sf2Outer]);</div>
-<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>            BEAST_EXPECT(!st[~sf3Outer]);</div>
-<div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span>            BEAST_EXPECT(st[sf1Outer] != st[sf2Outer]);</div>
-<div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span>            BEAST_EXPECT(st[~sf1Outer] != st[~sf2Outer]);</div>
-<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span>        }</div>
-<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span> </div>
-<div class="line"><a id="l00425" name="l00425"></a><span class="lineno">  425</span>        <span class="comment">// read templated object</span></div>
-<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span>        <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> <span class="keyword">const</span> sotOuter{</div>
-<div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span>            {sf1Outer, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
-<div class="line"><a id="l00428" name="l00428"></a><span class="lineno">  428</span>            {sf2Outer, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">soeOPTIONAL</a>},</div>
-<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span>            {sf3Outer, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a6e29f8256eb42e1331d2820986b09643">soeDEFAULT</a>},</div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>            <span class="keyword">auto</span> <span class="keyword">const</span>&amp; uints1 = object1.<a class="code hl_function" href="classripple_1_1STObject.html#a5836708d0dcd636193c43419eb724ad5">getFieldV256</a>(sfTestV256);</div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>            <span class="keyword">auto</span> <span class="keyword">const</span>&amp; uints3 = object3.<a class="code hl_function" href="classripple_1_1STObject.html#a5836708d0dcd636193c43419eb724ad5">getFieldV256</a>(sfTestV256);</div>
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span> </div>
+<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>            BEAST_EXPECT(uints1 == uints3);</div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>        }</div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>    }</div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span> </div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>    <span class="comment">// Exercise field accessors</span></div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno"><a class="line" href="classripple_1_1STObject__test.html#af2c76b8b0fdc0f36bc5a67a0575485a8">  390</a></span>    <a class="code hl_function" href="classripple_1_1STObject__test.html#af2c76b8b0fdc0f36bc5a67a0575485a8">testFields</a>()</div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>    {</div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>        <a class="code hl_variable" href="classbeast_1_1unit__test_1_1suite.html#aaa1237d9b85c69d35fe86645cee094b5">testcase</a>(<span class="stringliteral">&quot;fields&quot;</span>);</div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span> </div>
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf1Outer = sfSequence;</div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf2Outer = sfExpiration;</div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf3Outer = sfQualityIn;</div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf4Outer = sfAmount;</div>
+<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf4 = sfSignature;</div>
+<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span>        <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf5 = sfPublicKey;</div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span> </div>
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span>        <span class="comment">// read free object</span></div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span> </div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>        {</div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>            <span class="keyword">auto</span> <span class="keyword">const</span> st = [&amp;]() {</div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>                <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> s(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>                s.<a class="code hl_function" href="classripple_1_1STObject.html#acd1aac04649d694a3524faf2ddebf843">setFieldU32</a>(sf1Outer, 1);</div>
+<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>                s.<a class="code hl_function" href="classripple_1_1STObject.html#acd1aac04649d694a3524faf2ddebf843">setFieldU32</a>(sf2Outer, 2);</div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>                <span class="keywordflow">return</span> s;</div>
+<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>            }();</div>
+<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span> </div>
+<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>            BEAST_EXPECT(st[sf1Outer] == 1);</div>
+<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span>            BEAST_EXPECT(st[sf2Outer] == 2);</div>
+<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span>            except&lt;STObject::FieldErr&gt;([&amp;]() { st[sf3Outer]; });</div>
+<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span>            BEAST_EXPECT(*st[~sf1Outer] == 1);</div>
+<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span>            BEAST_EXPECT(*st[~sf2Outer] == 2);</div>
+<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>            BEAST_EXPECT(st[~sf3Outer] == std::nullopt);</div>
+<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span>            BEAST_EXPECT(!!st[~sf1Outer]);</div>
+<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span>            BEAST_EXPECT(!!st[~sf2Outer]);</div>
+<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span>            BEAST_EXPECT(!st[~sf3Outer]);</div>
+<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>            BEAST_EXPECT(st[sf1Outer] != st[sf2Outer]);</div>
+<div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span>            BEAST_EXPECT(st[~sf1Outer] != st[~sf2Outer]);</div>
+<div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span>        }</div>
+<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span> </div>
+<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span>        <span class="comment">// read templated object</span></div>
+<div class="line"><a id="l00425" name="l00425"></a><span class="lineno">  425</span>        <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> <span class="keyword">const</span> sotOuter{</div>
+<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span>            {sf1Outer, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
+<div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span>            {sf2Outer, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">soeOPTIONAL</a>},</div>
+<div class="line"><a id="l00428" name="l00428"></a><span class="lineno">  428</span>            {sf3Outer, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a6e29f8256eb42e1331d2820986b09643">soeDEFAULT</a>},</div>
+<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span>            {sf4Outer, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">soeOPTIONAL</a>},</div>
 <div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span>            {sf4, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">soeOPTIONAL</a>},</div>
 <div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span>            {sf5, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a6e29f8256eb42e1331d2820986b09643">soeDEFAULT</a>},</div>
 <div class="line"><a id="l00432" name="l00432"></a><span class="lineno">  432</span>        };</div>
@@ -572,235 +572,257 @@ $(function() {
 <div class="line"><a id="l00494" name="l00494"></a><span class="lineno">  494</span>            BEAST_EXPECT(st[sf1Outer] == 4);</div>
 <div class="line"><a id="l00495" name="l00495"></a><span class="lineno">  495</span>            BEAST_EXPECT(st[sf2Outer] == 4);</div>
 <div class="line"><a id="l00496" name="l00496"></a><span class="lineno">  496</span>            BEAST_EXPECT(st[sf2Outer] == st[sf1Outer]);</div>
-<div class="line"><a id="l00497" name="l00497"></a><span class="lineno">  497</span>        }</div>
-<div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span> </div>
-<div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span>        <span class="comment">// Write templated object</span></div>
-<div class="line"><a id="l00500" name="l00500"></a><span class="lineno">  500</span> </div>
-<div class="line"><a id="l00501" name="l00501"></a><span class="lineno">  501</span>        {</div>
-<div class="line"><a id="l00502" name="l00502"></a><span class="lineno">  502</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(sotOuter, <a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
-<div class="line"><a id="l00503" name="l00503"></a><span class="lineno">  503</span>            BEAST_EXPECT(!!st[~sf1Outer]);</div>
-<div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span>            BEAST_EXPECT(st[~sf1Outer] != std::nullopt);</div>
-<div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span>            BEAST_EXPECT(st[sf1Outer] == 0);</div>
-<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span>            BEAST_EXPECT(*st[~sf1Outer] == 0);</div>
-<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>            BEAST_EXPECT(!st[~sf2Outer]);</div>
-<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span>            BEAST_EXPECT(st[~sf2Outer] == std::nullopt);</div>
-<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#adcc8cb5a0237760a7555c80c5bcef563">except</a>([&amp;]() { <span class="keywordflow">return</span> st[sf2Outer] == 0; });</div>
-<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span>            BEAST_EXPECT(!!st[~sf3Outer]);</div>
-<div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span>            BEAST_EXPECT(st[~sf3Outer] != std::nullopt);</div>
-<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>            BEAST_EXPECT(st[sf3Outer] == 0);</div>
-<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#adcc8cb5a0237760a7555c80c5bcef563">except</a>([&amp;]() { st[~sf1Outer] = std::nullopt; });</div>
-<div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span>            st[sf1Outer] = 1;</div>
-<div class="line"><a id="l00515" name="l00515"></a><span class="lineno">  515</span>            BEAST_EXPECT(st[sf1Outer] == 1);</div>
-<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span>            BEAST_EXPECT(*st[~sf1Outer] == 1);</div>
-<div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span>            BEAST_EXPECT(!!st[~sf1Outer]);</div>
-<div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span>            st[sf1Outer] = 0;</div>
-<div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span>            BEAST_EXPECT(st[sf1Outer] == 0);</div>
-<div class="line"><a id="l00520" name="l00520"></a><span class="lineno">  520</span>            BEAST_EXPECT(*st[~sf1Outer] == 0);</div>
-<div class="line"><a id="l00521" name="l00521"></a><span class="lineno">  521</span>            BEAST_EXPECT(!!st[~sf1Outer]);</div>
-<div class="line"><a id="l00522" name="l00522"></a><span class="lineno">  522</span>            st[sf2Outer] = 2;</div>
-<div class="line"><a id="l00523" name="l00523"></a><span class="lineno">  523</span>            BEAST_EXPECT(st[sf2Outer] == 2);</div>
-<div class="line"><a id="l00524" name="l00524"></a><span class="lineno">  524</span>            BEAST_EXPECT(*st[~sf2Outer] == 2);</div>
-<div class="line"><a id="l00525" name="l00525"></a><span class="lineno">  525</span>            BEAST_EXPECT(!!st[~sf2Outer]);</div>
-<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>            st[~sf2Outer] = std::nullopt;</div>
-<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#adcc8cb5a0237760a7555c80c5bcef563">except</a>([&amp;]() { <span class="keywordflow">return</span> *st[~sf2Outer]; });</div>
-<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>            BEAST_EXPECT(!st[~sf2Outer]);</div>
-<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>            st[sf3Outer] = 3;</div>
-<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>            BEAST_EXPECT(st[sf3Outer] == 3);</div>
-<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>            BEAST_EXPECT(*st[~sf3Outer] == 3);</div>
-<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>            BEAST_EXPECT(!!st[~sf3Outer]);</div>
-<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>            st[sf3Outer] = 2;</div>
-<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>            BEAST_EXPECT(st[sf3Outer] == 2);</div>
-<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>            BEAST_EXPECT(*st[~sf3Outer] == 2);</div>
-<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>            BEAST_EXPECT(!!st[~sf3Outer]);</div>
-<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>            st[sf3Outer] = 0;</div>
-<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>            BEAST_EXPECT(st[sf3Outer] == 0);</div>
-<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>            BEAST_EXPECT(*st[~sf3Outer] == 0);</div>
-<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>            BEAST_EXPECT(!!st[~sf3Outer]);</div>
-<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#adcc8cb5a0237760a7555c80c5bcef563">except</a>([&amp;]() { st[~sf3Outer] = std::nullopt; });</div>
-<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>            BEAST_EXPECT(st[sf3Outer] == 0);</div>
-<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>            BEAST_EXPECT(*st[~sf3Outer] == 0);</div>
-<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>            BEAST_EXPECT(!!st[~sf3Outer]);</div>
-<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>        }</div>
-<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span> </div>
-<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>        <span class="comment">// coercion operator to std::optional</span></div>
-<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span> </div>
-<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>        {</div>
-<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
-<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>            <span class="keyword">auto</span> <span class="keyword">const</span> v = ~st[~sf1Outer];</div>
-<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>            <span class="keyword">static_assert</span>(</div>
-<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>                <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt;</div>
-<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>                    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a>&lt;<span class="keyword">decltype</span>(v)&gt;,</div>
-<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>                    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;std::uint32_t&gt;</a>&gt;::value,</div>
-<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>                <span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span>        }</div>
-<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span> </div>
-<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>        <span class="comment">// UDT scalar fields</span></div>
-<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span> </div>
-<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>        {</div>
-<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
-<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>            st[<a class="code hl_variable" href="namespaceripple.html#ade44932003eed1a92b25429a5232b085">sfAmount</a>] = <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{};</div>
-<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>            st[<a class="code hl_variable" href="namespaceripple.html#ae6b4f5c2ea3e0ddaaae28e88706a7fe4">sfAccount</a>] = <a class="code hl_class" href="classripple_1_1base__uint.html">AccountID</a>{};</div>
-<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>            st[<a class="code hl_variable" href="namespaceripple.html#a5537344a372e3fd41818f3057fa1d2db">sfDigest</a>] = <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a>{};</div>
-<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span>            [&amp;](<a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>) {}(st[<a class="code hl_variable" href="namespaceripple.html#ade44932003eed1a92b25429a5232b085">sfAmount</a>]);</div>
-<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>            [&amp;](<a class="code hl_typedef" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a>) {}(st[<a class="code hl_variable" href="namespaceripple.html#ae6b4f5c2ea3e0ddaaae28e88706a7fe4">sfAccount</a>]);</div>
-<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span>            [&amp;](<a class="code hl_typedef" href="namespaceripple.html#a356c68147333a9a48a344718038576d9">uint256</a>) {}(st[<a class="code hl_variable" href="namespaceripple.html#a5537344a372e3fd41818f3057fa1d2db">sfDigest</a>]);</div>
-<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>        }</div>
-<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span> </div>
-<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>        <span class="comment">// STBlob and slice</span></div>
-<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span> </div>
-<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>        {{<a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
-<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>        <a class="code hl_class" href="classripple_1_1Buffer.html">Buffer</a> b(1);</div>
-<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>        BEAST_EXPECT(!b.<a class="code hl_function" href="classripple_1_1Buffer.html#ae1a5452cda07734f4f43151b87a5e236">empty</a>());</div>
-<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>        st[sf4] = std::move(b);</div>
-<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>        BEAST_EXPECT(b.<a class="code hl_function" href="classripple_1_1Buffer.html#ae1a5452cda07734f4f43151b87a5e236">empty</a>());</div>
-<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span>        BEAST_EXPECT(<a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(st[sf4]).size() == 1);</div>
-<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>        st[~sf4] = std::nullopt;</div>
-<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span>        BEAST_EXPECT(!~st[~sf4]);</div>
-<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>        b = <a class="code hl_class" href="classripple_1_1Buffer.html">Buffer</a>{2};</div>
-<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>        st[sf4] = <a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(b);</div>
-<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>        BEAST_EXPECT(b.<a class="code hl_function" href="classripple_1_1Buffer.html#a76cd91377f761afdbb2dec0a39e44005">size</a>() == 2);</div>
-<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>        BEAST_EXPECT(<a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(st[sf4]).size() == 2);</div>
-<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>        st[sf5] = st[sf4];</div>
-<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>        BEAST_EXPECT(<a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(st[sf4]).size() == 2);</div>
-<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>        BEAST_EXPECT(<a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(st[sf5]).size() == 2);</div>
-<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>    }</div>
-<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>    {</div>
-<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span>        <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(sotOuter, <a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
-<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>        BEAST_EXPECT(st[sf5] == <a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>{});</div>
-<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span>        BEAST_EXPECT(!!st[~sf5]);</div>
-<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>        BEAST_EXPECT(!!~st[~sf5]);</div>
-<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>        <a class="code hl_class" href="classripple_1_1Buffer.html">Buffer</a> b(1);</div>
-<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>        st[sf5] = std::move(b);</div>
-<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>        BEAST_EXPECT(b.<a class="code hl_function" href="classripple_1_1Buffer.html#ae1a5452cda07734f4f43151b87a5e236">empty</a>());</div>
-<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>        BEAST_EXPECT(<a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(st[sf5]).size() == 1);</div>
-<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>        st[~sf4] = std::nullopt;</div>
-<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>        BEAST_EXPECT(!~st[~sf4]);</div>
-<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>    }</div>
-<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>}</div>
-<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span> </div>
-<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span><span class="comment">// UDT blobs</span></div>
-<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span> </div>
-<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>{</div>
-<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>    <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
-<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>    BEAST_EXPECT(!st[~sf5]);</div>
-<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>    <span class="keyword">auto</span> <span class="keyword">const</span> kp =</div>
-<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>        <a class="code hl_function" href="namespaceripple.html#a32e911b97d6debe8943c81e6fdf59573">generateKeyPair</a>(<a class="code hl_enumvalue" href="namespaceripple.html#a9de744cfdefe1132969eb982e57e4ddea82c2b7829b8129e5a2d53665ba4b4757">KeyType::secp256k1</a>, <a class="code hl_function" href="namespaceripple.html#adb9531b2a54f33b8227d9b029be9439b">generateSeed</a>(<span class="stringliteral">&quot;masterpassphrase&quot;</span>));</div>
-<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>    st[sf5] = kp.first;</div>
-<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>    st[~sf5] = std::nullopt;</div>
-<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>}</div>
-<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span> </div>
-<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span><span class="comment">// By reference fields</span></div>
-<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span> </div>
-<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>{</div>
-<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>    <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf = <a class="code hl_variable" href="namespaceripple.html#a96559143b0ecd083a716d67e2be3198f">sfIndexes</a>;</div>
-<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>    <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
-<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;uint256&gt;</a> v;</div>
-<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span>    v.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/emplace_back.html">emplace_back</a>(1);</div>
-<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>    v.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/emplace_back.html">emplace_back</a>(2);</div>
-<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>    st[sf] = v;</div>
-<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span>    st[sf] = std::move(v);</div>
-<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span>    <span class="keyword">auto</span> <span class="keyword">const</span>&amp; cst = st;</div>
-<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>    BEAST_EXPECT(cst[sf].size() == 2);</div>
-<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span>    BEAST_EXPECT(cst[~sf]-&gt;size() == 2);</div>
-<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>    BEAST_EXPECT(cst[sf][0] == 1);</div>
-<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>    BEAST_EXPECT(cst[sf][1] == 2);</div>
-<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>    <span class="keyword">static_assert</span>(</div>
-<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>        <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt;<span class="keyword">decltype</span>(cst[<a class="code hl_variable" href="namespaceripple.html#a96559143b0ecd083a716d67e2be3198f">sfIndexes</a>]), <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;uint256&gt;</a> <span class="keyword">const</span>&amp;&gt;::</div>
-<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>            value,</div>
-<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>        <span class="stringliteral">&quot;&quot;</span>);</div>
-<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>}</div>
-<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span> </div>
-<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span><span class="comment">// Default by reference field</span></div>
-<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span> </div>
-<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span>{</div>
-<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>    <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf1 = <a class="code hl_variable" href="namespaceripple.html#a96559143b0ecd083a716d67e2be3198f">sfIndexes</a>;</div>
-<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>    <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf2 = <a class="code hl_variable" href="namespaceripple.html#a747d2a7c1c9e2b0cf6d4946992fe1b77">sfHashes</a>;</div>
-<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>    <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf3 = <a class="code hl_variable" href="namespaceripple.html#adcc3924a2f0dadb18c9f875fc2ce2651">sfAmendments</a>;</div>
-<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>    <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> <span class="keyword">const</span> sot{</div>
-<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>        {sf1, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
-<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>        {sf2, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">soeOPTIONAL</a>},</div>
-<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>        {sf3, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a6e29f8256eb42e1331d2820986b09643">soeDEFAULT</a>},</div>
-<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span>    };</div>
-<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span> </div>
-<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span>    <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(sot, <a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
-<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span>    <span class="keyword">auto</span> <span class="keyword">const</span>&amp; cst(st);</div>
-<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span>    BEAST_EXPECT(cst[sf1].size() == 0);</div>
-<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span>    BEAST_EXPECT(!cst[~sf2]);</div>
-<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>    BEAST_EXPECT(cst[sf3].size() == 0);</div>
-<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span>    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;uint256&gt;</a> v;</div>
-<div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span>    v.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/emplace_back.html">emplace_back</a>(1);</div>
-<div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span>    st[sf1] = v;</div>
-<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span>    BEAST_EXPECT(cst[sf1].size() == 1);</div>
-<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>    BEAST_EXPECT(cst[sf1][0] == <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a>{1});</div>
-<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span>    st[sf2] = v;</div>
-<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>    BEAST_EXPECT(cst[sf2].size() == 1);</div>
-<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span>    BEAST_EXPECT(cst[sf2][0] == <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a>{1});</div>
-<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>    st[~sf2] = std::nullopt;</div>
-<div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span>    BEAST_EXPECT(!st[~sf2]);</div>
-<div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span>    st[sf3] = v;</div>
-<div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span>    BEAST_EXPECT(cst[sf3].size() == 1);</div>
-<div class="line"><a id="l00664" name="l00664"></a><span class="lineno">  664</span>    BEAST_EXPECT(cst[sf3][0] == <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a>{1});</div>
-<div class="line"><a id="l00665" name="l00665"></a><span class="lineno">  665</span>    st[sf3] = <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;uint256&gt;</a>{};</div>
-<div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span>    BEAST_EXPECT(cst[sf3].size() == 0);</div>
-<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span>}</div>
-<div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span>}  <span class="comment">// namespace ripple</span></div>
+<div class="line"><a id="l00497" name="l00497"></a><span class="lineno">  497</span>            st[sf1Outer] += 1;</div>
+<div class="line"><a id="l00498" name="l00498"></a><span class="lineno">  498</span>            BEAST_EXPECT(st[sf1Outer] == 5);</div>
+<div class="line"><a id="l00499" name="l00499"></a><span class="lineno">  499</span>            st[sf4Outer] = <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{1};</div>
+<div class="line"><a id="l00500" name="l00500"></a><span class="lineno">  500</span>            BEAST_EXPECT(st[sf4Outer] == <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{1});</div>
+<div class="line"><a id="l00501" name="l00501"></a><span class="lineno">  501</span>            st[sf4Outer] += <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{1};</div>
+<div class="line"><a id="l00502" name="l00502"></a><span class="lineno">  502</span>            BEAST_EXPECT(st[sf4Outer] == <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{2});</div>
+<div class="line"><a id="l00503" name="l00503"></a><span class="lineno">  503</span>            st[sf1Outer] -= 1;</div>
+<div class="line"><a id="l00504" name="l00504"></a><span class="lineno">  504</span>            BEAST_EXPECT(st[sf1Outer] == 4);</div>
+<div class="line"><a id="l00505" name="l00505"></a><span class="lineno">  505</span>            st[sf4Outer] -= <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{1};</div>
+<div class="line"><a id="l00506" name="l00506"></a><span class="lineno">  506</span>            BEAST_EXPECT(st[sf4Outer] == <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{1});</div>
+<div class="line"><a id="l00507" name="l00507"></a><span class="lineno">  507</span>        }</div>
+<div class="line"><a id="l00508" name="l00508"></a><span class="lineno">  508</span> </div>
+<div class="line"><a id="l00509" name="l00509"></a><span class="lineno">  509</span>        <span class="comment">// Write templated object</span></div>
+<div class="line"><a id="l00510" name="l00510"></a><span class="lineno">  510</span> </div>
+<div class="line"><a id="l00511" name="l00511"></a><span class="lineno">  511</span>        {</div>
+<div class="line"><a id="l00512" name="l00512"></a><span class="lineno">  512</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(sotOuter, <a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
+<div class="line"><a id="l00513" name="l00513"></a><span class="lineno">  513</span>            BEAST_EXPECT(!!st[~sf1Outer]);</div>
+<div class="line"><a id="l00514" name="l00514"></a><span class="lineno">  514</span>            BEAST_EXPECT(st[~sf1Outer] != std::nullopt);</div>
+<div class="line"><a id="l00515" name="l00515"></a><span class="lineno">  515</span>            BEAST_EXPECT(st[sf1Outer] == 0);</div>
+<div class="line"><a id="l00516" name="l00516"></a><span class="lineno">  516</span>            BEAST_EXPECT(*st[~sf1Outer] == 0);</div>
+<div class="line"><a id="l00517" name="l00517"></a><span class="lineno">  517</span>            BEAST_EXPECT(!st[~sf2Outer]);</div>
+<div class="line"><a id="l00518" name="l00518"></a><span class="lineno">  518</span>            BEAST_EXPECT(st[~sf2Outer] == std::nullopt);</div>
+<div class="line"><a id="l00519" name="l00519"></a><span class="lineno">  519</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#adcc8cb5a0237760a7555c80c5bcef563">except</a>([&amp;]() { <span class="keywordflow">return</span> st[sf2Outer] == 0; });</div>
+<div class="line"><a id="l00520" name="l00520"></a><span class="lineno">  520</span>            BEAST_EXPECT(!!st[~sf3Outer]);</div>
+<div class="line"><a id="l00521" name="l00521"></a><span class="lineno">  521</span>            BEAST_EXPECT(st[~sf3Outer] != std::nullopt);</div>
+<div class="line"><a id="l00522" name="l00522"></a><span class="lineno">  522</span>            BEAST_EXPECT(st[sf3Outer] == 0);</div>
+<div class="line"><a id="l00523" name="l00523"></a><span class="lineno">  523</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#adcc8cb5a0237760a7555c80c5bcef563">except</a>([&amp;]() { st[~sf1Outer] = std::nullopt; });</div>
+<div class="line"><a id="l00524" name="l00524"></a><span class="lineno">  524</span>            st[sf1Outer] = 1;</div>
+<div class="line"><a id="l00525" name="l00525"></a><span class="lineno">  525</span>            BEAST_EXPECT(st[sf1Outer] == 1);</div>
+<div class="line"><a id="l00526" name="l00526"></a><span class="lineno">  526</span>            BEAST_EXPECT(*st[~sf1Outer] == 1);</div>
+<div class="line"><a id="l00527" name="l00527"></a><span class="lineno">  527</span>            BEAST_EXPECT(!!st[~sf1Outer]);</div>
+<div class="line"><a id="l00528" name="l00528"></a><span class="lineno">  528</span>            st[sf1Outer] = 0;</div>
+<div class="line"><a id="l00529" name="l00529"></a><span class="lineno">  529</span>            BEAST_EXPECT(st[sf1Outer] == 0);</div>
+<div class="line"><a id="l00530" name="l00530"></a><span class="lineno">  530</span>            BEAST_EXPECT(*st[~sf1Outer] == 0);</div>
+<div class="line"><a id="l00531" name="l00531"></a><span class="lineno">  531</span>            BEAST_EXPECT(!!st[~sf1Outer]);</div>
+<div class="line"><a id="l00532" name="l00532"></a><span class="lineno">  532</span>            st[sf2Outer] = 2;</div>
+<div class="line"><a id="l00533" name="l00533"></a><span class="lineno">  533</span>            BEAST_EXPECT(st[sf2Outer] == 2);</div>
+<div class="line"><a id="l00534" name="l00534"></a><span class="lineno">  534</span>            BEAST_EXPECT(*st[~sf2Outer] == 2);</div>
+<div class="line"><a id="l00535" name="l00535"></a><span class="lineno">  535</span>            BEAST_EXPECT(!!st[~sf2Outer]);</div>
+<div class="line"><a id="l00536" name="l00536"></a><span class="lineno">  536</span>            st[~sf2Outer] = std::nullopt;</div>
+<div class="line"><a id="l00537" name="l00537"></a><span class="lineno">  537</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#adcc8cb5a0237760a7555c80c5bcef563">except</a>([&amp;]() { <span class="keywordflow">return</span> *st[~sf2Outer]; });</div>
+<div class="line"><a id="l00538" name="l00538"></a><span class="lineno">  538</span>            BEAST_EXPECT(!st[~sf2Outer]);</div>
+<div class="line"><a id="l00539" name="l00539"></a><span class="lineno">  539</span>            st[sf3Outer] = 3;</div>
+<div class="line"><a id="l00540" name="l00540"></a><span class="lineno">  540</span>            BEAST_EXPECT(st[sf3Outer] == 3);</div>
+<div class="line"><a id="l00541" name="l00541"></a><span class="lineno">  541</span>            BEAST_EXPECT(*st[~sf3Outer] == 3);</div>
+<div class="line"><a id="l00542" name="l00542"></a><span class="lineno">  542</span>            BEAST_EXPECT(!!st[~sf3Outer]);</div>
+<div class="line"><a id="l00543" name="l00543"></a><span class="lineno">  543</span>            st[sf3Outer] = 2;</div>
+<div class="line"><a id="l00544" name="l00544"></a><span class="lineno">  544</span>            BEAST_EXPECT(st[sf3Outer] == 2);</div>
+<div class="line"><a id="l00545" name="l00545"></a><span class="lineno">  545</span>            BEAST_EXPECT(*st[~sf3Outer] == 2);</div>
+<div class="line"><a id="l00546" name="l00546"></a><span class="lineno">  546</span>            BEAST_EXPECT(!!st[~sf3Outer]);</div>
+<div class="line"><a id="l00547" name="l00547"></a><span class="lineno">  547</span>            st[sf3Outer] = 0;</div>
+<div class="line"><a id="l00548" name="l00548"></a><span class="lineno">  548</span>            BEAST_EXPECT(st[sf3Outer] == 0);</div>
+<div class="line"><a id="l00549" name="l00549"></a><span class="lineno">  549</span>            BEAST_EXPECT(*st[~sf3Outer] == 0);</div>
+<div class="line"><a id="l00550" name="l00550"></a><span class="lineno">  550</span>            BEAST_EXPECT(!!st[~sf3Outer]);</div>
+<div class="line"><a id="l00551" name="l00551"></a><span class="lineno">  551</span>            <a class="code hl_function" href="classbeast_1_1unit__test_1_1suite.html#adcc8cb5a0237760a7555c80c5bcef563">except</a>([&amp;]() { st[~sf3Outer] = std::nullopt; });</div>
+<div class="line"><a id="l00552" name="l00552"></a><span class="lineno">  552</span>            BEAST_EXPECT(st[sf3Outer] == 0);</div>
+<div class="line"><a id="l00553" name="l00553"></a><span class="lineno">  553</span>            BEAST_EXPECT(*st[~sf3Outer] == 0);</div>
+<div class="line"><a id="l00554" name="l00554"></a><span class="lineno">  554</span>            BEAST_EXPECT(!!st[~sf3Outer]);</div>
+<div class="line"><a id="l00555" name="l00555"></a><span class="lineno">  555</span>            st[sf1Outer] += 1;</div>
+<div class="line"><a id="l00556" name="l00556"></a><span class="lineno">  556</span>            BEAST_EXPECT(st[sf1Outer] == 1);</div>
+<div class="line"><a id="l00557" name="l00557"></a><span class="lineno">  557</span>            st[sf4Outer] = <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{1};</div>
+<div class="line"><a id="l00558" name="l00558"></a><span class="lineno">  558</span>            BEAST_EXPECT(st[sf4Outer] == <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{1});</div>
+<div class="line"><a id="l00559" name="l00559"></a><span class="lineno">  559</span>            st[sf4Outer] += <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{1};</div>
+<div class="line"><a id="l00560" name="l00560"></a><span class="lineno">  560</span>            BEAST_EXPECT(st[sf4Outer] == <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{2});</div>
+<div class="line"><a id="l00561" name="l00561"></a><span class="lineno">  561</span>            st[sf1Outer] -= 1;</div>
+<div class="line"><a id="l00562" name="l00562"></a><span class="lineno">  562</span>            BEAST_EXPECT(st[sf1Outer] == 0);</div>
+<div class="line"><a id="l00563" name="l00563"></a><span class="lineno">  563</span>            st[sf4Outer] -= <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{1};</div>
+<div class="line"><a id="l00564" name="l00564"></a><span class="lineno">  564</span>            BEAST_EXPECT(st[sf4Outer] == <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{1});</div>
+<div class="line"><a id="l00565" name="l00565"></a><span class="lineno">  565</span>        }</div>
+<div class="line"><a id="l00566" name="l00566"></a><span class="lineno">  566</span> </div>
+<div class="line"><a id="l00567" name="l00567"></a><span class="lineno">  567</span>        <span class="comment">// coercion operator to std::optional</span></div>
+<div class="line"><a id="l00568" name="l00568"></a><span class="lineno">  568</span> </div>
+<div class="line"><a id="l00569" name="l00569"></a><span class="lineno">  569</span>        {</div>
+<div class="line"><a id="l00570" name="l00570"></a><span class="lineno">  570</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
+<div class="line"><a id="l00571" name="l00571"></a><span class="lineno">  571</span>            <span class="keyword">auto</span> <span class="keyword">const</span> v = ~st[~sf1Outer];</div>
+<div class="line"><a id="l00572" name="l00572"></a><span class="lineno">  572</span>            <span class="keyword">static_assert</span>(</div>
+<div class="line"><a id="l00573" name="l00573"></a><span class="lineno">  573</span>                <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt;</div>
+<div class="line"><a id="l00574" name="l00574"></a><span class="lineno">  574</span>                    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/decay.html">std::decay_t</a>&lt;<span class="keyword">decltype</span>(v)&gt;,</div>
+<div class="line"><a id="l00575" name="l00575"></a><span class="lineno">  575</span>                    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional&lt;std::uint32_t&gt;</a>&gt;::value,</div>
+<div class="line"><a id="l00576" name="l00576"></a><span class="lineno">  576</span>                <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a id="l00577" name="l00577"></a><span class="lineno">  577</span>        }</div>
+<div class="line"><a id="l00578" name="l00578"></a><span class="lineno">  578</span> </div>
+<div class="line"><a id="l00579" name="l00579"></a><span class="lineno">  579</span>        <span class="comment">// UDT scalar fields</span></div>
+<div class="line"><a id="l00580" name="l00580"></a><span class="lineno">  580</span> </div>
+<div class="line"><a id="l00581" name="l00581"></a><span class="lineno">  581</span>        {</div>
+<div class="line"><a id="l00582" name="l00582"></a><span class="lineno">  582</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
+<div class="line"><a id="l00583" name="l00583"></a><span class="lineno">  583</span>            st[sfAmount] = <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>{};</div>
+<div class="line"><a id="l00584" name="l00584"></a><span class="lineno">  584</span>            st[sfAccount] = <a class="code hl_class" href="classripple_1_1base__uint.html">AccountID</a>{};</div>
+<div class="line"><a id="l00585" name="l00585"></a><span class="lineno">  585</span>            st[sfDigest] = <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a>{};</div>
+<div class="line"><a id="l00586" name="l00586"></a><span class="lineno">  586</span>            [&amp;](<a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>) {}(st[sfAmount]);</div>
+<div class="line"><a id="l00587" name="l00587"></a><span class="lineno">  587</span>            [&amp;](<a class="code hl_typedef" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a>) {}(st[sfAccount]);</div>
+<div class="line"><a id="l00588" name="l00588"></a><span class="lineno">  588</span>            [&amp;](<a class="code hl_typedef" href="namespaceripple.html#a356c68147333a9a48a344718038576d9">uint256</a>) {}(st[sfDigest]);</div>
+<div class="line"><a id="l00589" name="l00589"></a><span class="lineno">  589</span>        }</div>
+<div class="line"><a id="l00590" name="l00590"></a><span class="lineno">  590</span> </div>
+<div class="line"><a id="l00591" name="l00591"></a><span class="lineno">  591</span>        <span class="comment">// STBlob and slice</span></div>
+<div class="line"><a id="l00592" name="l00592"></a><span class="lineno">  592</span> </div>
+<div class="line"><a id="l00593" name="l00593"></a><span class="lineno">  593</span>        {</div>
+<div class="line"><a id="l00594" name="l00594"></a><span class="lineno">  594</span>            {</div>
+<div class="line"><a id="l00595" name="l00595"></a><span class="lineno">  595</span>                <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
+<div class="line"><a id="l00596" name="l00596"></a><span class="lineno">  596</span>                <a class="code hl_class" href="classripple_1_1Buffer.html">Buffer</a> b(1);</div>
+<div class="line"><a id="l00597" name="l00597"></a><span class="lineno">  597</span>                BEAST_EXPECT(!b.<a class="code hl_function" href="classripple_1_1Buffer.html#ae1a5452cda07734f4f43151b87a5e236">empty</a>());</div>
+<div class="line"><a id="l00598" name="l00598"></a><span class="lineno">  598</span>                st[sf4] = std::move(b);</div>
+<div class="line"><a id="l00599" name="l00599"></a><span class="lineno">  599</span>                BEAST_EXPECT(b.<a class="code hl_function" href="classripple_1_1Buffer.html#ae1a5452cda07734f4f43151b87a5e236">empty</a>());</div>
+<div class="line"><a id="l00600" name="l00600"></a><span class="lineno">  600</span>                BEAST_EXPECT(<a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(st[sf4]).size() == 1);</div>
+<div class="line"><a id="l00601" name="l00601"></a><span class="lineno">  601</span>                st[~sf4] = std::nullopt;</div>
+<div class="line"><a id="l00602" name="l00602"></a><span class="lineno">  602</span>                BEAST_EXPECT(!~st[~sf4]);</div>
+<div class="line"><a id="l00603" name="l00603"></a><span class="lineno">  603</span>                b = <a class="code hl_class" href="classripple_1_1Buffer.html">Buffer</a>{2};</div>
+<div class="line"><a id="l00604" name="l00604"></a><span class="lineno">  604</span>                st[sf4] = <a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(b);</div>
+<div class="line"><a id="l00605" name="l00605"></a><span class="lineno">  605</span>                BEAST_EXPECT(b.<a class="code hl_function" href="classripple_1_1Buffer.html#a76cd91377f761afdbb2dec0a39e44005">size</a>() == 2);</div>
+<div class="line"><a id="l00606" name="l00606"></a><span class="lineno">  606</span>                BEAST_EXPECT(<a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(st[sf4]).size() == 2);</div>
+<div class="line"><a id="l00607" name="l00607"></a><span class="lineno">  607</span>                st[sf5] = st[sf4];</div>
+<div class="line"><a id="l00608" name="l00608"></a><span class="lineno">  608</span>                BEAST_EXPECT(<a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(st[sf4]).size() == 2);</div>
+<div class="line"><a id="l00609" name="l00609"></a><span class="lineno">  609</span>                BEAST_EXPECT(<a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(st[sf5]).size() == 2);</div>
+<div class="line"><a id="l00610" name="l00610"></a><span class="lineno">  610</span>            }</div>
+<div class="line"><a id="l00611" name="l00611"></a><span class="lineno">  611</span>            {</div>
+<div class="line"><a id="l00612" name="l00612"></a><span class="lineno">  612</span>                <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(sotOuter, <a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
+<div class="line"><a id="l00613" name="l00613"></a><span class="lineno">  613</span>                BEAST_EXPECT(st[sf5] == <a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>{});</div>
+<div class="line"><a id="l00614" name="l00614"></a><span class="lineno">  614</span>                BEAST_EXPECT(!!st[~sf5]);</div>
+<div class="line"><a id="l00615" name="l00615"></a><span class="lineno">  615</span>                BEAST_EXPECT(!!~st[~sf5]);</div>
+<div class="line"><a id="l00616" name="l00616"></a><span class="lineno">  616</span>                <a class="code hl_class" href="classripple_1_1Buffer.html">Buffer</a> b(1);</div>
+<div class="line"><a id="l00617" name="l00617"></a><span class="lineno">  617</span>                st[sf5] = std::move(b);</div>
+<div class="line"><a id="l00618" name="l00618"></a><span class="lineno">  618</span>                BEAST_EXPECT(b.<a class="code hl_function" href="classripple_1_1Buffer.html#ae1a5452cda07734f4f43151b87a5e236">empty</a>());</div>
+<div class="line"><a id="l00619" name="l00619"></a><span class="lineno">  619</span>                BEAST_EXPECT(<a class="code hl_class" href="classripple_1_1Slice.html">Slice</a>(st[sf5]).size() == 1);</div>
+<div class="line"><a id="l00620" name="l00620"></a><span class="lineno">  620</span>                st[~sf4] = std::nullopt;</div>
+<div class="line"><a id="l00621" name="l00621"></a><span class="lineno">  621</span>                BEAST_EXPECT(!~st[~sf4]);</div>
+<div class="line"><a id="l00622" name="l00622"></a><span class="lineno">  622</span>            }</div>
+<div class="line"><a id="l00623" name="l00623"></a><span class="lineno">  623</span>        }</div>
+<div class="line"><a id="l00624" name="l00624"></a><span class="lineno">  624</span> </div>
+<div class="line"><a id="l00625" name="l00625"></a><span class="lineno">  625</span>        <span class="comment">// UDT blobs</span></div>
+<div class="line"><a id="l00626" name="l00626"></a><span class="lineno">  626</span> </div>
+<div class="line"><a id="l00627" name="l00627"></a><span class="lineno">  627</span>        {</div>
+<div class="line"><a id="l00628" name="l00628"></a><span class="lineno">  628</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
+<div class="line"><a id="l00629" name="l00629"></a><span class="lineno">  629</span>            BEAST_EXPECT(!st[~sf5]);</div>
+<div class="line"><a id="l00630" name="l00630"></a><span class="lineno">  630</span>            <span class="keyword">auto</span> <span class="keyword">const</span> kp = <a class="code hl_function" href="namespaceripple.html#a32e911b97d6debe8943c81e6fdf59573">generateKeyPair</a>(</div>
+<div class="line"><a id="l00631" name="l00631"></a><span class="lineno">  631</span>                <a class="code hl_enumvalue" href="namespaceripple.html#a9de744cfdefe1132969eb982e57e4ddea82c2b7829b8129e5a2d53665ba4b4757">KeyType::secp256k1</a>, <a class="code hl_function" href="namespaceripple.html#adb9531b2a54f33b8227d9b029be9439b">generateSeed</a>(<span class="stringliteral">&quot;masterpassphrase&quot;</span>));</div>
+<div class="line"><a id="l00632" name="l00632"></a><span class="lineno">  632</span>            st[sf5] = kp.first;</div>
+<div class="line"><a id="l00633" name="l00633"></a><span class="lineno">  633</span>            st[~sf5] = std::nullopt;</div>
+<div class="line"><a id="l00634" name="l00634"></a><span class="lineno">  634</span>        }</div>
+<div class="line"><a id="l00635" name="l00635"></a><span class="lineno">  635</span> </div>
+<div class="line"><a id="l00636" name="l00636"></a><span class="lineno">  636</span>        <span class="comment">// By reference fields</span></div>
+<div class="line"><a id="l00637" name="l00637"></a><span class="lineno">  637</span> </div>
+<div class="line"><a id="l00638" name="l00638"></a><span class="lineno">  638</span>        {</div>
+<div class="line"><a id="l00639" name="l00639"></a><span class="lineno">  639</span>            <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf = sfIndexes;</div>
+<div class="line"><a id="l00640" name="l00640"></a><span class="lineno">  640</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(<a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
+<div class="line"><a id="l00641" name="l00641"></a><span class="lineno">  641</span>            <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;uint256&gt;</a> v;</div>
+<div class="line"><a id="l00642" name="l00642"></a><span class="lineno">  642</span>            v.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/emplace_back.html">emplace_back</a>(1);</div>
+<div class="line"><a id="l00643" name="l00643"></a><span class="lineno">  643</span>            v.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/emplace_back.html">emplace_back</a>(2);</div>
+<div class="line"><a id="l00644" name="l00644"></a><span class="lineno">  644</span>            st[sf] = v;</div>
+<div class="line"><a id="l00645" name="l00645"></a><span class="lineno">  645</span>            st[sf] = std::move(v);</div>
+<div class="line"><a id="l00646" name="l00646"></a><span class="lineno">  646</span>            <span class="keyword">auto</span> <span class="keyword">const</span>&amp; cst = st;</div>
+<div class="line"><a id="l00647" name="l00647"></a><span class="lineno">  647</span>            BEAST_EXPECT(cst[sf].size() == 2);</div>
+<div class="line"><a id="l00648" name="l00648"></a><span class="lineno">  648</span>            BEAST_EXPECT(cst[~sf]-&gt;size() == 2);</div>
+<div class="line"><a id="l00649" name="l00649"></a><span class="lineno">  649</span>            BEAST_EXPECT(cst[sf][0] == 1);</div>
+<div class="line"><a id="l00650" name="l00650"></a><span class="lineno">  650</span>            BEAST_EXPECT(cst[sf][1] == 2);</div>
+<div class="line"><a id="l00651" name="l00651"></a><span class="lineno">  651</span>            <span class="keyword">static_assert</span>(</div>
+<div class="line"><a id="l00652" name="l00652"></a><span class="lineno">  652</span>                <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same</a>&lt;</div>
+<div class="line"><a id="l00653" name="l00653"></a><span class="lineno">  653</span>                    <span class="keyword">decltype</span>(cst[sfIndexes]),</div>
+<div class="line"><a id="l00654" name="l00654"></a><span class="lineno">  654</span>                    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;uint256&gt;</a> <span class="keyword">const</span>&amp;&gt;::value,</div>
+<div class="line"><a id="l00655" name="l00655"></a><span class="lineno">  655</span>                <span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a id="l00656" name="l00656"></a><span class="lineno">  656</span>        }</div>
+<div class="line"><a id="l00657" name="l00657"></a><span class="lineno">  657</span> </div>
+<div class="line"><a id="l00658" name="l00658"></a><span class="lineno">  658</span>        <span class="comment">// Default by reference field</span></div>
+<div class="line"><a id="l00659" name="l00659"></a><span class="lineno">  659</span> </div>
+<div class="line"><a id="l00660" name="l00660"></a><span class="lineno">  660</span>        {</div>
+<div class="line"><a id="l00661" name="l00661"></a><span class="lineno">  661</span>            <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf1 = sfIndexes;</div>
+<div class="line"><a id="l00662" name="l00662"></a><span class="lineno">  662</span>            <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf2 = sfHashes;</div>
+<div class="line"><a id="l00663" name="l00663"></a><span class="lineno">  663</span>            <span class="keyword">auto</span> <span class="keyword">const</span>&amp; sf3 = sfAmendments;</div>
+<div class="line"><a id="l00664" name="l00664"></a><span class="lineno">  664</span>            <a class="code hl_class" href="classripple_1_1SOTemplate.html">SOTemplate</a> <span class="keyword">const</span> sot{</div>
+<div class="line"><a id="l00665" name="l00665"></a><span class="lineno">  665</span>                {sf1, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">soeREQUIRED</a>},</div>
+<div class="line"><a id="l00666" name="l00666"></a><span class="lineno">  666</span>                {sf2, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">soeOPTIONAL</a>},</div>
+<div class="line"><a id="l00667" name="l00667"></a><span class="lineno">  667</span>                {sf3, <a class="code hl_enumvalue" href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a6e29f8256eb42e1331d2820986b09643">soeDEFAULT</a>},</div>
+<div class="line"><a id="l00668" name="l00668"></a><span class="lineno">  668</span>            };</div>
 <div class="line"><a id="l00669" name="l00669"></a><span class="lineno">  669</span> </div>
-<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span><span class="keywordtype">void</span></div>
-<div class="line"><a id="l00671" name="l00671"></a><span class="lineno"><a class="line" href="classripple_1_1STObject__test.html#a89b29643ee281e661759df680496768a">  671</a></span><a class="code hl_function" href="classripple_1_1STObject__test.html#a89b29643ee281e661759df680496768a">testMalformed</a>()</div>
-<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span>{</div>
-<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span>    <a class="code hl_variable" href="classbeast_1_1unit__test_1_1suite.html#aaa1237d9b85c69d35fe86645cee094b5">testcase</a>(<span class="stringliteral">&quot;Malformed serialized forms&quot;</span>);</div>
-<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span> </div>
-<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span>    <span class="keywordflow">try</span></div>
-<div class="line"><a id="l00676" name="l00676"></a><span class="lineno">  676</span>    {</div>
-<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>        <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;std::uint8_t, 7&gt;</a> <span class="keyword">const</span> payload{</div>
-<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span>            {0xe9, 0x12, 0xab, 0xcd, 0x12, 0xfe, 0xdc}};</div>
-<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span>        <a class="code hl_class" href="classripple_1_1SerialIter.html">SerialIter</a> sit{<a class="code hl_function" href="namespaceripple.html#a93f2333b362ee67694b78f55eadf7805">makeSlice</a>(payload)};</div>
-<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span>        <span class="keyword">auto</span> obj = std::make_shared&lt;STArray&gt;(sit, <a class="code hl_variable" href="namespaceripple.html#a67a1e8873b9a30729884261d0c6d9a6e">sfMetadata</a>);</div>
-<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span>        BEAST_EXPECT(!obj);</div>
-<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span>    }</div>
-<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span>    <span class="keywordflow">catch</span> (<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/error/exception.html">std::exception</a> <span class="keyword">const</span>&amp; e)</div>
-<div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span>    {</div>
-<div class="line"><a id="l00685" name="l00685"></a><span class="lineno">  685</span>        BEAST_EXPECT(strcmp(e.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/error/exception/what.html">what</a>(), <span class="stringliteral">&quot;Duplicate field detected&quot;</span>) == 0);</div>
-<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span>    }</div>
-<div class="line"><a id="l00687" name="l00687"></a><span class="lineno">  687</span> </div>
-<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span>    <span class="keywordflow">try</span></div>
-<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span>    {</div>
-<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span>        <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;std::uint8_t, 3&gt;</a> <span class="keyword">const</span> payload{{0xe2, 0xe1, 0xe2}};</div>
-<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span>        <a class="code hl_class" href="classripple_1_1SerialIter.html">SerialIter</a> sit{<a class="code hl_function" href="namespaceripple.html#a93f2333b362ee67694b78f55eadf7805">makeSlice</a>(payload)};</div>
-<div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span>        <span class="keyword">auto</span> obj = std::make_shared&lt;STObject&gt;(sit, <a class="code hl_variable" href="namespaceripple.html#a67a1e8873b9a30729884261d0c6d9a6e">sfMetadata</a>);</div>
-<div class="line"><a id="l00693" name="l00693"></a><span class="lineno">  693</span>        BEAST_EXPECT(!obj);</div>
-<div class="line"><a id="l00694" name="l00694"></a><span class="lineno">  694</span>    }</div>
-<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span>    <span class="keywordflow">catch</span> (<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/error/exception.html">std::exception</a> <span class="keyword">const</span>&amp; e)</div>
-<div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span>    {</div>
-<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span>        BEAST_EXPECT(strcmp(e.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/error/exception/what.html">what</a>(), <span class="stringliteral">&quot;Duplicate field detected&quot;</span>) == 0);</div>
-<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span>    }</div>
-<div class="line"><a id="l00699" name="l00699"></a><span class="lineno">  699</span>}</div>
-<div class="line"><a id="l00700" name="l00700"></a><span class="lineno">  700</span> </div>
-<div class="line"><a id="l00701" name="l00701"></a><span class="lineno">  701</span><span class="keywordtype">void</span></div>
-<div class="line"><a id="l00702" name="l00702"></a><span class="lineno"><a class="line" href="classripple_1_1STObject__test.html#a9e792a6afcca28272a44538411c28deb">  702</a></span><a class="code hl_function" href="classripple_1_1STObject__test.html#a9e792a6afcca28272a44538411c28deb">run</a>()<span class="keyword"> override</span></div>
-<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span><span class="keyword"></span>{</div>
-<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span>    <span class="comment">// Instantiate a jtx::Env so debugLog writes are exercised.</span></div>
-<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span>    <a class="code hl_class" href="classripple_1_1test_1_1jtx_1_1Env.html">test::jtx::Env</a> env(*<span class="keyword">this</span>);</div>
-<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span> </div>
-<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span>    <a class="code hl_function" href="classripple_1_1STObject__test.html#af2c76b8b0fdc0f36bc5a67a0575485a8">testFields</a>();</div>
-<div class="line"><a id="l00708" name="l00708"></a><span class="lineno">  708</span>    <a class="code hl_function" href="classripple_1_1STObject__test.html#a1a0f570065d6ea439e4da9a940cb4f53">testSerialization</a>();</div>
-<div class="line"><a id="l00709" name="l00709"></a><span class="lineno">  709</span>    <a class="code hl_function" href="classripple_1_1STObject__test.html#aa82e25f08c9b7b2ee9e017ab5a4f79b6">testParseJSONArray</a>();</div>
-<div class="line"><a id="l00710" name="l00710"></a><span class="lineno">  710</span>    <a class="code hl_function" href="classripple_1_1STObject__test.html#a4c8147c73e16ed76a0a6497594367453">testParseJSONArrayWithInvalidChildrenObjects</a>();</div>
-<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span>    <a class="code hl_function" href="classripple_1_1STObject__test.html#a2bfedc49731417a90ffeb1f7604117f6">testParseJSONEdgeCases</a>();</div>
-<div class="line"><a id="l00712" name="l00712"></a><span class="lineno">  712</span>    <a class="code hl_function" href="classripple_1_1STObject__test.html#a89b29643ee281e661759df680496768a">testMalformed</a>();</div>
-<div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span>}</div>
-<div class="line"><a id="l00714" name="l00714"></a><span class="lineno">  714</span>}</div>
-<div class="line"><a id="l00715" name="l00715"></a><span class="lineno">  715</span>;</div>
-<div class="line"><a id="l00716" name="l00716"></a><span class="lineno">  716</span> </div>
-<div class="line"><a id="l00717" name="l00717"></a><span class="lineno"><a class="line" href="namespaceripple.html#ae0ecfa4d4cb97b309255f4c7a12c4fc1">  717</a></span>BEAST_DEFINE_TESTSUITE(<a class="code hl_class" href="classripple_1_1STObject.html">STObject</a>, <a class="code hl_namespace" href="namespaceprotocol.html">protocol</a>, <a class="code hl_namespace" href="namespaceripple.html">ripple</a>);</div>
-<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span> </div>
-<div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span>}  <span class="comment">// ripple</span></div>
+<div class="line"><a id="l00670" name="l00670"></a><span class="lineno">  670</span>            <a class="code hl_class" href="classripple_1_1STObject.html">STObject</a> st(sot, <a class="code hl_variable" href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">sfGeneric</a>);</div>
+<div class="line"><a id="l00671" name="l00671"></a><span class="lineno">  671</span>            <span class="keyword">auto</span> <span class="keyword">const</span>&amp; cst(st);</div>
+<div class="line"><a id="l00672" name="l00672"></a><span class="lineno">  672</span>            BEAST_EXPECT(cst[sf1].size() == 0);</div>
+<div class="line"><a id="l00673" name="l00673"></a><span class="lineno">  673</span>            BEAST_EXPECT(!cst[~sf2]);</div>
+<div class="line"><a id="l00674" name="l00674"></a><span class="lineno">  674</span>            BEAST_EXPECT(cst[sf3].size() == 0);</div>
+<div class="line"><a id="l00675" name="l00675"></a><span class="lineno">  675</span>            <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;uint256&gt;</a> v;</div>
+<div class="line"><a id="l00676" name="l00676"></a><span class="lineno">  676</span>            v.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/container/vector/emplace_back.html">emplace_back</a>(1);</div>
+<div class="line"><a id="l00677" name="l00677"></a><span class="lineno">  677</span>            st[sf1] = v;</div>
+<div class="line"><a id="l00678" name="l00678"></a><span class="lineno">  678</span>            BEAST_EXPECT(cst[sf1].size() == 1);</div>
+<div class="line"><a id="l00679" name="l00679"></a><span class="lineno">  679</span>            BEAST_EXPECT(cst[sf1][0] == <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a>{1});</div>
+<div class="line"><a id="l00680" name="l00680"></a><span class="lineno">  680</span>            st[sf2] = v;</div>
+<div class="line"><a id="l00681" name="l00681"></a><span class="lineno">  681</span>            BEAST_EXPECT(cst[sf2].size() == 1);</div>
+<div class="line"><a id="l00682" name="l00682"></a><span class="lineno">  682</span>            BEAST_EXPECT(cst[sf2][0] == <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a>{1});</div>
+<div class="line"><a id="l00683" name="l00683"></a><span class="lineno">  683</span>            st[~sf2] = std::nullopt;</div>
+<div class="line"><a id="l00684" name="l00684"></a><span class="lineno">  684</span>            BEAST_EXPECT(!st[~sf2]);</div>
+<div class="line"><a id="l00685" name="l00685"></a><span class="lineno">  685</span>            st[sf3] = v;</div>
+<div class="line"><a id="l00686" name="l00686"></a><span class="lineno">  686</span>            BEAST_EXPECT(cst[sf3].size() == 1);</div>
+<div class="line"><a id="l00687" name="l00687"></a><span class="lineno">  687</span>            BEAST_EXPECT(cst[sf3][0] == <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a>{1});</div>
+<div class="line"><a id="l00688" name="l00688"></a><span class="lineno">  688</span>            st[sf3] = <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;uint256&gt;</a>{};</div>
+<div class="line"><a id="l00689" name="l00689"></a><span class="lineno">  689</span>            BEAST_EXPECT(cst[sf3].size() == 0);</div>
+<div class="line"><a id="l00690" name="l00690"></a><span class="lineno">  690</span>        }</div>
+<div class="line"><a id="l00691" name="l00691"></a><span class="lineno">  691</span>    }  <span class="comment">// namespace ripple</span></div>
+<div class="line"><a id="l00692" name="l00692"></a><span class="lineno">  692</span> </div>
+<div class="line"><a id="l00693" name="l00693"></a><span class="lineno">  693</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00694" name="l00694"></a><span class="lineno"><a class="line" href="classripple_1_1STObject__test.html#a89b29643ee281e661759df680496768a">  694</a></span>    <a class="code hl_function" href="classripple_1_1STObject__test.html#a89b29643ee281e661759df680496768a">testMalformed</a>()</div>
+<div class="line"><a id="l00695" name="l00695"></a><span class="lineno">  695</span>    {</div>
+<div class="line"><a id="l00696" name="l00696"></a><span class="lineno">  696</span>        <a class="code hl_variable" href="classbeast_1_1unit__test_1_1suite.html#aaa1237d9b85c69d35fe86645cee094b5">testcase</a>(<span class="stringliteral">&quot;Malformed serialized forms&quot;</span>);</div>
+<div class="line"><a id="l00697" name="l00697"></a><span class="lineno">  697</span> </div>
+<div class="line"><a id="l00698" name="l00698"></a><span class="lineno">  698</span>        <span class="keywordflow">try</span></div>
+<div class="line"><a id="l00699" name="l00699"></a><span class="lineno">  699</span>        {</div>
+<div class="line"><a id="l00700" name="l00700"></a><span class="lineno">  700</span>            <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;std::uint8_t, 7&gt;</a> <span class="keyword">const</span> payload{</div>
+<div class="line"><a id="l00701" name="l00701"></a><span class="lineno">  701</span>                {0xe9, 0x12, 0xab, 0xcd, 0x12, 0xfe, 0xdc}};</div>
+<div class="line"><a id="l00702" name="l00702"></a><span class="lineno">  702</span>            <a class="code hl_class" href="classripple_1_1SerialIter.html">SerialIter</a> sit{<a class="code hl_function" href="namespaceripple.html#a93f2333b362ee67694b78f55eadf7805">makeSlice</a>(payload)};</div>
+<div class="line"><a id="l00703" name="l00703"></a><span class="lineno">  703</span>            <span class="keyword">auto</span> obj = std::make_shared&lt;STArray&gt;(sit, sfMetadata);</div>
+<div class="line"><a id="l00704" name="l00704"></a><span class="lineno">  704</span>            BEAST_EXPECT(!obj);</div>
+<div class="line"><a id="l00705" name="l00705"></a><span class="lineno">  705</span>        }</div>
+<div class="line"><a id="l00706" name="l00706"></a><span class="lineno">  706</span>        <span class="keywordflow">catch</span> (<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/error/exception.html">std::exception</a> <span class="keyword">const</span>&amp; e)</div>
+<div class="line"><a id="l00707" name="l00707"></a><span class="lineno">  707</span>        {</div>
+<div class="line"><a id="l00708" name="l00708"></a><span class="lineno">  708</span>            BEAST_EXPECT(strcmp(e.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/error/exception/what.html">what</a>(), <span class="stringliteral">&quot;Duplicate field detected&quot;</span>) == 0);</div>
+<div class="line"><a id="l00709" name="l00709"></a><span class="lineno">  709</span>        }</div>
+<div class="line"><a id="l00710" name="l00710"></a><span class="lineno">  710</span> </div>
+<div class="line"><a id="l00711" name="l00711"></a><span class="lineno">  711</span>        <span class="keywordflow">try</span></div>
+<div class="line"><a id="l00712" name="l00712"></a><span class="lineno">  712</span>        {</div>
+<div class="line"><a id="l00713" name="l00713"></a><span class="lineno">  713</span>            <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/array.html">std::array&lt;std::uint8_t, 3&gt;</a> <span class="keyword">const</span> payload{{0xe2, 0xe1, 0xe2}};</div>
+<div class="line"><a id="l00714" name="l00714"></a><span class="lineno">  714</span>            <a class="code hl_class" href="classripple_1_1SerialIter.html">SerialIter</a> sit{<a class="code hl_function" href="namespaceripple.html#a93f2333b362ee67694b78f55eadf7805">makeSlice</a>(payload)};</div>
+<div class="line"><a id="l00715" name="l00715"></a><span class="lineno">  715</span>            <span class="keyword">auto</span> obj = std::make_shared&lt;STObject&gt;(sit, sfMetadata);</div>
+<div class="line"><a id="l00716" name="l00716"></a><span class="lineno">  716</span>            BEAST_EXPECT(!obj);</div>
+<div class="line"><a id="l00717" name="l00717"></a><span class="lineno">  717</span>        }</div>
+<div class="line"><a id="l00718" name="l00718"></a><span class="lineno">  718</span>        <span class="keywordflow">catch</span> (<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/error/exception.html">std::exception</a> <span class="keyword">const</span>&amp; e)</div>
+<div class="line"><a id="l00719" name="l00719"></a><span class="lineno">  719</span>        {</div>
+<div class="line"><a id="l00720" name="l00720"></a><span class="lineno">  720</span>            BEAST_EXPECT(strcmp(e.<a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/error/exception/what.html">what</a>(), <span class="stringliteral">&quot;Duplicate field detected&quot;</span>) == 0);</div>
+<div class="line"><a id="l00721" name="l00721"></a><span class="lineno">  721</span>        }</div>
+<div class="line"><a id="l00722" name="l00722"></a><span class="lineno">  722</span>    }</div>
+<div class="line"><a id="l00723" name="l00723"></a><span class="lineno">  723</span> </div>
+<div class="line"><a id="l00724" name="l00724"></a><span class="lineno">  724</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00725" name="l00725"></a><span class="lineno"><a class="line" href="classripple_1_1STObject__test.html#a9e792a6afcca28272a44538411c28deb">  725</a></span>    <a class="code hl_function" href="classripple_1_1STObject__test.html#a9e792a6afcca28272a44538411c28deb">run</a>()<span class="keyword"> override</span></div>
+<div class="line"><a id="l00726" name="l00726"></a><span class="lineno">  726</span><span class="keyword">    </span>{</div>
+<div class="line"><a id="l00727" name="l00727"></a><span class="lineno">  727</span>        <span class="comment">// Instantiate a jtx::Env so debugLog writes are exercised.</span></div>
+<div class="line"><a id="l00728" name="l00728"></a><span class="lineno">  728</span>        <a class="code hl_class" href="classripple_1_1test_1_1jtx_1_1Env.html">test::jtx::Env</a> env(*<span class="keyword">this</span>);</div>
+<div class="line"><a id="l00729" name="l00729"></a><span class="lineno">  729</span> </div>
+<div class="line"><a id="l00730" name="l00730"></a><span class="lineno">  730</span>        <a class="code hl_function" href="classripple_1_1STObject__test.html#af2c76b8b0fdc0f36bc5a67a0575485a8">testFields</a>();</div>
+<div class="line"><a id="l00731" name="l00731"></a><span class="lineno">  731</span>        <a class="code hl_function" href="classripple_1_1STObject__test.html#a1a0f570065d6ea439e4da9a940cb4f53">testSerialization</a>();</div>
+<div class="line"><a id="l00732" name="l00732"></a><span class="lineno">  732</span>        <a class="code hl_function" href="classripple_1_1STObject__test.html#aa82e25f08c9b7b2ee9e017ab5a4f79b6">testParseJSONArray</a>();</div>
+<div class="line"><a id="l00733" name="l00733"></a><span class="lineno">  733</span>        <a class="code hl_function" href="classripple_1_1STObject__test.html#a4c8147c73e16ed76a0a6497594367453">testParseJSONArrayWithInvalidChildrenObjects</a>();</div>
+<div class="line"><a id="l00734" name="l00734"></a><span class="lineno">  734</span>        <a class="code hl_function" href="classripple_1_1STObject__test.html#a2bfedc49731417a90ffeb1f7604117f6">testParseJSONEdgeCases</a>();</div>
+<div class="line"><a id="l00735" name="l00735"></a><span class="lineno">  735</span>        <a class="code hl_function" href="classripple_1_1STObject__test.html#a89b29643ee281e661759df680496768a">testMalformed</a>();</div>
+<div class="line"><a id="l00736" name="l00736"></a><span class="lineno">  736</span>    }</div>
+<div class="line"><a id="l00737" name="l00737"></a><span class="lineno">  737</span>};</div>
+<div class="line"><a id="l00738" name="l00738"></a><span class="lineno">  738</span> </div>
+<div class="line"><a id="l00739" name="l00739"></a><span class="lineno"><a class="line" href="namespaceripple.html#ae0ecfa4d4cb97b309255f4c7a12c4fc1">  739</a></span>BEAST_DEFINE_TESTSUITE(<a class="code hl_class" href="classripple_1_1STObject.html">STObject</a>, <a class="code hl_namespace" href="namespaceprotocol.html">protocol</a>, <a class="code hl_namespace" href="namespaceripple.html">ripple</a>);</div>
+<div class="line"><a id="l00740" name="l00740"></a><span class="lineno">  740</span> </div>
+<div class="line"><a id="l00741" name="l00741"></a><span class="lineno">  741</span>}  <span class="comment">// namespace ripple</span></div>
 <div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
 <div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
 <div class="ttc" id="acapacity_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector/capacity.html">std::vector::capacity</a></div><div class="ttdeci">T capacity(T... args)</div></div>
 <div class="ttc" id="aclassJson_1_1Reader_html"><div class="ttname"><a href="classJson_1_1Reader.html">Json::Reader</a></div><div class="ttdoc">Unserialize a JSON document into a Value.</div><div class="ttdef"><b>Definition:</b> <a href="json__reader_8h_source.html#l00036">json_reader.h:37</a></div></div>
 <div class="ttc" id="aclassJson_1_1Reader_html_a8ee4d40504e4f8b069745d762ab4d78c"><div class="ttname"><a href="classJson_1_1Reader.html#a8ee4d40504e4f8b069745d762ab4d78c">Json::Reader::parse</a></div><div class="ttdeci">bool parse(std::string const &amp;document, Value &amp;root)</div><div class="ttdoc">Read a Value from a JSON document.</div><div class="ttdef"><b>Definition:</b> <a href="json__reader_8cpp_source.html#l00073">json_reader.cpp:73</a></div></div>
-<div class="ttc" id="aclassJson_1_1Value_html"><div class="ttname"><a href="classJson_1_1Value.html">Json::Value</a></div><div class="ttdoc">Represents a JSON value.</div><div class="ttdef"><b>Definition:</b> <a href="json__value_8h_source.html#l00145">json_value.h:146</a></div></div>
+<div class="ttc" id="aclassJson_1_1Value_html"><div class="ttname"><a href="classJson_1_1Value.html">Json::Value</a></div><div class="ttdoc">Represents a JSON value.</div><div class="ttdef"><b>Definition:</b> <a href="json__value_8h_source.html#l00146">json_value.h:147</a></div></div>
 <div class="ttc" id="aclassJson_1_1Value_html_a8cf96c0f2a552051fcfc78ffee60e037"><div class="ttname"><a href="classJson_1_1Value.html#a8cf96c0f2a552051fcfc78ffee60e037">Json::Value::isObject</a></div><div class="ttdeci">bool isObject() const</div><div class="ttdef"><b>Definition:</b> <a href="json__value_8cpp_source.html#l01027">json_value.cpp:1027</a></div></div>
 <div class="ttc" id="aclassbeast_1_1unit__test_1_1suite_html"><div class="ttname"><a href="classbeast_1_1unit__test_1_1suite.html">beast::unit_test::suite</a></div><div class="ttdoc">A testsuite class.</div><div class="ttdef"><b>Definition:</b> <a href="suite_8h_source.html#l00052">suite.h:53</a></div></div>
 <div class="ttc" id="aclassbeast_1_1unit__test_1_1suite_html_a19b8ee0ce850d78834984655ae83b20e"><div class="ttname"><a href="classbeast_1_1unit__test_1_1suite.html#a19b8ee0ce850d78834984655ae83b20e">beast::unit_test::suite::log</a></div><div class="ttdeci">log_os&lt; char &gt; log</div><div class="ttdoc">Logging output stream.</div><div class="ttdef"><b>Definition:</b> <a href="suite_8h_source.html#l00150">suite.h:150</a></div></div>
@@ -814,33 +836,33 @@ $(function() {
 <div class="ttc" id="aclassripple_1_1Buffer_html_a76cd91377f761afdbb2dec0a39e44005"><div class="ttname"><a href="classripple_1_1Buffer.html#a76cd91377f761afdbb2dec0a39e44005">ripple::Buffer::size</a></div><div class="ttdeci">std::size_t size() const noexcept</div><div class="ttdoc">Returns the number of bytes in the buffer.</div><div class="ttdef"><b>Definition:</b> <a href="Buffer_8h_source.html#l00126">Buffer.h:126</a></div></div>
 <div class="ttc" id="aclassripple_1_1Buffer_html_ae1a5452cda07734f4f43151b87a5e236"><div class="ttname"><a href="classripple_1_1Buffer.html#ae1a5452cda07734f4f43151b87a5e236">ripple::Buffer::empty</a></div><div class="ttdeci">bool empty() const noexcept</div><div class="ttdef"><b>Definition:</b> <a href="Buffer_8h_source.html#l00132">Buffer.h:132</a></div></div>
 <div class="ttc" id="aclassripple_1_1SField_html"><div class="ttname"><a href="classripple_1_1SField.html">ripple::SField</a></div><div class="ttdoc">Identifies fields.</div><div class="ttdef"><b>Definition:</b> <a href="SField_8h_source.html#l00141">SField.h:142</a></div></div>
-<div class="ttc" id="aclassripple_1_1SField_html_ac50e95825ecf10dfd786cb9b8da4ae39"><div class="ttname"><a href="classripple_1_1SField.html#ac50e95825ecf10dfd786cb9b8da4ae39">ripple::SField::getField</a></div><div class="ttdeci">static const SField &amp; getField(int fieldCode)</div><div class="ttdef"><b>Definition:</b> <a href="SField_8cpp_source.html#l00465">SField.cpp:465</a></div></div>
-<div class="ttc" id="aclassripple_1_1SField_html_ade495eacddd4ad40287a62f9032fb74c"><div class="ttname"><a href="classripple_1_1SField.html#ade495eacddd4ad40287a62f9032fb74c">ripple::SField::isUseful</a></div><div class="ttdeci">bool isUseful() const</div><div class="ttdef"><b>Definition:</b> <a href="SField_8h_source.html#l00228">SField.h:228</a></div></div>
-<div class="ttc" id="aclassripple_1_1SOTemplate_html"><div class="ttname"><a href="classripple_1_1SOTemplate.html">ripple::SOTemplate</a></div><div class="ttdoc">Defines the fields and their attributes within a STObject.</div><div class="ttdef"><b>Definition:</b> <a href="SOTemplate_8h_source.html#l00084">SOTemplate.h:85</a></div></div>
-<div class="ttc" id="aclassripple_1_1STAmount_html"><div class="ttname"><a href="classripple_1_1STAmount.html">ripple::STAmount</a></div><div class="ttdef"><b>Definition:</b> <a href="STAmount_8h_source.html#l00046">STAmount.h:47</a></div></div>
+<div class="ttc" id="aclassripple_1_1SField_html_ac50e95825ecf10dfd786cb9b8da4ae39"><div class="ttname"><a href="classripple_1_1SField.html#ac50e95825ecf10dfd786cb9b8da4ae39">ripple::SField::getField</a></div><div class="ttdeci">static const SField &amp; getField(int fieldCode)</div><div class="ttdef"><b>Definition:</b> <a href="SField_8cpp_source.html#l00116">SField.cpp:116</a></div></div>
+<div class="ttc" id="aclassripple_1_1SField_html_ade495eacddd4ad40287a62f9032fb74c"><div class="ttname"><a href="classripple_1_1SField.html#ade495eacddd4ad40287a62f9032fb74c">ripple::SField::isUseful</a></div><div class="ttdeci">bool isUseful() const</div><div class="ttdef"><b>Definition:</b> <a href="SField_8h_source.html#l00234">SField.h:234</a></div></div>
+<div class="ttc" id="aclassripple_1_1SOTemplate_html"><div class="ttname"><a href="classripple_1_1SOTemplate.html">ripple::SOTemplate</a></div><div class="ttdoc">Defines the fields and their attributes within a STObject.</div><div class="ttdef"><b>Definition:</b> <a href="SOTemplate_8h_source.html#l00109">SOTemplate.h:110</a></div></div>
+<div class="ttc" id="aclassripple_1_1STAmount_html"><div class="ttname"><a href="classripple_1_1STAmount.html">ripple::STAmount</a></div><div class="ttdef"><b>Definition:</b> <a href="STAmount_8h_source.html#l00052">STAmount.h:53</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject__test_html"><div class="ttname"><a href="classripple_1_1STObject__test.html">ripple::STObject_test</a></div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00034">STObject_test.cpp:35</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject__test_html_a1a0f570065d6ea439e4da9a940cb4f53"><div class="ttname"><a href="classripple_1_1STObject__test.html#a1a0f570065d6ea439e4da9a940cb4f53">ripple::STObject_test::testSerialization</a></div><div class="ttdeci">void testSerialization()</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00239">STObject_test.cpp:239</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject__test_html_a2bfedc49731417a90ffeb1f7604117f6"><div class="ttname"><a href="classripple_1_1STObject__test.html#a2bfedc49731417a90ffeb1f7604117f6">ripple::STObject_test::testParseJSONEdgeCases</a></div><div class="ttdeci">void testParseJSONEdgeCases()</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00105">STObject_test.cpp:105</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject__test_html_a4c8147c73e16ed76a0a6497594367453"><div class="ttname"><a href="classripple_1_1STObject__test.html#a4c8147c73e16ed76a0a6497594367453">ripple::STObject_test::testParseJSONArrayWithInvalidChildrenObjects</a></div><div class="ttdeci">void testParseJSONArrayWithInvalidChildrenObjects()</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00045">STObject_test.cpp:45</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject__test_html_a89b29643ee281e661759df680496768a"><div class="ttname"><a href="classripple_1_1STObject__test.html#a89b29643ee281e661759df680496768a">ripple::STObject_test::testMalformed</a></div><div class="ttdeci">void testMalformed()</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00671">STObject_test.cpp:671</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject__test_html_a9e792a6afcca28272a44538411c28deb"><div class="ttname"><a href="classripple_1_1STObject__test.html#a9e792a6afcca28272a44538411c28deb">ripple::STObject_test::run</a></div><div class="ttdeci">void run() override</div><div class="ttdoc">Runs the suite.</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00702">STObject_test.cpp:702</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject__test_html_a89b29643ee281e661759df680496768a"><div class="ttname"><a href="classripple_1_1STObject__test.html#a89b29643ee281e661759df680496768a">ripple::STObject_test::testMalformed</a></div><div class="ttdeci">void testMalformed()</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00694">STObject_test.cpp:694</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject__test_html_a9e792a6afcca28272a44538411c28deb"><div class="ttname"><a href="classripple_1_1STObject__test.html#a9e792a6afcca28272a44538411c28deb">ripple::STObject_test::run</a></div><div class="ttdeci">void run() override</div><div class="ttdoc">Runs the suite.</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00725">STObject_test.cpp:725</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject__test_html_aa82e25f08c9b7b2ee9e017ab5a4f79b6"><div class="ttname"><a href="classripple_1_1STObject__test.html#aa82e25f08c9b7b2ee9e017ab5a4f79b6">ripple::STObject_test::testParseJSONArray</a></div><div class="ttdeci">void testParseJSONArray()</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00082">STObject_test.cpp:82</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject__test_html_abc69d93b131bd2bd76e1bf144a38f47a"><div class="ttname"><a href="classripple_1_1STObject__test.html#abc69d93b131bd2bd76e1bf144a38f47a">ripple::STObject_test::parseJSONString</a></div><div class="ttdeci">bool parseJSONString(std::string const &amp;json, Json::Value &amp;to)</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00038">STObject_test.cpp:38</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject__test_html_af2c76b8b0fdc0f36bc5a67a0575485a8"><div class="ttname"><a href="classripple_1_1STObject__test.html#af2c76b8b0fdc0f36bc5a67a0575485a8">ripple::STObject_test::testFields</a></div><div class="ttdeci">void testFields()</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00392">STObject_test.cpp:392</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject__test_html_af2c76b8b0fdc0f36bc5a67a0575485a8"><div class="ttname"><a href="classripple_1_1STObject__test.html#af2c76b8b0fdc0f36bc5a67a0575485a8">ripple::STObject_test::testFields</a></div><div class="ttdeci">void testFields()</div><div class="ttdef"><b>Definition:</b> <a href="STObject__test_8cpp_source.html#l00390">STObject_test.cpp:390</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject_html"><div class="ttname"><a href="classripple_1_1STObject.html">ripple::STObject</a></div><div class="ttdef"><b>Definition:</b> <a href="STObject_8h_source.html#l00054">STObject.h:55</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject_html_a09be758ae97b9e9e392aa2606cc0559f"><div class="ttname"><a href="classripple_1_1STObject.html#a09be758ae97b9e9e392aa2606cc0559f">ripple::STObject::getFieldVL</a></div><div class="ttdeci">Blob getFieldVL(SField const &amp;field) const</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00620">STObject.cpp:620</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject_html_a5836708d0dcd636193c43419eb724ad5"><div class="ttname"><a href="classripple_1_1STObject.html#a5836708d0dcd636193c43419eb724ad5">ripple::STObject::getFieldV256</a></div><div class="ttdeci">const STVector256 &amp; getFieldV256(SField const &amp;field) const</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00642">STObject.cpp:642</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject_html_a09be758ae97b9e9e392aa2606cc0559f"><div class="ttname"><a href="classripple_1_1STObject.html#a09be758ae97b9e9e392aa2606cc0559f">ripple::STObject::getFieldVL</a></div><div class="ttdeci">Blob getFieldVL(SField const &amp;field) const</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00626">STObject.cpp:626</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject_html_a5836708d0dcd636193c43419eb724ad5"><div class="ttname"><a href="classripple_1_1STObject.html#a5836708d0dcd636193c43419eb724ad5">ripple::STObject::getFieldV256</a></div><div class="ttdeci">const STVector256 &amp; getFieldV256(SField const &amp;field) const</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00648">STObject.cpp:648</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject_html_a624bc6e179ff15ec5f08a4d1c7d1932e"><div class="ttname"><a href="classripple_1_1STObject.html#a624bc6e179ff15ec5f08a4d1c7d1932e">ripple::STObject::makeFieldAbsent</a></div><div class="ttdeci">void makeFieldAbsent(SField const &amp;field)</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00539">STObject.cpp:539</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject_html_a6ae7e459a83bc46c3cfd9025753af1cb"><div class="ttname"><a href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">ripple::STObject::getSerializer</a></div><div class="ttdeci">Serializer getSerializer() const</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8h_source.html#l00910">STObject.h:910</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject_html_a6ae7e459a83bc46c3cfd9025753af1cb"><div class="ttname"><a href="classripple_1_1STObject.html#a6ae7e459a83bc46c3cfd9025753af1cb">ripple::STObject::getSerializer</a></div><div class="ttdeci">Serializer getSerializer() const</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8h_source.html#l00946">STObject.h:946</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject_html_a6b5bb43ef723075465e909e54c9d6622"><div class="ttname"><a href="classripple_1_1STObject.html#a6b5bb43ef723075465e909e54c9d6622">ripple::STObject::makeFieldPresent</a></div><div class="ttdeci">STBase * makeFieldPresent(SField const &amp;field)</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00517">STObject.cpp:517</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject_html_a7adccac3a1b54244ae210afe7c5916e8"><div class="ttname"><a href="classripple_1_1STObject.html#a7adccac3a1b54244ae210afe7c5916e8">ripple::STObject::add</a></div><div class="ttdeci">void add(Serializer &amp;s) const override</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00110">STObject.cpp:110</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject_html_aaf5d617701ac3afc4ad6a13862459692"><div class="ttname"><a href="classripple_1_1STObject.html#aaf5d617701ac3afc4ad6a13862459692">ripple::STObject::isFieldPresent</a></div><div class="ttdeci">bool isFieldPresent(SField const &amp;field) const</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00453">STObject.cpp:453</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject_html_abca4224026b9aab088af20801fb63ffa"><div class="ttname"><a href="classripple_1_1STObject.html#abca4224026b9aab088af20801fb63ffa">ripple::STObject::setFieldV256</a></div><div class="ttdeci">void setFieldV256(SField const &amp;field, STVector256 const &amp;v)</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00721">STObject.cpp:721</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject_html_acc2ceb95cdb8fc8b2520aeceabf17553"><div class="ttname"><a href="classripple_1_1STObject.html#acc2ceb95cdb8fc8b2520aeceabf17553">ripple::STObject::getJson</a></div><div class="ttdeci">Json::Value getJson(JsonOptions options) const override</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00775">STObject.cpp:775</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject_html_acd1aac04649d694a3524faf2ddebf843"><div class="ttname"><a href="classripple_1_1STObject.html#acd1aac04649d694a3524faf2ddebf843">ripple::STObject::setFieldU32</a></div><div class="ttdeci">void setFieldU32(SField const &amp;field, std::uint32_t)</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00697">STObject.cpp:697</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject_html_af1235d307d6f464392a583d0dfaa3cc4"><div class="ttname"><a href="classripple_1_1STObject.html#af1235d307d6f464392a583d0dfaa3cc4">ripple::STObject::setFieldVL</a></div><div class="ttdeci">void setFieldVL(SField const &amp;field, Blob const &amp;)</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00733">STObject.cpp:733</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject_html_abca4224026b9aab088af20801fb63ffa"><div class="ttname"><a href="classripple_1_1STObject.html#abca4224026b9aab088af20801fb63ffa">ripple::STObject::setFieldV256</a></div><div class="ttdeci">void setFieldV256(SField const &amp;field, STVector256 const &amp;v)</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00727">STObject.cpp:727</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject_html_acc2ceb95cdb8fc8b2520aeceabf17553"><div class="ttname"><a href="classripple_1_1STObject.html#acc2ceb95cdb8fc8b2520aeceabf17553">ripple::STObject::getJson</a></div><div class="ttdeci">Json::Value getJson(JsonOptions options) const override</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00781">STObject.cpp:781</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject_html_acd1aac04649d694a3524faf2ddebf843"><div class="ttname"><a href="classripple_1_1STObject.html#acd1aac04649d694a3524faf2ddebf843">ripple::STObject::setFieldU32</a></div><div class="ttdeci">void setFieldU32(SField const &amp;field, std::uint32_t)</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00703">STObject.cpp:703</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject_html_af1235d307d6f464392a583d0dfaa3cc4"><div class="ttname"><a href="classripple_1_1STObject.html#af1235d307d6f464392a583d0dfaa3cc4">ripple::STObject::setFieldVL</a></div><div class="ttdeci">void setFieldVL(SField const &amp;field, Blob const &amp;)</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00739">STObject.cpp:739</a></div></div>
 <div class="ttc" id="aclassripple_1_1STObject_html_af5aa57043ec772da30341e3c3b823d7f"><div class="ttname"><a href="classripple_1_1STObject.html#af5aa57043ec772da30341e3c3b823d7f">ripple::STObject::getFlags</a></div><div class="ttdeci">std::uint32_t getFlags() const</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00506">STObject.cpp:506</a></div></div>
-<div class="ttc" id="aclassripple_1_1STObject_html_af89b6c7fd94c998549037d0c44a068a1"><div class="ttname"><a href="classripple_1_1STObject.html#af89b6c7fd94c998549037d0c44a068a1">ripple::STObject::getFieldH256</a></div><div class="ttdeci">uint256 getFieldH256(SField const &amp;field) const</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00608">STObject.cpp:608</a></div></div>
+<div class="ttc" id="aclassripple_1_1STObject_html_af89b6c7fd94c998549037d0c44a068a1"><div class="ttname"><a href="classripple_1_1STObject.html#af89b6c7fd94c998549037d0c44a068a1">ripple::STObject::getFieldH256</a></div><div class="ttdeci">uint256 getFieldH256(SField const &amp;field) const</div><div class="ttdef"><b>Definition:</b> <a href="STObject_8cpp_source.html#l00614">STObject.cpp:614</a></div></div>
 <div class="ttc" id="aclassripple_1_1STParsedJSONObject_html"><div class="ttname"><a href="classripple_1_1STParsedJSONObject.html">ripple::STParsedJSONObject</a></div><div class="ttdoc">Holds the serialized result of parsing an input JSON object.</div><div class="ttdef"><b>Definition:</b> <a href="STParsedJSON_8h_source.html#l00031">STParsedJSON.h:32</a></div></div>
 <div class="ttc" id="aclassripple_1_1STParsedJSONObject_html_a5684522fa6918e6256d910053cd58c47"><div class="ttname"><a href="classripple_1_1STParsedJSONObject.html#a5684522fa6918e6256d910053cd58c47">ripple::STParsedJSONObject::object</a></div><div class="ttdeci">std::optional&lt; STObject &gt; object</div><div class="ttdoc">The STObject if the parse was successful.</div><div class="ttdef"><b>Definition:</b> <a href="STParsedJSON_8h_source.html#l00050">STParsedJSON.h:50</a></div></div>
 <div class="ttc" id="aclassripple_1_1STParsedJSONObject_html_a75ae1e4c096f722a17614c58d8b284a4"><div class="ttname"><a href="classripple_1_1STParsedJSONObject.html#a75ae1e4c096f722a17614c58d8b284a4">ripple::STParsedJSONObject::error</a></div><div class="ttdeci">Json::Value error</div><div class="ttdoc">On failure, an appropriate set of error values.</div><div class="ttdef"><b>Definition:</b> <a href="STParsedJSON_8h_source.html#l00053">STParsedJSON.h:53</a></div></div>
@@ -862,35 +884,18 @@ $(function() {
 <div class="ttc" id="anamespaceprotocol_html"><div class="ttname"><a href="namespaceprotocol.html">protocol</a></div><div class="ttdef"><b>Definition:</b> <a href="ValidatorList_8h_source.html#l00038">ValidatorList.h:38</a></div></div>
 <div class="ttc" id="anamespaceripple_html"><div class="ttname"><a href="namespaceripple.html">ripple</a></div><div class="ttdoc">Use hash_* containers for keys that do not need a cryptographically secure hashing algorithm.</div><div class="ttdef"><b>Definition:</b> <a href="algorithm_8h_source.html#l00026">algorithm.h:26</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a00ae0d729cb3e35b6bcac9a27ebb5284"><div class="ttname"><a href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">ripple::AccountID</a></div><div class="ttdeci">base_uint&lt; 160, detail::AccountIDTag &gt; AccountID</div><div class="ttdoc">A 160-bit unsigned that uniquely identifies an account.</div><div class="ttdef"><b>Definition:</b> <a href="AccountID_8h_source.html#l00049">AccountID.h:49</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a06b9f7ae163a2994e987048460807197"><div class="ttname"><a href="namespaceripple.html#a06b9f7ae163a2994e987048460807197">ripple::sfFlags</a></div><div class="ttdeci">SF_UINT32 const sfFlags</div></div>
-<div class="ttc" id="anamespaceripple_html_a081b6172d36e32f968c50367eb3b642c"><div class="ttname"><a href="namespaceripple.html#a081b6172d36e32f968c50367eb3b642c">ripple::sfSignature</a></div><div class="ttdeci">SF_VL const sfSignature</div></div>
-<div class="ttc" id="anamespaceripple_html_a1ca10da2dbd492bd01d396044b4b0516"><div class="ttname"><a href="namespaceripple.html#a1ca10da2dbd492bd01d396044b4b0516">ripple::sfQualityIn</a></div><div class="ttdeci">SF_UINT32 const sfQualityIn</div></div>
 <div class="ttc" id="anamespaceripple_html_a32e911b97d6debe8943c81e6fdf59573"><div class="ttname"><a href="namespaceripple.html#a32e911b97d6debe8943c81e6fdf59573">ripple::generateKeyPair</a></div><div class="ttdeci">std::pair&lt; PublicKey, SecretKey &gt; generateKeyPair(KeyType type, Seed const &amp;seed)</div><div class="ttdoc">Generate a key pair deterministically.</div><div class="ttdef"><b>Definition:</b> <a href="SecretKey_8cpp_source.html#l00351">SecretKey.cpp:351</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a356c68147333a9a48a344718038576d9"><div class="ttname"><a href="namespaceripple.html#a356c68147333a9a48a344718038576d9">ripple::uint256</a></div><div class="ttdeci">base_uint&lt; 256 &gt; uint256</div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00550">base_uint.h:550</a></div></div>
+<div class="ttc" id="anamespaceripple_html_a356c68147333a9a48a344718038576d9"><div class="ttname"><a href="namespaceripple.html#a356c68147333a9a48a344718038576d9">ripple::uint256</a></div><div class="ttdeci">base_uint&lt; 256 &gt; uint256</div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00551">base_uint.h:551</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a3e7e3f29aef85bcca06706da54e950fc"><div class="ttname"><a href="namespaceripple.html#a3e7e3f29aef85bcca06706da54e950fc">ripple::SerializedTypeID</a></div><div class="ttdeci">SerializedTypeID</div><div class="ttdef"><b>Definition:</b> <a href="SField_8h_source.html#l00106">SField.h:106</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a3f8a9da87fa29f4347337cae6fbdcba6"><div class="ttname"><a href="namespaceripple.html#a3f8a9da87fa29f4347337cae6fbdcba6">ripple::sfInvalid</a></div><div class="ttdeci">SField const sfInvalid</div></div>
 <div class="ttc" id="anamespaceripple_html_a454cee839d714fdc4f58531dd31d3d7f"><div class="ttname"><a href="namespaceripple.html#a454cee839d714fdc4f58531dd31d3d7f">ripple::sfGeneric</a></div><div class="ttdeci">SField const sfGeneric</div></div>
-<div class="ttc" id="anamespaceripple_html_a536c788db75e2d31232b88c1d56a1c69"><div class="ttname"><a href="namespaceripple.html#a536c788db75e2d31232b88c1d56a1c69">ripple::sfSettleDelay</a></div><div class="ttdeci">SF_UINT32 const sfSettleDelay</div></div>
-<div class="ttc" id="anamespaceripple_html_a54d99018376be0dde8731d92464f4ec0"><div class="ttname"><a href="namespaceripple.html#a54d99018376be0dde8731d92464f4ec0">ripple::sfSequence</a></div><div class="ttdeci">SF_UINT32 const sfSequence</div></div>
-<div class="ttc" id="anamespaceripple_html_a5537344a372e3fd41818f3057fa1d2db"><div class="ttname"><a href="namespaceripple.html#a5537344a372e3fd41818f3057fa1d2db">ripple::sfDigest</a></div><div class="ttdeci">SF_UINT256 const sfDigest</div></div>
-<div class="ttc" id="anamespaceripple_html_a67a1e8873b9a30729884261d0c6d9a6e"><div class="ttname"><a href="namespaceripple.html#a67a1e8873b9a30729884261d0c6d9a6e">ripple::sfMetadata</a></div><div class="ttdeci">SField const sfMetadata</div></div>
-<div class="ttc" id="anamespaceripple_html_a747d2a7c1c9e2b0cf6d4946992fe1b77"><div class="ttname"><a href="namespaceripple.html#a747d2a7c1c9e2b0cf6d4946992fe1b77">ripple::sfHashes</a></div><div class="ttdeci">SF_VECTOR256 const sfHashes</div></div>
-<div class="ttc" id="anamespaceripple_html_a83042556c6c251db61f5bdec904ddc8e"><div class="ttname"><a href="namespaceripple.html#a83042556c6c251db61f5bdec904ddc8e">ripple::sfMasterSignature</a></div><div class="ttdeci">SF_VL const sfMasterSignature</div></div>
-<div class="ttc" id="anamespaceripple_html_a8d7c6e2ed80e72898efcf247554af493"><div class="ttname"><a href="namespaceripple.html#a8d7c6e2ed80e72898efcf247554af493">ripple::sfCheckID</a></div><div class="ttdeci">SF_UINT256 const sfCheckID</div></div>
 <div class="ttc" id="anamespaceripple_html_a93f2333b362ee67694b78f55eadf7805"><div class="ttname"><a href="namespaceripple.html#a93f2333b362ee67694b78f55eadf7805">ripple::makeSlice</a></div><div class="ttdeci">std::enable_if_t&lt; std::is_same&lt; T, char &gt;::value||std::is_same&lt; T, unsigned char &gt;::value, Slice &gt; makeSlice(std::array&lt; T, N &gt; const &amp;a)</div><div class="ttdef"><b>Definition:</b> <a href="Slice_8h_source.html#l00241">Slice.h:241</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a96559143b0ecd083a716d67e2be3198f"><div class="ttname"><a href="namespaceripple.html#a96559143b0ecd083a716d67e2be3198f">ripple::sfIndexes</a></div><div class="ttdeci">SF_VECTOR256 const sfIndexes</div></div>
 <div class="ttc" id="anamespaceripple_html_a9de744cfdefe1132969eb982e57e4ddea82c2b7829b8129e5a2d53665ba4b4757"><div class="ttname"><a href="namespaceripple.html#a9de744cfdefe1132969eb982e57e4ddea82c2b7829b8129e5a2d53665ba4b4757">ripple::KeyType::secp256k1</a></div><div class="ttdeci">@ secp256k1</div></div>
-<div class="ttc" id="anamespaceripple_html_aa92490b35b0ff549f7e92e1e51d48035"><div class="ttname"><a href="namespaceripple.html#aa92490b35b0ff549f7e92e1e51d48035">ripple::sfMajority</a></div><div class="ttdeci">SField const sfMajority</div></div>
-<div class="ttc" id="anamespaceripple_html_abac1f99c7a8f47ef360142378ca355ec"><div class="ttname"><a href="namespaceripple.html#abac1f99c7a8f47ef360142378ca355ec">ripple::sfPublicKey</a></div><div class="ttdeci">SF_VL const sfPublicKey</div></div>
-<div class="ttc" id="anamespaceripple_html_ac124fe6744b7fe887dec949b56b16d50"><div class="ttname"><a href="namespaceripple.html#ac124fe6744b7fe887dec949b56b16d50">ripple::to_string</a></div><div class="ttdeci">std::string to_string(base_uint&lt; Bits, Tag &gt; const &amp;a)</div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00621">base_uint.h:621</a></div></div>
-<div class="ttc" id="anamespaceripple_html_ad39915aad1215c6d076306cc83a8b9b0"><div class="ttname"><a href="namespaceripple.html#ad39915aad1215c6d076306cc83a8b9b0">ripple::sfExpiration</a></div><div class="ttdeci">SF_UINT32 const sfExpiration</div></div>
+<div class="ttc" id="anamespaceripple_html_ac124fe6744b7fe887dec949b56b16d50"><div class="ttname"><a href="namespaceripple.html#ac124fe6744b7fe887dec949b56b16d50">ripple::to_string</a></div><div class="ttdeci">std::string to_string(base_uint&lt; Bits, Tag &gt; const &amp;a)</div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00623">base_uint.h:623</a></div></div>
 <div class="ttc" id="anamespaceripple_html_ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12"><div class="ttname"><a href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a148febf7586dd994c342f8279d664a12">ripple::soeOPTIONAL</a></div><div class="ttdeci">@ soeOPTIONAL</div><div class="ttdef"><b>Definition:</b> <a href="SOTemplate_8h_source.html#l00036">SOTemplate.h:36</a></div></div>
 <div class="ttc" id="anamespaceripple_html_ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763"><div class="ttname"><a href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a515d1dfe6cbb412fbbcece5bb23a0763">ripple::soeREQUIRED</a></div><div class="ttdeci">@ soeREQUIRED</div><div class="ttdef"><b>Definition:</b> <a href="SOTemplate_8h_source.html#l00035">SOTemplate.h:35</a></div></div>
 <div class="ttc" id="anamespaceripple_html_ad905dc8b70717f4492bebb6b7e189042a6e29f8256eb42e1331d2820986b09643"><div class="ttname"><a href="namespaceripple.html#ad905dc8b70717f4492bebb6b7e189042a6e29f8256eb42e1331d2820986b09643">ripple::soeDEFAULT</a></div><div class="ttdeci">@ soeDEFAULT</div><div class="ttdef"><b>Definition:</b> <a href="SOTemplate_8h_source.html#l00037">SOTemplate.h:37</a></div></div>
 <div class="ttc" id="anamespaceripple_html_adb9531b2a54f33b8227d9b029be9439b"><div class="ttname"><a href="namespaceripple.html#adb9531b2a54f33b8227d9b029be9439b">ripple::generateSeed</a></div><div class="ttdeci">Seed generateSeed(std::string const &amp;passPhrase)</div><div class="ttdoc">Generate a seed deterministically.</div><div class="ttdef"><b>Definition:</b> <a href="Seed_8cpp_source.html#l00069">Seed.cpp:69</a></div></div>
-<div class="ttc" id="anamespaceripple_html_adcc3924a2f0dadb18c9f875fc2ce2651"><div class="ttname"><a href="namespaceripple.html#adcc3924a2f0dadb18c9f875fc2ce2651">ripple::sfAmendments</a></div><div class="ttdeci">SF_VECTOR256 const sfAmendments</div></div>
-<div class="ttc" id="anamespaceripple_html_ade44932003eed1a92b25429a5232b085"><div class="ttname"><a href="namespaceripple.html#ade44932003eed1a92b25429a5232b085">ripple::sfAmount</a></div><div class="ttdeci">SF_AMOUNT const sfAmount</div></div>
-<div class="ttc" id="anamespaceripple_html_ae6b4f5c2ea3e0ddaaae28e88706a7fe4"><div class="ttname"><a href="namespaceripple.html#ae6b4f5c2ea3e0ddaaae28e88706a7fe4">ripple::sfAccount</a></div><div class="ttdeci">SF_ACCOUNT const sfAccount</div></div>
 <div class="ttc" id="aoptional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a></div></div>
 <div class="ttc" id="areserve_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector/reserve.html">std::vector::reserve</a></div><div class="ttdeci">T reserve(T... args)</div></div>
 <div class="ttc" id="aruntime_error_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/error/runtime_error.html">std::runtime_error</a></div></div>

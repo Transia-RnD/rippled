@@ -1,5 +1,5 @@
 <map id="ripple::AMMWithdraw" name="ripple::AMMWithdraw">
-<area shape="rect" id="node1" title="AMMWithdraw implements AMM withdraw Transactor." alt="" coords="2367,938,2529,963"/>
+<area shape="rect" id="node1" title=" " alt="" coords="2367,938,2529,963"/>
 <area shape="rect" id="node2" href="$classripple_1_1Transactor.html" title=" " alt="" coords="2183,938,2317,963"/>
 <area shape="rect" id="node3" href="$classripple_1_1ApplyContext.html" title="State information when applying a tx." alt="" coords="1948,722,2103,747"/>
 <area shape="rect" id="node4" href="$classripple_1_1Application.html" title=" " alt="" coords="1479,191,1619,217"/>

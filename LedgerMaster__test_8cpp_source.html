@@ -155,7 +155,7 @@ $(function() {
 <div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>        }</div>
 <div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        <span class="comment">// test not in ledger</span></div>
 <div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>        {</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>            uint32_t txnIndex = metas[0]-&gt;getFieldU32(<a class="code hl_variable" href="namespaceripple.html#a6d0a2df789874cb1adbf8c5b9366f5b9">sfTransactionIndex</a>);</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>            uint32_t txnIndex = metas[0]-&gt;getFieldU32(sfTransactionIndex);</div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>            <span class="keyword">auto</span> result =</div>
 <div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>                env.app().getLedgerMaster().txnIdFromIndex(0, txnIndex);</div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>            BEAST_EXPECT(!result);</div>
@@ -168,14 +168,14 @@ $(function() {
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>        }</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>        <span class="comment">// ended without result</span></div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>        {</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>            uint32_t txnIndex = metas[0]-&gt;getFieldU32(<a class="code hl_variable" href="namespaceripple.html#a6d0a2df789874cb1adbf8c5b9366f5b9">sfTransactionIndex</a>);</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>            uint32_t txnIndex = metas[0]-&gt;getFieldU32(sfTransactionIndex);</div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>            <span class="keyword">auto</span> result = env.app().getLedgerMaster().txnIdFromIndex(</div>
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>                endLegSeq + 1, txnIndex);</div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>            BEAST_EXPECT(!result);</div>
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>        }</div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>        <span class="comment">// success (first tx)</span></div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>        {</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>            uint32_t txnIndex = metas[0]-&gt;getFieldU32(<a class="code hl_variable" href="namespaceripple.html#a6d0a2df789874cb1adbf8c5b9366f5b9">sfTransactionIndex</a>);</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>            uint32_t txnIndex = metas[0]-&gt;getFieldU32(sfTransactionIndex);</div>
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>            <span class="keyword">auto</span> result = env.app().getLedgerMaster().txnIdFromIndex(</div>
 <div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>                startLegSeq, txnIndex);</div>
 <div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>            BEAST_EXPECT(</div>
@@ -185,7 +185,7 @@ $(function() {
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>        }</div>
 <div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>        <span class="comment">// success (second tx)</span></div>
 <div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>        {</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>            uint32_t txnIndex = metas[1]-&gt;getFieldU32(<a class="code hl_variable" href="namespaceripple.html#a6d0a2df789874cb1adbf8c5b9366f5b9">sfTransactionIndex</a>);</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>            uint32_t txnIndex = metas[1]-&gt;getFieldU32(sfTransactionIndex);</div>
 <div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>            <span class="keyword">auto</span> result = env.app().getLedgerMaster().txnIdFromIndex(</div>
 <div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>                startLegSeq + 1, txnIndex);</div>
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>            BEAST_EXPECT(</div>
@@ -233,8 +233,7 @@ $(function() {
 <div class="ttc" id="anamespaceripple_1_1test_1_1jtx_html_aea9cd3d4e6b5df2e62d53b34b605957e"><div class="ttname"><a href="namespaceripple_1_1test_1_1jtx.html#aea9cd3d4e6b5df2e62d53b34b605957e">ripple::test::jtx::XRP</a></div><div class="ttdeci">XRP_t const XRP</div><div class="ttdoc">Converts to XRP Issue or STAmount.</div><div class="ttdef"><b>Definition:</b> <a href="amount_8cpp_source.html#l00105">amount.cpp:105</a></div></div>
 <div class="ttc" id="anamespaceripple_1_1test_1_1jtx_html_af5441d84d5977d52246c5226313560d4"><div class="ttname"><a href="namespaceripple_1_1test_1_1jtx.html#af5441d84d5977d52246c5226313560d4">ripple::test::jtx::supported_amendments</a></div><div class="ttdeci">FeatureBitset supported_amendments()</div><div class="ttdef"><b>Definition:</b> <a href="Env_8h_source.html#l00070">Env.h:70</a></div></div>
 <div class="ttc" id="anamespaceripple_html"><div class="ttname"><a href="namespaceripple.html">ripple</a></div><div class="ttdoc">Use hash_* containers for keys that do not need a cryptographically secure hashing algorithm.</div><div class="ttdef"><b>Definition:</b> <a href="algorithm_8h_source.html#l00026">algorithm.h:26</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a356c68147333a9a48a344718038576d9"><div class="ttname"><a href="namespaceripple.html#a356c68147333a9a48a344718038576d9">ripple::uint256</a></div><div class="ttdeci">base_uint&lt; 256 &gt; uint256</div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00550">base_uint.h:550</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a6d0a2df789874cb1adbf8c5b9366f5b9"><div class="ttname"><a href="namespaceripple.html#a6d0a2df789874cb1adbf8c5b9366f5b9">ripple::sfTransactionIndex</a></div><div class="ttdeci">SF_UINT32 const sfTransactionIndex</div></div>
+<div class="ttc" id="anamespaceripple_html_a356c68147333a9a48a344718038576d9"><div class="ttname"><a href="namespaceripple.html#a356c68147333a9a48a344718038576d9">ripple::uint256</a></div><div class="ttdeci">base_uint&lt; 256 &gt; uint256</div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00551">base_uint.h:551</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a7ffb3f54d739bb8f967d695f08fb66ccaa181a603769c1f98ad927e7367c7aa51"><div class="ttname"><a href="namespaceripple.html#a7ffb3f54d739bb8f967d695f08fb66ccaa181a603769c1f98ad927e7367c7aa51">ripple::TxSearched::all</a></div><div class="ttdeci">@ all</div></div>
 <div class="ttc" id="aunique_ptr_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a></div></div>
 <div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a></div></div>

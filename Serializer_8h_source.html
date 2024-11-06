@@ -451,64 +451,70 @@ $(function() {
 <div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>        <span class="keywordflow">return</span> getBitString&lt;160&gt;();</div>
 <div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>    }</div>
 <div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span> </div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a></div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno"><a class="line" href="classripple_1_1SerialIter.html#ae012cfa83bb44253a59d66bf89dfdf96">  377</a></span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#ae012cfa83bb44253a59d66bf89dfdf96">get256</a>()</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    <a class="code hl_class" href="classripple_1_1base__uint.html">uint192</a></div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno"><a class="line" href="classripple_1_1SerialIter.html#a29c9a480919f3d09b48fe49ffdd69823">  377</a></span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a29c9a480919f3d09b48fe49ffdd69823">get192</a>()</div>
 <div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>    {</div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>        <span class="keywordflow">return</span> getBitString&lt;256&gt;();</div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>        <span class="keywordflow">return</span> getBitString&lt;192&gt;();</div>
 <div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>    }</div>
 <div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span> </div>
-<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a7e4fd9acfde12711bf40f926c74e69da">getFieldID</a>(<span class="keywordtype">int</span>&amp; type, <span class="keywordtype">int</span>&amp; name);</div>
-<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span> </div>
-<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>    <span class="comment">// Returns the size of the VL if the</span></div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>    <span class="comment">// next object is a VL. Advances the iterator</span></div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>    <span class="comment">// to the beginning of the VL.</span></div>
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>    <span class="keywordtype">int</span></div>
-<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#aa97628bd129c57f172027982c0ac4f1f">getVLDataLength</a>();</div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>    <a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a></div>
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno"><a class="line" href="classripple_1_1SerialIter.html#ae012cfa83bb44253a59d66bf89dfdf96">  383</a></span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#ae012cfa83bb44253a59d66bf89dfdf96">get256</a>()</div>
+<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>    {</div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>        <span class="keywordflow">return</span> getBitString&lt;256&gt;();</div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>    }</div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span> </div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a7e4fd9acfde12711bf40f926c74e69da">getFieldID</a>(<span class="keywordtype">int</span>&amp; type, <span class="keywordtype">int</span>&amp; name);</div>
 <div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span> </div>
-<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>    <a class="code hl_class" href="classripple_1_1Slice.html">Slice</a></div>
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a4131424f0e083369a1e562a5437d56e8">getSlice</a>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> bytes);</div>
-<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span> </div>
-<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>    <span class="comment">// VFALCO DEPRECATED Returns a copy</span></div>
-<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">Blob</a></div>
-<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a970fe7499d1280e2aef6b7447ec31d70">getRaw</a>(<span class="keywordtype">int</span> size);</div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span> </div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>    <span class="comment">// VFALCO DEPRECATED Returns a copy</span></div>
-<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span>    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">Blob</a></div>
-<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a98d9cdb4f341b7420876167b0ceb28cf">getVL</a>();</div>
-<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span> </div>
-<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>    <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a46ded990021f9650dcac3c7926906342">skip</a>(<span class="keywordtype">int</span> num);</div>
-<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span> </div>
-<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>    <a class="code hl_class" href="classripple_1_1Buffer.html">Buffer</a></div>
-<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a65a3863b5b7ef3a114ccfe10170d133d">getVLBuffer</a>();</div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>    <span class="comment">// Returns the size of the VL if the</span></div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>    <span class="comment">// next object is a VL. Advances the iterator</span></div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>    <span class="comment">// to the beginning of the VL.</span></div>
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>    <span class="keywordtype">int</span></div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#aa97628bd129c57f172027982c0ac4f1f">getVLDataLength</a>();</div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span> </div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>    <a class="code hl_class" href="classripple_1_1Slice.html">Slice</a></div>
+<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a4131424f0e083369a1e562a5437d56e8">getSlice</a>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> bytes);</div>
+<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span> </div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>    <span class="comment">// VFALCO DEPRECATED Returns a copy</span></div>
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span>    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">Blob</a></div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a970fe7499d1280e2aef6b7447ec31d70">getRaw</a>(<span class="keywordtype">int</span> size);</div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span> </div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>    <span class="comment">// VFALCO DEPRECATED Returns a copy</span></div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">Blob</a></div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a98d9cdb4f341b7420876167b0ceb28cf">getVL</a>();</div>
 <div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span> </div>
-<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
-<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>    T</div>
-<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a90a8e0f977b0381abf0ca45f640608b5">getRawHelper</a>(<span class="keywordtype">int</span> size);</div>
-<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>};</div>
-<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span> </div>
-<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span><span class="keyword">template</span> &lt;std::<span class="keywordtype">size_t</span> Bits, <span class="keyword">class</span> Tag&gt;</div>
-<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span>base_uint&lt;Bits, Tag&gt;</div>
-<div class="line"><a id="l00415" name="l00415"></a><span class="lineno"><a class="line" href="classripple_1_1SerialIter.html#abc70fb8fb5632ef4d3e68f8cc22f486c">  415</a></span><a class="code hl_function" href="classripple_1_1SerialIter.html#abc70fb8fb5632ef4d3e68f8cc22f486c">SerialIter::getBitString</a>()</div>
-<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>{</div>
-<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span>    <span class="keyword">auto</span> <span class="keyword">const</span> n = Bits / 8;</div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>    <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a46ded990021f9650dcac3c7926906342">skip</a>(<span class="keywordtype">int</span> num);</div>
+<div class="line"><a id="l00410" name="l00410"></a><span class="lineno">  410</span> </div>
+<div class="line"><a id="l00411" name="l00411"></a><span class="lineno">  411</span>    <a class="code hl_class" href="classripple_1_1Buffer.html">Buffer</a></div>
+<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a65a3863b5b7ef3a114ccfe10170d133d">getVLBuffer</a>();</div>
+<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span> </div>
+<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span>    <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;</div>
+<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span>    T</div>
+<div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span>    <a class="code hl_function" href="classripple_1_1SerialIter.html#a90a8e0f977b0381abf0ca45f640608b5">getRawHelper</a>(<span class="keywordtype">int</span> size);</div>
+<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span>};</div>
 <div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span> </div>
-<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span>    <span class="keywordflow">if</span> (<a class="code hl_variable" href="classripple_1_1SerialIter.html#a0b18e3f7a1e7b6eae1b0c17868d36639">remain_</a> &lt; n)</div>
-<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>        Throw&lt;std::runtime_error&gt;(<span class="stringliteral">&quot;invalid SerialIter getBitString&quot;</span>);</div>
-<div class="line"><a id="l00421" name="l00421"></a><span class="lineno">  421</span> </div>
-<div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span>    <span class="keyword">auto</span> <span class="keyword">const</span> x = <a class="code hl_variable" href="classripple_1_1SerialIter.html#a6b2fec259040d8aa298cfece076d2567">p_</a>;</div>
-<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span> </div>
-<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span>    <a class="code hl_variable" href="classripple_1_1SerialIter.html#a6b2fec259040d8aa298cfece076d2567">p_</a> += n;</div>
-<div class="line"><a id="l00425" name="l00425"></a><span class="lineno">  425</span>    <a class="code hl_variable" href="classripple_1_1SerialIter.html#aaf4ac57a0b62f73f4121fed0b1c60a95">used_</a> += n;</div>
-<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span>    <a class="code hl_variable" href="classripple_1_1SerialIter.html#a0b18e3f7a1e7b6eae1b0c17868d36639">remain_</a> -= n;</div>
+<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span><span class="keyword">template</span> &lt;std::<span class="keywordtype">size_t</span> Bits, <span class="keyword">class</span> Tag&gt;</div>
+<div class="line"><a id="l00420" name="l00420"></a><span class="lineno">  420</span>base_uint&lt;Bits, Tag&gt;</div>
+<div class="line"><a id="l00421" name="l00421"></a><span class="lineno"><a class="line" href="classripple_1_1SerialIter.html#abc70fb8fb5632ef4d3e68f8cc22f486c">  421</a></span><a class="code hl_function" href="classripple_1_1SerialIter.html#abc70fb8fb5632ef4d3e68f8cc22f486c">SerialIter::getBitString</a>()</div>
+<div class="line"><a id="l00422" name="l00422"></a><span class="lineno">  422</span>{</div>
+<div class="line"><a id="l00423" name="l00423"></a><span class="lineno">  423</span>    <span class="keyword">auto</span> <span class="keyword">const</span> n = Bits / 8;</div>
+<div class="line"><a id="l00424" name="l00424"></a><span class="lineno">  424</span> </div>
+<div class="line"><a id="l00425" name="l00425"></a><span class="lineno">  425</span>    <span class="keywordflow">if</span> (<a class="code hl_variable" href="classripple_1_1SerialIter.html#a0b18e3f7a1e7b6eae1b0c17868d36639">remain_</a> &lt; n)</div>
+<div class="line"><a id="l00426" name="l00426"></a><span class="lineno">  426</span>        Throw&lt;std::runtime_error&gt;(<span class="stringliteral">&quot;invalid SerialIter getBitString&quot;</span>);</div>
 <div class="line"><a id="l00427" name="l00427"></a><span class="lineno">  427</span> </div>
-<div class="line"><a id="l00428" name="l00428"></a><span class="lineno">  428</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classripple_1_1base__uint.html#a4e9de7a706374a3d016b89c9ecb4f80d">base_uint&lt;Bits, Tag&gt;::fromVoid</a>(x);</div>
-<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span>}</div>
-<div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span> </div>
-<div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span>}  <span class="comment">// namespace ripple</span></div>
-<div class="line"><a id="l00432" name="l00432"></a><span class="lineno">  432</span> </div>
-<div class="line"><a id="l00433" name="l00433"></a><span class="lineno">  433</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00428" name="l00428"></a><span class="lineno">  428</span>    <span class="keyword">auto</span> <span class="keyword">const</span> x = <a class="code hl_variable" href="classripple_1_1SerialIter.html#a6b2fec259040d8aa298cfece076d2567">p_</a>;</div>
+<div class="line"><a id="l00429" name="l00429"></a><span class="lineno">  429</span> </div>
+<div class="line"><a id="l00430" name="l00430"></a><span class="lineno">  430</span>    <a class="code hl_variable" href="classripple_1_1SerialIter.html#a6b2fec259040d8aa298cfece076d2567">p_</a> += n;</div>
+<div class="line"><a id="l00431" name="l00431"></a><span class="lineno">  431</span>    <a class="code hl_variable" href="classripple_1_1SerialIter.html#aaf4ac57a0b62f73f4121fed0b1c60a95">used_</a> += n;</div>
+<div class="line"><a id="l00432" name="l00432"></a><span class="lineno">  432</span>    <a class="code hl_variable" href="classripple_1_1SerialIter.html#a0b18e3f7a1e7b6eae1b0c17868d36639">remain_</a> -= n;</div>
+<div class="line"><a id="l00433" name="l00433"></a><span class="lineno">  433</span> </div>
+<div class="line"><a id="l00434" name="l00434"></a><span class="lineno">  434</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="classripple_1_1base__uint.html#a4e9de7a706374a3d016b89c9ecb4f80d">base_uint&lt;Bits, Tag&gt;::fromVoid</a>(x);</div>
+<div class="line"><a id="l00435" name="l00435"></a><span class="lineno">  435</span>}</div>
+<div class="line"><a id="l00436" name="l00436"></a><span class="lineno">  436</span> </div>
+<div class="line"><a id="l00437" name="l00437"></a><span class="lineno">  437</span>}  <span class="comment">// namespace ripple</span></div>
+<div class="line"><a id="l00438" name="l00438"></a><span class="lineno">  438</span> </div>
+<div class="line"><a id="l00439" name="l00439"></a><span class="lineno">  439</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
 <div class="ttc" id="abegin_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector/begin.html">std::vector::begin</a></div><div class="ttdeci">T begin(T... args)</div></div>
 <div class="ttc" id="acapacity_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/container/vector/capacity.html">std::vector::capacity</a></div><div class="ttdeci">T capacity(T... args)</div></div>
@@ -518,6 +524,7 @@ $(function() {
 <div class="ttc" id="aclassripple_1_1SerialIter_html_a027d09aca35a9c321df76a8266765340"><div class="ttname"><a href="classripple_1_1SerialIter.html#a027d09aca35a9c321df76a8266765340">ripple::SerialIter::SerialIter</a></div><div class="ttdeci">SerialIter(std::uint8_t const (&amp;data)[N])</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00327">Serializer.h:327</a></div></div>
 <div class="ttc" id="aclassripple_1_1SerialIter_html_a0b18e3f7a1e7b6eae1b0c17868d36639"><div class="ttname"><a href="classripple_1_1SerialIter.html#a0b18e3f7a1e7b6eae1b0c17868d36639">ripple::SerialIter::remain_</a></div><div class="ttdeci">std::size_t remain_</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00315">Serializer.h:315</a></div></div>
 <div class="ttc" id="aclassripple_1_1SerialIter_html_a1b51a57d31858eacdc8a30f0a49cb3df"><div class="ttname"><a href="classripple_1_1SerialIter.html#a1b51a57d31858eacdc8a30f0a49cb3df">ripple::SerialIter::get128</a></div><div class="ttdeci">uint128 get128()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00365">Serializer.h:365</a></div></div>
+<div class="ttc" id="aclassripple_1_1SerialIter_html_a29c9a480919f3d09b48fe49ffdd69823"><div class="ttname"><a href="classripple_1_1SerialIter.html#a29c9a480919f3d09b48fe49ffdd69823">ripple::SerialIter::get192</a></div><div class="ttdeci">uint192 get192()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00377">Serializer.h:377</a></div></div>
 <div class="ttc" id="aclassripple_1_1SerialIter_html_a2b2cd9753a86ac41e60b26278e8dd3d0"><div class="ttname"><a href="classripple_1_1SerialIter.html#a2b2cd9753a86ac41e60b26278e8dd3d0">ripple::SerialIter::getBytesLeft</a></div><div class="ttdeci">int getBytesLeft() const noexcept</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00342">Serializer.h:342</a></div></div>
 <div class="ttc" id="aclassripple_1_1SerialIter_html_a2fe5dd5ca6e8bf2f927b1ddefeb3430b"><div class="ttname"><a href="classripple_1_1SerialIter.html#a2fe5dd5ca6e8bf2f927b1ddefeb3430b">ripple::SerialIter::get160</a></div><div class="ttdeci">uint160 get160()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00371">Serializer.h:371</a></div></div>
 <div class="ttc" id="aclassripple_1_1SerialIter_html_a4131424f0e083369a1e562a5437d56e8"><div class="ttname"><a href="classripple_1_1SerialIter.html#a4131424f0e083369a1e562a5437d56e8">ripple::SerialIter::getSlice</a></div><div class="ttdeci">Slice getSlice(std::size_t bytes)</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8cpp_source.html#l00495">Serializer.cpp:495</a></div></div>
@@ -534,10 +541,10 @@ $(function() {
 <div class="ttc" id="aclassripple_1_1SerialIter_html_aaf4ac57a0b62f73f4121fed0b1c60a95"><div class="ttname"><a href="classripple_1_1SerialIter.html#aaf4ac57a0b62f73f4121fed0b1c60a95">ripple::SerialIter::used_</a></div><div class="ttdeci">std::size_t used_</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00316">Serializer.h:316</a></div></div>
 <div class="ttc" id="aclassripple_1_1SerialIter_html_aba1f53fccc66caa78a7203bf5eb99272"><div class="ttname"><a href="classripple_1_1SerialIter.html#aba1f53fccc66caa78a7203bf5eb99272">ripple::SerialIter::get16</a></div><div class="ttdeci">std::uint16_t get16()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8cpp_source.html#l00374">Serializer.cpp:374</a></div></div>
 <div class="ttc" id="aclassripple_1_1SerialIter_html_aba6df51d44a50b1cfdc114e89456147a"><div class="ttname"><a href="classripple_1_1SerialIter.html#aba6df51d44a50b1cfdc114e89456147a">ripple::SerialIter::get32</a></div><div class="ttdeci">std::uint32_t get32()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8cpp_source.html#l00386">Serializer.cpp:386</a></div></div>
-<div class="ttc" id="aclassripple_1_1SerialIter_html_abc70fb8fb5632ef4d3e68f8cc22f486c"><div class="ttname"><a href="classripple_1_1SerialIter.html#abc70fb8fb5632ef4d3e68f8cc22f486c">ripple::SerialIter::getBitString</a></div><div class="ttdeci">base_uint&lt; Bits, Tag &gt; getBitString()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00415">Serializer.h:415</a></div></div>
+<div class="ttc" id="aclassripple_1_1SerialIter_html_abc70fb8fb5632ef4d3e68f8cc22f486c"><div class="ttname"><a href="classripple_1_1SerialIter.html#abc70fb8fb5632ef4d3e68f8cc22f486c">ripple::SerialIter::getBitString</a></div><div class="ttdeci">base_uint&lt; Bits, Tag &gt; getBitString()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00421">Serializer.h:421</a></div></div>
 <div class="ttc" id="aclassripple_1_1SerialIter_html_abd5f83aa8b3943ca9cbfa005aaa33734"><div class="ttname"><a href="classripple_1_1SerialIter.html#abd5f83aa8b3943ca9cbfa005aaa33734">ripple::SerialIter::get8</a></div><div class="ttdeci">unsigned char get8()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8cpp_source.html#l00362">Serializer.cpp:362</a></div></div>
 <div class="ttc" id="aclassripple_1_1SerialIter_html_ac4aae57f058f3641120c64aefff35ccc"><div class="ttname"><a href="classripple_1_1SerialIter.html#ac4aae57f058f3641120c64aefff35ccc">ripple::SerialIter::empty</a></div><div class="ttdeci">std::size_t empty() const noexcept</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00333">Serializer.h:333</a></div></div>
-<div class="ttc" id="aclassripple_1_1SerialIter_html_ae012cfa83bb44253a59d66bf89dfdf96"><div class="ttname"><a href="classripple_1_1SerialIter.html#ae012cfa83bb44253a59d66bf89dfdf96">ripple::SerialIter::get256</a></div><div class="ttdeci">uint256 get256()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00377">Serializer.h:377</a></div></div>
+<div class="ttc" id="aclassripple_1_1SerialIter_html_ae012cfa83bb44253a59d66bf89dfdf96"><div class="ttname"><a href="classripple_1_1SerialIter.html#ae012cfa83bb44253a59d66bf89dfdf96">ripple::SerialIter::get256</a></div><div class="ttdeci">uint256 get256()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00383">Serializer.h:383</a></div></div>
 <div class="ttc" id="aclassripple_1_1SerialIter_html_af720e6387dcaba61af9c9c724e33097e"><div class="ttname"><a href="classripple_1_1SerialIter.html#af720e6387dcaba61af9c9c724e33097e">ripple::SerialIter::get64</a></div><div class="ttdeci">std::uint64_t get64()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8cpp_source.html#l00399">Serializer.cpp:399</a></div></div>
 <div class="ttc" id="aclassripple_1_1Serializer_html"><div class="ttname"><a href="classripple_1_1Serializer.html">ripple::Serializer</a></div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00040">Serializer.h:41</a></div></div>
 <div class="ttc" id="aclassripple_1_1Serializer_html_a0b9f56cab2021e47d45e4cd287f4b425"><div class="ttname"><a href="classripple_1_1Serializer.html#a0b9f56cab2021e47d45e4cd287f4b425">ripple::Serializer::erase</a></div><div class="ttdeci">void erase()</div><div class="ttdef"><b>Definition:</b> <a href="Serializer_8h_source.html#l00210">Serializer.h:210</a></div></div>

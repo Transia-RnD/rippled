@@ -148,6 +148,11 @@ Private Member Functions</h2></td></tr>
 <tr class="memitem:a736accd6c557dca0b78a183c89730f81"><td class="memTemplParams" colspan="2">template&lt;class T , class... Args&gt; </td></tr>
 <tr class="memitem:a736accd6c557dca0b78a183c89730f81"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classripple_1_1detail_1_1STVar.html#a736accd6c557dca0b78a183c89730f81">construct</a> (Args &amp;&amp;... args)</td></tr>
 <tr class="separator:a736accd6c557dca0b78a183c89730f81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a777f9e5130845dfefbc45299993364c3"><td class="memTemplParams" colspan="2">template&lt;typename... Args&gt; <br />
+requires ValidConstructSTArgs&lt;Args...&gt;</td></tr>
+<tr class="memitem:a777f9e5130845dfefbc45299993364c3"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classripple_1_1detail_1_1STVar.html#a777f9e5130845dfefbc45299993364c3">constructST</a> (<a class="el" href="namespaceripple.html#a3e7e3f29aef85bcca06706da54e950fc">SerializedTypeID</a> id, int depth, Args &amp;&amp;... arg)</td></tr>
+<tr class="memdesc:a777f9e5130845dfefbc45299993364c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct requested Serializable Type according to id.  <a href="classripple_1_1detail_1_1STVar.html#a777f9e5130845dfefbc45299993364c3">More...</a><br /></td></tr>
+<tr class="separator:a777f9e5130845dfefbc45299993364c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6878c35ceb36e824337e89b6d60f838"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1detail_1_1STVar.html#ad6878c35ceb36e824337e89b6d60f838">on_heap</a> () const</td></tr>
 <tr class="separator:ad6878c35ceb36e824337e89b6d60f838"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -171,7 +176,7 @@ Friends</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00049">49</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00064">64</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a606ae2ee65040b937e2f69a3859b2a6c" name="a606ae2ee65040b937e2f69a3859b2a6c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a606ae2ee65040b937e2f69a3859b2a6c">&#9670;&#160;</a></span>~STVar()</h2>
@@ -248,7 +253,7 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00067">67</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00082">82</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -268,7 +273,7 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00072">72</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00087">87</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -427,7 +432,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8cpp_source.html#l00179">179</a> of file <a class="el" href="STVar_8cpp_source.html">STVar.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8cpp_source.html#l00121">121</a> of file <a class="el" href="STVar_8cpp_source.html">STVar.cpp</a>.</p>
 
 </div>
 </div>
@@ -487,7 +492,7 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00082">82</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00097">97</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -506,7 +511,7 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00087">87</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00102">102</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -525,7 +530,7 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00092">92</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00107">107</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -544,7 +549,7 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00097">97</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00112">112</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -563,7 +568,7 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00102">102</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00117">117</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -582,7 +587,7 @@ Friends</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00107">107</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00122">122</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -609,7 +614,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8cpp_source.html#l00244">244</a> of file <a class="el" href="STVar_8cpp_source.html">STVar.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8cpp_source.html#l00128">128</a> of file <a class="el" href="STVar_8cpp_source.html">STVar.cpp</a>.</p>
 
 </div>
 </div>
@@ -639,7 +644,57 @@ template&lt;class T , class... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00126">126</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00141">141</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+
+</div>
+</div>
+<a id="a777f9e5130845dfefbc45299993364c3" name="a777f9e5130845dfefbc45299993364c3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a777f9e5130845dfefbc45299993364c3">&#9670;&#160;</a></span>constructST()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Args&gt; <br />
+requires ValidConstructSTArgs&lt;Args...&gt;</div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ripple::detail::STVar::constructST </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a3e7e3f29aef85bcca06706da54e950fc">SerializedTypeID</a>&#160;</td>
+          <td class="paramname"><em>id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>depth</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>arg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Construct requested Serializable Type according to id. </p>
+<p >The variadic args are: (<a class="el" href="classripple_1_1SField.html" title="Identifies fields.">SField</a>), or (<a class="el" href="classripple_1_1SerialIter.html">SerialIter</a>, <a class="el" href="classripple_1_1SField.html" title="Identifies fields.">SField</a>). depth is ignored in former case. </p>
+
+<p class="definition">Definition at line <a class="el" href="STVar_8cpp_source.html#l00141">141</a> of file <a class="el" href="STVar_8cpp_source.html">STVar.cpp</a>.</p>
 
 </div>
 </div>
@@ -666,7 +721,7 @@ template&lt;class T , class... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00135">135</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00159">159</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -697,7 +752,7 @@ template&lt;class T , class... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00143">143</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00167">167</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -722,7 +777,7 @@ template&lt;class T , class... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00053">53</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00068">68</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -746,7 +801,7 @@ template&lt;class T , class... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00055">55</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00070">70</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
@@ -770,7 +825,7 @@ template&lt;class T , class... Args&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00056">56</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STVar_8h_source.html#l00071">71</a> of file <a class="el" href="STVar_8h_source.html">STVar.h</a>.</p>
 
 </div>
 </div>
