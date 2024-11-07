@@ -127,6 +127,7 @@ TYPED_SFIELD(sfCookie,                   UINT64,    10)
 TYPED_SFIELD(sfServerVersion,            UINT64,    11)
 TYPED_SFIELD(sfNFTokenOfferNode,         UINT64,    12)
 TYPED_SFIELD(sfEmitBurden,               UINT64,    13)
+TYPED_SFIELD(sfIssuerNode,               UINT64,    14)
 
 // 64-bit integers (uncommon)
 TYPED_SFIELD(sfHookOn,                   UINT64,    16)

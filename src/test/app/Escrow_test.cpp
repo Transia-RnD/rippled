@@ -402,7 +402,7 @@ struct Escrow_test : public beast::unit_test::suite
         // Using non-XRP:
         env(escrow("alice", "carol", Account("alice")["USD"](500)),
             finish_time(env.now() + 1s),
-            ter(temBAD_AMOUNT));
+            ter(tecNO_PERMISSION));
 
         // Sending zero or no XRP:
         env(escrow("alice", "carol", XRP(0)),
