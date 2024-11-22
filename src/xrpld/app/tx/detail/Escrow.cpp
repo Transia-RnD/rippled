@@ -94,7 +94,8 @@ after(NetClock::time_point now, std::uint32_t mark)
 TxConsequences
 EscrowCreate::makeTxConsequences(PreflightContext const& ctx)
 {
-    return TxConsequences{ctx.tx, isXRP(ctx.tx[sfAmount]) ? ctx.tx[sfAmount].xrp() : beast::zero};
+    return TxConsequences{
+        ctx.tx, isXRP(ctx.tx[sfAmount]) ? ctx.tx[sfAmount].xrp() : beast::zero};
 }
 
 NotTEC
@@ -192,8 +193,8 @@ EscrowCreate::preclaim(PreclaimContext const& ctx)
             // - flagIssuerFreeze = tecFROZEN
             // - requireAuth = tecNO_AUTH
             // - flagIssuerNoRipple = tecPATH_DRY
-            auto const sleLine = ctx.view.read(keylet::line(
-                account, issuer, amount.getCurrency()));
+            auto const sleLine = ctx.view.read(
+                keylet::line(account, issuer, amount.getCurrency()));
 
             if (!sleLine)
                 return tecNO_LINE;
@@ -202,8 +203,9 @@ EscrowCreate::preclaim(PreclaimContext const& ctx)
             if (auto const ter = requireAuth(ctx.view, amount.issue(), account);
                 ter != tesSUCCESS)
             {
-                JLOG(ctx.j.debug()) << "EscrowCreate: account is not authorized, "
-                                    << amount.issue();
+                JLOG(ctx.j.debug())
+                    << "EscrowCreate: account is not authorized, "
+                    << amount.issue();
                 return ter;
             }
 
@@ -325,7 +327,7 @@ EscrowCreate::doApply()
 
             if (spendableAmount < amount)
                 return tecINSUFFICIENT_FUNDS;
-            
+
             // TODO: isAddable (Precision Loss)
         }
     }
@@ -389,7 +391,8 @@ EscrowCreate::doApply()
         (*slep)[sfDestinationNode] = *page;
     }
 
-    // If issuer is not source or destination, add escrow to issuers owner directory.
+    // If issuer is not source or destination, add escrow to issuers owner
+    // directory.
     if (!isXRP(amount) && issuer != account && issuer != dest)
     {
         auto page = ctx_.view().dirInsert(
@@ -410,12 +413,7 @@ EscrowCreate::doApply()
         if (!srcIssuer)
         {
             auto const ter = rippleCredit(
-                ctx_.view(),
-                account,
-                issuer,
-                amount,
-                true,
-                ctx_.journal);
+                ctx_.view(), account, issuer, amount, true, ctx_.journal);
             if (ter != tesSUCCESS)
                 return ter;  // LCOV_EXCL_LINE
         }
@@ -511,7 +509,8 @@ EscrowFinish::calculateBaseFee(ReadView const& view, STTx const& tx)
 TER
 EscrowFinish::preclaim(PreclaimContext const& ctx)
 {
-    auto const slep = ctx.view.read(keylet::escrow(ctx.tx[sfOwner], ctx.tx[sfOfferSequence]));
+    auto const slep =
+        ctx.view.read(keylet::escrow(ctx.tx[sfOwner], ctx.tx[sfOfferSequence]));
     if (!slep)
         return tecNO_TARGET;
 
@@ -655,8 +654,7 @@ EscrowFinish::doApply()
     // Remove escrow from owner directory
     {
         auto const page = (*slep)[sfOwnerNode];
-        if (!psb.dirRemove(
-                keylet::ownerDir(account), page, k.key, true))
+        if (!psb.dirRemove(keylet::ownerDir(account), page, k.key, true))
         {
             JLOG(j_.fatal()) << "Unable to delete Escrow from owner.";
             return tefBAD_LEDGER;
@@ -666,8 +664,7 @@ EscrowFinish::doApply()
     // Remove escrow from recipient's owner directory, if present.
     if (auto const optPage = (*slep)[~sfDestinationNode])
     {
-        if (!psb.dirRemove(
-                keylet::ownerDir(destID), *optPage, k.key, true))
+        if (!psb.dirRemove(keylet::ownerDir(destID), *optPage, k.key, true))
         {
             JLOG(j_.fatal()) << "Unable to delete Escrow from recipient.";
             return tefBAD_LEDGER;
@@ -737,7 +734,7 @@ EscrowFinish::doApply()
         auto const sleTrustLine = psb.peek(trustLineKey);
         if (!sleTrustLine && !dstIssuer)
             return tecNO_LINE;
-        
+
         Rate lockedRate = ripple::Rate(slep->getFieldU32(sfTransferRate));
         auto const xferRate = transferRate(view(), issuer);
         // update if issuer rate is less than locked rate
@@ -761,13 +758,8 @@ EscrowFinish::doApply()
         // If destination is not the issuer then transfer funds
         if (!dstIssuer)
         {
-            auto const ter = rippleCredit(
-                psb,
-                issuer,
-                destID,
-                finalAmt,
-                true,
-                ctx_.journal);
+            auto const ter =
+                rippleCredit(psb, issuer, destID, finalAmt, true, ctx_.journal);
             if (ter != tesSUCCESS)
                 return ter;  // LCOV_EXCL_LINE
         }
@@ -775,19 +767,14 @@ EscrowFinish::doApply()
         // Remove escrow from issuers owner directory, if present.
         if (auto const optPage = (*slep)[~sfIssuerNode]; optPage)
         {
-            if (!psb.dirRemove(
-                    keylet::ownerDir(issuer),
-                    *optPage,
-                    k.key,
-                    true))
+            if (!psb.dirRemove(keylet::ownerDir(issuer), *optPage, k.key, true))
             {
                 JLOG(j_.fatal()) << "Unable to delete Escrow from recipient.";
                 return tefBAD_LEDGER;
             }
         }
     }
-    
-    
+
     psb.update(sled);
 
     // Adjust source owner count
@@ -797,7 +784,7 @@ EscrowFinish::doApply()
 
     // Remove escrow from ledger
     psb.erase(slep);
-    
+
     psb.apply(ctx_.rawView());
     return tesSUCCESS;
 }
@@ -875,8 +862,8 @@ EscrowCancel::doApply()
     auto const sle = ctx_.view().peek(keylet::account(account));
     auto const amount = slep->getFieldAmount(sfAmount);
     bool const srcIssuer = amount.getIssuer() == account;
-    
-   // Transfer amount back to the owner
+
+    // Transfer amount back to the owner
     if (isXRP(amount))
         (*sle)[sfBalance] = (*sle)[sfBalance] + (*slep)[sfAmount];
     else
@@ -913,7 +900,7 @@ EscrowCancel::doApply()
             }
         }
     }
-    
+
     adjustOwnerCount(ctx_.view(), sle, -1, ctx_.journal);
     ctx_.view().update(sle);
 

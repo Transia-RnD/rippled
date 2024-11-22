@@ -266,9 +266,7 @@ isFrozen(
 }
 
 bool
-noDefaultRipple(
-    ReadView const& view,
-    Issue const& issue)
+noDefaultRipple(ReadView const& view, Issue const& issue)
 {
     if (isXRP(issue))
         return false;

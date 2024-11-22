@@ -154,10 +154,7 @@ isFrozen(ReadView const& view, AccountID const& account, Asset const& asset)
 }
 
 [[nodiscard]] bool
-noDefaultRipple(
-    ReadView const& view,
-    Issue const& issue);
-
+noDefaultRipple(ReadView const& view, Issue const& issue);
 
 // Returns the amount an account can spend without going into debt.
 //

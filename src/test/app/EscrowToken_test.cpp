@@ -632,7 +632,7 @@ struct EscrowToken_test : public beast::unit_test::suite
         env.close();
         env(pay(gw, carol, USD(5000)));
         env.close();
-        
+
         env(fclear(gw, asfAllowTokenLocking));
         // issuer has not set sallow token locking
         env(escrow(alice, carol, USD(1000)),
