@@ -494,6 +494,7 @@ LedgerEntryTypesMatch::visitEntry(
             case ltORACLE:
             case ltMPTOKEN_ISSUANCE:
             case ltMPTOKEN:
+            case ltCREDENTIAL:
                 break;
             default:
                 invalidTypeAdded_ = true;
