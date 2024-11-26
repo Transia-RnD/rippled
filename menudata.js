@@ -333,6 +333,7 @@ var menudata={children:[
 {text:"b",url:"functions_rela_b.html#index_b"},
 {text:"c",url:"functions_rela_c.html#index_c"},
 {text:"d",url:"functions_rela_d.html#index_d"},
+{text:"e",url:"functions_rela_e.html#index_e"},
 {text:"h",url:"functions_rela_h.html#index_h"},
 {text:"i",url:"functions_rela_i.html#index_i"},
 {text:"l",url:"functions_rela_l.html#index_l"},

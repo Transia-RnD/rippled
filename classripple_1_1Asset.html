@@ -146,6 +146,9 @@ Friends</h2></td></tr>
 <tr class="separator:ad2854a0a246b7fd9af1f87bf714b7c1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af3231e5f841852fcf77572f11a1b66f6"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Asset.html#af3231e5f841852fcf77572f11a1b66f6">operator==</a> (<a class="el" href="namespaceripple.html#a8792cc3f99463ceba4e96dde34fe17a4">Currency</a> const &amp;lhs, <a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;rhs)</td></tr>
 <tr class="separator:af3231e5f841852fcf77572f11a1b66f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac96d39119717c85996bde5b7db0d06fc"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Asset.html#ac96d39119717c85996bde5b7db0d06fc">equalTokens</a> (<a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;lhs, <a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;rhs)</td></tr>
+<tr class="memdesc:ac96d39119717c85996bde5b7db0d06fc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if both assets refer to the same currency (regardless of issuer) or MPT issuance.  <a href="classripple_1_1Asset.html#ac96d39119717c85996bde5b7db0d06fc">More...</a><br /></td></tr>
+<tr class="separator:ac96d39119717c85996bde5b7db0d06fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
@@ -325,7 +328,7 @@ template&lt;ValidIssueType TIss&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00120">120</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00126">126</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
 
 </div>
 </div>
@@ -351,7 +354,7 @@ template&lt;ValidIssueType TIss&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00104">104</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00110">110</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
 
 </div>
 </div>
@@ -397,7 +400,7 @@ template&lt;ValidIssueType TIss&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00128">128</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00134">134</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
 
 </div>
 </div>
@@ -465,7 +468,7 @@ template&lt;ValidIssueType TIss&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00111">111</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00117">117</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
 
 </div>
 </div>
@@ -504,7 +507,7 @@ template&lt;ValidIssueType TIss&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00134">134</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00140">140</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
 
 </div>
 </div>
@@ -542,7 +545,7 @@ template&lt;ValidIssueType TIss&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00149">149</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00155">155</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
 
 </div>
 </div>
@@ -580,7 +583,48 @@ template&lt;ValidIssueType TIss&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00155">155</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00161">161</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
+
+</div>
+</div>
+<a id="ac96d39119717c85996bde5b7db0d06fc" name="ac96d39119717c85996bde5b7db0d06fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac96d39119717c85996bde5b7db0d06fc">&#9670;&#160;</a></span>equalTokens</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool equalTokens </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return true if both assets refer to the same currency (regardless of issuer) or MPT issuance. </p>
+<p >Otherwise return false. </p>
+
+<p class="definition">Definition at line <a class="el" href="Asset_8h_source.html#l00167">167</a> of file <a class="el" href="Asset_8h_source.html">Asset.h</a>.</p>
 
 </div>
 </div>

@@ -228,7 +228,8 @@ var searchData=
   ['attestationbase_225',['AttestationBase',['../structripple_1_1Attestations_1_1AttestationBase.html',1,'ripple::Attestations']]],
   ['attestationclaim_226',['AttestationClaim',['../structripple_1_1Attestations_1_1AttestationClaim.html',1,'ripple::Attestations']]],
   ['attestationcreateaccount_227',['AttestationCreateAccount',['../structripple_1_1Attestations_1_1AttestationCreateAccount.html',1,'ripple::Attestations']]],
-  ['auto_5fptr_228',['auto_ptr',['http://en.cppreference.com/w/cpp/memory/auto_ptr.html',1,'std']]],
-  ['autofill_5ft_229',['autofill_t',['../structripple_1_1test_1_1jtx_1_1autofill__t.html',1,'ripple::test::jtx']]],
-  ['autosocket_230',['AutoSocket',['../classAutoSocket.html',1,'']]]
+  ['authorizecredentials_228',['AuthorizeCredentials',['../structripple_1_1test_1_1jtx_1_1deposit_1_1AuthorizeCredentials.html',1,'ripple::test::jtx::deposit']]],
+  ['auto_5fptr_229',['auto_ptr',['http://en.cppreference.com/w/cpp/memory/auto_ptr.html',1,'std']]],
+  ['autofill_5ft_230',['autofill_t',['../structripple_1_1test_1_1jtx_1_1autofill__t.html',1,'ripple::test::jtx']]],
+  ['autosocket_231',['AutoSocket',['../classAutoSocket.html',1,'']]]
 ];

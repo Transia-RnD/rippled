@@ -78,6 +78,7 @@ $(function() {
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-static-methods">Static Public Member Functions</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="#pri-types">Private Types</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="#pri-attribs">Private Attributes</a> &#124;
@@ -177,6 +178,17 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a9f2a0df7ad0f278908643927a19592f2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classripple_1_1Number.html#a33e3d8e7a95979bd1eb22c59703c8534">rounding_mode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a9f2a0df7ad0f278908643927a19592f2">setround</a> (<a class="el" href="classripple_1_1Number.html#a33e3d8e7a95979bd1eb22c59703c8534">rounding_mode</a> mode)</td></tr>
 <tr class="separator:a9f2a0df7ad0f278908643927a19592f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a550732b6c726cffc8a742569fe76aa6e"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a550732b6c726cffc8a742569fe76aa6e">minMantissa</a> = 1'000'000'000'000'000LL</td></tr>
+<tr class="separator:a550732b6c726cffc8a742569fe76aa6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18f3cb87112cf4436f8730a4f3333550"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a18f3cb87112cf4436f8730a4f3333550">maxMantissa</a> = 9'999'999'999'999'999LL</td></tr>
+<tr class="separator:a18f3cb87112cf4436f8730a4f3333550"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72928c9b23a8c2b07024d2d3ff5eed73"><td class="memItemLeft" align="right" valign="top">static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a72928c9b23a8c2b07024d2d3ff5eed73">minExponent</a> = -32768</td></tr>
+<tr class="separator:a72928c9b23a8c2b07024d2d3ff5eed73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a388d646cceab9673a0edb81206e1e106"><td class="memItemLeft" align="right" valign="top">static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a388d646cceab9673a0edb81206e1e106">maxExponent</a> = 32768</td></tr>
+<tr class="separator:a388d646cceab9673a0edb81206e1e106"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-types" name="pri-types"></a>
 Private Types</h2></td></tr>
 <tr class="memitem:a8d2697ce4073b76f05e0480a9b454a66"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a8d2697ce4073b76f05e0480a9b454a66">rep</a> = <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a></td></tr>
@@ -200,14 +212,6 @@ Private Attributes</h2></td></tr>
 Static Private Attributes</h2></td></tr>
 <tr class="memitem:a5a2b36707b7dc7204982e873fcc50bac"><td class="memItemLeft" align="right" valign="top">static thread_local <a class="el" href="classripple_1_1Number.html#a33e3d8e7a95979bd1eb22c59703c8534">rounding_mode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a5a2b36707b7dc7204982e873fcc50bac">mode_</a> = <a class="el" href="classripple_1_1Number.html#a33e3d8e7a95979bd1eb22c59703c8534afb083653be2726415a0832efd2d66e95">Number::to_nearest</a></td></tr>
 <tr class="separator:a5a2b36707b7dc7204982e873fcc50bac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a550732b6c726cffc8a742569fe76aa6e"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a550732b6c726cffc8a742569fe76aa6e">minMantissa</a> = 1'000'000'000'000'000LL</td></tr>
-<tr class="separator:a550732b6c726cffc8a742569fe76aa6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a18f3cb87112cf4436f8730a4f3333550"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a18f3cb87112cf4436f8730a4f3333550">maxMantissa</a> = 9'999'999'999'999'999LL</td></tr>
-<tr class="separator:a18f3cb87112cf4436f8730a4f3333550"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a72928c9b23a8c2b07024d2d3ff5eed73"><td class="memItemLeft" align="right" valign="top">static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a72928c9b23a8c2b07024d2d3ff5eed73">minExponent</a> = -32768</td></tr>
-<tr class="separator:a72928c9b23a8c2b07024d2d3ff5eed73"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a388d646cceab9673a0edb81206e1e106"><td class="memItemLeft" align="right" valign="top">static constexpr int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Number.html#a388d646cceab9673a0edb81206e1e106">maxExponent</a> = 32768</td></tr>
-<tr class="separator:a388d646cceab9673a0edb81206e1e106"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="friends" name="friends"></a>
 Friends</h2></td></tr>
@@ -273,7 +277,7 @@ Friends</h2></td></tr>
 <tr><td class="fieldname"><a id="a33e3d8e7a95979bd1eb22c59703c8534ade4db21da96eedd46544ea52ce11a6f2" name="a33e3d8e7a95979bd1eb22c59703c8534ade4db21da96eedd46544ea52ce11a6f2"></a>upward&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00179">179</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00187">187</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
 
 </div>
 </div>
@@ -902,7 +906,7 @@ Friends</h2></td></tr>
 
 <p>Return the sign of the amount. </p>
 
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00149">149</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00157">157</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
 
 </div>
 </div>
@@ -1050,7 +1054,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00106">106</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00114">114</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
 
 </div>
 </div>
@@ -1088,7 +1092,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00112">112</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00120">120</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
 
 </div>
 </div>
@@ -1126,7 +1130,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00117">117</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00125">125</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
 
 </div>
 </div>
@@ -1164,7 +1168,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00155">155</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00163">163</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
 
 </div>
 </div>
@@ -1202,7 +1206,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00160">160</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00168">168</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
 
 </div>
 </div>
@@ -1240,7 +1244,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00167">167</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00175">175</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
 
 </div>
 </div>
@@ -1278,7 +1282,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00172">172</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00180">180</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
 
 </div>
 </div>
@@ -1331,6 +1335,102 @@ Friends</h2></td></tr>
 
 </div>
 </div>
+<a id="a550732b6c726cffc8a742569fe76aa6e" name="a550732b6c726cffc8a742569fe76aa6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a550732b6c726cffc8a742569fe76aa6e">&#9670;&#160;</a></span>minMantissa</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a> ripple::Number::minMantissa = 1'000'000'000'000'000LL</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00045">45</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+
+</div>
+</div>
+<a id="a18f3cb87112cf4436f8730a4f3333550" name="a18f3cb87112cf4436f8730a4f3333550"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18f3cb87112cf4436f8730a4f3333550">&#9670;&#160;</a></span>maxMantissa</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a> ripple::Number::maxMantissa = 9'999'999'999'999'999LL</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00046">46</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+
+</div>
+</div>
+<a id="a72928c9b23a8c2b07024d2d3ff5eed73" name="a72928c9b23a8c2b07024d2d3ff5eed73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72928c9b23a8c2b07024d2d3ff5eed73">&#9670;&#160;</a></span>minExponent</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr int ripple::Number::minExponent = -32768</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00049">49</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+
+</div>
+</div>
+<a id="a388d646cceab9673a0edb81206e1e106" name="a388d646cceab9673a0edb81206e1e106"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a388d646cceab9673a0edb81206e1e106">&#9670;&#160;</a></span>maxExponent</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr int ripple::Number::maxExponent = 32768</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00050">50</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
+
+</div>
+</div>
 <a id="a5a2b36707b7dc7204982e873fcc50bac" name="a5a2b36707b7dc7204982e873fcc50bac"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5a2b36707b7dc7204982e873fcc50bac">&#9670;&#160;</a></span>mode_</h2>
 
@@ -1351,103 +1451,7 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00187">187</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
-
-</div>
-</div>
-<a id="a550732b6c726cffc8a742569fe76aa6e" name="a550732b6c726cffc8a742569fe76aa6e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a550732b6c726cffc8a742569fe76aa6e">&#9670;&#160;</a></span>minMantissa</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a> ripple::Number::minMantissa = 1'000'000'000'000'000LL</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
 <p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00195">195</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
-
-</div>
-</div>
-<a id="a18f3cb87112cf4436f8730a4f3333550" name="a18f3cb87112cf4436f8730a4f3333550"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a18f3cb87112cf4436f8730a4f3333550">&#9670;&#160;</a></span>maxMantissa</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">constexpr <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::int64_t</a> ripple::Number::maxMantissa = 9'999'999'999'999'999LL</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00196">196</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
-
-</div>
-</div>
-<a id="a72928c9b23a8c2b07024d2d3ff5eed73" name="a72928c9b23a8c2b07024d2d3ff5eed73"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a72928c9b23a8c2b07024d2d3ff5eed73">&#9670;&#160;</a></span>minExponent</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">constexpr int ripple::Number::minExponent = -32768</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00199">199</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
-
-</div>
-</div>
-<a id="a388d646cceab9673a0edb81206e1e106" name="a388d646cceab9673a0edb81206e1e106"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a388d646cceab9673a0edb81206e1e106">&#9670;&#160;</a></span>maxExponent</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">constexpr int ripple::Number::maxExponent = 32768</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span><span class="mlabel">private</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="Number_8h_source.html#l00200">200</a> of file <a class="el" href="Number_8h_source.html">Number.h</a>.</p>
 
 </div>
 </div>

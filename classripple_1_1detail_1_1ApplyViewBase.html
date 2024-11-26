@@ -80,7 +80,7 @@ $(function() {
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="#pri-methods">Private Member Functions</a> &#124;
 <a href="classripple_1_1detail_1_1ApplyViewBase-members.html">List of all members</a>  </div>
-  <div class="headertitle"><div class="title">ripple::detail::ApplyViewBase Class Reference</div></div>
+  <div class="headertitle"><div class="title">ripple::detail::ApplyViewBase Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div></div>
 </div><!--header-->
 <div class="contents">
 
@@ -231,6 +231,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a81e1b7628e44e758a0359061c4b17c96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6989ce9f6240d5c600d3a4f526f89d29"><td class="memItemLeft" align="right" valign="top">virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint32_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1ReadView.html#a6989ce9f6240d5c600d3a4f526f89d29">ownerCountHook</a> (<a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;account, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint32_t</a> count) const</td></tr>
 <tr class="separator:a6989ce9f6240d5c600d3a4f526f89d29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1903bd286e89d517dcec9fcbef5e7e32"><td class="memItemLeft" align="right" valign="top">virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; sles_type::iter_base &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1ReadView.html#a1903bd286e89d517dcec9fcbef5e7e32">slesUpperBound</a> (<a class="el" href="classripple_1_1ReadView.html#a937328125a7d62270f32b4e1555c5cdd">key_type</a> const &amp;key) const =0</td></tr>
+<tr class="separator:a1903bd286e89d517dcec9fcbef5e7e32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader"></div></td></tr>
 <tr class="memitem:a2fbccbab01154b3918eba1131eb6a603"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1ApplyView.html#a2fbccbab01154b3918eba1131eb6a603">creditHook</a> (<a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;from, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;to, <a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;amount, <a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;preCreditBalance)</td></tr>
 <tr class="separator:a2fbccbab01154b3918eba1131eb6a603"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -808,7 +810,7 @@ Private Member Functions</h2></td></tr>
 </div>
 </div>
 <a id="ae5b17c3a02eff5434906311a419734fb" name="ae5b17c3a02eff5434906311a419734fb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae5b17c3a02eff5434906311a419734fb">&#9670;&#160;</a></span>slesUpperBound()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5b17c3a02eff5434906311a419734fb">&#9670;&#160;</a></span>slesUpperBound() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -826,12 +828,10 @@ Private Member Functions</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+<span class="mlabels"><span class="mlabel">override</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-
-<p>Implements <a class="el" href="classripple_1_1ReadView.html#a1903bd286e89d517dcec9fcbef5e7e32">ripple::ReadView</a>.</p>
 
 <p class="definition">Definition at line <a class="el" href="ApplyViewBase_8cpp_source.html#l00089">89</a> of file <a class="el" href="ApplyViewBase_8cpp_source.html">ApplyViewBase.cpp</a>.</p>
 
@@ -1921,6 +1921,32 @@ on this instance of the RawView.
 <p>Reimplemented in <a class="el" href="classripple_1_1PaymentSandbox.html#a0e77b6bdc540075e1c8e5a6f447c4b13">ripple::PaymentSandbox</a>.</p>
 
 <p class="definition">Definition at line <a class="el" href="ReadView_8h_source.html#l00196">196</a> of file <a class="el" href="ReadView_8h_source.html">ReadView.h</a>.</p>
+
+</div>
+</div>
+<a id="a1903bd286e89d517dcec9fcbef5e7e32" name="a1903bd286e89d517dcec9fcbef5e7e32"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1903bd286e89d517dcec9fcbef5e7e32">&#9670;&#160;</a></span>slesUpperBound() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; sles_type::iter_base &gt; ripple::ReadView::slesUpperBound </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1ReadView.html#a937328125a7d62270f32b4e1555c5cdd">key_type</a> const &amp;&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>

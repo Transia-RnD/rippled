@@ -91,6 +91,8 @@ Namespaces</h2></td></tr>
 <tr class="memitem:namespaceripple_1_1test_1_1jtx_1_1check"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple_1_1test_1_1jtx_1_1check.html">check</a></td></tr>
 <tr class="memdesc:namespaceripple_1_1test_1_1jtx_1_1check"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check operations. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:namespaceripple_1_1test_1_1jtx_1_1credentials"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple_1_1test_1_1jtx_1_1credentials.html">credentials</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:namespaceripple_1_1test_1_1jtx_1_1deposit"><td class="memItemLeft" align="right" valign="top">namespace &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple_1_1test_1_1jtx_1_1deposit.html">deposit</a></td></tr>
 <tr class="memdesc:namespaceripple_1_1test_1_1jtx_1_1deposit"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deposit preauthorize operations. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -470,6 +472,8 @@ Functions</h2></td></tr>
 <tr class="separator:a64156c78e17d95b40ecd47efbd86975e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0b328f21999f21f9d777cfc4c7b1c2ba"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple_1_1test_1_1jtx.html#a0b328f21999f21f9d777cfc4c7b1c2ba">checkArraySize</a> (<a class="el" href="classJson_1_1Value.html">Json::Value</a> const &amp;val, unsigned int size)</td></tr>
 <tr class="separator:a0b328f21999f21f9d777cfc4c7b1c2ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12abe185058a3db015909ed92c421097"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint32_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple_1_1test_1_1jtx.html#a12abe185058a3db015909ed92c421097">ownerCount</a> (<a class="el" href="classripple_1_1test_1_1jtx_1_1Env.html">Env</a> const &amp;env, <a class="el" href="classripple_1_1test_1_1jtx_1_1Account.html">Account</a> const &amp;account)</td></tr>
+<tr class="separator:a12abe185058a3db015909ed92c421097"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d91c3669656921e948e4456267776e8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple_1_1test_1_1jtx.html#a6d91c3669656921e948e4456267776e8">stpath_append_one</a> (<a class="el" href="classripple_1_1STPath.html">STPath</a> &amp;st, <a class="el" href="classripple_1_1test_1_1jtx_1_1Account.html">Account</a> const &amp;account)</td></tr>
 <tr class="separator:a6d91c3669656921e948e4456267776e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5b69fb55294abb20b63d9347b24198b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple_1_1test_1_1jtx.html#aa5b69fb55294abb20b63d9347b24198b">stpath_append_one</a> (<a class="el" href="classripple_1_1STPath.html">STPath</a> &amp;st, <a class="el" href="classripple_1_1STPathElement.html">STPathElement</a> const &amp;pe)</td></tr>
@@ -2448,6 +2452,36 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
+<a id="a12abe185058a3db015909ed92c421097" name="a12abe185058a3db015909ed92c421097"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12abe185058a3db015909ed92c421097">&#9670;&#160;</a></span>ownerCount()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint32_t</a> ripple::test::jtx::ownerCount </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1test_1_1jtx_1_1Env.html">Env</a> const &amp;&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classripple_1_1test_1_1jtx_1_1Account.html">Account</a> const &amp;&#160;</td>
+          <td class="paramname"><em>account</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00054">54</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+
+</div>
+</div>
 <a id="a6d91c3669656921e948e4456267776e8" name="a6d91c3669656921e948e4456267776e8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6d91c3669656921e948e4456267776e8">&#9670;&#160;</a></span>stpath_append_one() <span class="overload">[1/3]</span></h2>
 
@@ -2474,7 +2508,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00056">56</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00065">65</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2504,7 +2538,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00062">62</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00071">71</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2534,7 +2568,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00068">68</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00077">77</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2554,7 +2588,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00075">75</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00084">84</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2584,7 +2618,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00087">87</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00096">96</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2614,7 +2648,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00093">93</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00102">102</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2656,7 +2690,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00100">100</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00109">109</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2692,7 +2726,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00134">134</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00143">143</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2734,7 +2768,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00140">140</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00149">149</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2764,7 +2798,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00168">168</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00177">177</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2806,7 +2840,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00177">177</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00186">186</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2836,7 +2870,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00193">193</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00202">202</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2872,7 +2906,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00200">200</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00209">209</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2908,7 +2942,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00212">212</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00221">221</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2944,7 +2978,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00224">224</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00233">233</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -2980,7 +3014,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00236">236</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00245">245</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -3040,7 +3074,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00250">250</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00259">259</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -3082,7 +3116,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00275">275</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00284">284</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -3136,7 +3170,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00293">293</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00302">302</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -3172,7 +3206,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00318">318</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00327">327</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -3202,7 +3236,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00328">328</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00337">337</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -3232,7 +3266,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00337">337</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00346">346</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -3280,7 +3314,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00347">347</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00356">356</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -3300,7 +3334,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00368">368</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00377">377</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -3330,7 +3364,7 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00376">376</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8cpp_source.html#l00385">385</a> of file <a class="el" href="TestHelpers_8cpp_source.html">TestHelpers.cpp</a>.</p>
 
 </div>
 </div>
@@ -4489,7 +4523,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00106">106</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00110">110</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -4527,7 +4561,7 @@ template&lt;class T , class... Args&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00116">116</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00120">120</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -4565,7 +4599,7 @@ template&lt;class... Args&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00125">125</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00129">129</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -4587,7 +4621,7 @@ template&lt;class... Args&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00141">141</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00145">145</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -4619,7 +4653,7 @@ template&lt;class... Args&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00150">150</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00154">154</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -4663,7 +4697,7 @@ template&lt;typename... Amts&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00182">182</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00186">186</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -4699,7 +4733,7 @@ template&lt;typename... Amts&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00228">228</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00232">232</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -4735,7 +4769,7 @@ template&lt;typename... Amts&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00237">237</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00241">241</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -4771,7 +4805,7 @@ template&lt;typename... Amts&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00246">246</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00250">250</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -4831,7 +4865,7 @@ template&lt;typename... Amts&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00356">356</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00360">360</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -4867,7 +4901,7 @@ template&lt;typename... Amts&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00392">392</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00396">396</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -5119,7 +5153,7 @@ template&lt;typename... Amts&gt; </div>
 <div class="line">     0x27, 0xAE, 0x41, 0xE4, 0x64, 0x9B, 0x93, 0x4C, 0xA4, 0x95,</div>
 <div class="line">     0x99, 0x1B, 0x78, 0x52, 0xB8, 0x55, 0x81, 0x01, 0x00}}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00251">251</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00255">255</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
@@ -5135,7 +5169,7 @@ template&lt;typename... Amts&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00258">258</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="TestHelpers_8h_source.html#l00262">262</a> of file <a class="el" href="TestHelpers_8h_source.html">TestHelpers.h</a>.</p>
 
 </div>
 </div>
