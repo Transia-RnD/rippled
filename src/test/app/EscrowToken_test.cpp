@@ -1654,6 +1654,13 @@ struct EscrowToken_test : public beast::unit_test::suite
                     std::find(aod.begin(), aod.end(), aa) != aod.end());
             }
 
+            {
+                ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
+                BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 4);
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), aa) != iod.end());
+            }
+
             env(escrow(bob, bob, USD(1000)),
                 finish_time(env.now() + 1s),
                 cancel_time(env.now() + 2s));
@@ -1669,6 +1676,13 @@ struct EscrowToken_test : public beast::unit_test::suite
                 BEAST_EXPECT(std::distance(bod.begin(), bod.end()) == 2);
                 BEAST_EXPECT(
                     std::find(bod.begin(), bod.end(), bb) != bod.end());
+            }
+
+            {
+                ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
+                BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 5);
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), bb) != iod.end());
             }
 
             env.close(5s);
@@ -1688,6 +1702,11 @@ struct EscrowToken_test : public beast::unit_test::suite
                 BEAST_EXPECT(std::distance(bod.begin(), bod.end()) == 2);
                 BEAST_EXPECT(
                     std::find(bod.begin(), bod.end(), bb) != bod.end());
+
+                ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
+                BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 4);
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), bb) != iod.end());
             }
 
             env.close(5s);
@@ -1702,6 +1721,11 @@ struct EscrowToken_test : public beast::unit_test::suite
                 BEAST_EXPECT(std::distance(bod.begin(), bod.end()) == 1);
                 BEAST_EXPECT(
                     std::find(bod.begin(), bod.end(), bb) == bod.end());
+                
+                ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
+                BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 3);
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), bb) == iod.end());
             }
         }
         {
@@ -1756,6 +1780,13 @@ struct EscrowToken_test : public beast::unit_test::suite
                 BEAST_EXPECT(std::distance(cod.begin(), cod.end()) == 2);
                 BEAST_EXPECT(
                     std::find(cod.begin(), cod.end(), bc) != cod.end());
+
+                ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
+                BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 5);
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), ab) != iod.end());
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), bc) != iod.end());
             }
 
             env.close(5s);
@@ -1778,6 +1809,13 @@ struct EscrowToken_test : public beast::unit_test::suite
 
                 ripple::Dir cod(*env.current(), keylet::ownerDir(carol.id()));
                 BEAST_EXPECT(std::distance(cod.begin(), cod.end()) == 2);
+
+                ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
+                BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 4);
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), ab) == iod.end());
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), bc) != iod.end());
             }
 
             env.close(5s);
@@ -1800,6 +1838,112 @@ struct EscrowToken_test : public beast::unit_test::suite
 
                 ripple::Dir cod(*env.current(), keylet::ownerDir(carol.id()));
                 BEAST_EXPECT(std::distance(cod.begin(), cod.end()) == 1);
+
+                ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
+                BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 3);
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), ab) == iod.end());
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), bc) == iod.end());
+            }
+        }
+
+        {
+            testcase("Token Metadata to issuer");
+
+            Env env{*this, features};
+            env.fund(XRP(5000), alice, carol, gw);
+            env(fset(gw, asfAllowTokenLocking));
+            env.close();
+            env.trust(USD(10000), alice, carol);
+            env.close();
+            env(pay(gw, alice, USD(5000)));
+            env(pay(gw, carol, USD(5000)));
+            env.close();
+            auto const aseq = env.seq(alice);
+            auto const gseq = env.seq(gw);
+
+            env(escrow(alice, gw, USD(1000)), finish_time(env.now() + 1s));
+            
+            BEAST_EXPECT(
+                (*env.meta())[sfTransactionResult] ==
+                static_cast<std::uint8_t>(tesSUCCESS));
+            env.close(5s);
+            env(escrow(gw, carol, USD(1000)),
+                finish_time(env.now() + 1s),
+                cancel_time(env.now() + 2s));
+            BEAST_EXPECT(
+                (*env.meta())[sfTransactionResult] ==
+                static_cast<std::uint8_t>(tesSUCCESS));
+            env.close(5s);
+
+            auto const ag = env.le(keylet::escrow(alice.id(), aseq));
+            BEAST_EXPECT(ag);
+
+            auto const gc = env.le(keylet::escrow(gw.id(), gseq));
+            BEAST_EXPECT(gc);
+
+            {
+                ripple::Dir aod(*env.current(), keylet::ownerDir(alice.id()));
+                BEAST_EXPECT(std::distance(aod.begin(), aod.end()) == 2);
+                BEAST_EXPECT(
+                    std::find(aod.begin(), aod.end(), ag) != aod.end());
+
+                ripple::Dir cod(*env.current(), keylet::ownerDir(carol.id()));
+                BEAST_EXPECT(std::distance(cod.begin(), cod.end()) == 2);
+                BEAST_EXPECT(
+                    std::find(cod.begin(), cod.end(), gc) != cod.end());
+
+                ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
+                BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 4);
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), ag) != iod.end());
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), gc) != iod.end());
+            }
+
+            env.close(5s);
+            env(finish(alice, alice, aseq));
+            {
+                BEAST_EXPECT(!env.le(keylet::escrow(alice.id(), aseq)));
+                BEAST_EXPECT(env.le(keylet::escrow(gw.id(), gseq)));
+
+                ripple::Dir aod(*env.current(), keylet::ownerDir(alice.id()));
+                BEAST_EXPECT(std::distance(aod.begin(), aod.end()) == 1);
+                BEAST_EXPECT(
+                    std::find(aod.begin(), aod.end(), ag) == aod.end());
+
+                ripple::Dir cod(*env.current(), keylet::ownerDir(carol.id()));
+                BEAST_EXPECT(std::distance(cod.begin(), cod.end()) == 2);
+
+                ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
+                BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 3);
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), ag) == iod.end());
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), gc) != iod.end());
+            }
+
+            env.close(5s);
+            env(cancel(gw, gw, gseq));
+            {
+                BEAST_EXPECT(!env.le(keylet::escrow(alice.id(), aseq)));
+                BEAST_EXPECT(!env.le(keylet::escrow(gw.id(), gseq)));
+
+                ripple::Dir aod(*env.current(), keylet::ownerDir(alice.id()));
+                BEAST_EXPECT(std::distance(aod.begin(), aod.end()) == 1);
+                BEAST_EXPECT(
+                    std::find(aod.begin(), aod.end(), ag) == aod.end());
+
+                ripple::Dir cod(*env.current(), keylet::ownerDir(carol.id()));
+                BEAST_EXPECT(std::distance(cod.begin(), cod.end()) == 1);
+
+                ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
+                BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 2);
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), ag) == iod.end());
+                BEAST_EXPECT(
+                    std::find(iod.begin(), iod.end(), gc) == iod.end());
             }
         }
     }
@@ -2602,19 +2746,7 @@ struct EscrowToken_test : public beast::unit_test::suite
             env(fset(gw, asfGlobalFreeze));
             env.close();
 
-            // bob finish escrow fails - frozen trustline
-            env(finish(bob, alice, seq1),
-                condition(cb1),
-                fulfillment(fb1),
-                fee(1500),
-                ter(tecFROZEN));
-            env.close();
-
-            // clear global freeze
-            env(fclear(gw, asfGlobalFreeze));
-            env.close();
-
-            // bob finish escrow success
+            // bob finish escrow success regardless of frozen assets
             env(finish(bob, alice, seq1),
                 condition(cb1),
                 fulfillment(fb1),
@@ -2667,19 +2799,7 @@ struct EscrowToken_test : public beast::unit_test::suite
             env(trust(gw, USD(10000), bob, tfSetFreeze));
             env.close();
 
-            // bob finish escrow fails - frozen trustline
-            env(finish(bob, alice, seq1),
-                condition(cb1),
-                fulfillment(fb1),
-                fee(1500),
-                ter(tecFROZEN));
-            env.close();
-
-            // clear freeze on bob trustline
-            env(trust(gw, USD(10000), bob, tfClearFreeze));
-            env.close();
-
-            // bob finish escrow success
+            // bob finish escrow success regardless of frozen assets
             env(finish(bob, alice, seq1),
                 condition(cb1),
                 fulfillment(fb1),
@@ -2752,57 +2872,58 @@ struct EscrowToken_test : public beast::unit_test::suite
         }
     }
 
-    // void
-    // testTokenPrecisionLoss(FeatureBitset features)
-    // {
-    //     testcase("Token Precision Loss");
-    //     using namespace test::jtx;
-    //     using namespace std::literals;
+    void
+    testTokenPrecisionLoss(FeatureBitset features)
+    {
+        testcase("Token Precision Loss");
+        using namespace test::jtx;
+        using namespace std::literals;
 
-    //     auto const alice = Account("alice");
-    //     auto const bob = Account("bob");
-    //     auto const gw = Account{"gateway"};
-    //     auto const USD = gw["USD"];
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+        auto const gw = Account{"gateway"};
+        auto const USD = gw["USD"];
 
-    //     // test min create precision loss
-    //     {
-    //         Env env(*this, features);
-    //         env.fund(XRP(10000), alice, bob, gw);
-    //         env.close();
-    //         env.trust(USD(100000000000000000), alice);
-    //         env.trust(USD(100000000000000000), bob);
-    //         env.close();
-    //         env(pay(gw, alice, USD(10000000000000000)));
-    //         env(pay(gw, bob, USD(1)));
-    //         env.close();
+        // test min create precision loss
+        {
+            Env env(*this, features);
+            env.fund(XRP(10000), alice, bob, gw);
+            env(fset(gw, asfAllowTokenLocking));
+            env.close();
+            env.trust(USD(100000000000000000), alice);
+            env.trust(USD(100000000000000000), bob);
+            env.close();
+            env(pay(gw, alice, USD(10000000000000000)));
+            env(pay(gw, bob, USD(1)));
+            env.close();
 
-    //         // alice cannot create escrow for 1/10 iou - precision loss
-    //         env(escrow(alice, bob, USD(1)),
-    //             condition(cb1),
-    //             finish_time(env.now() + 1s),
-    //             fee(1500),
-    //             ter(tecPRECISION_LOSS));
-    //         env.close();
+            // alice cannot create escrow for 1/10 iou - precision loss
+            env(escrow(alice, bob, USD(1)),
+                condition(cb1),
+                finish_time(env.now() + 1s),
+                fee(1500),
+                ter(tecPRECISION_LOSS));
+            env.close();
 
-    //         auto const seq1 = env.seq(alice);
-    //         // alice can create escrow for 1000 iou
-    //         env(escrow(alice, bob, USD(1000)),
-    //             condition(cb1),
-    //             finish_time(env.now() + 1s),
-    //             fee(1500));
-    //         env.close();
+            auto const seq1 = env.seq(alice);
+            // alice can create escrow for 1000 iou
+            env(escrow(alice, bob, USD(1000)),
+                condition(cb1),
+                finish_time(env.now() + 1s),
+                fee(1500));
+            env.close();
 
-    //         // bob finish escrow success
-    //         env(finish(bob, alice, seq1),
-    //             condition(cb1),
-    //             fulfillment(fb1),
-    //             fee(1500));
-    //         env.close();
-    //     }
-    // }
+            // bob finish escrow success
+            env(finish(bob, alice, seq1),
+                condition(cb1),
+                fulfillment(fb1),
+                fee(1500));
+            env.close();
+        }
+    }
 
     void
-    testTokenWithFeats(FeatureBitset features)
+    testWithFeats(FeatureBitset features)
     {
         testTokenEnablement(features);
         testTokenTiming(features);
@@ -2821,11 +2942,7 @@ struct EscrowToken_test : public beast::unit_test::suite
         testTokenTLRequireAuth(features);
         testTokenTLFreeze(features);
         testTokenTLINSF(features);
-        // testTokenPrecisionLoss(features);
-        // testDeleteIssuer(features);
-
-        // test deleting an issuer when they have locked escrow
-        // TODO: Validate Metadata for IssuerNode
+        testTokenPrecisionLoss(features);
     }
 
 public:
@@ -2834,9 +2951,8 @@ public:
     {
         using namespace test::jtx;
         FeatureBitset const all{supported_amendments()};
-        // testWithFeats(all - featureTokenEscrow);
-        // testWithFeats(all);
-        testTokenWithFeats(all);
+        testWithFeats(all - featureTokenEscrow);
+        testWithFeats(all);
     }
 };
 

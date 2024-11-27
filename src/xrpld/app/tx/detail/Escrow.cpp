@@ -329,7 +329,9 @@ EscrowCreate::doApply()
             if (spendableAmount < amount)
                 return tecINSUFFICIENT_FUNDS;
 
-            // TODO: isAddable (Precision Loss)
+            // check if there is significant precision loss
+            if (!isAddable(spendableAmount, amount))
+                return tecPRECISION_LOSS;
         }
     }
 
@@ -517,33 +519,6 @@ EscrowFinish::calculateBaseFee(ReadView const& view, STTx const& tx)
 TER
 EscrowFinish::preclaim(PreclaimContext const& ctx)
 {
-    auto const slep =
-        ctx.view.read(keylet::escrow(ctx.tx[sfOwner], ctx.tx[sfOfferSequence]));
-    if (!slep)
-        return tecNO_TARGET;
-
-    AccountID const dest = (*slep)[sfDestination];
-    auto const amount = slep->getFieldAmount(sfAmount);
-    if (!isXRP(amount))
-    {
-        if (!ctx.view.rules().enabled(featureTokenEscrow))
-            return temDISABLED;
-
-        AccountID issuer = amount.getIssuer();
-        if (isFrozen(ctx.view, dest, amount.issue()))
-        {
-            JLOG(ctx.j.debug()) << "EscrowCreate: involves frozen asset.";
-            return tecFROZEN;
-        }
-        // Check if the issuer has disallowed incoming escrows
-        auto const slei = ctx.view.read(keylet::account(issuer));
-        if (!slei)
-            return tecNO_ISSUER;
-
-        auto const flags = slei->getFlags();
-        if (!(flags & lsfAllowTokenLocking))
-            return tecNO_PERMISSION;
-    }
     if (!ctx.view.rules().enabled(featureCredentials))
         return Transactor::preclaim(ctx);
 
