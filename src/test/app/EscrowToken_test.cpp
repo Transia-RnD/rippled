@@ -1721,7 +1721,7 @@ struct EscrowToken_test : public beast::unit_test::suite
                 BEAST_EXPECT(std::distance(bod.begin(), bod.end()) == 1);
                 BEAST_EXPECT(
                     std::find(bod.begin(), bod.end(), bb) == bod.end());
-                
+
                 ripple::Dir iod(*env.current(), keylet::ownerDir(gw.id()));
                 BEAST_EXPECT(std::distance(iod.begin(), iod.end()) == 3);
                 BEAST_EXPECT(
@@ -1864,7 +1864,7 @@ struct EscrowToken_test : public beast::unit_test::suite
             auto const gseq = env.seq(gw);
 
             env(escrow(alice, gw, USD(1000)), finish_time(env.now() + 1s));
-            
+
             BEAST_EXPECT(
                 (*env.meta())[sfTransactionResult] ==
                 static_cast<std::uint8_t>(tesSUCCESS));
