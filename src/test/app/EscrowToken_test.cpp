@@ -237,44 +237,58 @@ struct EscrowToken_test : public beast::unit_test::suite
         using namespace jtx;
         using namespace std::chrono;
 
-        Env env{*this, features};
-        auto const alice = Account("alice");
-        auto const bob = Account("bob");
-        auto const gw = Account{"gateway"};
-        auto const USD = gw["USD"];
-        env.fund(XRP(5000), alice, bob, gw);
-        env(fset(gw, asfAllowTokenLocking));
-        env.close();
-        env.trust(USD(10000), alice, bob);
-        env.close();
-        env(pay(gw, alice, USD(5000)));
-        env(pay(gw, bob, USD(5000)));
-        env.close();
+        for (bool const withTokenEscrow : {false, true})
+        {
+            auto const amend =
+                withTokenEscrow ? features : features - featureTokenEscrow;
+            Env env{*this, amend};
+            auto const alice = Account("alice");
+            auto const bob = Account("bob");
+            auto const gw = Account{"gateway"};
+            auto const USD = gw["USD"];
+            env.fund(XRP(5000), alice, bob, gw);
+            env(fset(gw, asfAllowTokenLocking));
+            env.close();
+            env.trust(USD(10000), alice, bob);
+            env.close();
+            env(pay(gw, alice, USD(5000)));
+            env(pay(gw, bob, USD(5000)));
+            env.close();
 
-        env(escrow(alice, bob, USD(1000)), finish_time(env.now() + 1s));
-        env.close();
+            auto const createResult =
+                withTokenEscrow ? ter(tesSUCCESS) : ter(temDISABLED);
+            auto const finishResult =
+                withTokenEscrow ? ter(tesSUCCESS) : ter(tecNO_TARGET);
+            env(escrow(alice, bob, USD(1000)),
+                finish_time(env.now() + 1s),
+                createResult);
+            env.close();
 
-        auto const seq1 = env.seq(alice);
+            auto const seq1 = env.seq(alice);
 
-        env(escrow(alice, bob, USD(1000)),
-            condition(cb1),
-            finish_time(env.now() + 1s),
-            fee(1500));
-        env.close();
-        env(finish(bob, alice, seq1),
-            condition(cb1),
-            fulfillment(fb1),
-            fee(1500));
+            env(escrow(alice, bob, USD(1000)),
+                condition(cb1),
+                finish_time(env.now() + 1s),
+                fee(1500),
+                createResult);
+            env.close();
+            env(finish(bob, alice, seq1),
+                condition(cb1),
+                fulfillment(fb1),
+                fee(1500),
+                finishResult);
 
-        auto const seq2 = env.seq(alice);
+            auto const seq2 = env.seq(alice);
 
-        env(escrow(alice, bob, USD(1000)),
-            condition(cb2),
-            finish_time(env.now() + 1s),
-            cancel_time(env.now() + 2s),
-            fee(1500));
-        env.close();
-        env(cancel(bob, alice, seq2), fee(1500));
+            env(escrow(alice, bob, USD(1000)),
+                condition(cb2),
+                finish_time(env.now() + 1s),
+                cancel_time(env.now() + 2s),
+                fee(1500),
+                createResult);
+            env.close();
+            env(cancel(bob, alice, seq2), fee(1500), finishResult);
+        }
     }
 
     void
@@ -2951,7 +2965,6 @@ public:
     {
         using namespace test::jtx;
         FeatureBitset const all{supported_amendments()};
-        testWithFeats(all - featureTokenEscrow);
         testWithFeats(all);
     }
 };
