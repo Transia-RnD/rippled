@@ -404,9 +404,9 @@ public:
                 return jv;
             };
 
-        bool const withFeatureTokenEscrow =
+        bool const withTokenEscrow =
             env.current()->rules().enabled(featureTokenEscrow);
-        if (withFeatureTokenEscrow)
+        if (withTokenEscrow)
         {
             Account const carol("carol");
             auto const USD = gw["USD"];
