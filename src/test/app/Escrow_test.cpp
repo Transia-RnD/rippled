@@ -1686,7 +1686,6 @@ public:
         testWithFeats(all);
         testWithFeats(all - featureTokenEscrow);
     }
-
 };
 
 BEAST_DEFINE_TESTSUITE(Escrow, app, ripple);
