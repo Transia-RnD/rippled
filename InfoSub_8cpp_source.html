@@ -223,11 +223,12 @@ $(function() {
 <div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span><span class="keywordtype">unsigned</span> <span class="keywordtype">int</span></div>
 <div class="line"><a id="l00146" name="l00146"></a><span class="lineno"><a class="line" href="classripple_1_1InfoSub.html#a43d7579c2e91e51f415018ac2f8471dd">  146</a></span><a class="code hl_function" href="classripple_1_1InfoSub.html#a43d7579c2e91e51f415018ac2f8471dd">InfoSub::getApiVersion</a>() const noexcept</div>
 <div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>{</div>
-<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>    assert(<a class="code hl_variable" href="classripple_1_1InfoSub.html#adca30d674df51e2e48e8dcced4b50645">apiVersion_</a> &gt; 0);</div>
-<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="classripple_1_1InfoSub.html#adca30d674df51e2e48e8dcced4b50645">apiVersion_</a>;</div>
-<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>}</div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span> </div>
-<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>}  <span class="comment">// namespace ripple</span></div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>    XRPL_ASSERT(</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span>        <a class="code hl_variable" href="classripple_1_1InfoSub.html#adca30d674df51e2e48e8dcced4b50645">apiVersion_</a> &gt; 0, <span class="stringliteral">&quot;ripple::InfoSub::getApiVersion : valid API version&quot;</span>);</div>
+<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span>    <span class="keywordflow">return</span> <a class="code hl_variable" href="classripple_1_1InfoSub.html#adca30d674df51e2e48e8dcced4b50645">apiVersion_</a>;</div>
+<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span>}</div>
+<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span> </div>
+<div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>}  <span class="comment">// namespace ripple</span></div>
 <div class="ttc" id="aatomic_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/atomic.html">atomic</a></div></div>
 <div class="ttc" id="aclassripple_1_1InfoSub_1_1Source_html"><div class="ttname"><a href="classripple_1_1InfoSub_1_1Source.html">ripple::InfoSub::Source</a></div><div class="ttdoc">Abstracts the source of subscription data.</div><div class="ttdef"><b>Definition:</b> <a href="InfoSub_8h_source.html#l00067">InfoSub.h:68</a></div></div>
 <div class="ttc" id="aclassripple_1_1InfoSub_1_1Source_html_a4c85f9771aa4d756cfcf488c8a45e5e3"><div class="ttname"><a href="classripple_1_1InfoSub_1_1Source.html#a4c85f9771aa4d756cfcf488c8a45e5e3">ripple::InfoSub::Source::unsubValidations</a></div><div class="ttdeci">virtual bool unsubValidations(std::uint64_t uListener)=0</div></div>

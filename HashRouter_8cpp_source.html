@@ -179,7 +179,7 @@ $(function() {
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span><span class="keywordtype">bool</span></div>
 <div class="line"><a id="l00102" name="l00102"></a><span class="lineno"><a class="line" href="classripple_1_1HashRouter.html#ac43309b8c10713823bdc233f39931472">  102</a></span><a class="code hl_function" href="classripple_1_1HashRouter.html#ac43309b8c10713823bdc233f39931472">HashRouter::setFlags</a>(<a class="code hl_class" href="classripple_1_1base__uint.html">uint256</a> <span class="keyword">const</span>&amp; key, <span class="keywordtype">int</span> flags)</div>
 <div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>{</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    assert(flags != 0);</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    XRPL_ASSERT(flags, <span class="stringliteral">&quot;ripple::HashRouter::setFlags : valid input&quot;</span>);</div>
 <div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
 <div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/thread/lock_guard.html">std::lock_guard</a> lock(<a class="code hl_variable" href="classripple_1_1HashRouter.html#a311812f9ac5539ce4d2f500283d67c96">mutex_</a>);</div>
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span> </div>

@@ -101,7 +101,7 @@ $(function() {
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;xrpld/app/misc/detail/Work.h&gt;</span></div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &lt;xrpl/basics/ByteUtilities.h&gt;</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &lt;xrpl/basics/FileUtilities.h&gt;</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cassert.html">cassert</a>&gt;</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &lt;xrpl/beast/utility/instrumentation.h&gt;</span></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cerrno.html">cerrno</a>&gt;</span></div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceripple.html">ripple</a> {</div>
@@ -166,7 +166,7 @@ $(function() {
 <div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    <a class="code hl_typedef" href="classripple_1_1detail_1_1WorkFile.html#a2ee018c71a7a41a620050f14cd6033b1">error_code</a> ec;</div>
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="keyword">auto</span> <span class="keyword">const</span> fileContents = <a class="code hl_function" href="namespaceripple.html#abee5b68c53e8284c704e2ea8986cc922">getFileContents</a>(ec, <a class="code hl_variable" href="classripple_1_1detail_1_1WorkFile.html#ab9fa1865291c51510c6db947818fffe9">path_</a>, <a class="code hl_function" href="namespaceripple.html#a13d7c6c34d30731bbc221f629e03f8db">megabytes</a>(1));</div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    assert(<a class="code hl_variable" href="classripple_1_1detail_1_1WorkFile.html#a408980864c84e4565788f90928f6e038">cb_</a>);</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    XRPL_ASSERT(<a class="code hl_variable" href="classripple_1_1detail_1_1WorkFile.html#a408980864c84e4565788f90928f6e038">cb_</a>, <span class="stringliteral">&quot;ripple::detail::WorkFile::run : callback is set&quot;</span>);</div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <a class="code hl_variable" href="classripple_1_1detail_1_1WorkFile.html#a408980864c84e4565788f90928f6e038">cb_</a>(ec, fileContents);</div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <a class="code hl_variable" href="classripple_1_1detail_1_1WorkFile.html#a408980864c84e4565788f90928f6e038">cb_</a> = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>}</div>
@@ -184,7 +184,6 @@ $(function() {
 <div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
 <div class="ttc" id="abind_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/functional/bind.html">std::bind</a></div><div class="ttdeci">T bind(T... args)</div></div>
-<div class="ttc" id="acassert_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cassert.html">cassert</a></div></div>
 <div class="ttc" id="acerrno_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cerrno.html">cerrno</a></div></div>
 <div class="ttc" id="aclassripple_1_1detail_1_1WorkFile_html"><div class="ttname"><a href="classripple_1_1detail_1_1WorkFile.html">ripple::detail::WorkFile</a></div><div class="ttdef"><b>Definition:</b> <a href="WorkFile_8h_source.html#l00034">WorkFile.h:35</a></div></div>
 <div class="ttc" id="aclassripple_1_1detail_1_1WorkFile_html_a0c2dd65db01efa8c3aff849f0211d61d"><div class="ttname"><a href="classripple_1_1detail_1_1WorkFile.html#a0c2dd65db01efa8c3aff849f0211d61d">ripple::detail::WorkFile::ios_</a></div><div class="ttdeci">boost::asio::io_service &amp; ios_</div><div class="ttdef"><b>Definition:</b> <a href="WorkFile_8h_source.html#l00061">WorkFile.h:61</a></div></div>

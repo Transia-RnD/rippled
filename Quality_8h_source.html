@@ -98,10 +98,10 @@ $(function() {
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#ifndef RIPPLE_PROTOCOL_QUALITY_H_INCLUDED</span></div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#define RIPPLE_PROTOCOL_QUALITY_H_INCLUDED</span></div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;xrpl/basics/IOUAmount.h&gt;</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &lt;xrpl/basics/XRPAmount.h&gt;</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &lt;xrpl/protocol/AmountConversions.h&gt;</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &lt;xrpl/protocol/STAmount.h&gt;</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;xrpl/protocol/AmountConversions.h&gt;</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &lt;xrpl/protocol/IOUAmount.h&gt;</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &lt;xrpl/protocol/STAmount.h&gt;</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &lt;xrpl/protocol/XRPAmount.h&gt;</span></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a>&gt;</span></div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstdint.html">cstdint</a>&gt;</span></div>
@@ -333,138 +333,140 @@ $(function() {
 <div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>    <span class="keyword">friend</span> <span class="keywordtype">double</span></div>
 <div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>    relativeDistance(Quality <span class="keyword">const</span>&amp; q1, Quality <span class="keyword">const</span>&amp; q2)</div>
 <div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>    {</div>
-<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>        assert(q1.m_value &gt; 0 &amp;&amp; q2.m_value &gt; 0);</div>
-<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span> </div>
-<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>        <span class="keywordflow">if</span> (q1.m_value == q2.m_value)  <span class="comment">// make expected common case fast</span></div>
-<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>            <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span> </div>
-<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>        <span class="keyword">auto</span> <span class="keyword">const</span> [minV, maxV] = <a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/algorithm/minmax.html">std::minmax</a>(q1.m_value, q2.m_value);</div>
+<div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>        XRPL_ASSERT(</div>
+<div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>            q1.m_value &gt; 0 &amp;&amp; q2.m_value &gt; 0,</div>
+<div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>            <span class="stringliteral">&quot;ripple::Quality::relativeDistance : minimum inputs&quot;</span>);</div>
+<div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span> </div>
+<div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>        <span class="keywordflow">if</span> (q1.m_value == q2.m_value)  <span class="comment">// make expected common case fast</span></div>
+<div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>            <span class="keywordflow">return</span> 0;</div>
 <div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span> </div>
-<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>        <span class="keyword">auto</span> mantissa = [](<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> <a class="code hl_function" href="namespaceripple_1_1test_1_1jtx.html#a8e8d814b8820ce0b6979abde0d6a2618">rate</a>) {</div>
-<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>            <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceripple_1_1test_1_1jtx.html#a8e8d814b8820ce0b6979abde0d6a2618">rate</a> &amp; ~(255ull &lt;&lt; (64 - 8));</div>
-<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>        };</div>
-<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>        <span class="keyword">auto</span> exponent = [](<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> <a class="code hl_function" href="namespaceripple_1_1test_1_1jtx.html#a8e8d814b8820ce0b6979abde0d6a2618">rate</a>) {</div>
-<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>            <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(<a class="code hl_function" href="namespaceripple_1_1test_1_1jtx.html#a8e8d814b8820ce0b6979abde0d6a2618">rate</a> &gt;&gt; (64 - 8)) - 100;</div>
-<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>        };</div>
-<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span> </div>
-<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>        <span class="keyword">auto</span> <span class="keyword">const</span> minVMantissa = mantissa(minV);</div>
-<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span>        <span class="keyword">auto</span> <span class="keyword">const</span> maxVMantissa = mantissa(maxV);</div>
-<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>        <span class="keyword">auto</span> <span class="keyword">const</span> expDiff = exponent(maxV) - exponent(minV);</div>
-<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span> </div>
-<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>        <span class="keywordtype">double</span> <span class="keyword">const</span> minVD = <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span><span class="keyword">&gt;</span>(minVMantissa);</div>
-<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span>        <span class="keywordtype">double</span> <span class="keyword">const</span> maxVD = expDiff ? maxVMantissa * <a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/numeric/math/pow.html">pow</a>(10, expDiff)</div>
-<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>                                     : static_cast&lt;double&gt;(maxVMantissa);</div>
-<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span> </div>
-<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>        <span class="comment">// maxVD and minVD are scaled so they have the same exponents. Dividing</span></div>
-<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span>        <span class="comment">// cancels out the exponents, so we only need to deal with the (scaled)</span></div>
-<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>        <span class="comment">// mantissas</span></div>
-<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>        <span class="keywordflow">return</span> (maxVD - minVD) / minVD;</div>
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>    }</div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>};</div>
-<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span> </div>
-<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span><span class="keyword">template</span> &lt;</div>
-<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>    <span class="keyword">class </span>In,</div>
-<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span>    <span class="keyword">class </span>Out,</div>
-<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>    <span class="keyword">class </span>Lim,</div>
-<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>    <span class="keyword">typename</span> FnPtr,</div>
-<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>    std::same_as&lt;bool&gt;... Round&gt;</div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>TAmounts&lt;In, Out&gt;</div>
-<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>Quality::ceil_TAmounts_helper(</div>
-<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>    TAmounts&lt;In, Out&gt; <span class="keyword">const</span>&amp; amount,</div>
-<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>    Lim <span class="keyword">const</span>&amp; limit,</div>
-<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>    Lim <span class="keyword">const</span>&amp; limit_cmp,</div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>    FnPtr ceil_function,</div>
-<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>    Round... roundUp)<span class="keyword"> const</span></div>
-<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span><span class="keyword"></span>{</div>
-<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>    <span class="keywordflow">if</span> (limit_cmp &lt;= limit)</div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>        <span class="keywordflow">return</span> amount;</div>
-<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span> </div>
-<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>    <span class="comment">// Use the existing STAmount implementation for now, but consider</span></div>
-<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>    <span class="comment">// replacing with code specific to IOUAMount and XRPAmount</span></div>
-<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>    Amounts stAmt(<a class="code hl_function" href="namespaceripple.html#a4ad5ac9da897292a28eea43d041c15a1">toSTAmount</a>(amount.in), <a class="code hl_function" href="namespaceripple.html#a4ad5ac9da897292a28eea43d041c15a1">toSTAmount</a>(amount.out));</div>
-<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>    STAmount stLim(<a class="code hl_function" href="namespaceripple.html#a4ad5ac9da897292a28eea43d041c15a1">toSTAmount</a>(limit));</div>
-<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>    Amounts <span class="keyword">const</span> stRes = ((*this).*ceil_function)(stAmt, stLim, roundUp...);</div>
-<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span>    <span class="keywordflow">return</span> TAmounts&lt;In, Out&gt;(toAmount&lt;In&gt;(stRes.in), toAmount&lt;Out&gt;(stRes.out));</div>
-<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>}</div>
-<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span> </div>
-<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> In, <span class="keyword">class</span> Out&gt;</div>
-<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span>TAmounts&lt;In, Out&gt;</div>
-<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span>Quality::ceil_in(TAmounts&lt;In, Out&gt; <span class="keyword">const</span>&amp; amount, In <span class="keyword">const</span>&amp; limit)<span class="keyword"> const</span></div>
-<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span><span class="keyword"></span>{</div>
-<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>    <span class="comment">// Construct a function pointer to the function we want to call.</span></div>
-<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> Amounts (Quality::*ceil_in_fn_ptr)(</div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>        Amounts <span class="keyword">const</span>&amp;, STAmount <span class="keyword">const</span>&amp;) <span class="keyword">const</span> = &amp;Quality::ceil_in;</div>
-<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span> </div>
-<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>    <span class="keywordflow">return</span> ceil_TAmounts_helper(amount, limit, amount.in, ceil_in_fn_ptr);</div>
-<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>}</div>
-<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span> </div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> In, <span class="keyword">class</span> Out&gt;</div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>TAmounts&lt;In, Out&gt;</div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>Quality::ceil_in_strict(</div>
-<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>    TAmounts&lt;In, Out&gt; <span class="keyword">const</span>&amp; amount,</div>
-<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>    In <span class="keyword">const</span>&amp; limit,</div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>    <span class="keywordtype">bool</span> roundUp)<span class="keyword"> const</span></div>
-<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span><span class="keyword"></span>{</div>
-<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>    <span class="comment">// Construct a function pointer to the function we want to call.</span></div>
-<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> Amounts (Quality::*ceil_in_fn_ptr)(</div>
-<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>        Amounts <span class="keyword">const</span>&amp;, STAmount <span class="keyword">const</span>&amp;, bool) <span class="keyword">const</span> = &amp;Quality::ceil_in_strict;</div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span> </div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>    <span class="keywordflow">return</span> ceil_TAmounts_helper(</div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>        amount, limit, amount.in, ceil_in_fn_ptr, roundUp);</div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>}</div>
-<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span> </div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> In, <span class="keyword">class</span> Out&gt;</div>
-<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>TAmounts&lt;In, Out&gt;</div>
-<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>Quality::ceil_out(TAmounts&lt;In, Out&gt; <span class="keyword">const</span>&amp; amount, Out <span class="keyword">const</span>&amp; limit)<span class="keyword"> const</span></div>
-<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span><span class="keyword"></span>{</div>
-<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>    <span class="comment">// Construct a function pointer to the function we want to call.</span></div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> Amounts (Quality::*ceil_out_fn_ptr)(</div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>        Amounts <span class="keyword">const</span>&amp;, STAmount <span class="keyword">const</span>&amp;) <span class="keyword">const</span> = &amp;Quality::ceil_out;</div>
-<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span> </div>
-<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>    <span class="keywordflow">return</span> ceil_TAmounts_helper(amount, limit, amount.out, ceil_out_fn_ptr);</div>
-<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span>}</div>
-<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span> </div>
-<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> In, <span class="keyword">class</span> Out&gt;</div>
-<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span>TAmounts&lt;In, Out&gt;</div>
-<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span>Quality::ceil_out_strict(</div>
-<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>    TAmounts&lt;In, Out&gt; <span class="keyword">const</span>&amp; amount,</div>
-<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>    Out <span class="keyword">const</span>&amp; limit,</div>
-<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>    <span class="keywordtype">bool</span> roundUp)<span class="keyword"> const</span></div>
-<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span><span class="keyword"></span>{</div>
-<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span>    <span class="comment">// Construct a function pointer to the function we want to call.</span></div>
-<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> Amounts (Quality::*ceil_out_fn_ptr)(</div>
-<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span>        Amounts <span class="keyword">const</span>&amp;, STAmount <span class="keyword">const</span>&amp;, bool) <span class="keyword">const</span> =</div>
-<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>        &amp;Quality::ceil_out_strict;</div>
-<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span> </div>
-<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>    <span class="keywordflow">return</span> ceil_TAmounts_helper(</div>
-<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span>        amount, limit, amount.out, ceil_out_fn_ptr, roundUp);</div>
-<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>}</div>
-<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span> </div>
-<div class="line"><a id="l00412" name="l00412"></a><span class="lineno">  412</span>Quality</div>
-<div class="line"><a id="l00413" name="l00413"></a><span class="lineno">  413</span><a class="code hl_function" href="namespaceripple.html#a7c8945b5034bba5f9df719cff2503495">composed_quality</a>(Quality <span class="keyword">const</span>&amp; lhs, Quality <span class="keyword">const</span>&amp; rhs);</div>
-<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span> </div>
-<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span>}  <span class="comment">// namespace ripple</span></div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>        <span class="keyword">auto</span> <span class="keyword">const</span> [minV, maxV] = <a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/algorithm/minmax.html">std::minmax</a>(q1.m_value, q2.m_value);</div>
+<div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span> </div>
+<div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>        <span class="keyword">auto</span> mantissa = [](<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> <a class="code hl_function" href="namespaceripple_1_1test_1_1jtx.html#a8e8d814b8820ce0b6979abde0d6a2618">rate</a>) {</div>
+<div class="line"><a id="l00311" name="l00311"></a><span class="lineno">  311</span>            <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceripple_1_1test_1_1jtx.html#a8e8d814b8820ce0b6979abde0d6a2618">rate</a> &amp; ~(255ull &lt;&lt; (64 - 8));</div>
+<div class="line"><a id="l00312" name="l00312"></a><span class="lineno">  312</span>        };</div>
+<div class="line"><a id="l00313" name="l00313"></a><span class="lineno">  313</span>        <span class="keyword">auto</span> exponent = [](<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a> <a class="code hl_function" href="namespaceripple_1_1test_1_1jtx.html#a8e8d814b8820ce0b6979abde0d6a2618">rate</a>) {</div>
+<div class="line"><a id="l00314" name="l00314"></a><span class="lineno">  314</span>            <span class="keywordflow">return</span> <span class="keyword">static_cast&lt;</span><span class="keywordtype">int</span><span class="keyword">&gt;</span>(<a class="code hl_function" href="namespaceripple_1_1test_1_1jtx.html#a8e8d814b8820ce0b6979abde0d6a2618">rate</a> &gt;&gt; (64 - 8)) - 100;</div>
+<div class="line"><a id="l00315" name="l00315"></a><span class="lineno">  315</span>        };</div>
+<div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span> </div>
+<div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span>        <span class="keyword">auto</span> <span class="keyword">const</span> minVMantissa = mantissa(minV);</div>
+<div class="line"><a id="l00318" name="l00318"></a><span class="lineno">  318</span>        <span class="keyword">auto</span> <span class="keyword">const</span> maxVMantissa = mantissa(maxV);</div>
+<div class="line"><a id="l00319" name="l00319"></a><span class="lineno">  319</span>        <span class="keyword">auto</span> <span class="keyword">const</span> expDiff = exponent(maxV) - exponent(minV);</div>
+<div class="line"><a id="l00320" name="l00320"></a><span class="lineno">  320</span> </div>
+<div class="line"><a id="l00321" name="l00321"></a><span class="lineno">  321</span>        <span class="keywordtype">double</span> <span class="keyword">const</span> minVD = <span class="keyword">static_cast&lt;</span><span class="keywordtype">double</span><span class="keyword">&gt;</span>(minVMantissa);</div>
+<div class="line"><a id="l00322" name="l00322"></a><span class="lineno">  322</span>        <span class="keywordtype">double</span> <span class="keyword">const</span> maxVD = expDiff ? maxVMantissa * <a class="code hl_functionRef" href="http://en.cppreference.com/w/cpp/numeric/math/pow.html">pow</a>(10, expDiff)</div>
+<div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>                                     : static_cast&lt;double&gt;(maxVMantissa);</div>
+<div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span> </div>
+<div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>        <span class="comment">// maxVD and minVD are scaled so they have the same exponents. Dividing</span></div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>        <span class="comment">// cancels out the exponents, so we only need to deal with the (scaled)</span></div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>        <span class="comment">// mantissas</span></div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>        <span class="keywordflow">return</span> (maxVD - minVD) / minVD;</div>
+<div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span>    }</div>
+<div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>};</div>
+<div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span> </div>
+<div class="line"><a id="l00332" name="l00332"></a><span class="lineno">  332</span><span class="keyword">template</span> &lt;</div>
+<div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>    <span class="keyword">class </span>In,</div>
+<div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>    <span class="keyword">class </span>Out,</div>
+<div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>    <span class="keyword">class </span>Lim,</div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>    <span class="keyword">typename</span> FnPtr,</div>
+<div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>    std::same_as&lt;bool&gt;... Round&gt;</div>
+<div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>TAmounts&lt;In, Out&gt;</div>
+<div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>Quality::ceil_TAmounts_helper(</div>
+<div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>    TAmounts&lt;In, Out&gt; <span class="keyword">const</span>&amp; amount,</div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>    Lim <span class="keyword">const</span>&amp; limit,</div>
+<div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>    Lim <span class="keyword">const</span>&amp; limit_cmp,</div>
+<div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>    FnPtr ceil_function,</div>
+<div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>    Round... roundUp)<span class="keyword"> const</span></div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span><span class="keyword"></span>{</div>
+<div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>    <span class="keywordflow">if</span> (limit_cmp &lt;= limit)</div>
+<div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>        <span class="keywordflow">return</span> amount;</div>
+<div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span> </div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>    <span class="comment">// Use the existing STAmount implementation for now, but consider</span></div>
+<div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>    <span class="comment">// replacing with code specific to IOUAMount and XRPAmount</span></div>
+<div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>    Amounts stAmt(<a class="code hl_function" href="namespaceripple.html#a4ad5ac9da897292a28eea43d041c15a1">toSTAmount</a>(amount.in), <a class="code hl_function" href="namespaceripple.html#a4ad5ac9da897292a28eea43d041c15a1">toSTAmount</a>(amount.out));</div>
+<div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span>    STAmount stLim(<a class="code hl_function" href="namespaceripple.html#a4ad5ac9da897292a28eea43d041c15a1">toSTAmount</a>(limit));</div>
+<div class="line"><a id="l00353" name="l00353"></a><span class="lineno">  353</span>    Amounts <span class="keyword">const</span> stRes = ((*this).*ceil_function)(stAmt, stLim, roundUp...);</div>
+<div class="line"><a id="l00354" name="l00354"></a><span class="lineno">  354</span>    <span class="keywordflow">return</span> TAmounts&lt;In, Out&gt;(toAmount&lt;In&gt;(stRes.in), toAmount&lt;Out&gt;(stRes.out));</div>
+<div class="line"><a id="l00355" name="l00355"></a><span class="lineno">  355</span>}</div>
+<div class="line"><a id="l00356" name="l00356"></a><span class="lineno">  356</span> </div>
+<div class="line"><a id="l00357" name="l00357"></a><span class="lineno">  357</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> In, <span class="keyword">class</span> Out&gt;</div>
+<div class="line"><a id="l00358" name="l00358"></a><span class="lineno">  358</span>TAmounts&lt;In, Out&gt;</div>
+<div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span>Quality::ceil_in(TAmounts&lt;In, Out&gt; <span class="keyword">const</span>&amp; amount, In <span class="keyword">const</span>&amp; limit)<span class="keyword"> const</span></div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno">  360</span><span class="keyword"></span>{</div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>    <span class="comment">// Construct a function pointer to the function we want to call.</span></div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> Amounts (Quality::*ceil_in_fn_ptr)(</div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>        Amounts <span class="keyword">const</span>&amp;, STAmount <span class="keyword">const</span>&amp;) <span class="keyword">const</span> = &amp;Quality::ceil_in;</div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span> </div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>    <span class="keywordflow">return</span> ceil_TAmounts_helper(amount, limit, amount.in, ceil_in_fn_ptr);</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>}</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span> </div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> In, <span class="keyword">class</span> Out&gt;</div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>TAmounts&lt;In, Out&gt;</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>Quality::ceil_in_strict(</div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>    TAmounts&lt;In, Out&gt; <span class="keyword">const</span>&amp; amount,</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>    In <span class="keyword">const</span>&amp; limit,</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>    <span class="keywordtype">bool</span> roundUp)<span class="keyword"> const</span></div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span><span class="keyword"></span>{</div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>    <span class="comment">// Construct a function pointer to the function we want to call.</span></div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> Amounts (Quality::*ceil_in_fn_ptr)(</div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>        Amounts <span class="keyword">const</span>&amp;, STAmount <span class="keyword">const</span>&amp;, bool) <span class="keyword">const</span> = &amp;Quality::ceil_in_strict;</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span> </div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>    <span class="keywordflow">return</span> ceil_TAmounts_helper(</div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>        amount, limit, amount.in, ceil_in_fn_ptr, roundUp);</div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>}</div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span> </div>
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> In, <span class="keyword">class</span> Out&gt;</div>
+<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>TAmounts&lt;In, Out&gt;</div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>Quality::ceil_out(TAmounts&lt;In, Out&gt; <span class="keyword">const</span>&amp; amount, Out <span class="keyword">const</span>&amp; limit)<span class="keyword"> const</span></div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span><span class="keyword"></span>{</div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>    <span class="comment">// Construct a function pointer to the function we want to call.</span></div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> Amounts (Quality::*ceil_out_fn_ptr)(</div>
+<div class="line"><a id="l00389" name="l00389"></a><span class="lineno">  389</span>        Amounts <span class="keyword">const</span>&amp;, STAmount <span class="keyword">const</span>&amp;) <span class="keyword">const</span> = &amp;Quality::ceil_out;</div>
+<div class="line"><a id="l00390" name="l00390"></a><span class="lineno">  390</span> </div>
+<div class="line"><a id="l00391" name="l00391"></a><span class="lineno">  391</span>    <span class="keywordflow">return</span> ceil_TAmounts_helper(amount, limit, amount.out, ceil_out_fn_ptr);</div>
+<div class="line"><a id="l00392" name="l00392"></a><span class="lineno">  392</span>}</div>
+<div class="line"><a id="l00393" name="l00393"></a><span class="lineno">  393</span> </div>
+<div class="line"><a id="l00394" name="l00394"></a><span class="lineno">  394</span><span class="keyword">template</span> &lt;<span class="keyword">class</span> In, <span class="keyword">class</span> Out&gt;</div>
+<div class="line"><a id="l00395" name="l00395"></a><span class="lineno">  395</span>TAmounts&lt;In, Out&gt;</div>
+<div class="line"><a id="l00396" name="l00396"></a><span class="lineno">  396</span>Quality::ceil_out_strict(</div>
+<div class="line"><a id="l00397" name="l00397"></a><span class="lineno">  397</span>    TAmounts&lt;In, Out&gt; <span class="keyword">const</span>&amp; amount,</div>
+<div class="line"><a id="l00398" name="l00398"></a><span class="lineno">  398</span>    Out <span class="keyword">const</span>&amp; limit,</div>
+<div class="line"><a id="l00399" name="l00399"></a><span class="lineno">  399</span>    <span class="keywordtype">bool</span> roundUp)<span class="keyword"> const</span></div>
+<div class="line"><a id="l00400" name="l00400"></a><span class="lineno">  400</span><span class="keyword"></span>{</div>
+<div class="line"><a id="l00401" name="l00401"></a><span class="lineno">  401</span>    <span class="comment">// Construct a function pointer to the function we want to call.</span></div>
+<div class="line"><a id="l00402" name="l00402"></a><span class="lineno">  402</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> Amounts (Quality::*ceil_out_fn_ptr)(</div>
+<div class="line"><a id="l00403" name="l00403"></a><span class="lineno">  403</span>        Amounts <span class="keyword">const</span>&amp;, STAmount <span class="keyword">const</span>&amp;, bool) <span class="keyword">const</span> =</div>
+<div class="line"><a id="l00404" name="l00404"></a><span class="lineno">  404</span>        &amp;Quality::ceil_out_strict;</div>
+<div class="line"><a id="l00405" name="l00405"></a><span class="lineno">  405</span> </div>
+<div class="line"><a id="l00406" name="l00406"></a><span class="lineno">  406</span>    <span class="keywordflow">return</span> ceil_TAmounts_helper(</div>
+<div class="line"><a id="l00407" name="l00407"></a><span class="lineno">  407</span>        amount, limit, amount.out, ceil_out_fn_ptr, roundUp);</div>
+<div class="line"><a id="l00408" name="l00408"></a><span class="lineno">  408</span>}</div>
+<div class="line"><a id="l00409" name="l00409"></a><span class="lineno">  409</span> </div>
+<div class="line"><a id="l00414" name="l00414"></a><span class="lineno">  414</span>Quality</div>
+<div class="line"><a id="l00415" name="l00415"></a><span class="lineno">  415</span><a class="code hl_function" href="namespaceripple.html#a7c8945b5034bba5f9df719cff2503495">composed_quality</a>(Quality <span class="keyword">const</span>&amp; lhs, Quality <span class="keyword">const</span>&amp; rhs);</div>
 <div class="line"><a id="l00416" name="l00416"></a><span class="lineno">  416</span> </div>
-<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00417" name="l00417"></a><span class="lineno">  417</span>}  <span class="comment">// namespace ripple</span></div>
+<div class="line"><a id="l00418" name="l00418"></a><span class="lineno">  418</span> </div>
+<div class="line"><a id="l00419" name="l00419"></a><span class="lineno">  419</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aalgorithm_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/algorithm.html">algorithm</a></div></div>
 <div class="ttc" id="abasic_ostream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a></div></div>
 <div class="ttc" id="acstdint_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstdint.html">cstdint</a></div></div>
 <div class="ttc" id="aempty_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/iterator/empty.html">std::empty</a></div><div class="ttdeci">T empty(T... args)</div></div>
 <div class="ttc" id="ainteger_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint64_t</a></div></div>
 <div class="ttc" id="aminmax_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/algorithm/minmax.html">std::minmax</a></div><div class="ttdeci">T minmax(T... args)</div></div>
-<div class="ttc" id="anamespacebeast_html"><div class="ttname"><a href="namespacebeast.html">beast</a></div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00644">base_uint.h:644</a></div></div>
-<div class="ttc" id="anamespaceripple_1_1keylet_html_a0a100bd2f819f22d2ef41ed7d83a9192"><div class="ttname"><a href="namespaceripple_1_1keylet.html#a0a100bd2f819f22d2ef41ed7d83a9192">ripple::keylet::quality</a></div><div class="ttdeci">Keylet quality(Keylet const &amp;k, std::uint64_t q) noexcept</div><div class="ttdoc">The initial directory page for a specific quality.</div><div class="ttdef"><b>Definition:</b> <a href="Indexes_8cpp_source.html#l00252">Indexes.cpp:252</a></div></div>
+<div class="ttc" id="anamespacebeast_html"><div class="ttname"><a href="namespacebeast.html">beast</a></div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00661">base_uint.h:661</a></div></div>
+<div class="ttc" id="anamespaceripple_1_1keylet_html_a0a100bd2f819f22d2ef41ed7d83a9192"><div class="ttname"><a href="namespaceripple_1_1keylet.html#a0a100bd2f819f22d2ef41ed7d83a9192">ripple::keylet::quality</a></div><div class="ttdeci">Keylet quality(Keylet const &amp;k, std::uint64_t q) noexcept</div><div class="ttdoc">The initial directory page for a specific quality.</div><div class="ttdef"><b>Definition:</b> <a href="Indexes_8cpp_source.html#l00256">Indexes.cpp:256</a></div></div>
 <div class="ttc" id="anamespaceripple_1_1test_1_1jtx_html_a8e8d814b8820ce0b6979abde0d6a2618"><div class="ttname"><a href="namespaceripple_1_1test_1_1jtx.html#a8e8d814b8820ce0b6979abde0d6a2618">ripple::test::jtx::rate</a></div><div class="ttdeci">Json::Value rate(Account const &amp;account, double multiplier)</div><div class="ttdoc">Set a transfer rate.</div><div class="ttdef"><b>Definition:</b> <a href="rate_8cpp_source.html#l00030">rate.cpp:30</a></div></div>
 <div class="ttc" id="anamespaceripple_html"><div class="ttname"><a href="namespaceripple.html">ripple</a></div><div class="ttdoc">Use hash_* containers for keys that do not need a cryptographically secure hashing algorithm.</div><div class="ttdef"><b>Definition:</b> <a href="algorithm_8h_source.html#l00026">algorithm.h:26</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a21a6d6b07d2d712568f3565adf30ae21"><div class="ttname"><a href="namespaceripple.html#a21a6d6b07d2d712568f3565adf30ae21">ripple::operator!=</a></div><div class="ttdeci">bool operator!=(Buffer const &amp;lhs, Buffer const &amp;rhs) noexcept</div><div class="ttdef"><b>Definition:</b> <a href="Buffer_8h_source.html#l00231">Buffer.h:231</a></div></div>
+<div class="ttc" id="anamespaceripple_html_a21a6d6b07d2d712568f3565adf30ae21"><div class="ttname"><a href="namespaceripple.html#a21a6d6b07d2d712568f3565adf30ae21">ripple::operator!=</a></div><div class="ttdeci">bool operator!=(Buffer const &amp;lhs, Buffer const &amp;rhs) noexcept</div><div class="ttdef"><b>Definition:</b> <a href="Buffer_8h_source.html#l00232">Buffer.h:232</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a4ad5ac9da897292a28eea43d041c15a1"><div class="ttname"><a href="namespaceripple.html#a4ad5ac9da897292a28eea43d041c15a1">ripple::toSTAmount</a></div><div class="ttdeci">STAmount toSTAmount(IOUAmount const &amp;iou, Issue const &amp;iss)</div><div class="ttdef"><b>Definition:</b> <a href="AmountConversions_8h_source.html#l00032">AmountConversions.h:32</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a4afbbae0910419307600d5545004e5be"><div class="ttname"><a href="namespaceripple.html#a4afbbae0910419307600d5545004e5be">ripple::amountFromQuality</a></div><div class="ttdeci">STAmount amountFromQuality(std::uint64_t rate)</div><div class="ttdef"><b>Definition:</b> <a href="STAmount_8cpp_source.html#l00798">STAmount.cpp:798</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a5c77599883897def8bd3e9e4ad140f95"><div class="ttname"><a href="namespaceripple.html#a5c77599883897def8bd3e9e4ad140f95">ripple::operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;out, base_uint&lt; Bits, Tag &gt; const &amp;u)</div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00629">base_uint.h:630</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a7c8945b5034bba5f9df719cff2503495"><div class="ttname"><a href="namespaceripple.html#a7c8945b5034bba5f9df719cff2503495">ripple::composed_quality</a></div><div class="ttdeci">Quality composed_quality(Quality const &amp;lhs, Quality const &amp;rhs)</div><div class="ttdef"><b>Definition:</b> <a href="Quality_8cpp_source.html#l00146">Quality.cpp:146</a></div></div>
+<div class="ttc" id="anamespaceripple_html_a4afbbae0910419307600d5545004e5be"><div class="ttname"><a href="namespaceripple.html#a4afbbae0910419307600d5545004e5be">ripple::amountFromQuality</a></div><div class="ttdeci">STAmount amountFromQuality(std::uint64_t rate)</div><div class="ttdef"><b>Definition:</b> <a href="STAmount_8cpp_source.html#l00822">STAmount.cpp:822</a></div></div>
+<div class="ttc" id="anamespaceripple_html_a5c77599883897def8bd3e9e4ad140f95"><div class="ttname"><a href="namespaceripple.html#a5c77599883897def8bd3e9e4ad140f95">ripple::operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;out, base_uint&lt; Bits, Tag &gt; const &amp;u)</div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00635">base_uint.h:636</a></div></div>
+<div class="ttc" id="anamespaceripple_html_a7c8945b5034bba5f9df719cff2503495"><div class="ttname"><a href="namespaceripple.html#a7c8945b5034bba5f9df719cff2503495">ripple::composed_quality</a></div><div class="ttdeci">Quality composed_quality(Quality const &amp;lhs, Quality const &amp;rhs)</div><div class="ttdef"><b>Definition:</b> <a href="Quality_8cpp_source.html#l00153">Quality.cpp:153</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a7cc64e12723fbc9606d85442a2569feda13b5bfe96f3e2fe411c9f66f4a582adf"><div class="ttname"><a href="namespaceripple.html#a7cc64e12723fbc9606d85442a2569feda13b5bfe96f3e2fe411c9f66f4a582adf">ripple::QualityDirection::in</a></div><div class="ttdeci">@ in</div></div>
 <div class="ttc" id="anamespaceripple_html_a7cc64e12723fbc9606d85442a2569fedac68271a63ddbc431c307beb7d2918275"><div class="ttname"><a href="namespaceripple.html#a7cc64e12723fbc9606d85442a2569fedac68271a63ddbc431c307beb7d2918275">ripple::QualityDirection::out</a></div><div class="ttdeci">@ out</div></div>
-<div class="ttc" id="anamespaceripple_html_ab06a7c4d14d99773c29bcfbd0bf81d34"><div class="ttname"><a href="namespaceripple.html#ab06a7c4d14d99773c29bcfbd0bf81d34">ripple::operator&lt;</a></div><div class="ttdeci">bool operator&lt;(Slice const &amp;lhs, Slice const &amp;rhs) noexcept</div><div class="ttdef"><b>Definition:</b> <a href="Slice_8h_source.html#l00219">Slice.h:220</a></div></div>
-<div class="ttc" id="anamespaceripple_html_adb9995d7c8e8a2aa3d702b73edfa0672"><div class="ttname"><a href="namespaceripple.html#adb9995d7c8e8a2aa3d702b73edfa0672">ripple::operator==</a></div><div class="ttdeci">constexpr bool operator==(base_uint&lt; Bits, Tag &gt; const &amp;lhs, base_uint&lt; Bits, Tag &gt; const &amp;rhs)</div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00578">base_uint.h:578</a></div></div>
+<div class="ttc" id="anamespaceripple_html_ab06a7c4d14d99773c29bcfbd0bf81d34"><div class="ttname"><a href="namespaceripple.html#ab06a7c4d14d99773c29bcfbd0bf81d34">ripple::operator&lt;</a></div><div class="ttdeci">bool operator&lt;(Slice const &amp;lhs, Slice const &amp;rhs) noexcept</div><div class="ttdef"><b>Definition:</b> <a href="Slice_8h_source.html#l00221">Slice.h:222</a></div></div>
+<div class="ttc" id="anamespaceripple_html_adb9995d7c8e8a2aa3d702b73edfa0672"><div class="ttname"><a href="namespaceripple.html#adb9995d7c8e8a2aa3d702b73edfa0672">ripple::operator==</a></div><div class="ttdeci">constexpr bool operator==(base_uint&lt; Bits, Tag &gt; const &amp;lhs, base_uint&lt; Bits, Tag &gt; const &amp;rhs)</div><div class="ttdef"><b>Definition:</b> <a href="base__uint_8h_source.html#l00584">base_uint.h:584</a></div></div>
 <div class="ttc" id="aoperator_cmp_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/rel_ops/operator_cmp.html">std::rel_ops::operator&gt;</a></div><div class="ttdeci">T operator&gt;(T... args)</div></div>
 <div class="ttc" id="aostream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/ostream.html">ostream</a></div></div>
 <div class="ttc" id="apow_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/numeric/math/pow.html">std::pow</a></div><div class="ttdeci">T pow(T... args)</div></div>

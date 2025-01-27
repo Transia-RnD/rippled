@@ -242,10 +242,10 @@ for (child : node-&gt;children)
 <div class="line"><span class="comment">// between two ledgers</span></div>
 <div class="line"><a class="code hl_typedef" href="classripple_1_1LedgerTrie.html#ad462534d71954a7ef419b5610314557b">Seq</a></div>
 <div class="line"><a class="code hl_function" href="namespaceripple.html#a509e1a7f41988fd7a09eb0bf94795967">mismatch</a>(ledgerA, ledgerB);</div>
-<div class="ttc" id="aclassripple_1_1LedgerTrie_html_ab41d93aab5b84df2e1f24ed5d0baea7f"><div class="ttname"><a href="classripple_1_1LedgerTrie.html#ab41d93aab5b84df2e1f24ed5d0baea7f">ripple::LedgerTrie::ID</a></div><div class="ttdeci">typename Ledger::ID ID</div><div class="ttdef"><b>Definition:</b> <a href="LedgerTrie_8h_source.html#l00350">LedgerTrie.h:350</a></div></div>
-<div class="ttc" id="aclassripple_1_1LedgerTrie_html_ad462534d71954a7ef419b5610314557b"><div class="ttname"><a href="classripple_1_1LedgerTrie.html#ad462534d71954a7ef419b5610314557b">ripple::LedgerTrie::Seq</a></div><div class="ttdeci">typename Ledger::Seq Seq</div><div class="ttdef"><b>Definition:</b> <a href="LedgerTrie_8h_source.html#l00349">LedgerTrie.h:349</a></div></div>
+<div class="ttc" id="aclassripple_1_1LedgerTrie_html_ab41d93aab5b84df2e1f24ed5d0baea7f"><div class="ttname"><a href="classripple_1_1LedgerTrie.html#ab41d93aab5b84df2e1f24ed5d0baea7f">ripple::LedgerTrie::ID</a></div><div class="ttdeci">typename Ledger::ID ID</div><div class="ttdef"><b>Definition:</b> <a href="LedgerTrie_8h_source.html#l00353">LedgerTrie.h:353</a></div></div>
+<div class="ttc" id="aclassripple_1_1LedgerTrie_html_ad462534d71954a7ef419b5610314557b"><div class="ttname"><a href="classripple_1_1LedgerTrie.html#ad462534d71954a7ef419b5610314557b">ripple::LedgerTrie::Seq</a></div><div class="ttdeci">typename Ledger::Seq Seq</div><div class="ttdef"><b>Definition:</b> <a href="LedgerTrie_8h_source.html#l00352">LedgerTrie.h:352</a></div></div>
 <div class="ttc" id="aclassripple_1_1Ledger_html"><div class="ttname"><a href="classripple_1_1Ledger.html">ripple::Ledger</a></div><div class="ttdoc">Holds a ledger.</div><div class="ttdef"><b>Definition:</b> <a href="Ledger_8h_source.html#l00076">Ledger.h:80</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a509e1a7f41988fd7a09eb0bf94795967"><div class="ttname"><a href="namespaceripple.html#a509e1a7f41988fd7a09eb0bf94795967">ripple::mismatch</a></div><div class="ttdeci">RCLValidatedLedger::Seq mismatch(RCLValidatedLedger const &amp;a, RCLValidatedLedger const &amp;b)</div><div class="ttdef"><b>Definition:</b> <a href="RCLValidations_8cpp_source.html#l00099">RCLValidations.cpp:99</a></div></div>
+<div class="ttc" id="anamespaceripple_html_a509e1a7f41988fd7a09eb0bf94795967"><div class="ttname"><a href="namespaceripple.html#a509e1a7f41988fd7a09eb0bf94795967">ripple::mismatch</a></div><div class="ttdeci">RCLValidatedLedger::Seq mismatch(RCLValidatedLedger const &amp;a, RCLValidatedLedger const &amp;b)</div><div class="ttdef"><b>Definition:</b> <a href="RCLValidations_8cpp_source.html#l00102">RCLValidations.cpp:102</a></div></div>
 </div><!-- fragment --><p >The unique history invariant of ledgers requires any ledgers that agree on the id of a given sequence number agree on ALL ancestors before that ledger: </p><pre class="fragment">@code
 Ledger a,b;
 // For all Seq s:
@@ -260,7 +260,7 @@ if(a[s] == b[s]);
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00347">347</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00350">350</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="ad462534d71954a7ef419b5610314557b" name="ad462534d71954a7ef419b5610314557b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad462534d71954a7ef419b5610314557b">&#9670;&#160;</a></span>Seq</h2>
@@ -284,7 +284,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00349">349</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00352">352</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -310,7 +310,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00350">350</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00353">353</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -336,7 +336,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00352">352</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00355">355</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -362,7 +362,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00353">353</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00356">356</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -384,7 +384,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00440">440</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00443">443</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -418,7 +418,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 <p>Find the node in the trie that represents the longest common ancestry with the given ledger. </p>
 <dl class="section return"><dt>Returns</dt><dd>Pair of the found node and the sequence number of the first ledger difference. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00369">369</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00372">372</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -462,7 +462,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 <dl class="section return"><dt>Returns</dt><dd>the found node or nullptr if an exact match was not found.</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>O(n) since this searches all nodes until a match is found </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00407">407</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00410">410</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -508,7 +508,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00423">423</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00426">426</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -549,7 +549,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00450">450</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00453">453</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -591,7 +591,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Whether a matching node was decremented and possibly removed. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00536">536</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00541">541</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -622,7 +622,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The number of entries in the trie for this <em>exact</em> ledger </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00590">590</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00597">597</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -653,7 +653,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The number of entries in the trie for this ledger or a descendant </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00604">604</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00611">611</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -701,7 +701,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pair with the sequence number and ID of the preferred ledger or std::nullopt if no preferred ledger exists </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00678">678</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00685">685</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -724,7 +724,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 
 <p>Return whether the trie is tracking any ledgers. </p>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00776">776</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00783">783</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -748,7 +748,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 
 <p>Dump an ascii representation of the trie to the stream. </p>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00784">784</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00791">791</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -771,7 +771,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 
 <p>Dump JSON representation of trie state. </p>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00792">792</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00799">799</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -794,7 +794,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 
 <p>Check the compressed trie and support invariants. </p>
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00805">805</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00812">812</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -821,7 +821,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00357">357</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00360">360</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>
@@ -847,7 +847,7 @@ template&lt;class <a class="el" href="classripple_1_1Ledger.html">Ledger</a> &gt
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00360">360</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerTrie_8h_source.html#l00363">363</a> of file <a class="el" href="LedgerTrie_8h_source.html">LedgerTrie.h</a>.</p>
 
 </div>
 </div>

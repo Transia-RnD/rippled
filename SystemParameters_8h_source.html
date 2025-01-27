@@ -98,8 +98,8 @@ $(function() {
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#ifndef RIPPLE_PROTOCOL_SYSTEMPARAMETERS_H_INCLUDED</span></div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#define RIPPLE_PROTOCOL_SYSTEMPARAMETERS_H_INCLUDED</span></div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;xrpl/basics/XRPAmount.h&gt;</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &lt;xrpl/basics/chrono.h&gt;</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;xrpl/basics/chrono.h&gt;</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &lt;xrpl/protocol/XRPAmount.h&gt;</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cstdint.html">cstdint</a>&gt;</span></div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
 <div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
@@ -153,7 +153,7 @@ $(function() {
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
-<div class="ttc" id="aclassripple_1_1XRPAmount_html"><div class="ttname"><a href="classripple_1_1XRPAmount.html">ripple::XRPAmount</a></div><div class="ttdef"><b>Definition:</b> <a href="XRPAmount_8h_source.html#l00046">XRPAmount.h:50</a></div></div>
+<div class="ttc" id="aclassripple_1_1XRPAmount_html"><div class="ttname"><a href="classripple_1_1XRPAmount.html">ripple::XRPAmount</a></div><div class="ttdef"><b>Definition:</b> <a href="XRPAmount_8h_source.html#l00039">XRPAmount.h:43</a></div></div>
 <div class="ttc" id="acstdint_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cstdint.html">cstdint</a></div></div>
 <div class="ttc" id="aduration_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/chrono/duration.html">std::chrono::seconds</a></div></div>
 <div class="ttc" id="ainteger_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint32_t</a></div></div>
@@ -168,7 +168,7 @@ $(function() {
 <div class="ttc" id="anamespaceripple_html_a6fc7a232cc9b90d4b5846057977fcf63"><div class="ttname"><a href="namespaceripple.html#a6fc7a232cc9b90d4b5846057977fcf63">ripple::XRP_LEDGER_EARLIEST_FEES</a></div><div class="ttdeci">static constexpr std::uint32_t XRP_LEDGER_EARLIEST_FEES</div><div class="ttdoc">The XRP Ledger mainnet's earliest ledger with a FeeSettings object.</div><div class="ttdef"><b>Definition:</b> <a href="SystemParameters_8h_source.html#l00073">SystemParameters.h:73</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a7efda97c0ca3525b31f602de3243fae7"><div class="ttname"><a href="namespaceripple.html#a7efda97c0ca3525b31f602de3243fae7">ripple::postFixAmendmentMajorityCalcThreshold</a></div><div class="ttdeci">constexpr std::ratio&lt; 80, 100 &gt; postFixAmendmentMajorityCalcThreshold</div><div class="ttdef"><b>Definition:</b> <a href="SystemParameters_8h_source.html#l00082">SystemParameters.h:82</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a9486d45c2b21072ec54bea71d492d1af"><div class="ttname"><a href="namespaceripple.html#a9486d45c2b21072ec54bea71d492d1af">ripple::preFixAmendmentMajorityCalcThreshold</a></div><div class="ttdeci">constexpr std::ratio&lt; 204, 256 &gt; preFixAmendmentMajorityCalcThreshold</div><div class="ttdoc">The minimum amount of support an amendment should have.</div><div class="ttdef"><b>Definition:</b> <a href="SystemParameters_8h_source.html#l00080">SystemParameters.h:80</a></div></div>
-<div class="ttc" id="anamespaceripple_html_afa493631a6ea5b71b91ceb86576fc328"><div class="ttname"><a href="namespaceripple.html#afa493631a6ea5b71b91ceb86576fc328">ripple::DROPS_PER_XRP</a></div><div class="ttdeci">constexpr XRPAmount DROPS_PER_XRP</div><div class="ttdoc">Number of drops per 1 XRP.</div><div class="ttdef"><b>Definition:</b> <a href="XRPAmount_8h_source.html#l00256">XRPAmount.h:256</a></div></div>
+<div class="ttc" id="anamespaceripple_html_afa493631a6ea5b71b91ceb86576fc328"><div class="ttname"><a href="namespaceripple.html#afa493631a6ea5b71b91ceb86576fc328">ripple::DROPS_PER_XRP</a></div><div class="ttdeci">constexpr XRPAmount DROPS_PER_XRP</div><div class="ttdoc">Number of drops per 1 XRP.</div><div class="ttdef"><b>Definition:</b> <a href="XRPAmount_8h_source.html#l00259">XRPAmount.h:259</a></div></div>
 <div class="ttc" id="aratio_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/numeric/ratio/ratio.html">std::ratio</a></div></div>
 <div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

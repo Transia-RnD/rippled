@@ -96,9 +96,9 @@ $(function() {
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment">//==============================================================================</span></div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include &lt;xrpl/basics/contract.h&gt;</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &lt;xrpl/crypto/csprng.h&gt;</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/cassert.html">cassert</a>&gt;</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &lt;xrpl/beast/utility/instrumentation.h&gt;</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="preprocessor">#include &lt;xrpl/crypto/csprng.h&gt;</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/array.html">array</a>&gt;</span></div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &lt;openssl/rand.h&gt;</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/random.html">random</a>&gt;</span></div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/stdexcept.html">stdexcept</a>&gt;</span></div>
@@ -182,7 +182,6 @@ $(function() {
 <div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
 <div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>}  <span class="comment">// namespace ripple</span></div>
 <div class="ttc" id="aarray_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/array.html">array</a></div></div>
-<div class="ttc" id="acassert_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/cassert.html">cassert</a></div></div>
 <div class="ttc" id="aclassripple_1_1csprng__engine_html"><div class="ttname"><a href="classripple_1_1csprng__engine.html">ripple::csprng_engine</a></div><div class="ttdoc">A cryptographically secure random number engine.</div><div class="ttdef"><b>Definition:</b> <a href="csprng_8h_source.html#l00037">csprng.h:38</a></div></div>
 <div class="ttc" id="aclassripple_1_1csprng__engine_html_a1d06454904c264b7a0cce18101762af3"><div class="ttname"><a href="classripple_1_1csprng__engine.html#a1d06454904c264b7a0cce18101762af3">ripple::csprng_engine::result_type</a></div><div class="ttdeci">std::uint64_t result_type</div><div class="ttdef"><b>Definition:</b> <a href="csprng_8h_source.html#l00043">csprng.h:43</a></div></div>
 <div class="ttc" id="aclassripple_1_1csprng__engine_html_a3386463bc8eab7446790a07c8c987682"><div class="ttname"><a href="classripple_1_1csprng__engine.html#a3386463bc8eab7446790a07c8c987682">ripple::csprng_engine::~csprng_engine</a></div><div class="ttdeci">~csprng_engine()</div><div class="ttdef"><b>Definition:</b> <a href="csprng_8cpp_source.html#l00037">csprng.cpp:37</a></div></div>

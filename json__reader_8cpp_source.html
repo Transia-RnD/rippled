@@ -1031,7 +1031,7 @@ $(function() {
 <div class="line"><a id="l00953" name="l00953"></a><span class="lineno">  953</span>    <a class="code hl_class" href="classJson_1_1Reader.html">Json::Reader</a> reader;</div>
 <div class="line"><a id="l00954" name="l00954"></a><span class="lineno">  954</span>    <span class="keywordtype">bool</span> ok = reader.<a class="code hl_function" href="classJson_1_1Reader.html#a8ee4d40504e4f8b069745d762ab4d78c">parse</a>(sin, root);</div>
 <div class="line"><a id="l00955" name="l00955"></a><span class="lineno">  955</span> </div>
-<div class="line"><a id="l00956" name="l00956"></a><span class="lineno">  956</span>    <span class="comment">// JSON_ASSERT( ok );</span></div>
+<div class="line"><a id="l00956" name="l00956"></a><span class="lineno">  956</span>    <span class="comment">// XRPL_ASSERT(ok, &quot;Json::operator&gt;&gt;() : parse succeeded&quot;);</span></div>
 <div class="line"><a id="l00957" name="l00957"></a><span class="lineno">  957</span>    <span class="keywordflow">if</span> (!ok)</div>
 <div class="line"><a id="l00958" name="l00958"></a><span class="lineno">  958</span>        ripple::Throw&lt;std::runtime_error&gt;(reader.<a class="code hl_function" href="classJson_1_1Reader.html#a269793929575f925b629460c9c744da1">getFormatedErrorMessages</a>());</div>
 <div class="line"><a id="l00959" name="l00959"></a><span class="lineno">  959</span> </div>

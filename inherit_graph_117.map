@@ -1,7 +1,18 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" title=" " alt="" coords="5,69,203,94"/>
-<area shape="rect" id="node2" href="$classripple_1_1Resource_1_1ResourceManager__test_1_1TestLogic.html" title=" " alt="" coords="251,5,445,45"/>
-<area shape="rect" id="node3" href="$structstd_1_1hash_3_01ripple_1_1Issue_01_4.html" title=" " alt="" coords="277,69,419,109"/>
-<area shape="rect" id="node4" href="$structboost_1_1hash_3_01ripple_1_1Issue_01_4.html" title=" " alt="" coords="493,69,643,109"/>
-<area shape="rect" id="node5" href="$classripple_1_1Resource_1_1Logic.html" title=" " alt="" coords="19,13,189,38"/>
+<area shape="rect" id="node1" title=" " alt="" coords="47,203,166,228"/>
+<area shape="rect" id="node2" href="$classripple_1_1feeunit_1_1TaggedFee.html" title=" " alt="" coords="264,33,455,73"/>
+<area shape="rect" id="node3" href="$classripple_1_1IOUAmount.html" title="Floating point representation of amounts with high dynamic range." alt="" coords="288,260,431,285"/>
+<area shape="rect" id="node4" href="$classripple_1_1MPTAmount.html" title=" " alt="" coords="287,161,432,187"/>
+<area shape="rect" id="node5" href="$classripple_1_1XRPAmount.html" title=" " alt="" coords="288,211,431,236"/>
+<area shape="rect" id="node6" href="$classripple_1_1feeunit_1_1TaggedFee.html" title=" " alt="" coords="264,97,455,137"/>
+<area shape="rect" id="node7" title=" " alt="" coords="43,5,170,31"/>
+<area shape="rect" id="node8" title=" " alt="" coords="5,153,208,179"/>
+<area shape="rect" id="node9" title=" " alt="" coords="45,55,168,80"/>
+<area shape="rect" id="node10" title=" " alt="" coords="24,288,189,313"/>
+<area shape="rect" id="node11" href="$classripple_1_1tagged__integer.html" title=" " alt="" coords="256,310,463,350"/>
+<area shape="rect" id="node12" href="$classripple_1_1tagged__integer.html" title=" " alt="" coords="272,374,447,414"/>
+<area shape="rect" id="node13" href="$classripple_1_1tagged__integer.html" title=" " alt="" coords="266,438,453,478"/>
+<area shape="rect" id="node14" href="$structripple_1_1Rate.html" title="Represents a transfer rate." alt="" coords="311,503,408,528"/>
+<area shape="rect" id="node15" href="$classripple_1_1tagged__integer.html" title="A type&#45;safe wrap around standard integral types." alt="" coords="277,553,442,593"/>
+<area shape="rect" id="node16" title=" " alt="" coords="25,104,188,129"/>
 </map>
