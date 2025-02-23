@@ -332,6 +332,13 @@ mptoken(uint256 const& issuanceKey, AccountID const& holder) noexcept;
 Keylet
 firewall(AccountID const& account) noexcept;
 
+inline Keylet
+firewall(uint256 const& firewallID)
+{
+    return {ltFIREWALL, firewallID};
+}
+
+
 Keylet
 withdrawPreauth(
     AccountID const& owner,

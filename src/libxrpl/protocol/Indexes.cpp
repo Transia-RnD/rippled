@@ -524,7 +524,11 @@ credential(
 Keylet
 firewall(AccountID const& account) noexcept
 {
-    return {ltFIREWALL, indexHash(LedgerNameSpace::FIREWALL, account)};
+    return {
+        ltFIREWALL,
+        indexHash(
+            LedgerNameSpace::FIREWALL,
+            account)};
 }
 
 Keylet

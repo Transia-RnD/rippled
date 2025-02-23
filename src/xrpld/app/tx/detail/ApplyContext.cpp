@@ -154,4 +154,109 @@ ApplyContext::checkInvariants(TER const result, XRPAmount const fee)
         std::make_index_sequence<std::tuple_size<InvariantChecks>::value>{});
 }
 
+TER
+ApplyContext::checkGuards(TER const result)
+{
+    // assert(isTesSuccess(result) || isTecClaim(result));
+
+    // // if (ctx_.tx.getTxnType() == ttFIREWALL_SET)
+    // // {
+    // //     JLOG(j_.debug())
+    // //         << "checkFirewall: Ignoring firewall settings transaction";
+    // //     return tesSUCCESS;
+    // // }
+
+    // AccountID const account = tx.getAccountID(sfAccount);
+    // auto const sleFirewall = view().peek(keylet::firewall(account));
+    // if (!sleFirewall)
+    // {
+    //     // JLOG(j_.debug()) << "checkFirewall: No firewall settings found";
+    //     return tesSUCCESS;
+    // }
+
+    // if (tx.isFieldPresent(sfDestination))
+    // {
+    //     AccountID const dest = tx.getAccountID(sfDestination);
+    //     if (auto const sleWithdrawPreauth = view().read(keylet::withdrawPreauth(account, dest)); sleWithdrawPreauth)
+    //     {
+    //         // JLOG(j_.debug()) << "checkFirewall: Preauthorized transactions are not blocked";
+    //         return tesSUCCESS;
+    //     }
+    // }
+
+    // // Reject Pathing Transactions?
+    // // Check self transactions?
+
+    // bool const hasOutgoingAmountLimit = sleFirewall->isFieldPresent(sfAmount);
+    // bool const hasOutgoingTimeLimit =
+    //     sleFirewall->isFieldPresent(sfTimePeriod) &&
+    //     sleFirewall->isFieldPresent(sfTimeStart) &&
+    //     sleFirewall->isFieldPresent(sfTimeAmount);
+    // if (hasOutgoingAmountLimit)
+    // {
+    //     STAmount outgoingAmountLimit = sleFirewall->getFieldAmount(sfAmount);
+    //     STAmount outgoingAmount = STAmount{0};
+    //     ctx_.visit([&outgoingAmount, account](
+    //                    uint256 const& index,
+    //                    bool isDelete,
+    //                    std::shared_ptr<SLE const> const& before,
+    //                    std::shared_ptr<SLE const> const& after) {
+    //         if (before && after &&
+    //             (before->getType() == ltACCOUNT_ROOT &&
+    //              before->getAccountID(sfAccount) == account))
+    //         {
+    //             STAmount const beforeBalance =
+    //                 before->getFieldAmount(sfBalance);
+    //             STAmount const afterBalance = after->getFieldAmount(sfBalance);
+    //             if (afterBalance < beforeBalance)
+    //                 outgoingAmount = beforeBalance - afterBalance;
+    //         }
+    //     });
+
+    //     if (hasOutgoingTimeLimit)
+    //     {
+    //         // Firewall with time period and amount limit
+    //         std::uint32_t const currentTime =
+    //             view().parentCloseTime().time_since_epoch().count();
+    //         std::uint32_t const startTime =
+    //             sleFirewall->getFieldU32(sfTimeStart);
+    //         std::uint32_t const timePeriod =
+    //             sleFirewall->getFieldU32(sfTimePeriod);
+    //         STAmount outgoingTotal = sleFirewall->getFieldAmount(sfTimeAmount);
+
+    //         // Check if the monitoring period has expired
+    //         if (startTime == 0 || (currentTime - startTime > timePeriod))
+    //         {
+    //             // Reset the monitoring period
+    //             resetFirewallOutgoingTimer(view(), sleFirewall, currentTime);
+    //             outgoingTotal = outgoingAmount;
+    //         }
+    //         else
+    //         {
+    //             // Add the transaction amount to the ongoing total
+    //             outgoingTotal += outgoingAmount;
+    //         }
+
+    //         // Check if the transaction amount exceeds the firewall limit
+    //         if (outgoingTotal <= outgoingAmountLimit)
+    //         {
+    //             updateFirewallOutgoingTotal(view(), sleFirewall, outgoingTotal);
+    //             return tesSUCCESS;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         // Firewall with amount limit
+    //         if (outgoingAmount <= outgoingAmountLimit)
+    //         {
+    //             // JLOG(j_.debug()) << "checkFirewall: Transaction amount within limit";
+    //             return tesSUCCESS;
+    //         }
+    //     }
+    // }
+
+    // // JLOG(j_.debug()) << "checkFirewall: Firewall block due to amount limit";
+    return tecFIREWALL_BLOCK;
+}
+
 }  // namespace ripple

@@ -155,6 +155,18 @@ InnerObjectFormats::InnerObjectFormats()
             {sfCredentialType, soeREQUIRED},
         });
 
+    add(sfFirewallRule.jsonName.c_str(),
+        sfFirewallRule.getCode(),
+        {
+            {sfLedgerEntryType, soeREQUIRED},
+            {sfFieldCode, soeREQUIRED},
+            {sfComparisonOperator, soeREQUIRED}, // == (0) != (1) > (2) < (3)
+            {sfAmount, soeREQUIRED},
+            {sfTimePeriod, soeOPTIONAL},
+            {sfTimeStart, soeOPTIONAL}, // Used By Protocol
+            {sfTimeAmount, soeOPTIONAL},  // Used By Protocol
+        });
+
     add(sfFirewallSigner.jsonName.c_str(),
         sfFirewallSigner.getCode(),
         {

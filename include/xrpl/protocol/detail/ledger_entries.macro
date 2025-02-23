@@ -443,10 +443,7 @@ LEDGER_ENTRY(ltCREDENTIAL, 0x0081, Credential, ({
 LEDGER_ENTRY(ltFIREWALL, 0x0046, Firewall, ({
     {sfOwner,               soeREQUIRED},
     {sfIssuer,              soeREQUIRED},
-    {sfAmount,              soeOPTIONAL},
-    {sfTimePeriod,          soeOPTIONAL},
-    {sfTimePeriodStart,     soeOPTIONAL},
-    {sfTotalOut,            soeOPTIONAL},
+    {sfFirewallRules,       soeOPTIONAL},
     {sfOwnerNode,           soeREQUIRED},
     {sfPreviousTxnID,       soeREQUIRED},
     {sfPreviousTxnLgrSeq,   soeREQUIRED}

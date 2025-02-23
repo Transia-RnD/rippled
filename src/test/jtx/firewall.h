@@ -34,6 +34,35 @@ namespace firewall {
 Json::Value
 set(Account const& account, std::uint32_t const& seq, STAmount const& fee);
 
+/** Adds a new Incoming Firewall Rule on a JTx and autofills. */
+class rule
+{
+private:
+    std::uint16_t leType_;
+    std::uint32_t fieldCode_;
+    std::uint16_t op_;
+    STAmount amt_;
+    std::optional<std::uint32_t> timePeriod_;
+
+public:
+    rule(
+        std::uint16_t const& leType,
+        std::uint32_t const& fieldCode,
+        std::uint16_t const& op,
+        STAmount const& amt,
+        std::optional<std::uint32_t> const& timePeriod = std::nullopt)
+        : leType_(leType)
+        , fieldCode_(fieldCode)
+        , op_(op)
+        , amt_(amt)
+        , timePeriod_(timePeriod)
+    {
+    }
+
+    void
+    operator()(Env&, JTx& jtx) const;
+};
+
 /** Sets the optional TimePeriod on a JTx. */
 class time_period
 {
@@ -42,21 +71,6 @@ private:
 
 public:
     explicit time_period(std::uint32_t const& value) : value_(value)
-    {
-    }
-
-    void
-    operator()(Env&, JTx& jtx) const;
-};
-
-/** Sets the optional Amount on a JTx. */
-class amt
-{
-private:
-    STAmount amt_;
-
-public:
-    explicit amt(STAmount const& amt) : amt_(amt)
     {
     }
 

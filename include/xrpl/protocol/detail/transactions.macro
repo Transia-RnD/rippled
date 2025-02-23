@@ -451,17 +451,17 @@ TRANSACTION(ttCREDENTIAL_DELETE, 60, CredentialDelete, ({
 TRANSACTION(ttWITHDRAW_PREAUTH, 61, WithdrawPreauth, ({
     {sfAuthorize, soeOPTIONAL},
     {sfUnauthorize, soeOPTIONAL},
-    {sfPublicKey, soeREQUIRED},
-    {sfSignature, soeREQUIRED},
+    {sfFirewallSigners, soeOPTIONAL},
+    {sfFirewallID, soeREQUIRED},
 }))
 
 /** This transaction type creates an Firewall instance */
 TRANSACTION(ttFIREWALL_SET, 62, FirewallSet, ({
     {sfIssuer, soeOPTIONAL},
     {sfAuthorize, soeOPTIONAL},
-    {sfAmount, soeOPTIONAL},
-    {sfTimePeriod, soeOPTIONAL},
+    {sfFirewallRules, soeOPTIONAL},
     {sfFirewallSigners, soeOPTIONAL},
+    {sfFirewallID, soeOPTIONAL},
 }))
 
 // /** This transaction type deletes an Firewall instance */

@@ -50,41 +50,13 @@ FirewallSet::preflight(PreflightContext const& ctx)
     if (auto const ret = preflight1(ctx); !isTesSuccess(ret))
         return ret;
 
-    // auto const amount = ctx.tx[~sfAmount];
-
-    // if (amount.issue() == amount2.issue())
-    // {
-    //     JLOG(ctx.j.debug())
-    //         << "FirewallSet: tokens can not have the same currency/issuer.";
-    //     return temBAD_AMM_TOKENS;
-    // }
-
-    // if (auto const err = invalidAmount(amount))
-    // {
-    //     JLOG(ctx.j.debug()) << "FirewallSet: invalid asset1 amount.";
-    //     return err;
-    // }
-
-    // Validate Authorize
-    if (ctx.tx.isFieldPresent(sfAuthorize))
+    if (!ctx.tx.isFieldPresent(sfFirewallID))
     {
-        auto const backupID = ctx.tx.getAccountID(sfAuthorize);
-        // Make sure that the passed account is valid.
-        if (backupID == beast::zero)
-        {
-            JLOG(ctx.j.debug())
-                << "Malformed transaction: Authorized or Unauthorized "
-                   "field zeroed.";
-            return temINVALID_ACCOUNT_ID;
-        }
-
-        // An account may not preauthorize itself.
-        if (backupID == ctx.tx[sfAccount])
-        {
-            JLOG(ctx.j.debug())
-                << "Malformed transaction: Attempting to WithdrawPreauth self.";
-            return temCANNOT_PREAUTH_SELF;
-        }
+        // Create Firewall
+    }
+    else
+    {
+        // Update Firewall
     }
 
     return preflight2(ctx);
@@ -93,90 +65,13 @@ FirewallSet::preflight(PreflightContext const& ctx)
 TER
 FirewallSet::preclaim(PreclaimContext const& ctx)
 {
-    AccountID const accountID = ctx.tx[sfAccount];
-    ripple::Keylet const firewallKeylet = keylet::firewall(accountID);
-    auto const sleFirewall = ctx.view.read(firewallKeylet);
-
-    if (!sleFirewall)
+    if (!ctx.tx.isFieldPresent(sfFirewallID))
     {
-        if (ctx.tx.isFieldPresent(sfFirewallSigners))
-        {
-            JLOG(ctx.j.debug())
-                << "FirewallSet: Set must not contain a sfFirewallSigners";
-            return temMALFORMED;
-        }
-        if (!ctx.tx.isFieldPresent(sfAuthorize))
-        {
-            JLOG(ctx.j.debug()) << "FirewallSet: Set must contain a sfAuthorize";
-            return temMALFORMED;
-        }
-        if (!ctx.tx.isFieldPresent(sfIssuer))
-        {
-            JLOG(ctx.j.debug()) << "FirewallSet: Set must contain a sfIssuer";
-            return temMALFORMED;
-        }
+        // Create Firewall
     }
     else
     {
-        if (ctx.tx.isFieldPresent(sfAuthorize))
-        {
-            JLOG(ctx.j.debug())
-                << "FirewallSet: Update cannot contain a sfAuthorize";
-            return temMALFORMED;
-        }
-
-        if (!ctx.tx.isFieldPresent(sfFirewallSigners))
-        {
-            JLOG(ctx.j.debug()) << "FirewallSet: Update must contain sfFirewallSigners";
-            return temMALFORMED;
-        }
-
-        std::set<AccountID> firewallSignersSet;
-        if (ctx.tx.isFieldPresent(sfFirewallSigners))
-        {
-            STArray const signers = ctx.tx.getFieldArray(sfFirewallSigners);
-
-            // Check that the firewall signers array is not too large.
-            if (signers.size() > 8)
-            {
-                JLOG(ctx.j.trace()) << "FirewallSet: signers array exceeds 8 entries.";
-                return temARRAY_TOO_LARGE;
-            }
-
-            // Add the batch signers to the set.
-            for (auto const& signer : signers)
-            {
-                AccountID const innerAccount = signer.getAccountID(sfAccount);
-                if (!firewallSignersSet.insert(innerAccount).second)
-                {
-                    JLOG(ctx.j.trace())
-                        << "FirewallSet: Duplicate signer found: " << innerAccount;
-                    return temBAD_SIGNER;
-                }
-            }
-
-            // Check the batch signers signatures.
-            auto const requireCanonicalSig =
-                ctx.view.rules().enabled(featureRequireFullyCanonicalSig)
-                ? STTx::RequireFullyCanonicalSig::yes
-                : STTx::RequireFullyCanonicalSig::no;
-            auto const sigResult =
-                ctx.tx.checkFirewallSign(requireCanonicalSig, ctx.view.rules());
-
-            if (!sigResult)
-            {
-                JLOG(ctx.j.trace()) << "FirewallSet: invalid batch txn signature.";
-                return temBAD_SIGNATURE;
-            }
-        }
-
-        if (ctx.tx.isFieldPresent(sfFirewallSigners) &&
-            firewallSignersSet.size() != ctx.tx.getFieldArray(sfFirewallSigners).size())
-        {
-            JLOG(ctx.j.trace())
-                << "FirewallSet: unique signers does not match firewall signers.";
-            return temBAD_SIGNER;
-        }
+        // Update Firewall
     }
 
     return tesSUCCESS;
@@ -194,23 +89,22 @@ FirewallSet::doApply()
         return tefINTERNAL;
     }
 
-    ripple::Keylet const firewallKeylet = keylet::firewall(account_);
-    auto sleFirewall = sb.peek(firewallKeylet);
-    if (!sleFirewall)
+    if (!ctx_.tx.isFieldPresent(sfFirewallID))
     {
+        // Create Firewall
+        ripple::Keylet const firewallKeylet = keylet::firewall(account_);
         auto const sleFirewall = std::make_shared<SLE>(firewallKeylet);
         (*sleFirewall)[sfOwner] = account_;
         sleFirewall->setAccountID(sfIssuer, ctx_.tx.getAccountID(sfIssuer));
-        if (ctx_.tx.isFieldPresent(sfAmount))
-            sleFirewall->setFieldAmount(
-                sfAmount, ctx_.tx.getFieldAmount(sfAmount));
+        if (ctx_.tx.isFieldPresent(sfFirewallRules))
+            sleFirewall->setFieldArray(sfFirewallRules, ctx_.tx.getFieldArray(sfFirewallRules));
 
-        if (ctx_.tx.isFieldPresent(sfTimePeriod))
-        {
-            sleFirewall->setFieldU32(sfTimePeriod, ctx_.tx.getFieldU32(sfTimePeriod));
-            sleFirewall->setFieldU32(sfTimePeriodStart, ctx_.view().parentCloseTime().time_since_epoch().count());
-            sleFirewall->setFieldAmount(sfTotalOut, STAmount{0});
-        }
+        // if (ctx_.tx.isFieldPresent(sfTimePeriod))
+        // {
+        //     sleFirewall->setFieldU32(sfTimePeriod, ctx_.tx.getFieldU32(sfTimePeriod));
+        //     sleFirewall->setFieldU32(sfTimeStart, ctx_.view().parentCloseTime().time_since_epoch().count());
+        //     sleFirewall->setFieldAmount(sfTimeAmount, STAmount{0});
+        // }
 
         if (auto const page = sb.dirInsert(
                 keylet::ownerDir(account_),
@@ -259,12 +153,22 @@ FirewallSet::doApply()
     }
     else
     {
+        // Update Firewall
+        uint256 const firewallID = ctx_.tx.getFieldH256(sfFirewallID);
+        ripple::Keylet const firewallKeylet = keylet::firewall(firewallID);
+        auto sleFirewall = sb.peek(firewallKeylet);
+        if (!sleFirewall)
+        {
+            JLOG(j_.debug()) << "FirewallSet: Firewall not found";
+            return tefINTERNAL;
+        }
+
         if (ctx_.tx.isFieldPresent(sfIssuer))
             sleFirewall->setAccountID(
                 sfIssuer, ctx_.tx.getAccountID(sfIssuer));
-        if (ctx_.tx.isFieldPresent(sfAmount))
-            sleFirewall->setFieldAmount(
-                sfAmount, ctx_.tx.getFieldAmount(sfAmount));
+        // if (ctx_.tx.isFieldPresent(sfAmount))
+        //     sleFirewall->setFieldAmount(
+        //         sfAmount, ctx_.tx.getFieldAmount(sfAmount));
 
         sb.update(sleFirewall);
     }

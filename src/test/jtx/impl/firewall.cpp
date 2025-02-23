@@ -45,15 +45,25 @@ set(Account const& account, std::uint32_t const& seq, STAmount const& fee)
 }
 
 void
-time_period::operator()(Env& env, JTx& jt) const
+rule::operator()(Env& env, JTx& jt) const
 {
-    jt.jv[sfTimePeriod.jsonName] = value_;
+    auto const index = jt.jv[jss::FirewallRules].size();
+    Json::Value& rule = jt.jv[jss::FirewallRules][index];
+
+    // Initialize the firewall rule
+    rule = Json::Value{};
+    rule[jss::FirewallRule][sfLedgerEntryType.jsonName] = leType_;
+    rule[jss::FirewallRule][sfFieldCode.jsonName] = fieldCode_;
+    rule[jss::FirewallRule][sfComparisonOperator.jsonName] = op_;
+    rule[jss::FirewallRule][sfAmount.jsonName] = amt_.getJson(JsonOptions::none);
+    // if (timePeriod.has_value())
+    //     rule[jss::FirewallRule][sfTimePeriod.jsonName] = timePeriod_;
 }
 
 void
-amt::operator()(Env& env, JTx& jt) const
+time_period::operator()(Env& env, JTx& jt) const
 {
-    jt.jv[sfAmount.jsonName] = amt_.getJson(JsonOptions::none);
+    jt.jv[sfTimePeriod.jsonName] = value_;
 }
 
 void

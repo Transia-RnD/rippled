@@ -110,6 +110,9 @@ public:
     TER
     checkInvariants(TER const result, XRPAmount const fee);
 
+    TER
+    checkGuards(TER const result);
+
 private:
     TER
     failInvariantCheck(TER const result);

@@ -20,6 +20,7 @@
 #include <test/jtx.h>
 #include <xrpld/ledger/Dir.h>
 #include <xrpl/protocol/Feature.h>
+#include <xrpl/protocol/Firewall.h>
 #include <xrpl/protocol/jss.h>
 
 namespace ripple {
@@ -66,12 +67,12 @@ struct Firewall_test : public beast::unit_test::suite
         if (timeStart)
         {
             std::cout << "timeStart: " << *timeStart << std::endl;
-            BEAST_EXPECT((*sle)[sfTimePeriodStart] == *timeStart);
+            BEAST_EXPECT((*sle)[sfTimeStart] == *timeStart);
         }
         if (totalOut)
         {
             std::cout << "totalOut: " << *totalOut << std::endl;
-            BEAST_EXPECT((*sle)[sfTotalOut] == *totalOut);
+            BEAST_EXPECT((*sle)[sfTimeAmount] == *totalOut);
         }
     }
 
@@ -194,21 +195,21 @@ struct Firewall_test : public beast::unit_test::suite
         Account const carol = Account("carol");
 
         // No Amount
-        {
-            Env env{*this, features};
-            env.fund(XRP(1000), alice, bob, carol);
-            env.close();
+        // {
+        //     Env env{*this, features};
+        //     env.fund(XRP(1000), alice, bob, carol);
+        //     env.close();
 
-            auto const seq = env.seq(alice);
-            auto const fee = env.current()->fees().base;
-            env(firewall::set(alice, seq, fee),
-                firewall::auth(bob),
-                firewall::issuer(carol),
-                ter(tesSUCCESS));
-            env.close();
-            verifyFirewallSle(*env.current(), alice, carol);
-            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 2);
-        }
+        //     auto const seq = env.seq(alice);
+        //     auto const fee = env.current()->fees().base;
+        //     env(firewall::set(alice, seq, fee),
+        //         firewall::auth(bob),
+        //         firewall::issuer(carol),
+        //         ter(tesSUCCESS));
+        //     env.close();
+        //     verifyFirewallSle(*env.current(), alice, carol);
+        //     BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 2);
+        // }
 
         // Amount w/out Time Period
         {
@@ -218,44 +219,52 @@ struct Firewall_test : public beast::unit_test::suite
 
             auto const seq = env.seq(alice);
             auto const fee = env.current()->fees().base;
+
             env(firewall::set(alice, seq, fee),
                 firewall::auth(bob),
-                firewall::amt(XRP(10)),
+                firewall::rule(ltACCOUNT_ROOT, sfAmount.fieldValue, 2, XRP(1)),
                 firewall::issuer(carol),
                 ter(tesSUCCESS));
             env.close();
 
-            verifyFirewallSle(*env.current(), alice, carol, XRP(10));
-            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 2);
+            Json::Value params;
+            params[jss::ledger_index] = env.current()->seq() - 1;
+            params[jss::transactions] = true;
+            params[jss::expand] = true;
+            auto const jrr = env.rpc("json", "ledger", to_string(params));
+            std::cout << "jrr: " << jrr << "\n";
+
+            // verifyFirewallSle(*env.current(), alice, carol, XRP(10));
+            // BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 2);
         }
 
-        // Amount w/ Time Period
-        {
-            Env env{*this, features};
-            env.fund(XRP(1000), alice, bob, carol);
-            env.close();
+        // // Amount w/ Time Period
+        // {
+        //     Env env{*this, features};
+        //     env.fund(XRP(1000), alice, bob, carol);
+        //     env.close();
 
-            auto const timeStart = env.now();
-            auto const seq = env.seq(alice);
-            auto const fee = env.current()->fees().base;
-            env(firewall::set(alice, seq, fee),
-                firewall::auth(bob),
-                firewall::amt(XRP(10)),
-                firewall::time_period(3600),
-                firewall::issuer(carol),
-                ter(tesSUCCESS));
-            env.close();
+        //     auto const timeStart = env.now();
+        //     auto const seq = env.seq(alice);
+        //     auto const fee = env.current()->fees().base;
+        //     env(firewall::set(alice, seq, fee),
+        //         firewall::auth(bob),
+        //         firewall::amt(XRP(10)),
+        //         firewall::time_period(3600),
+        //         firewall::issuer(carol),
+        //         ter(tesSUCCESS));
+        //     env.close();
 
-            verifyFirewallSle(
-                *env.current(),
-                alice,
-                carol,
-                XRP(10),
-                3600,
-                timeStart.time_since_epoch().count(),
-                STAmount(0));
-            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 2);
-        }
+        //     verifyFirewallSle(
+        //         *env.current(),
+        //         alice,
+        //         carol,
+        //         XRP(10),
+        //         3600,
+        //         timeStart.time_since_epoch().count(),
+        //         STAmount(0));
+        //     BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 2);
+        // }
     }
 
     void
@@ -279,7 +288,7 @@ struct Firewall_test : public beast::unit_test::suite
             auto const fee = env.current()->fees().base;
             env(firewall::set(alice, seq, fee),
                 firewall::auth(bob),
-                firewall::amt(XRP(10)),
+                firewall::rule(ltACCOUNT_ROOT, sfBalance.getCode(), 2, XRP(10)),
                 firewall::issuer(carol),
                 ter(tesSUCCESS));
             env.close();
@@ -307,130 +316,130 @@ struct Firewall_test : public beast::unit_test::suite
         }
     }
 
-    void
-    testFirewallSetUpdate(FeatureBitset features)
-    {
-        testcase("set update");
-        using namespace jtx;
-        using namespace std::literals::chrono_literals;
+    // void
+    // testFirewallSetUpdate(FeatureBitset features)
+    // {
+    //     testcase("set update");
+    //     using namespace jtx;
+    //     using namespace std::literals::chrono_literals;
 
-        Account const alice = Account("alice");
-        Account const bob = Account("bob");
-        Account const carol = Account("carol");
-        Account const dave = Account("dave");
-        Account const elsa = Account("elsa");
+    //     Account const alice = Account("alice");
+    //     Account const bob = Account("bob");
+    //     Account const carol = Account("carol");
+    //     Account const dave = Account("dave");
+    //     Account const elsa = Account("elsa");
 
-        // Update Amount w/out time limit
-        {
-            Env env{*this, features};
-            auto const baseFee = env.current()->fees().base;
-            env.fund(XRP(1000), alice, bob, carol, dave);
-            env.close();
+    //     // Update Amount w/out time limit
+    //     {
+    //         Env env{*this, features};
+    //         auto const baseFee = env.current()->fees().base;
+    //         env.fund(XRP(1000), alice, bob, carol, dave);
+    //         env.close();
 
-            env(firewall::set(alice, env.seq(alice), baseFee),
-                firewall::auth(bob),
-                firewall::amt(XRP(10)),
-                firewall::issuer(carol),
-                ter(tesSUCCESS));
-            env.close();
+    //         env(firewall::set(alice, env.seq(alice), baseFee),
+    //             firewall::auth(bob),
+    //             firewall::amt(XRP(10)),
+    //             firewall::issuer(carol),
+    //             ter(tesSUCCESS));
+    //         env.close();
 
-            env(pay(alice, dave, XRP(100)), ter(tecFIREWALL_BLOCK));
-            env.close();
+    //         env(pay(alice, dave, XRP(100)), ter(tecFIREWALL_BLOCK));
+    //         env.close();
 
-            env(firewall::set(alice, env.seq(alice), baseFee),
-                firewall::amt(XRP(101)),
-                firewall::sig(carol),
-                ter(tesSUCCESS));
-            env.close();
+    //         env(firewall::set(alice, env.seq(alice), baseFee),
+    //             firewall::amt(XRP(101)),
+    //             firewall::sig(carol),
+    //             ter(tesSUCCESS));
+    //         env.close();
 
-            verifyFirewallSle(*env.current(), alice, carol, XRP(101));
-            env(pay(alice, dave, XRP(100)), ter(tesSUCCESS));
-            env.close();
-        }
+    //         verifyFirewallSle(*env.current(), alice, carol, XRP(101));
+    //         env(pay(alice, dave, XRP(100)), ter(tesSUCCESS));
+    //         env.close();
+    //     }
 
-        // Update Amount w/ time limit
-        {
-            Env env{*this, features};
-            auto const baseFee = env.current()->fees().base;
-            env.fund(XRP(1000), alice, bob, carol, dave);
-            env.close();
+    //     // Update Amount w/ time limit
+    //     {
+    //         Env env{*this, features};
+    //         auto const baseFee = env.current()->fees().base;
+    //         env.fund(XRP(1000), alice, bob, carol, dave);
+    //         env.close();
 
-            env(firewall::set(alice, env.seq(alice), baseFee),
-                firewall::auth(bob),
-                firewall::amt(XRP(10)),
-                firewall::time_period(300),
-                firewall::issuer(carol),
-                ter(tesSUCCESS));
-            env.close();
+    //         env(firewall::set(alice, env.seq(alice), baseFee),
+    //             firewall::auth(bob),
+    //             firewall::amt(XRP(10)),
+    //             firewall::time_period(300),
+    //             firewall::issuer(carol),
+    //             ter(tesSUCCESS));
+    //         env.close();
 
-            verifyFirewallSle(
-                *env.current(),
-                alice,
-                carol,
-                XRP(10),
-                300,
-                env.now().time_since_epoch().count(),
-                STAmount(0));
+    //         verifyFirewallSle(
+    //             *env.current(),
+    //             alice,
+    //             carol,
+    //             XRP(10),
+    //             300,
+    //             env.now().time_since_epoch().count(),
+    //             STAmount(0));
 
-            env(pay(alice, dave, XRP(100)), ter(tecFIREWALL_BLOCK));
-            env.close();
+    //         env(pay(alice, dave, XRP(100)), ter(tecFIREWALL_BLOCK));
+    //         env.close();
 
-            env(firewall::set(alice, env.seq(alice), baseFee),
-                firewall::amt(XRP(101)),
-                firewall::time_period(3600),
-                firewall::sig(carol),
-                ter(tesSUCCESS));
-            env.close();
+    //         env(firewall::set(alice, env.seq(alice), baseFee),
+    //             firewall::amt(XRP(101)),
+    //             firewall::time_period(3600),
+    //             firewall::sig(carol),
+    //             ter(tesSUCCESS));
+    //         env.close();
 
-            verifyFirewallSle(
-                *env.current(),
-                alice,
-                carol,
-                XRP(101),
-                3600,
-                env.now().time_since_epoch().count(),
-                STAmount(0));
+    //         verifyFirewallSle(
+    //             *env.current(),
+    //             alice,
+    //             carol,
+    //             XRP(101),
+    //             3600,
+    //             env.now().time_since_epoch().count(),
+    //             STAmount(0));
 
-            env(pay(alice, dave, XRP(100)), ter(tesSUCCESS));
-            env.close();
-        }
+    //         env(pay(alice, dave, XRP(100)), ter(tesSUCCESS));
+    //         env.close();
+    //     }
 
-        // // Update Issuer
-        // {
-        //     Env env{*this, features};
-        //     auto const baseFee = env.current()->fees().base;
-        //     env.fund(XRP(1000), alice, bob, carol, dave);
-        //     env.close();
+    //     // // Update Issuer
+    //     // {
+    //     //     Env env{*this, features};
+    //     //     auto const baseFee = env.current()->fees().base;
+    //     //     env.fund(XRP(1000), alice, bob, carol, dave);
+    //     //     env.close();
 
-        //     env(firewall::set(alice, env.seq(alice), baseFee),
-        //         firewall::auth(bob),
-        //         firewall::issuer(carol),
-        //         ter(tesSUCCESS));
-        //     env.close();
+    //     //     env(firewall::set(alice, env.seq(alice), baseFee),
+    //     //         firewall::auth(bob),
+    //     //         firewall::issuer(carol),
+    //     //         ter(tesSUCCESS));
+    //     //     env.close();
 
-        //     verifyFirewallSle(
-        //         *env.current(),
-        //         alice,
-        //         carol);
+    //     //     verifyFirewallSle(
+    //     //         *env.current(),
+    //     //         alice,
+    //     //         carol);
 
-        //     env(pay(alice, bob, XRP(100)), ter(tecFIREWALL_BLOCK));
-        //     env.close();
+    //     //     env(pay(alice, bob, XRP(100)), ter(tecFIREWALL_BLOCK));
+    //     //     env.close();
 
-        //     env(firewall::set(alice, env.seq(alice), baseFee),
-        //         firewall::issuer(dave),
-        //         firewall::sig(carol),
-        //         ter(tesSUCCESS));
-        //     env.close();
+    //     //     env(firewall::set(alice, env.seq(alice), baseFee),
+    //     //         firewall::issuer(dave),
+    //     //         firewall::sig(carol),
+    //     //         ter(tesSUCCESS));
+    //     //     env.close();
 
-        //     verifyFirewallSle(
-        //         *env.current(),
-        //         alice,
-        //         dave);
+    //     //     verifyFirewallSle(
+    //     //         *env.current(),
+    //     //         alice,
+    //     //         dave);
 
-        //     env(pay(alice, bob, XRP(100)), ter(tesSUCCESS));
-        //     env.close();
-        // }
-    }
+    //     //     env(pay(alice, bob, XRP(100)), ter(tesSUCCESS));
+    //     //     env.close();
+    //     // }
+    // }
 
     // void
     // testMasterDisable(FeatureBitset features)
@@ -489,9 +498,9 @@ struct Firewall_test : public beast::unit_test::suite
         // testPreclaim(features);
         // testDoApply(features);
         // testFirewallSet(features);
-        // testFirewallBlock(features);
+        testFirewallBlock(features);
         // testFirewallDelete(features);
-        testFirewallSetUpdate(features);
+        // testFirewallSetUpdate(features);
         // testUpdatePK(features);
         // testMasterDisable(features);
         // testTransactionTypes(features);

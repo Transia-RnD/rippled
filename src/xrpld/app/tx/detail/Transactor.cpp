@@ -453,7 +453,7 @@ updateFirewallOutgoingTotal(
     SLE::pointer const& sleFirewall,
     STAmount const& totalOut)
 {
-    sleFirewall->setFieldAmount(sfTotalOut, totalOut);
+    sleFirewall->setFieldAmount(sfTimeAmount, totalOut);
     view.update(sleFirewall);
 }
 
@@ -475,8 +475,150 @@ resetFirewallOutgoingTimer(
     SLE::pointer const& sleFirewall,
     std::uint32_t const& currentTime)
 {
-    sleFirewall->setFieldU32(sfTimePeriodStart, currentTime);
+    sleFirewall->setFieldU32(sfTimeStart, currentTime);
     view.update(sleFirewall);
+}
+
+std::vector<STObject>
+getFirewallRules(STArray const& rules, LedgerEntryType const& type)
+{
+    std::vector<STObject> matchingRules;
+    for (auto const& rule : rules)
+    {
+        if (rule.getFieldU16(sfLedgerEntryType) == type)
+            matchingRules.push_back(rule);
+    }
+    return matchingRules;
+}
+
+TER
+balanceFirewallInvariant(
+    ApplyView& view,
+    SLE::pointer const& sleFirewall,
+    STObject const& rule,
+    SField const& fieldType,
+    std::shared_ptr<SLE const> const& before,
+    std::shared_ptr<SLE const> const& after)
+{
+    STAmount const& beforeField = before->getFieldAmount(fieldType);
+    STAmount const& afterField = after->getFieldAmount(fieldType);
+    bool const isDecrease = afterField < beforeField;
+
+    bool const hasTimeLimit = rule.isFieldPresent(sfTimePeriod) &&
+        rule.isFieldPresent(sfTimeStart) && rule.isFieldPresent(sfTimeAmount);
+    if (hasTimeLimit)
+    {
+        // Firewall with time period and amount limit
+        std::uint32_t const currentTime =
+            view.parentCloseTime().time_since_epoch().count();
+        std::uint32_t const startTime = rule.getFieldU32(sfTimeStart);
+        std::uint32_t const timePeriod = rule.getFieldU32(sfTimePeriod);
+        STAmount total = rule.getFieldAmount(sfTimeAmount);
+
+        // Check if the monitoring period has expired
+        if (startTime == 0 || (currentTime - startTime > timePeriod))
+        {
+            // Reset the monitoring period
+            resetFirewallOutgoingTimer(view, sleFirewall, currentTime);
+            total = isDecrease ? beforeField - afterField
+                               : afterField - beforeField;
+        }
+        else
+        {
+            // Add the transaction amount to the ongoing total
+            total += isDecrease ? beforeField - afterField
+                                : afterField - beforeField;
+        }
+
+        // Check if the transaction amount exceeds the firewall
+        // limit
+        if (total <= rule.getFieldAmount(sfAmount))
+        {
+            updateFirewallOutgoingTotal(view, sleFirewall, total);
+            return tesSUCCESS;
+        }
+    }
+    else
+    {
+        // Firewall with amount limit
+        if (isDecrease &&
+            beforeField - afterField <= rule.getFieldAmount(sfAmount))
+            return tesSUCCESS;
+    }
+    return tecFIREWALL_BLOCK;
+}
+
+TER
+accountRootFirewallRule(
+    ApplyView& view,
+    SLE::pointer const& sleFirewall,
+    STObject const& rule,
+    std::shared_ptr<SLE const> const& before,
+    std::shared_ptr<SLE const> const& after)
+{
+    auto const fieldCode = rule.getFieldU32(sfFieldCode);
+    SField const& fieldType = ripple::SField::getField(fieldCode);
+    if (!before->isFieldPresent(fieldType) || !after->isFieldPresent(fieldType))
+    {
+        std::cout << "checkFirewall: Field not found" << std::endl;
+        return tesSUCCESS;
+    }
+
+    if (fieldType == sfBalance)
+    {
+        return balanceFirewallInvariant(view, sleFirewall, rule, fieldType, before, after);
+    }
+    return tesSUCCESS;
+}
+
+/**
+ * @brief Checks if a transaction passes the firewall rules for an account.
+ *
+ * This function verifies if a transaction is allowed based on the firewall
+ * settings associated with the account. It checks for the presence of firewall
+ * settings, destination account authorization, preauthorization, and amount
+ * limits.
+ *
+ * @param view The ApplyView object representing the current view of the ledger.
+ * @param after A shared pointer to the SLE (Serialized Ledger Entry)
+ * representing the account after the transaction.
+ * @param before A shared pointer to the SLE (Serialized Ledger Entry)
+ * representing the account before the transaction.
+ * @return A TER (Transaction Engine Result) code indicating the result of the
+ * check.
+ *         - tesSUCCESS: The transaction passes the firewall checks.
+ *         - tecFIREWALL_BLOCK: The transaction is blocked by the firewall.
+ */
+TER
+accountRootFirewall(
+    ApplyView& view,
+    LedgerEntryType const& type,
+    std::shared_ptr<SLE const> const& after,
+    std::shared_ptr<SLE const> const& before)
+{
+    AccountID const account = after->getAccountID(sfAccount);
+    auto const sleFirewall = view.peek(keylet::firewall(account));
+    if (!sleFirewall || !sleFirewall->isFieldPresent(sfFirewallRules))
+    {
+        std::cout << "checkFirewall: No firewall settings found" << std::endl;
+        return tesSUCCESS;
+    }
+
+    STArray const firewallRules = sleFirewall->getFieldArray(sfFirewallRules);
+    auto const leRules = getFirewallRules(firewallRules, type);
+    if (leRules.size() == 0)
+    {
+        std::cout << "checkFirewall: No firewall rules found for LedgerEntry: " << type << std::endl;
+        return tesSUCCESS;
+    }
+
+    for (auto const& rule : leRules)
+    {
+        auto const result = accountRootFirewallRule(view, sleFirewall, rule, before, after);
+        if (result != tesSUCCESS)
+            return result;
+    }
+    return tesSUCCESS;
 }
 
 /**
@@ -497,6 +639,7 @@ resetFirewallOutgoingTimer(
 TER
 Transactor::checkFirewall()
 {
+    auto const tx = ctx_.tx;
     if (ctx_.tx.getTxnType() == ttFIREWALL_SET)
     {
         JLOG(j_.debug())
@@ -504,103 +647,29 @@ Transactor::checkFirewall()
         return tesSUCCESS;
     }
 
-    AccountID const account = ctx_.tx.getAccountID(sfAccount);
-    auto const sleFirewall = view().peek(keylet::firewall(account));
-    if (!sleFirewall)
-    {
-        JLOG(j_.debug()) << "checkFirewall: No firewall settings found";
-        return tesSUCCESS;
-    }
-
-    if (ctx_.tx.isFieldPresent(sfDestination))
-    {
-        AccountID const dest = ctx_.tx.getAccountID(sfDestination);
-
-        // Check if there is a preauthorization for the destination account
-        if (auto const sleWithdrawPreauth =
-                view().read(keylet::withdrawPreauth(account, dest));
-            sleWithdrawPreauth)
+    bool isBlocked = false;
+    ctx_.visit([this, &isBlocked](
+                   uint256 const& index,
+                   bool isDelete,
+                   std::shared_ptr<SLE const> const& before,
+                   std::shared_ptr<SLE const> const& after) {
+        switch (after->getType())
         {
-            JLOG(j_.debug())
-                << "checkFirewall: Preauthorized transactions are not blocked";
-            return tesSUCCESS;
+            case ltACCOUNT_ROOT: {
+                auto const result = accountRootFirewall(view(), after->getType(), after, before);
+                if (result != tesSUCCESS)
+                    isBlocked = true;
+                return;
+            }
+            default:
+                return;
         }
-    }
+    });
 
-    // Reject Pathing Transactions?
-    // Check self transactions?
+    if (isBlocked)
+        return tecFIREWALL_BLOCK;
 
-    bool const hasOutgoingAmountLimit = sleFirewall->isFieldPresent(sfAmount);
-    bool const hasOutgoingTimeLimit =
-        sleFirewall->isFieldPresent(sfTimePeriod) &&
-        sleFirewall->isFieldPresent(sfTimePeriodStart) &&
-        sleFirewall->isFieldPresent(sfTotalOut);
-    if (hasOutgoingAmountLimit)
-    {
-        STAmount outgoingAmountLimit = sleFirewall->getFieldAmount(sfAmount);
-        STAmount outgoingAmount = STAmount{0};
-        ctx_.visit([&outgoingAmount, account](
-                       uint256 const& index,
-                       bool isDelete,
-                       std::shared_ptr<SLE const> const& before,
-                       std::shared_ptr<SLE const> const& after) {
-            if (before && after &&
-                (before->getType() == ltACCOUNT_ROOT &&
-                 before->getAccountID(sfAccount) == account))
-            {
-                STAmount const beforeBalance =
-                    before->getFieldAmount(sfBalance);
-                STAmount const afterBalance = after->getFieldAmount(sfBalance);
-                if (afterBalance < beforeBalance)
-                    outgoingAmount = beforeBalance - afterBalance;
-            }
-        });
-
-        if (hasOutgoingTimeLimit)
-        {
-            // Firewall with time period and amount limit
-            std::uint32_t const currentTime =
-                view().parentCloseTime().time_since_epoch().count();
-            std::uint32_t const startTime =
-                sleFirewall->getFieldU32(sfTimePeriodStart);
-            std::uint32_t const timePeriod =
-                sleFirewall->getFieldU32(sfTimePeriod);
-            STAmount outgoingTotal = sleFirewall->getFieldAmount(sfTotalOut);
-
-            // Check if the monitoring period has expired
-            if (startTime == 0 || (currentTime - startTime > timePeriod))
-            {
-                // Reset the monitoring period
-                resetFirewallOutgoingTimer(view(), sleFirewall, currentTime);
-                outgoingTotal = outgoingAmount;
-            }
-            else
-            {
-                // Add the transaction amount to the ongoing total
-                outgoingTotal += outgoingAmount;
-            }
-
-            // Check if the transaction amount exceeds the firewall limit
-            if (outgoingTotal <= outgoingAmountLimit)
-            {
-                updateFirewallOutgoingTotal(view(), sleFirewall, outgoingTotal);
-                return tesSUCCESS;
-            }
-        }
-        else
-        {
-            // Firewall with amount limit
-            if (outgoingAmount <= outgoingAmountLimit)
-            {
-                JLOG(j_.debug())
-                    << "checkFirewall: Transaction amount within limit";
-                return tesSUCCESS;
-            }
-        }
-    }
-
-    JLOG(j_.debug()) << "checkFirewall: Firewall block due to amount limit";
-    return tecFIREWALL_BLOCK;
+    return tesSUCCESS;
 }
 
 // check stuff before you bother to lock the ledger
@@ -654,7 +723,7 @@ Transactor::checkFirewallSign(PreclaimContext const& ctx)
     auto const sleFirewall = ctx.view.read(keylet::firewall(account));
     if (!sleFirewall)
         return tesSUCCESS;
-    
+
     // Check if the firewall has signers.
     auto const issuer = sleFirewall->getAccountID(sfIssuer);
     STArray const& signers(ctx.tx.getFieldArray(sfFirewallSigners));
@@ -685,7 +754,10 @@ Transactor::checkSign(PreclaimContext const& ctx)
 }
 
 NotTEC
-Transactor::checkSingleSign(PreclaimContext const& ctx, AccountID const& idAccount, Blob const& pkSigner)
+Transactor::checkSingleSign(
+    PreclaimContext const& ctx,
+    AccountID const& idAccount,
+    Blob const& pkSigner)
 {
     // Check that the value in the signing key slot is a public key.
     if (!publicKeyType(makeSlice(pkSigner)))
@@ -1194,9 +1266,25 @@ Transactor::operator()()
         applied = isTecClaim(result);
     }
 
-    // Handle Firewall
     if (applied)
+    {
+        // Check firewall: if `tecFIREWALL_BLOCK` is not returned, we can
+        // proceed to apply the tx
         result = checkFirewall();
+        if (result == tecFIREWALL_BLOCK)
+        {
+            // if invariants checking failed again, reset the context and
+            // attempt to only claim a fee.
+            auto const resetResult = reset(fee);
+            if (!isTesSuccess(resetResult.first))
+                result = resetResult.first;
+        }
+
+        // We ran through the invariant checker, which can, in some cases,
+        // return a tef error code. Don't apply the transaction in that case.
+        if (!isTecClaim(result) && !isTesSuccess(result))
+            applied = false;
+    }
 
     if (applied)
     {
