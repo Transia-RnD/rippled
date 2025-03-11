@@ -345,7 +345,6 @@ firewall(uint256 const& firewallID)
     return {ltFIREWALL, firewallID};
 }
 
-
 Keylet
 withdrawPreauth(
     AccountID const& owner,

@@ -547,11 +547,7 @@ permissionedDomain(uint256 const& domainID) noexcept
 Keylet
 firewall(AccountID const& account) noexcept
 {
-    return {
-        ltFIREWALL,
-        indexHash(
-            LedgerNameSpace::FIREWALL,
-            account)};
+    return {ltFIREWALL, indexHash(LedgerNameSpace::FIREWALL, account)};
 }
 
 Keylet
@@ -560,6 +556,8 @@ withdrawPreauth(AccountID const& owner, AccountID const& preauthorized) noexcept
     return {
         ltWITHDRAW_PREAUTH,
         indexHash(LedgerNameSpace::WITHDRAW_PREAUTH, owner, preauthorized)};
+
+}
 
 }  // namespace keylet
 

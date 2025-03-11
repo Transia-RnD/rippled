@@ -463,19 +463,19 @@ LEDGER_ENTRY(ltPERMISSIONED_DOMAIN, 0x0082, PermissionedDomain, permissioned_dom
 /** A ledger object which tracks Firewall
     \sa keylet::firewall
  */
-LEDGER_ENTRY(ltFIREWALL, 0x0083, Firewall, ({
+LEDGER_ENTRY(ltFIREWALL, 0x0083, Firewall, firewall, ({
     {sfOwner,               soeREQUIRED},
     {sfIssuer,              soeREQUIRED},
     {sfFirewallRules,       soeOPTIONAL},
     {sfOwnerNode,           soeREQUIRED},
     {sfPreviousTxnID,       soeREQUIRED},
-    {sfPreviousTxnLgrSeq,   soeREQUIRED}
+    {sfPreviousTxnLgrSeq,   soeREQUIRED},
 }))
 
 /** A ledger object which tracks WithdrawPreauth
     \sa keylet::WithdrawPreauth
  */
-LEDGER_ENTRY(ltWITHDRAW_PREAUTH, 0x0084, WithdrawPreauth, ({
+LEDGER_ENTRY_DUPLICATE(ltWITHDRAW_PREAUTH, 0x0084, WithdrawPreauth, withdraw_preauth, ({
     {sfAccount,              soeREQUIRED},
     {sfAuthorize,            soeREQUIRED},
     {sfOwnerNode,            soeREQUIRED},

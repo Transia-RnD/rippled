@@ -773,14 +773,15 @@ Transactor::checkFirewallSign(PreclaimContext const& ctx)
 NotTEC
 Transactor::checkSign(PreclaimContext const& ctx)
 {
-    if (ctx.flags & tapDRY_RUN)
-    {
-        // This code must be different for `simulate`
-        // Since the public key may be empty even for single signing
-        if (ctx.tx.isFieldPresent(sfSigners))
-            return checkMultiSign(ctx);
-        return checkSingleSign(ctx);
-    }
+    // TODO: Look at Batch for how I did this
+    // if (ctx.flags & tapDRY_RUN)
+    // {
+    //     // This code must be different for `simulate`
+    //     // Since the public key may be empty even for single signing
+    //     if (ctx.tx.isFieldPresent(sfSigners))
+    //         return checkMultiSign(ctx);
+    //     return checkSingleSign(ctx);
+    // }
     // If the pk is empty, then we must be multi-signing.
     if (ctx.tx.getSigningPubKey().empty())
     {
@@ -801,7 +802,6 @@ Transactor::checkSingleSign(
     Blob const& pkSigner)
 {
     // Check that the value in the signing key slot is a public key.
-    auto const pkSigner = ctx.tx.getSigningPubKey();
     if (!(ctx.flags & tapDRY_RUN) && !publicKeyType(makeSlice(pkSigner)))
     {
         JLOG(ctx.j.trace())
@@ -810,7 +810,6 @@ Transactor::checkSingleSign(
     }
 
     // Look up the account.
-    auto const idAccount = ctx.tx.getAccountID(sfAccount);
     auto const sleAccount = ctx.view.read(keylet::account(idAccount));
     if (!sleAccount)
         return terNO_ACCOUNT;

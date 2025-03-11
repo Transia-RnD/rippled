@@ -64,8 +64,6 @@ JSS(DeliverMin);           // in: TransactionSign
 JSS(Destination);          // in: TransactionSign; field.
 JSS(EPrice);               // in: AMM Deposit option
 JSS(Fee);                  // in/out: TransactionSign; field.
-JSS(FeeSettings);          // ledger type.
-JSS(Firewall);             // ledger type.
 JSS(FirewallRules);        // field.
 JSS(FirewallRule);         // field.
 JSS(Flags);                // in/out: TransactionSign; field.
@@ -279,8 +277,6 @@ JSS(fee_level);               // out: AccountInfo
 JSS(fee_mult_max);            // in: TransactionSign
 JSS(fee_ref);                 // out: NetworkOPs, DEPRECATED
 JSS(fetch_pack);              // out: NetworkOPs
-JSS(firewall);           // in: LedgerEntry
-JSS(withdraw_preauth);        // in: LedgerEntry
 JSS(FIELDS);                  // out: RPC server_definitions
                               // matches definitions.json format
 JSS(first);                   // out: rpc/Version
