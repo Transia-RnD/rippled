@@ -447,8 +447,26 @@ TRANSACTION(ttCREDENTIAL_DELETE, 60, CredentialDelete, ({
     {sfCredentialType, soeREQUIRED},
 }))
 
+/** This transaction type modify a NFToken */
+TRANSACTION(ttNFTOKEN_MODIFY, 61, NFTokenModify, ({
+    {sfNFTokenID, soeREQUIRED},
+    {sfOwner, soeOPTIONAL},
+    {sfURI, soeOPTIONAL},
+}))
+
+/** This transaction type creates or modifies a Permissioned Domain */
+TRANSACTION(ttPERMISSIONED_DOMAIN_SET, 62, PermissionedDomainSet, ({
+    {sfDomainID, soeOPTIONAL},
+    {sfAcceptedCredentials, soeREQUIRED},
+}))
+
+/** This transaction type deletes a Permissioned Domain */
+TRANSACTION(ttPERMISSIONED_DOMAIN_DELETE, 63, PermissionedDomainDelete, ({
+    {sfDomainID, soeREQUIRED},
+}))
+
 /** This transaction type creates an WithdrawPreauth instance */
-TRANSACTION(ttWITHDRAW_PREAUTH, 61, WithdrawPreauth, ({
+TRANSACTION(ttWITHDRAW_PREAUTH, 64, WithdrawPreauth, ({
     {sfAuthorize, soeOPTIONAL},
     {sfUnauthorize, soeOPTIONAL},
     {sfFirewallSigners, soeOPTIONAL},
@@ -456,7 +474,7 @@ TRANSACTION(ttWITHDRAW_PREAUTH, 61, WithdrawPreauth, ({
 }))
 
 /** This transaction type creates an Firewall instance */
-TRANSACTION(ttFIREWALL_SET, 62, FirewallSet, ({
+TRANSACTION(ttFIREWALL_SET, 65, FirewallSet, ({
     {sfIssuer, soeOPTIONAL},
     {sfAuthorize, soeOPTIONAL},
     {sfFirewallRules, soeOPTIONAL},
@@ -465,10 +483,9 @@ TRANSACTION(ttFIREWALL_SET, 62, FirewallSet, ({
 }))
 
 // /** This transaction type deletes an Firewall instance */
-// TRANSACTION(ttFIREWALL_DELETE, 63, FirewallDelete, ({
+// TRANSACTION(ttFIREWALL_DELETE, 66, FirewallDelete, ({
 //     {sfSignature, soeREQUIRED},
 // }))
-
 
 /** This system-generated transaction type is used to update the status of the various amendments.
 
@@ -480,7 +497,6 @@ TRANSACTION(ttAMENDMENT, 100, EnableAmendment, ({
 }))
 
 /** This system-generated transaction type is used to update the network's fee settings.
-
     For details, see: https://xrpl.org/fee-voting.html
  */
 TRANSACTION(ttFEE, 101, SetFee, ({

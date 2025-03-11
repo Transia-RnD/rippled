@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+#include <xrpl/beast/utility/instrumentation.h>
+#include <xrpl/protocol/Asset.h>
 #include <xrpl/protocol/Indexes.h>
 #include <xrpl/protocol/LedgerFormats.h>
 #include <xrpl/protocol/SField.h>
@@ -26,7 +28,6 @@
 #include <xrpl/protocol/nftPageMask.h>
 
 #include <algorithm>
-#include <cassert>
 
 namespace ripple {
 
@@ -77,6 +78,7 @@ enum class LedgerNameSpace : std::uint16_t {
     MPTOKEN_ISSUANCE = '~',
     MPTOKEN = 't',
     CREDENTIAL = 'D',
+    PERMISSIONED_DOMAIN = 'm',
     FIREWALL = 'F',
     WITHDRAW_PREAUTH = 'G',
 
@@ -97,7 +99,8 @@ indexHash(LedgerNameSpace space, Args const&... args)
 uint256
 getBookBase(Book const& book)
 {
-    assert(isConsistent(book));
+    XRPL_ASSERT(
+        isConsistent(book), "ripple::getBookBase : input is consistent");
 
     auto const index = indexHash(
         LedgerNameSpace::BOOK_DIR,
@@ -137,7 +140,7 @@ getTicketIndex(AccountID const& account, std::uint32_t ticketSeq)
 uint256
 getTicketIndex(AccountID const& account, SeqProxy ticketSeq)
 {
-    assert(ticketSeq.isTicket());
+    XRPL_ASSERT(ticketSeq.isTicket(), "ripple::getTicketIndex : valid input");
     return getTicketIndex(account, ticketSeq.value());
 }
 
@@ -224,7 +227,8 @@ line(
     // There is code in SetTrust that calls us with id0 == id1, to allow users
     // to locate and delete such "weird" trustlines. If we remove that code, we
     // could enable this assert:
-    // assert(id0 != id1);
+    // XRPL_ASSERT(id0 != id1, "ripple::keylet::line : accounts must be
+    // different");
 
     // A trust line is shared between two accounts; while we typically think
     // of this as an "issuer" and a "holder" the relationship is actually fully
@@ -253,7 +257,8 @@ offer(AccountID const& id, std::uint32_t seq) noexcept
 Keylet
 quality(Keylet const& k, std::uint64_t q) noexcept
 {
-    assert(k.type == ltDIR_NODE);
+    XRPL_ASSERT(
+        k.type == ltDIR_NODE, "ripple::keylet::quality : valid input type");
 
     // Indexes are stored in big endian format: they print as hex as stored.
     // Most significant bytes are first and the least significant bytes
@@ -271,7 +276,9 @@ quality(Keylet const& k, std::uint64_t q) noexcept
 Keylet
 next_t::operator()(Keylet const& k) const
 {
-    assert(k.type == ltDIR_NODE);
+    XRPL_ASSERT(
+        k.type == ltDIR_NODE,
+        "ripple::keylet::next_t::operator() : valid input type");
     return {ltDIR_NODE, getQualityNext(k.key)};
 }
 
@@ -389,7 +396,8 @@ nftpage_max(AccountID const& owner)
 Keylet
 nftpage(Keylet const& k, uint256 const& token)
 {
-    assert(k.type == ltNFTOKEN_PAGE);
+    XRPL_ASSERT(
+        k.type == ltNFTOKEN_PAGE, "ripple::keylet::nftpage : valid input type");
     return {ltNFTOKEN_PAGE, (k.key & ~nft::pageMask) + (token & nft::pageMask)};
 }
 
@@ -413,9 +421,10 @@ nft_sells(uint256 const& id) noexcept
 }
 
 Keylet
-amm(Issue const& issue1, Issue const& issue2) noexcept
+amm(Asset const& issue1, Asset const& issue2) noexcept
 {
-    auto const& [minI, maxI] = std::minmax(issue1, issue2);
+    auto const& [minI, maxI] =
+        std::minmax(issue1.get<Issue>(), issue2.get<Issue>());
     return amm(indexHash(
         LedgerNameSpace::AMM,
         minI.account,
@@ -522,6 +531,20 @@ credential(
 }
 
 Keylet
+permissionedDomain(AccountID const& account, std::uint32_t seq) noexcept
+{
+    return {
+        ltPERMISSIONED_DOMAIN,
+        indexHash(LedgerNameSpace::PERMISSIONED_DOMAIN, account, seq)};
+}
+
+Keylet
+permissionedDomain(uint256 const& domainID) noexcept
+{
+    return {ltPERMISSIONED_DOMAIN, domainID};
+}
+
+Keylet
 firewall(AccountID const& account) noexcept
 {
     return {
@@ -537,7 +560,6 @@ withdrawPreauth(AccountID const& owner, AccountID const& preauthorized) noexcept
     return {
         ltWITHDRAW_PREAUTH,
         indexHash(LedgerNameSpace::WITHDRAW_PREAUTH, owner, preauthorized)};
-}
 
 }  // namespace keylet
 
