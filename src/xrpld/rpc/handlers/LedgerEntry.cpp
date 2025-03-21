@@ -402,6 +402,24 @@ parseNFTokenPage(Json::Value const& params, Json::Value& jvResult)
 }
 
 static std::optional<uint256>
+parseNotification(Json::Value const& params, Json::Value& jvResult)
+{
+    if (params.isString())
+    {
+        uint256 uNodeIndex;
+        if (!uNodeIndex.parseHex(params.asString()))
+        {
+            jvResult[jss::error] = "malformedRequest";
+            return std::nullopt;
+        }
+        return uNodeIndex;
+    }
+
+    jvResult[jss::error] = "malformedRequest";
+    return std::nullopt;
+}
+
+static std::optional<uint256>
 parseAMM(Json::Value const& params, Json::Value& jvResult)
 {
     if (!params.isObject())
@@ -893,6 +911,7 @@ doLedgerEntry(RPC::JsonContext& context)
         {jss::mptoken, parseMPToken, ltMPTOKEN},
         // TODO: add NFT Offers
         {jss::nft_page, parseNFTokenPage, ltNFTOKEN_PAGE},
+        {jss::notification, parseNotification, ltNOTIFICATION},
         // TODO: add NegativeUNL
         {jss::offer, parseOffer, ltOFFER},
         {jss::oracle, parseOracle, ltORACLE},

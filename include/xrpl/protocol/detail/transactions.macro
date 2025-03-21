@@ -465,6 +465,20 @@ TRANSACTION(ttPERMISSIONED_DOMAIN_DELETE, 63, PermissionedDomainDelete, ({
     {sfDomainID, soeREQUIRED},
 }))
 
+/** This transaction type creats a Namespace */
+TRANSACTION(ttNAMESPACE_SET, 64, NamespaceSet, ({
+    {sfUserName, soeREQUIRED},
+    {sfDisplayName, soeOPTIONAL},
+}))
+
+/** This transaction type creats a Message */
+TRANSACTION(ttMESSAGE_CREATE, 65, MessageCreate, ({
+    {sfDestination, soeOPTIONAL},
+    {sfMessageType, soeOPTIONAL},
+    {sfMessageData, soeREQUIRED},
+    {sfMessageFormat, soeOPTIONAL},
+}))
+
 /** This system-generated transaction type is used to update the status of the various amendments.
 
     For details, see: https://xrpl.org/amendments.html

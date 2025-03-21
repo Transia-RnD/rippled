@@ -94,6 +94,8 @@ enum class LedgerNameSpace : std::uint16_t {
     MPTOKEN = 't',
     CREDENTIAL = 'D',
     PERMISSIONED_DOMAIN = 'm',
+    NOTIFICATION = 'M',
+    NAMESPACE = 'Z',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
@@ -555,6 +557,23 @@ Keylet
 permissionedDomain(uint256 const& domainID) noexcept
 {
     return {ltPERMISSIONED_DOMAIN, domainID};
+}
+
+Keylet
+notification(AccountID const& account, std::uint32_t seq) noexcept
+{
+    return {
+        ltNOTIFICATION,
+        indexHash(LedgerNameSpace::NOTIFICATION, account, seq)};
+}
+
+Keylet
+namespace_(Blob const& username) noexcept
+{
+    return {
+        ltNAMESPACE,
+        indexHash(
+            LedgerNameSpace::NAMESPACE, Slice{username.data(), username.size()})};
 }
 
 }  // namespace keylet

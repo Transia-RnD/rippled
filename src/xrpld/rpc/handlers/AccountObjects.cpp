@@ -224,6 +224,7 @@ doAccountObjects(RPC::JsonContext& context)
             {jss::bridge, ltBRIDGE},
             {jss::mpt_issuance, ltMPTOKEN_ISSUANCE},
             {jss::mptoken, ltMPTOKEN},
+            {jss::notification, ltNOTIFICATION},
             {jss::permissioned_domain, ltPERMISSIONED_DOMAIN}};
 
         typeFilter.emplace();

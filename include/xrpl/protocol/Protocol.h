@@ -155,6 +155,9 @@ std::size_t constexpr maxPriceScale = 20;
  */
 std::size_t constexpr maxTrim = 25;
 
+/** The maximum length of Message */
+std::size_t constexpr maxMessageLength = 1024;
+
 }  // namespace ripple
 
 #endif

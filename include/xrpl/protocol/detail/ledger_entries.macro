@@ -166,6 +166,7 @@ LEDGER_ENTRY(ltACCOUNT_ROOT, 0x0061, AccountRoot, account, ({
     {sfBurnedNFTokens,       soeDEFAULT},
     {sfFirstNFTokenSequence, soeOPTIONAL},
     {sfAMMID,                soeOPTIONAL},
+    {sfUserName,             soeOPTIONAL},
 }))
 
 /** A ledger object which contains a list of object identifiers.
@@ -456,6 +457,35 @@ LEDGER_ENTRY(ltPERMISSIONED_DOMAIN, 0x0082, PermissionedDomain, permissioned_dom
     {sfSequence,            soeREQUIRED},
     {sfAcceptedCredentials, soeREQUIRED},
     {sfOwnerNode,           soeREQUIRED},
+    {sfPreviousTxnID,       soeREQUIRED},
+    {sfPreviousTxnLgrSeq,   soeREQUIRED},
+}))
+
+/** A ledger object which tracks Message
+    \sa keylet::message
+ */
+LEDGER_ENTRY(ltNAMESPACE, 0x0083, Namespace, namespace_, ({
+    {sfOwner,               soeREQUIRED},
+    {sfUserName,            soeREQUIRED},
+    {sfDisplayName,         soeOPTIONAL},
+    {sfOwnerNode,           soeREQUIRED},
+    {sfPreviousTxnID,       soeREQUIRED},
+    {sfPreviousTxnLgrSeq,   soeREQUIRED},
+}))
+
+/** A ledger object which tracks Message
+    \sa keylet::message
+ */
+LEDGER_ENTRY(ltNOTIFICATION, 0x0084, Notification, notification, ({
+    {sfOwner,               soeREQUIRED},
+    {sfDestination,         soeREQUIRED},
+    {sfSequence,            soeREQUIRED},
+    {sfMessageType,         soeOPTIONAL},
+    {sfMessageData,         soeREQUIRED},
+    {sfMessageFormat,       soeOPTIONAL},
+    {sfLastUpdateTime,      soeREQUIRED},
+    {sfOwnerNode,           soeREQUIRED},
+    {sfDestinationNode,     soeREQUIRED},
     {sfPreviousTxnID,       soeREQUIRED},
     {sfPreviousTxnLgrSeq,   soeREQUIRED},
 }))
