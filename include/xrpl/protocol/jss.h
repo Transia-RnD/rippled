@@ -315,6 +315,7 @@ JSS(ignore_default);          // in: AccountLines
 JSS(inLedger);                // out: tx/Transaction
 JSS(inbound);                 // out: PeerImp
 JSS(index);                   // in: LedgerEntry
+JSS(inner_txns);              // out: Tx, AccountTx
                               // out: STLedgerEntry,
                               //      LedgerEntry, TxHistory, LedgerData
 JSS(info);                    // out: ServerInfo, ConsensusInfo, FetchInfo

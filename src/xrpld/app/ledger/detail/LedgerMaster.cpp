@@ -1522,6 +1522,17 @@ LedgerMaster::newOrderBookDB()
     return newPFWork("pf:newOBDB", ml);
 }
 
+// If the order book is radically updated, we need to reprocess all
+// pathfinding requests.
+bool
+LedgerMaster::newBatchDB()
+{
+    std::unique_lock ml(m_mutex);
+    mPathLedger.reset();
+
+    return newPFWork("pf:newDDB", ml);
+}
+
 /** A thread needs to be dispatched to handle pathfinding work of some kind.
  */
 bool

@@ -135,6 +135,19 @@ inline constexpr std::array<char const*, 6> WalletDBInit{
 
      "END TRANSACTION;"}};
 
+inline constexpr auto BatchDBName{"batch.db"};
+
+inline constexpr std::array<char const*, 3> BatchDBInit{
+   {"BEGIN TRANSACTION;",
+      "CREATE TABLE IF NOT EXISTS BatchTransactions (       \
+         ParentBatchID    CHARACTER(64) NOT NULL,          \
+         InnerTxnID       CHARACTER(64) NOT NULL,         \
+         TERResult        INTEGER NOT NULL,                \
+         PRIMARY KEY (ParentBatchID, InnerTxnID)           \
+     );",
+
+      "END TRANSACTION;"}};
+
 }  // namespace ripple
 
 #endif

@@ -224,6 +224,8 @@ public:
     isNewPathRequest();
     bool
     newOrderBookDB();  // Returns true if able to fulfill request.
+    bool
+    newBatchDB();  // Returns true if able to fulfill request.
 
     bool
     fixIndex(LedgerIndex ledgerIndex, LedgerHash const& ledgerHash);

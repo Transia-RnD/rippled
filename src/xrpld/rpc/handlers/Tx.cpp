@@ -22,6 +22,7 @@
 #include <xrpld/app/misc/DeliverMax.h>
 #include <xrpld/app/misc/NetworkOPs.h>
 #include <xrpld/app/misc/Transaction.h>
+#include <xrpld/app/rdb/Batch.h>
 #include <xrpld/app/rdb/RelationalDatabase.h>
 #include <xrpld/rpc/CTID.h>
 #include <xrpld/rpc/Context.h>
@@ -61,6 +62,7 @@ struct TxResult
     std::optional<NetClock::time_point> closeTime;
     std::optional<uint256> ledgerHash;
     TxSearched searchedAll;
+    std::map<TxID, TER> batch;
 };
 
 struct TxArgs
@@ -182,6 +184,14 @@ doTxHelp(RPC::Context& context, TxArgs args)
         }
     }
 
+    if (txn->getSTransaction()->getTxnType() == ttBATCH)
+    {
+        auto db = context.app.getBatchDB().checkoutDb();
+        auto const innerResults =
+            getBatchByParentID(*db, txn->getSTransaction()->getTransactionID());
+        result.batch = innerResults;
+    }
+
     return {result, rpcSUCCESS};
 }
 
@@ -278,6 +288,14 @@ populateJsonResponse(
 
         if (result.ctid)
             response[jss::ctid] = *(result.ctid);
+        if (result.batch.size() > 0)
+        {
+            for (auto const& [innerTxnId, result] : result.batch)
+            {
+                response[jss::inner_txns][to_string(innerTxnId)] =
+                    transToken(result);
+            }
+        }
     }
     return response;
 }

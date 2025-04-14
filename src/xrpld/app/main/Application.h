@@ -84,6 +84,7 @@ class ValidatorKeys;
 class NetworkOPs;
 class OpenLedger;
 class OrderBookDB;
+class BatchDB;
 class Overlay;
 class PathRequests;
 class PendingSaves;
@@ -267,6 +268,10 @@ public:
     /** Retrieve the "wallet database" */
     virtual DatabaseCon&
     getWalletDB() = 0;
+
+    /** Retrieve the "batch database" */
+    virtual DatabaseCon&
+    getBatchDB() = 0;
 
     /** Ensure that a newly-started validator does not sign proposals older
      * than the last ledger it persisted. */
