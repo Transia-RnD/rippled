@@ -106,8 +106,12 @@ computeSha512HalfHash_wrap(
     const wasm_val_vec_t* params,
     wasm_val_vec_t* results);
 
-using print_proto = void(char const*, int32_t);
+using trace_proto = int32_t(uint8_t const*, int32_t);
 wasm_trap_t*
-print_wrap(void* env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
+trace_wrap(void* env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
+
+using traceNumber_proto = int64_t(uint8_t const*, int32_t, int64_t);
+wasm_trap_t*
+traceNumber_wrap(void* env, const wasm_val_vec_t* params, wasm_val_vec_t* results);
 
 }  // namespace ripple

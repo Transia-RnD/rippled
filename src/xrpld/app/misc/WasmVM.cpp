@@ -53,7 +53,8 @@ runEscrowWasm(
     WASM_IMPORT_FUNC(imports, oracleKeylet, hfs)
     WASM_IMPORT_FUNC(imports, updateData, hfs)
     WASM_IMPORT_FUNC(imports, computeSha512HalfHash, hfs)
-    WASM_IMPORT_FUNC(imports, print, hfs)
+    WASM_IMPORT_FUNC(imports, trace, hfs)
+    WASM_IMPORT_FUNC(imports, traceNumber, hfs)
 
     std::int64_t const sgas = gasLimit;  // vm.getGas();
     auto ret = vm.run(wasmCode, funcName, imports);

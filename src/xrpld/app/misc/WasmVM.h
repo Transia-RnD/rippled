@@ -146,6 +146,18 @@ struct HostFunctions
         return Bytes{};
     }
 
+    virtual int32_t
+    trace(Bytes const& data)
+    {
+        return 0;
+    }
+
+    virtual int64_t
+    traceNumber(Bytes const& data, int64_t number)
+    {
+        return 0;
+    }
+
     virtual ~HostFunctions() = default;
 };
 

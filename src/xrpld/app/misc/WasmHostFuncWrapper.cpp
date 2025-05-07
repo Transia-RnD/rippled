@@ -375,17 +375,32 @@ computeSha512HalfHash_wrap(
 }
 
 wasm_trap_t*
-print_wrap(void* env, const wasm_val_vec_t* params, wasm_val_vec_t* results)
+trace_wrap(void* env, const wasm_val_vec_t* params, wasm_val_vec_t* results)
 {
     auto& vm = WasmEngine::instance();
-    // auto* hf = reinterpret_cast<HostFunctions*>(env);
+    auto* hf = reinterpret_cast<HostFunctions*>(env);
 
-    auto f = getParameterData(params, 0);
-    if (!f)
+    auto fname = getParameterData(params, 0);
+    if (!fname)
         return reinterpret_cast<wasm_trap_t*>(vm.newTrap());
-    std::string s(f->begin(), f->end());
-    if (s.size() < 4096)
-        std::cout << s << std::endl;
+    
+    hf->trace(fname.value());
+    return nullptr;
+}
+
+wasm_trap_t*
+traceNumber_wrap(void* env, const wasm_val_vec_t* params, wasm_val_vec_t* results)
+{
+    auto& vm = WasmEngine::instance();
+    auto* hf = reinterpret_cast<HostFunctions*>(env);
+
+    auto fname = getParameterData(params, 0);
+    if (!fname)
+        return reinterpret_cast<wasm_trap_t*>(vm.newTrap());
+
+    int64_t const number = params->data[2].of.i64;
+    
+    hf->traceNumber(fname.value(), number);
     return nullptr;
 }
 

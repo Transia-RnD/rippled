@@ -30,7 +30,7 @@ class WasmHostFunctionsImpl : public HostFunctions
 {
 public:
     WasmHostFunctionsImpl(ApplyContext& ctx, Keylet leKey)
-        : ctx(ctx), leKey(leKey)
+        : ctx(ctx), leKey(leKey), account_(ctx.tx.getAccountID(sfAccount))
     {
     }
 
@@ -77,9 +77,16 @@ public:
     oracleKeylet(std::string const& account, std::uint32_t const& documentId)
         override;
 
+    int32_t
+    trace(Bytes const& data) override;
+
+    int64_t
+    traceNumber(Bytes const& data, int64_t number) override;
+
 private:
     ApplyContext& ctx;
     Keylet leKey;
+    AccountID account_;
 };
 
 }  // namespace ripple

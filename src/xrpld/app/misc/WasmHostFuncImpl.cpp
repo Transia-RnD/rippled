@@ -230,4 +230,19 @@ WasmHostFunctionsImpl::oracleKeylet(
 
     return Bytes{keylet.begin(), keylet.end()};
 }
+
+int32_t
+WasmHostFunctionsImpl::trace(const Bytes& data)
+{
+    ctx.journal.trace() << "ContractTrace[" << account_ << "]: " << strHex(data);
+    return 0;
+}
+
+int64_t
+WasmHostFunctionsImpl::traceNumber(const Bytes& data, int64_t number)
+{
+    ctx.journal.trace() << "ContractTrace[" << account_ << "]: " << number;
+    return 0;
+}
+
 }  // namespace ripple
