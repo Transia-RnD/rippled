@@ -262,7 +262,7 @@ escrowLockApplyHelper<Issue>(
         sender,
         issuer,
         amount,
-        amount.holds<MPTIssue>() ? false : true,
+        true,
         journal);
     if (ter != tesSUCCESS)
         return ter;  // LCOV_EXCL_LINE

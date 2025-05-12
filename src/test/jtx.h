@@ -50,6 +50,7 @@
 #include <test/jtx/offer.h>
 #include <test/jtx/owners.h>
 #include <test/jtx/paths.h>
+#include <test/jtx/paychan.h>
 #include <test/jtx/pay.h>
 #include <test/jtx/permissioned_domains.h>
 #include <test/jtx/prop.h>
