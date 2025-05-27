@@ -41,6 +41,18 @@
 #include <ostream>
 #include <string>
 
+extern "C" {
+#include "api.h"
+}
+
+#ifndef CRYPTO_PUBLICKEYBYTES
+#define CRYPTO_PUBLICKEYBYTES pqcrystals_dilithium2_PUBLICKEYBYTES 
+#endif
+
+#ifndef crypto_sign_verify
+#define crypto_sign_verify pqcrystals_dilithium2_ref_verify 
+#endif
+
 namespace ripple {
 
 std::ostream&
@@ -198,12 +210,14 @@ PublicKey::PublicKey(Slice const& slice)
 
     if (!publicKeyType(slice))
         LogicError("PublicKey::PublicKey invalid type");
+    size_ = slice.size();
     std::memcpy(buf_, slice.data(), size_);
 }
 
-PublicKey::PublicKey(PublicKey const& other)
+PublicKey::PublicKey(PublicKey const& other) : size_(other.size_)
 {
-    std::memcpy(buf_, other.buf_, size_);
+    if (size_)
+        std::memcpy(buf_, other.buf_, size_);
 }
 
 PublicKey&
@@ -211,7 +225,9 @@ PublicKey::operator=(PublicKey const& other)
 {
     if (this != &other)
     {
-        std::memcpy(buf_, other.buf_, size_);
+        size_ = other.size_;
+        if (size_)
+            std::memcpy(buf_, other.buf_, size_);
     }
 
     return *this;
@@ -229,6 +245,10 @@ publicKeyType(Slice const& slice)
 
         if (slice[0] == 0x02 || slice[0] == 0x03)
             return KeyType::secp256k1;
+    }
+    else if (slice.size() == CRYPTO_PUBLICKEYBYTES)
+    {
+        return KeyType::dilithium;
     }
 
     return std::nullopt;
@@ -310,6 +330,11 @@ verify(
             return ed25519_sign_open(
                        m.data(), m.size(), publicKey.data() + 1, sig.data()) ==
                 0;
+        }
+        else if (*type == KeyType::dilithium)
+        {
+            return crypto_sign_verify(
+                       sig.data(), sig.size(), m.data(), m.size(), publicKey.data()) == 0;
         }
     }
     return false;
