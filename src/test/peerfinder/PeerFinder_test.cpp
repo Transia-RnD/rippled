@@ -130,7 +130,7 @@ public:
             logic.config(c);
         }
 
-        PublicKey const pk(randomKeyPair(KeyType::secp256k1).first);
+        PublicKey const pk(randomKeyPair(KeyType::dilithium).first);
         std::size_t n = 0;
 
         for (std::size_t i = 0; i < seconds; ++i)

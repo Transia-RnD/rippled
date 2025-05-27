@@ -51,8 +51,8 @@ getNodeIdentity(
 
     if (seed)
     {
-        auto secretKey = generateSecretKey(KeyType::secp256k1, *seed);
-        auto publicKey = derivePublicKey(KeyType::secp256k1, secretKey);
+        auto secretKey = generateSecretKey(KeyType::dilithium, *seed);
+        auto publicKey = derivePublicKey(KeyType::dilithium, secretKey);
 
         return {publicKey, secretKey};
     }

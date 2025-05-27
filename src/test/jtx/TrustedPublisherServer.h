@@ -152,7 +152,7 @@ public:
     {
         auto const secret = randomSecretKey();
         auto const masterPublic = derivePublicKey(KeyType::ed25519, secret);
-        auto const signingKeys = randomKeyPair(KeyType::secp256k1);
+        auto const signingKeys = randomKeyPair(KeyType::dilithium);
         return {
             masterPublic,
             signingKeys.first,
@@ -191,7 +191,7 @@ public:
         , publisherSecret_{randomSecretKey()}
         , publisherPublic_{derivePublicKey(KeyType::ed25519, publisherSecret_)}
     {
-        auto const keys = randomKeyPair(KeyType::secp256k1);
+        auto const keys = randomKeyPair(KeyType::dilithium);
         auto const manifest = makeManifestString(
             publisherPublic_, publisherSecret_, keys.first, keys.second, 1);
 
