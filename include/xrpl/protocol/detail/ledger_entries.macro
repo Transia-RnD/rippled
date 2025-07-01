@@ -504,6 +504,18 @@ LEDGER_ENTRY(ltVAULT, 0x0084, Vault, vault, ({
     // no PermissionedDomainID ever (use MPTIssuance.sfDomainID)
 }))
 
+/** A ledger object representing a passkey list.
+
+    \sa keylet::passkeyList
+ */
+LEDGER_ENTRY(ltPASSKEY_LIST, 0x0085, PasskeyList, passkey_list, ({
+    {sfPreviousTxnID,        soeREQUIRED},
+    {sfPreviousTxnLgrSeq,    soeREQUIRED},
+    {sfOwnerNode,            soeREQUIRED},
+    {sfOwner,                soeREQUIRED},
+    {sfPasskeys,             soeREQUIRED},
+}))
+
 #undef EXPAND
 #undef LEDGER_ENTRY_DUPLICATE
 

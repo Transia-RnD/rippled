@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 /*
     This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2015 Ripple Labs Inc.
+    Copyright (c) 2014 Ripple Labs Inc.
 
     Permission to use, copy, modify, and/or distribute this software for any
     purpose  with  or without fee is hereby granted, provided that the above
@@ -17,56 +17,36 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_PROTOCOL_KEYTYPE_H_INCLUDED
-#define RIPPLE_PROTOCOL_KEYTYPE_H_INCLUDED
+#ifndef RIPPLE_TX_SETPASSKEYLIST_H_INCLUDED
+#define RIPPLE_TX_SETPASSKEYLIST_H_INCLUDED
 
-#include <optional>
-#include <string>
+#include <xrpld/app/tx/detail/Transactor.h>
+
+#include <xrpl/protocol/Rules.h>
+#include <xrpl/protocol/STTx.h>
+
+#include <cstdint>
+#include <vector>
 
 namespace ripple {
 
-enum class KeyType {
-    secp256k1 = 0,
-    ed25519 = 1,
-    p256 = 2
+class SetPasskeyList : public Transactor
+{
+public:
+    static constexpr ConsequencesFactoryType ConsequencesFactory{Blocker};
+
+    explicit SetPasskeyList(ApplyContext& ctx) : Transactor(ctx)
+    {
+    }
+
+    static NotTEC
+    preflight(PreflightContext const& ctx);
+
+    TER
+    doApply() override;
 };
 
-inline std::optional<KeyType>
-keyTypeFromString(std::string const& s)
-{
-    if (s == "secp256k1")
-        return KeyType::secp256k1;
-
-    if (s == "ed25519")
-        return KeyType::ed25519;
-
-    if (s == "p256")
-        return KeyType::p256;
-
-    return {};
-}
-
-inline char const*
-to_string(KeyType type)
-{
-    if (type == KeyType::secp256k1)
-        return "secp256k1";
-
-    if (type == KeyType::ed25519)
-        return "ed25519";
-
-    if (type == KeyType::p256)
-        return "p256";
-
-    return "INVALID";
-}
-
-template <class Stream>
-inline Stream&
-operator<<(Stream& s, KeyType type)
-{
-    return s << to_string(type);
-}
+using PasskeyListSet = SetPasskeyList;
 
 }  // namespace ripple
 

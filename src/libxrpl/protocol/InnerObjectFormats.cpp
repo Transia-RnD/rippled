@@ -172,6 +172,25 @@ InnerObjectFormats::InnerObjectFormats()
             {sfBookDirectory, soeREQUIRED},
             {sfBookNode, soeREQUIRED},
         });
+
+    add(sfPasskey.jsonName,
+        sfPasskey.getCode(),
+        {
+            {sfPasskeyID, soeREQUIRED},
+            {sfPublicKey, soeREQUIRED},
+            // {sfSignCount, soeREQUIRED},
+            // {sfAlgorithm, soeREQUIRED},
+        });
+
+    add(sfPasskeySignature.jsonName,
+        sfPasskeySignature.getCode(),
+        {
+            {sfPasskeyID, soeREQUIRED},
+            {sfAuthenticatorData, soeREQUIRED},
+            {sfClientDataJSON, soeREQUIRED},
+            {sfSignature, soeREQUIRED},
+            // {sfAlgorithm, soeREQUIRED},
+        });
 }
 
 InnerObjectFormats const&

@@ -45,10 +45,11 @@ namespace ripple {
     information needed to determine the cryptosystem
     parameters used is stored inside the key.
 
-    As of this writing two systems are supported:
+    As of this writing three systems are supported:
 
         secp256k1
         ed25519
+        p256
 
     secp256k1 public keys consist of a 33 byte
     compressed public key, with the lead byte equal
@@ -61,10 +62,8 @@ namespace ripple {
 class PublicKey
 {
 protected:
-    // All the constructed public keys are valid, non-empty and contain 33
-    // bytes of data.
-    static constexpr std::size_t size_ = 33;
-    std::uint8_t buf_[size_];  // should be large enough
+    std::uint8_t buf_[65];
+    std::size_t size_ = 0;
 
 public:
     using const_iterator = std::uint8_t const*;

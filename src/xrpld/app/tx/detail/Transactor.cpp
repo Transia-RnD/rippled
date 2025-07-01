@@ -628,7 +628,7 @@ Transactor::checkSign(PreclaimContext const& ctx)
         return terNO_ACCOUNT;
 
     return checkSingleSign(
-        idSigner, idAccount, sleAccount, ctx.view.rules(), ctx.j);
+        ctx.view, idSigner, idAccount, sleAccount, ctx.view.rules(), ctx.j);
 }
 
 NotTEC
@@ -670,7 +670,7 @@ Transactor::checkBatchSign(PreclaimContext const& ctx)
             }
 
             if (ret = checkSingleSign(
-                    idSigner, idAccount, sleAccount, ctx.view.rules(), ctx.j);
+                ctx.view, idSigner, idAccount, sleAccount, ctx.view.rules(), ctx.j);
                 !isTesSuccess(ret))
                 return ret;
         }
@@ -680,6 +680,7 @@ Transactor::checkBatchSign(PreclaimContext const& ctx)
 
 NotTEC
 Transactor::checkSingleSign(
+    ReadView const& view,
     AccountID const& idSigner,
     AccountID const& idAccount,
     std::shared_ptr<SLE const> sleAccount,
@@ -706,6 +707,30 @@ Transactor::checkSingleSign(
         if (isMasterDisabled && idAccount == idSigner)
         {
             return tefMASTER_DISABLED;
+        }
+
+        if (rules.enabled(featurePasskey))
+        {
+            std::shared_ptr<STLedgerEntry const> slePasskeyList = view.read(keylet::passkeyList(idAccount));
+            if (!slePasskeyList)
+            {
+                return tefBAD_AUTH;
+            }
+
+            auto const passkeys = slePasskeyList->getFieldArray(sfPasskeys);
+            if (passkeys.empty())
+            {
+                JLOG(j.trace()) << "checkSingleSign: No passkeys found for account.";
+                return tefBAD_AUTH;
+            }
+            auto hasMatchingPasskey = std::any_of(
+                passkeys.begin(), passkeys.end(),
+                [&idAccount](STObject const& passkey) {
+                    return passkey.isFieldPresent(sfPublicKey) &&
+                        calcAccountID(PublicKey(makeSlice(passkey.getFieldVL(sfPublicKey)))) == idAccount;
+                });
+            if (hasMatchingPasskey)
+                return tesSUCCESS;
         }
 
         // Signed with any other key.

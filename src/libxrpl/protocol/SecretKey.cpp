@@ -46,6 +46,11 @@
 #include <stdexcept>
 #include <utility>
 
+#include <openssl/bn.h>
+#include <openssl/ec.h>
+#include <openssl/ecdsa.h>
+#include <openssl/obj_mac.h>
+
 namespace ripple {
 
 SecretKey::~SecretKey()
@@ -290,6 +295,88 @@ sign(PublicKey const& pk, SecretKey const& sk, Slice const& m)
 
             return Buffer{sig, len};
         }
+        case KeyType::p256: {
+            // Hash the message with SHA-256 (P-256 uses ECDSA-SHA256)
+            auto digest = sha256(m);
+
+            // Create curve object
+            EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+            if (!group)
+                LogicError("sign: EC_GROUP_new_by_curve_name failed");
+
+            // Create EC_KEY and set the group
+            EC_KEY* key = EC_KEY_new();
+            if (!key)
+            {
+                EC_GROUP_free(group);
+                LogicError("sign: EC_KEY_new failed");
+            }
+            
+            if (EC_KEY_set_group(key, group) != 1)
+            {
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("sign: EC_KEY_set_group failed");
+            }
+
+            // Convert secret key to BIGNUM and set as private key
+            BIGNUM* priv_key = BN_bin2bn(
+                reinterpret_cast<const unsigned char*>(sk.data()),
+                sk.size(),
+                nullptr);
+            
+            if (!priv_key || EC_KEY_set_private_key(key, priv_key) != 1)
+            {
+                BN_free(priv_key);
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("sign: failed to set private key");
+            }
+
+            // Sign the digest
+            ECDSA_SIG* sig_obj = ECDSA_do_sign(
+                reinterpret_cast<const unsigned char*>(digest.data()),
+                digest.size(),
+                key);
+            
+            if (!sig_obj)
+            {
+                BN_free(priv_key);
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("sign: ECDSA_do_sign failed");
+            }
+
+            // Convert signature to DER format
+            unsigned char sig[72];
+            int len = i2d_ECDSA_SIG(sig_obj, nullptr);
+            if (len <= 0 || len > 72)
+            {
+                ECDSA_SIG_free(sig_obj);
+                BN_free(priv_key);
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("sign: i2d_ECDSA_SIG length check failed");
+            }
+
+            unsigned char* sig_ptr = sig;
+            if (i2d_ECDSA_SIG(sig_obj, &sig_ptr) != len)
+            {
+                ECDSA_SIG_free(sig_obj);
+                BN_free(priv_key);
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("sign: i2d_ECDSA_SIG serialization failed");
+            }
+
+            // Cleanup
+            ECDSA_SIG_free(sig_obj);
+            BN_free(priv_key);
+            EC_KEY_free(key);
+            EC_GROUP_free(group);
+
+            return Buffer{sig, static_cast<size_t>(len)};
+        }
         default:
             LogicError("sign: invalid type");
     }
@@ -317,6 +404,14 @@ generateSecretKey(KeyType type, Seed const& seed)
     }
 
     if (type == KeyType::secp256k1)
+    {
+        auto key = detail::deriveDeterministicRootKey(seed);
+        SecretKey sk{Slice{key.data(), key.size()}};
+        secure_erase(key.data(), key.size());
+        return sk;
+    }
+
+    if (type == KeyType::p256)
     {
         auto key = detail::deriveDeterministicRootKey(seed);
         SecretKey sk{Slice{key.data(), key.size()}};
@@ -360,6 +455,125 @@ derivePublicKey(KeyType type, SecretKey const& sk)
             ed25519_publickey(sk.data(), &buf[1]);
             return PublicKey(Slice{buf, sizeof(buf)});
         }
+        case KeyType::p256: {
+            // Create curve object
+            EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+            if (!group)
+                LogicError("derivePublicKey: EC_GROUP_new_by_curve_name failed");
+
+            // Create EC_KEY and set the group
+            EC_KEY* key = EC_KEY_new();
+            if (!key)
+            {
+                EC_GROUP_free(group);
+                LogicError("derivePublicKey: EC_KEY_new failed");
+            }
+            
+            if (EC_KEY_set_group(key, group) != 1)
+            {
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("derivePublicKey: EC_KEY_set_group failed");
+            }
+
+            // Convert secret key to BIGNUM
+            BIGNUM* priv_key = BN_bin2bn(
+                reinterpret_cast<const unsigned char*>(sk.data()),
+                sk.size(),
+                nullptr);
+            
+            if (!priv_key)
+            {
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("derivePublicKey: BN_bin2bn failed");
+            }
+
+            // Set the private key
+            if (EC_KEY_set_private_key(key, priv_key) != 1)
+            {
+                BN_free(priv_key);
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("derivePublicKey: EC_KEY_set_private_key failed");
+            }
+
+            // Generate the public key from the private key
+            EC_POINT* pub_key_point = EC_POINT_new(group);
+            if (!pub_key_point)
+            {
+                BN_free(priv_key);
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("derivePublicKey: EC_POINT_new failed");
+            }
+
+            if (EC_POINT_mul(group, pub_key_point, priv_key, nullptr, nullptr, nullptr) != 1)
+            {
+                EC_POINT_free(pub_key_point);
+                BN_free(priv_key);
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("derivePublicKey: EC_POINT_mul failed");
+            }
+
+            // Extract x and y coordinates
+            BIGNUM* x = BN_new();
+            BIGNUM* y = BN_new();
+            if (!x || !y || 
+                EC_POINT_get_affine_coordinates_GFp(group, pub_key_point, x, y, nullptr) != 1)
+            {
+                BN_free(x);
+                BN_free(y);
+                EC_POINT_free(pub_key_point);
+                BN_free(priv_key);
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("derivePublicKey: EC_POINT_get_affine_coordinates_GFp failed");
+            }
+
+            // Convert coordinates to bytes
+            unsigned char buf[65]; // 1 prefix + 32-byte x + 32-byte y
+            buf[0] = 0xF6; // P-256 prefix byte (choose your own prefix)
+            
+            // Convert x coordinate to 32 bytes
+            int x_len = BN_bn2binpad(x, &buf[1], 32);
+            if (x_len != 32)
+            {
+                BN_free(x);
+                BN_free(y);
+                EC_POINT_free(pub_key_point);
+                BN_free(priv_key);
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("derivePublicKey: BN_bn2binpad failed for x coordinate");
+            }
+            
+            // Convert y coordinate to 32 bytes
+            int y_len = BN_bn2binpad(y, &buf[33], 32);
+            if (y_len != 32)
+            {
+                BN_free(x);
+                BN_free(y);
+                EC_POINT_free(pub_key_point);
+                BN_free(priv_key);
+                EC_KEY_free(key);
+                EC_GROUP_free(group);
+                LogicError("derivePublicKey: BN_bn2binpad failed for y coordinate");
+            }
+
+            // Cleanup
+            BN_free(x);
+            BN_free(y);
+            EC_POINT_free(pub_key_point);
+            BN_free(priv_key);
+            EC_KEY_free(key);
+            EC_GROUP_free(group);
+
+            return PublicKey{Slice{buf, sizeof(buf)}};
+            
+        }
+
         default:
             LogicError("derivePublicKey: bad key type");
     };
@@ -373,6 +587,10 @@ generateKeyPair(KeyType type, Seed const& seed)
         case KeyType::secp256k1: {
             detail::Generator g(seed);
             return g(0);
+        }
+        case KeyType::p256: {
+            auto const sk = generateSecretKey(type, seed);
+            return {derivePublicKey(type, sk), sk};
         }
         default:
         case KeyType::ed25519: {

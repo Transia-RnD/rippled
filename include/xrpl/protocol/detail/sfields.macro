@@ -114,6 +114,8 @@ TYPED_SFIELD(sfVoteWeight,               UINT32,    48)
 TYPED_SFIELD(sfFirstNFTokenSequence,     UINT32,    50)
 TYPED_SFIELD(sfOracleDocumentID,         UINT32,    51)
 TYPED_SFIELD(sfPermissionValue,          UINT32,    52)
+// TYPED_SFIELD(sfAlgorithm,                UINT32,    53)
+TYPED_SFIELD(sfSignCount,                UINT32,    54)
 
 // 64-bit integers (common)
 TYPED_SFIELD(sfIndexNext,                UINT64,     1)
@@ -275,6 +277,10 @@ TYPED_SFIELD(sfAssetClass,               VL,        28)
 TYPED_SFIELD(sfProvider,                 VL,        29)
 TYPED_SFIELD(sfMPTokenMetadata,          VL,        30)
 TYPED_SFIELD(sfCredentialType,           VL,        31)
+TYPED_SFIELD(sfPasskeyID,                VL,        32)
+TYPED_SFIELD(sfAuthenticatorData,        VL,        33)
+TYPED_SFIELD(sfClientDataJSON,           VL,        34);
+
 
 // account (common)
 TYPED_SFIELD(sfAccount,                  ACCOUNT,    1)
@@ -362,6 +368,8 @@ UNTYPED_SFIELD(sfCredential,             OBJECT,    33)
 UNTYPED_SFIELD(sfRawTransaction,         OBJECT,    34)
 UNTYPED_SFIELD(sfBatchSigner,            OBJECT,    35)
 UNTYPED_SFIELD(sfBook,                   OBJECT,    36)
+UNTYPED_SFIELD(sfPasskeySignature,       OBJECT,    37, SField::sMD_Default, SField::notSigning)
+UNTYPED_SFIELD(sfPasskey,                OBJECT,    38)
 
 // array of objects (common)
 // ARRAY/1 is reserved for end of array
@@ -396,3 +404,4 @@ UNTYPED_SFIELD(sfAcceptedCredentials,    ARRAY,     28)
 UNTYPED_SFIELD(sfPermissions,            ARRAY,     29)
 UNTYPED_SFIELD(sfRawTransactions,        ARRAY,     30)
 UNTYPED_SFIELD(sfBatchSigners,           ARRAY,     31, SField::sMD_Default, SField::notSigning)
+UNTYPED_SFIELD(sfPasskeys,               ARRAY,     32)

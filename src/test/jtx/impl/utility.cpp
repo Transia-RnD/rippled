@@ -46,12 +46,51 @@ parse(Json::Value const& jv)
 void
 sign(Json::Value& jv, Account const& account)
 {
-    jv[jss::SigningPubKey] = strHex(account.pk().slice());
-    Serializer ss;
-    ss.add32(HashPrefix::txSign);
-    parse(jv).addWithoutSigningFields(ss);
-    auto const sig = ripple::sign(account.pk(), account.sk(), ss.slice());
-    jv[jss::TxnSignature] = strHex(Slice{sig.data(), sig.size()});
+    std::optional<KeyType> const keyType = publicKeyType(account.pk());
+    if (keyType && (keyType == KeyType::p256))
+    {
+        jv[jss::SigningPubKey] = strHex(account.pk().slice());
+        Serializer ss;
+        ss.add32(HashPrefix::txSign);
+        parse(jv).addWithoutSigningFields(ss);
+        auto const hash256 = sha512Half(ss.slice());
+        std::string clientDataJSON = R"({"type":"webauthn.get","challenge":")" +
+            strHex(hash256) + R"(","origin":"https://xrpl.org"})";
+        Buffer authenticatorData(37);
+        Buffer credentialId(16);
+        Buffer clientDataBuffer(clientDataJSON.data(), clientDataJSON.size());
+        auto const clientDataHash = sha256(Slice{clientDataBuffer.data(), clientDataBuffer.size()});
+        Buffer concatenatedData(
+            authenticatorData.size() + clientDataHash.size());
+        std::memcpy(
+            concatenatedData.data(),
+            authenticatorData.data(),
+            authenticatorData.size());
+        std::memcpy(
+            concatenatedData.data() + authenticatorData.size(),
+            clientDataHash.data(),
+            clientDataHash.size());
+        auto const sig = ripple::sign(
+            account.pk(),
+            account.sk(),
+            Slice(concatenatedData.data(), concatenatedData.size()));
+        jv[sfPasskeySignature][sfPasskeyID] = "DEADBEEF";
+        jv[sfPasskeySignature][sfAuthenticatorData] = strHex(authenticatorData);
+        jv[sfPasskeySignature][sfClientDataJSON] = strHex(clientDataBuffer);
+        jv[sfPasskeySignature][sfSignature] =
+            strHex(Slice{sig.data(), sig.size()});
+        // jv[sfPasskeySignature][sfAlgorithm] = -8;
+        // jv[jss::TxnSignature] = "00";
+    }
+    else
+    {
+        jv[jss::SigningPubKey] = strHex(account.pk().slice());
+        Serializer ss;
+        ss.add32(HashPrefix::txSign);
+        parse(jv).addWithoutSigningFields(ss);
+        auto const sig = ripple::sign(account.pk(), account.sk(), ss.slice());
+        jv[jss::TxnSignature] = strHex(Slice{sig.data(), sig.size()});
+    }
 }
 
 void

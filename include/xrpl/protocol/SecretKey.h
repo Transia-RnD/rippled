@@ -127,6 +127,9 @@ toBase58(TokenType type, SecretKey const& sk)
 SecretKey
 randomSecretKey();
 
+// SecretKey
+// randomSecretKey(KeyType type);
+
 /** Generate a new secret key deterministically. */
 SecretKey
 generateSecretKey(KeyType type, Seed const& seed);

@@ -17,6 +17,7 @@
 */
 //==============================================================================
 
+#include <xrpl/protocol/digest.h>
 #include <xrpl/basics/Blob.h>
 #include <xrpl/basics/Expected.h>
 #include <xrpl/basics/Log.h>
@@ -187,10 +188,32 @@ STTx::getMentionedAccounts() const
 static Blob
 getSigningData(STTx const& that)
 {
-    Serializer s;
-    s.add32(HashPrefix::txSign);
-    that.addWithoutSigningFields(s);
-    return s.getData();
+    std::optional<KeyType> const keyType = publicKeyType(makeSlice(that.getFieldVL(sfSigningPubKey)));
+    if (keyType && (keyType == KeyType::p256))
+    {
+        auto const& passKeySignature = static_cast<STObject const&>(that.peekAtField(sfPasskeySignature));
+        auto const authenticatorData = passKeySignature.getFieldVL(sfAuthenticatorData);
+        auto const clientDataJSON = passKeySignature.getFieldVL(sfClientDataJSON);
+        auto const clientDataHash = sha256(makeSlice(clientDataJSON));
+        Buffer concatenatedData(authenticatorData.size() + clientDataHash.size());
+        std::memcpy(
+            concatenatedData.data(),
+            authenticatorData.data(),
+            authenticatorData.size());
+        std::memcpy(
+            concatenatedData.data() + authenticatorData.size(),
+            clientDataHash.data(),
+            clientDataHash.size());
+        return Blob{concatenatedData.begin(), concatenatedData.end()};
+    }
+    else
+    {
+        Serializer s;
+        s.add32(HashPrefix::txSign);
+        that.addWithoutSigningFields(s);
+        return s.peekData();
+    }
+    return {};
 }
 
 uint256
@@ -380,6 +403,24 @@ STTx::getMetaSQL(
         getFieldU32(sfSequence) % inLedger % status % rTxn % escapedMetaData);
 }
 
+Blob
+getSignature(STObject const& signer)
+{
+    auto const spk = signer.getFieldVL(sfSigningPubKey);
+    std::optional<KeyType> const keyType = publicKeyType(makeSlice(spk));
+    if (keyType && (keyType == KeyType::p256))
+    {
+        auto const& passKeySignature =
+                static_cast<STObject const&>(signer.peekAtField(sfPasskeySignature));
+        return passKeySignature.getFieldVL(sfSignature);
+    }
+    else
+    {
+        // Handle ed25519 signing
+        return signer.getFieldVL(sfTxnSignature);
+    }
+}
+
 static Expected<void, std::string>
 singleSignHelper(
     STObject const& signer,
@@ -398,7 +439,7 @@ singleSignHelper(
         auto const spk = signer.getFieldVL(sfSigningPubKey);
         if (publicKeyType(makeSlice(spk)))
         {
-            Blob const signature = signer.getFieldVL(sfTxnSignature);
+            Blob const signature = getSignature(signer);
             validSig = verify(
                 PublicKey(makeSlice(spk)),
                 data,

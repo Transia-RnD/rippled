@@ -96,6 +96,7 @@ enum class LedgerNameSpace : std::uint16_t {
     PERMISSIONED_DOMAIN = 'm',
     DELEGATE = 'E',
     VAULT = 'V',
+    PASSKEY_LIST = 'l',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
@@ -578,6 +579,19 @@ Keylet
 permissionedDomain(uint256 const& domainID) noexcept
 {
     return {ltPERMISSIONED_DOMAIN, domainID};
+}
+
+static Keylet
+passkeyList(AccountID const& account, std::uint32_t page) noexcept
+{
+    return {
+        ltPASSKEY_LIST, indexHash(LedgerNameSpace::PASSKEY_LIST, account, page)};
+}
+
+Keylet
+passkeyList(AccountID const& account) noexcept
+{
+    return passkeyList(account, 0);
 }
 
 }  // namespace keylet

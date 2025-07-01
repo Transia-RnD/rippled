@@ -379,6 +379,7 @@ Env::submit(JTx const& jt)
         {
             // Parsing failed or the JTx is
             // otherwise missing the stx field.
+            std::cout << "Env::submit: JTx is malformed or missing stx field.\n";
             parsedResult.ter = ter_ = temMALFORMED;
 
             return Json::Value();

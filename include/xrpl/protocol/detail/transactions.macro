@@ -522,6 +522,11 @@ TRANSACTION(ttBATCH, 71, Batch, Delegation::notDelegatable, ({
     {sfBatchSigners, soeOPTIONAL},
 }))
 
+/** This transaction type passkey list. */
+TRANSACTION(ttPASSKEY_LIST_SET, 72, PasskeyListSet, Delegation::delegatable, ({
+    {sfPasskeys, soeREQUIRED},
+}))
+
 /** This system-generated transaction type is used to update the status of the various amendments.
 
     For details, see: https://xrpl.org/amendments.html

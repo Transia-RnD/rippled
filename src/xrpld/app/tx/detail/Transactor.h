@@ -254,6 +254,7 @@ private:
     payFee();
     static NotTEC
     checkSingleSign(
+        ReadView const& view,
         AccountID const& idSigner,
         AccountID const& idAccount,
         std::shared_ptr<SLE const> sleAccount,
