@@ -130,9 +130,6 @@ EscrowCreate::preflight(PreflightContext const& ctx)
     STAmount const amount{ctx.tx[sfAmount]};
     if (!isXRP(amount))
     {
-        if (!ctx.rules.enabled(featureTokenEscrow))
-            return temBAD_AMOUNT;
-
         if (auto const ret = std::visit(
                 [&]<typename T>(T const&) {
                     return escrowCreatePreflightHelper<T>(ctx);
@@ -379,9 +376,6 @@ EscrowCreate::preclaim(PreclaimContext const& ctx)
 
     if (!isXRP(amount))
     {
-        if (!ctx.view.rules().enabled(featureTokenEscrow))
-            return temDISABLED;  // LCOV_EXCL_LINE
-
         if (auto const ret = std::visit(
                 [&]<typename T>(T const&) {
                     return escrowCreatePreclaimHelper<T>(
