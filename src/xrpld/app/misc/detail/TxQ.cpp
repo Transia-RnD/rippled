@@ -734,6 +734,7 @@ TxQ::apply(
     ApplyFlags flags,
     beast::Journal j)
 {
+    JLOG(j.fatal()) << "TxQ::apply: " << tx->getTransactionID();
     STAmountSO stAmountSO{view.rules().enabled(fixSTAmountCanonicalize)};
     NumberSO stNumberSO{view.rules().enabled(fixUniversalNumber)};
 

@@ -68,6 +68,7 @@ getMaxSourceAmount(
 NotTEC
 Payment::preflight(PreflightContext const& ctx)
 {
+    JLOG(ctx.j.fatal()) << "Payment::preflight";
     if (ctx.tx.isFieldPresent(sfCredentialIDs) &&
         !ctx.rules.enabled(featureCredentials))
         return temDISABLED;
@@ -281,6 +282,7 @@ Payment::checkPermission(ReadView const& view, STTx const& tx)
 TER
 Payment::preclaim(PreclaimContext const& ctx)
 {
+    JLOG(ctx.j.fatal()) << "Payment::preclaim";
     // Ripple if source or destination is non-native or if there are paths.
     std::uint32_t const txFlags = ctx.tx.getFlags();
     bool const partialPaymentAllowed = txFlags & tfPartialPayment;
@@ -381,6 +383,7 @@ Payment::preclaim(PreclaimContext const& ctx)
 TER
 Payment::doApply()
 {
+    JLOG(j_.fatal()) << "Payment::doApply";
     auto const deliverMin = ctx_.tx[~sfDeliverMin];
 
     // Ripple if source or destination is non-native or if there are paths.

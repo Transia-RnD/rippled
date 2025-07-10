@@ -42,6 +42,7 @@ checkValidity(
     Rules const& rules,
     Config const& config)
 {
+    JLOG(debugLog().fatal()) << "checkValidity";
     auto const id = tx.getTransactionID();
     auto const flags = router.getFlags(id);
 

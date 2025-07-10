@@ -84,6 +84,8 @@ class GetCounts_test : public beast::unit_test::suite
             // make request with min threshold 100 and verify
             // that only STObject and NodeObject are reported
             result = env.rpc("get_counts", "100")[jss::result];
+            JLOG(env.journal.fatal())
+                << "get_counts result: " << result.toStyledString();
             BEAST_EXPECT(result[jss::status] == "success");
 
             // compare with values reported by CountedObjects

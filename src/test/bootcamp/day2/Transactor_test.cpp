@@ -30,7 +30,7 @@ namespace test {
 struct Transactor_test : public beast::unit_test::suite
 {
     void
-    testDID(FeatureBitset features)
+    testDID(FeatureBitset features, beast::Journal j)
     {
         // ./rippled -u ripple.bootcamp.Transactor
         testcase("DID");
@@ -41,6 +41,9 @@ struct Transactor_test : public beast::unit_test::suite
         Account const alice{"alice"};
         env.fund(XRP(5000), alice);
         env.close();
+
+        JLOG(j.fatal()) << "Testing DID";
+        JLOG(j.fatal()) << "--------------------------------------------------";
 
         env(did::setValid(alice), ter(tesSUCCESS));
         env.close();
@@ -60,7 +63,8 @@ struct Transactor_test : public beast::unit_test::suite
     {
         using namespace test::jtx;
         FeatureBitset const all{supported_amendments()};
-        testDID(all);
+        test::SuiteJournal journal("ResourceManager_test", *this);
+        testDID(all, journal);
     }
 };
 

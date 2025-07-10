@@ -1249,6 +1249,7 @@ NetworkOPsImp::submitTransaction(std::shared_ptr<STTx const> const& iTrans)
 bool
 NetworkOPsImp::preProcessTransaction(std::shared_ptr<Transaction>& transaction)
 {
+    JLOG(m_journal.fatal()) << "NetworkOPsImp::preProcessTransaction";
     auto const newFlags = app_.getHashRouter().getFlags(transaction->getID());
 
     if ((newFlags & SF_BAD) != 0)
@@ -1306,6 +1307,7 @@ NetworkOPsImp::processTransaction(
     bool bLocal,
     FailHard failType)
 {
+    JLOG(m_journal.fatal()) << "NetworkOPsImp::processTransaction";
     auto ev = m_job_queue.makeLoadEvent(jtTXN_PROC, "ProcessTXN");
 
     // preProcessTransaction can change our pointer
@@ -1349,6 +1351,7 @@ NetworkOPsImp::doTransactionSync(
     bool bUnlimited,
     FailHard failType)
 {
+    JLOG(m_journal.fatal()) << "NetworkOPsImp::doTransactionSync";
     std::unique_lock<std::mutex> lock(mMutex);
 
     if (!transaction->getApplying())
@@ -1369,6 +1372,7 @@ NetworkOPsImp::doTransactionSyncBatch(
     std::unique_lock<std::mutex>& lock,
     std::function<bool(std::unique_lock<std::mutex> const&)> retryCallback)
 {
+    JLOG(m_journal.fatal()) << "NetworkOPsImp::doTransactionSyncBatch";
     do
     {
         if (mDispatchState == DispatchState::running)
@@ -1474,6 +1478,7 @@ NetworkOPsImp::transactionBatch()
 void
 NetworkOPsImp::apply(std::unique_lock<std::mutex>& batchLock)
 {
+    JLOG(m_journal.fatal()) << "NetworkOPsImp::apply";
     std::vector<TransactionStatus> submit_held;
     std::vector<TransactionStatus> transactions;
     mTransactions.swap(transactions);

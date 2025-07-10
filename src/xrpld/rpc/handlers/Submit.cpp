@@ -44,6 +44,7 @@ getFailHard(RPC::JsonContext const& context)
 Json::Value
 doSubmit(RPC::JsonContext& context)
 {
+    JLOG(context.j.fatal()) << "doSubmit";
     context.loadType = Resource::feeMediumBurdenRPC;
 
     if (!context.params.isMember(jss::tx_blob))

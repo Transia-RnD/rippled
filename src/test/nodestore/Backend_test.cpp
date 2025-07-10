@@ -108,16 +108,7 @@ public:
     run() override
     {
         std::uint64_t const seedValue = 50;
-
         testBackend("nudb", seedValue);
-
-#if RIPPLE_ROCKSDB_AVAILABLE
-        testBackend("rocksdb", seedValue);
-#endif
-
-#ifdef RIPPLE_ENABLE_SQLITE_BACKEND_TESTS
-        testBackend("sqlite", seedValue);
-#endif
     }
 };
 

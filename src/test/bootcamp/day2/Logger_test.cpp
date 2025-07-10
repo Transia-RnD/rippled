@@ -36,7 +36,7 @@ struct Logger_test : public beast::unit_test::suite
         testcase("Payment");
 
         using namespace jtx;
-        
+
         Env env{*this, envconfig(), features, nullptr,
             beast::severities::kTrace
         };
