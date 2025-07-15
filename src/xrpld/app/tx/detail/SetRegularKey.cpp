@@ -51,6 +51,7 @@ SetRegularKey::calculateBaseFee(ReadView const& view, STTx const& tx)
 NotTEC
 SetRegularKey::preflight(PreflightContext const& ctx)
 {
+    JLOG(ctx.j.fatal()) << "SetRegularKey::preflight";
     if (auto const ret = preflight1(ctx); !isTesSuccess(ret))
         return ret;
 

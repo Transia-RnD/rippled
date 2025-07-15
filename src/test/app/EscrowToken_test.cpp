@@ -908,6 +908,7 @@ struct EscrowToken_test : public beast::unit_test::suite
         env.fund(XRP(5000), alice, bob, gw);
         env(fset(gw, asfAllowTrustLineLocking));
         env.close();
+        
         env.trust(USD(10'000), alice, bob);
         env.close();
         env(pay(gw, alice, USD(5'000)));

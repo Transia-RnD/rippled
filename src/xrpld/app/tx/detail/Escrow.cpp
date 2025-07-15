@@ -121,6 +121,7 @@ escrowCreatePreflightHelper<MPTIssue>(PreflightContext const& ctx)
 NotTEC
 EscrowCreate::preflight(PreflightContext const& ctx)
 {
+    JLOG(ctx.j.fatal()) << "EscrowCreate::preflight";
     if (ctx.rules.enabled(fix1543) && ctx.tx.getFlags() & tfUniversalMask)
         return temINVALID_FLAG;
 

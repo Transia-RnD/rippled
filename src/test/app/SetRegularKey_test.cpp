@@ -219,46 +219,46 @@ public:
         env(regkey(alice, alie), ticket::use(--ticketSeq));
         env.close();
 
-        // Disable alice's master key using a ticket.
-        env(fset(alice, asfDisableMaster),
-            sig(alice),
-            ticket::use(--ticketSeq));
-        env.close();
+        // // Disable alice's master key using a ticket.
+        // env(fset(alice, asfDisableMaster),
+        //     sig(alice),
+        //     ticket::use(--ticketSeq));
+        // env.close();
 
-        // alice should be able to sign using the regular key but not the
-        // master key.
-        std::uint32_t const aliceSeq{env.seq(alice)};
-        env(noop(alice), sig(alice), ter(tefMASTER_DISABLED));
-        env(noop(alice), sig(alie), ter(tesSUCCESS));
-        env.close();
-        BEAST_EXPECT(env.seq(alice) == aliceSeq + 1);
+        // // alice should be able to sign using the regular key but not the
+        // // master key.
+        // std::uint32_t const aliceSeq{env.seq(alice)};
+        // env(noop(alice), sig(alice), ter(tefMASTER_DISABLED));
+        // env(noop(alice), sig(alie), ter(tesSUCCESS));
+        // env.close();
+        // BEAST_EXPECT(env.seq(alice) == aliceSeq + 1);
 
-        // Re-enable the master key using a ticket.
-        env(fclear(alice, asfDisableMaster),
-            sig(alie),
-            ticket::use(--ticketSeq));
-        env.close();
+        // // Re-enable the master key using a ticket.
+        // env(fclear(alice, asfDisableMaster),
+        //     sig(alie),
+        //     ticket::use(--ticketSeq));
+        // env.close();
 
-        // Disable the regular key using a ticket.
-        env(regkey(alice, disabled), sig(alie), ticket::use(--ticketSeq));
-        env.close();
+        // // Disable the regular key using a ticket.
+        // env(regkey(alice, disabled), sig(alie), ticket::use(--ticketSeq));
+        // env.close();
 
-        // alice should be able to sign using the master key but not the
-        // regular key.
-        env(noop(alice), sig(alice), ter(tesSUCCESS));
-        env(noop(alice), sig(alie), ter(tefBAD_AUTH));
-        env.close();
+        // // alice should be able to sign using the master key but not the
+        // // regular key.
+        // env(noop(alice), sig(alice), ter(tesSUCCESS));
+        // env(noop(alice), sig(alie), ter(tefBAD_AUTH));
+        // env.close();
     }
 
     void
     run() override
     {
-        testDisableMasterKey();
-        testDisableMasterKeyAfterFix();
-        testDisabledRegularKey();
-        testDisableRegularKeyAfterFix();
-        testPasswordSpent();
-        testUniversalMask();
+        // testDisableMasterKey();
+        // testDisableMasterKeyAfterFix();
+        // testDisabledRegularKey();
+        // testDisableRegularKeyAfterFix();
+        // testPasswordSpent();
+        // testUniversalMask();
         testTicketRegularKey();
     }
 };

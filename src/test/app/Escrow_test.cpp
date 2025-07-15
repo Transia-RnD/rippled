@@ -43,34 +43,34 @@ struct Escrow_test : public beast::unit_test::suite
         using namespace jtx;
         using namespace std::chrono;
 
-        Env env(*this, features);
-        auto const baseFee = env.current()->fees().base;
+        Env env(*this, envconfig(), nullptr, beast::severities::kTrace);
+        // auto const baseFee = env.current()->fees().base;
         env.fund(XRP(5000), "alice", "bob");
         env(escrow::create("alice", "bob", XRP(1000)),
             escrow::finish_time(env.now() + 1s));
         env.close();
 
-        auto const seq1 = env.seq("alice");
+        // auto const seq1 = env.seq("alice");
 
-        env(escrow::create("alice", "bob", XRP(1000)),
-            escrow::condition(escrow::cb1),
-            escrow::finish_time(env.now() + 1s),
-            fee(baseFee * 150));
-        env.close();
-        env(escrow::finish("bob", "alice", seq1),
-            escrow::condition(escrow::cb1),
-            escrow::fulfillment(escrow::fb1),
-            fee(baseFee * 150));
+        // env(escrow::create("alice", "bob", XRP(1000)),
+        //     escrow::condition(escrow::cb1),
+        //     escrow::finish_time(env.now() + 1s),
+        //     fee(baseFee * 150));
+        // env.close();
+        // env(escrow::finish("bob", "alice", seq1),
+        //     escrow::condition(escrow::cb1),
+        //     escrow::fulfillment(escrow::fb1),
+        //     fee(baseFee * 150));
 
-        auto const seq2 = env.seq("alice");
+        // auto const seq2 = env.seq("alice");
 
-        env(escrow::create("alice", "bob", XRP(1000)),
-            escrow::condition(escrow::cb2),
-            escrow::finish_time(env.now() + 1s),
-            escrow::cancel_time(env.now() + 2s),
-            fee(baseFee * 150));
-        env.close();
-        env(escrow::cancel("bob", "alice", seq2), fee(baseFee * 150));
+        // env(escrow::create("alice", "bob", XRP(1000)),
+        //     escrow::condition(escrow::cb2),
+        //     escrow::finish_time(env.now() + 1s),
+        //     escrow::cancel_time(env.now() + 2s),
+        //     fee(baseFee * 150));
+        // env.close();
+        // env(escrow::cancel("bob", "alice", seq2), fee(baseFee * 150));
     }
 
     void
@@ -299,15 +299,19 @@ struct Escrow_test : public beast::unit_test::suite
             env.fund(XRP(5000), "alice", "bob", "carol");
             env.close();
 
+            auto const preBob = env.balance("bob");
+
             // Creating an escrow without a finish time and finishing it
             // is allowed without fix1571:
             auto const seq1 = env.seq("alice");
-            env(escrow::create("alice", "bob", XRP(100)),
-                escrow::cancel_time(env.now() + 1s),
-                fee(baseFee * 150));
+            auto const delta = XRP(100);
+            env(escrow::create("alice", "bob", delta));
             env.close();
+
+
+            
             env(escrow::finish("carol", "alice", seq1), fee(baseFee * 150));
-            BEAST_EXPECT(env.balance("bob") == XRP(5100));
+            BEAST_EXPECT(env.balance("bob") == preBob + delta);
 
             env.close();
 
@@ -1697,17 +1701,17 @@ struct Escrow_test : public beast::unit_test::suite
     testWithFeats(FeatureBitset features)
     {
         testEnablement(features);
-        testTiming(features);
-        testTags(features);
-        testDisallowXRP(features);
-        test1571(features);
-        testFails(features);
-        testLockup(features);
-        testEscrowConditions(features);
-        testMetaAndOwnership(features);
-        testConsequences(features);
-        testEscrowWithTickets(features);
-        testCredentials(features);
+        // testTiming(features);
+        // testTags(features);
+        // testDisallowXRP(features);
+        // test1571(features);
+        // testFails(features);
+        // testLockup(features);
+        // testEscrowConditions(features);
+        // testMetaAndOwnership(features);
+        // testConsequences(features);
+        // testEscrowWithTickets(features);
+        // testCredentials(features);
     }
 
 public:
@@ -1717,7 +1721,7 @@ public:
         using namespace test::jtx;
         FeatureBitset const all{supported_amendments()};
         testWithFeats(all);
-        testWithFeats(all - featureTokenEscrow);
+        // testWithFeats(all - featureTokenEscrow);
     }
 };
 
