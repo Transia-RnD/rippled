@@ -55,9 +55,31 @@ class MyTests_test : public beast::unit_test::suite
             params[jss::ledger_index] = env.current()->seq() - 1;
             params[jss::transactions] = true;
             params[jss::expand] = true;
+            params[jss::full] = true;
             auto const jrr = env.rpc("json", "ledger", to_string(params));
             std::cout << jrr << std::endl;
         }
+    }
+
+    void
+    testTraceTransactor(FeatureBitset features)
+    {
+        testcase("Your Transaction Test");
+
+        using namespace jtx;
+        
+        Env env{*this, features};
+        Account const alice{"alice"};
+        Account const bob{"bob"};
+        env.fund(XRP(5000), alice, bob);
+        env.close();
+
+        std::cout << "START" << std::endl;
+
+        env(pay(alice, bob, XRP(1)), ter(tesSUCCESS));
+        env.close();
+
+        BEAST_EXPECT(1 == 1);
     }
 
     void 
@@ -65,7 +87,8 @@ class MyTests_test : public beast::unit_test::suite
     {
         using namespace test::jtx;
         auto const sa = supported_amendments();
-        testProtocol(sa);
+        // testProtocol(sa);
+        testTraceTransactor(sa);
     }
 };
 
