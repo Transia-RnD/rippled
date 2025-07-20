@@ -58,16 +58,40 @@ SetQuantumKey::doApply()
     // Hint: Use keylet::quantum() to create the entry
     // Set all required fields: sfAccount, sfQuantumPublicKey, etc.
 
-    // TODO: check account reserve
-
     auto const account = ctx_.tx.getAccountID(sfAccount);
+    auto const sle = ctx_.view().peek(keylet::account(account));
+    if (!sle)
+        return tefINTERNAL;
+
+    // TODO: check account reserve
+    {
+        auto const balance = STAmount((*sleAccount)[sfBalance]).xrp();
+        auto const reserve =
+            ctx.view().fees().accountReserve((*sleAccount)[sfOwnerCount] + 1);
+
+        if (balance < reserve)
+            return tecINSUFFICIENT_RESERVE;
+    }
+        
     auto const quantumPublicKey = ctx_.tx.getFieldVL(sfQuantumPublicKey);
     auto const quantumKeylet = keylet::quantum(account, makeSlice(quantumPublicKey));
-    auto quantumKey = std::make_shared<SLE>(quantumKeylet);
-    quantumKey->setFieldVL(sfQuantumPublicKey, quantumPublicKey);
-    ctx_.view().insert(quantumKey);
+    auto quantumSle = std::make_shared<SLE>(quantumKeylet);
+    quantumSle->setFieldVL(sfQuantumPublicKey, quantumPublicKey);
+    ctx_.view().insert(quantumSle);
 
     // TODO: add to owner directory
+    {
+        auto const page = ctx_.view().dirInsert(
+            keylet::ownerDir(account),
+            quantumKeylet,
+            describeOwnerDir(account));
+        if (!page)
+            return tecDIR_FULL;
+        (*quantumSle)[sfOwnerNode] = *page;
+    }
+
+    // TODO: add to the account's owner directory
+    adjustOwnerCount(ctx_.view(), sle, 1, ctx_.journal);
 
 
     return tesSUCCESS;
