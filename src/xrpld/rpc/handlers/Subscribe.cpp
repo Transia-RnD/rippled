@@ -168,6 +168,10 @@ doSubscribe(RPC::JsonContext& context)
             {
                 context.netOps.subConsensus(ispSub);
             }
+            else if (streamName == "batch")
+            {
+                context.netOps.subBatch(ispSub);
+            }
             else
             {
                 return rpcError(rpcSTREAM_MALFORMED);

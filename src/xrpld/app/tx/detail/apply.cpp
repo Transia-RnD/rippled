@@ -17,6 +17,8 @@
 */
 //==============================================================================
 
+#include <xrpld/app/main/Application.h>
+#include <xrpld/app/misc/NetworkOPs.h>
 #include <xrpld/app/misc/HashRouter.h>
 #include <xrpld/app/tx/apply.h>
 #include <xrpld/app/tx/applySteps.h>
@@ -195,6 +197,8 @@ applyBatchTransactions(
                             << "]: " << tx.getTransactionID() << " "
                             << (ret.applied ? "applied" : "failure") << ": "
                             << transToken(ret.ter);
+
+            app.getOPs().pubBatch(parentBatchId, tx.getTransactionID(), ret.ter, ret.applied);
 
             // If the transaction should be applied push its changes to the
             // whole-batch view.

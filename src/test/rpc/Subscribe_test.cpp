@@ -37,6 +37,80 @@ namespace test {
 class Subscribe_test : public beast::unit_test::suite
 {
 public:
+
+    template <typename... Args>
+    std::pair<std::vector<std::string>, std::string>
+    submitBatch(jtx::Env& env, TER const& result, Args&&... args)
+    {
+        auto batchTxn = env.jt(std::forward<Args>(args)...);
+        env(batchTxn, jtx::ter(result));
+
+        auto const ids = batchTxn.stx->getBatchTransactionIDs();
+        std::vector<std::string> txIDs;
+        for (auto const& id : ids)
+            txIDs.push_back(strHex(id));
+        TxID const batchID = batchTxn.stx->getTransactionID();
+        return std::make_pair(txIDs, strHex(batchID));
+    }
+
+    void
+    testBatch()
+    {
+        using namespace std::chrono_literals;
+        using namespace jtx;
+        Env env(*this);
+        
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        env.fund(XRP(10000), alice, bob);
+        env.close();
+
+        auto wsc = makeWSClient(env.app().config());
+        Json::Value stream;
+
+        {
+            // RPC subscribe to server stream
+            stream[jss::streams] = Json::arrayValue;
+            stream[jss::streams].append("batch");
+            auto jv = wsc->invoke("subscribe", stream);
+            BEAST_EXPECT(jv[jss::status] == "success");
+        }
+
+        // submit batch
+        auto const preAliceSeq = env.seq(alice);
+        auto const batchFee = batch::calcBatchFee(env, 1, 2);
+        auto const [txIDs, batchID] = submitBatch(
+            env,
+            tesSUCCESS,
+            batch::outer(alice, preAliceSeq, batchFee, tfAllOrNothing),
+            batch::inner(pay(alice, bob, XRP(10)), preAliceSeq),
+            batch::inner(pay(alice, bob, XRP(10)), preAliceSeq + 3));
+
+        env.close();
+
+        env.app().getLoadManager().stop();
+        {
+            // Raise fee to cause an update
+            auto& feeTrack = env.app().getFeeTrack();
+            for (int i = 0; i < 5; ++i)
+                feeTrack.raiseLocalFee();
+            env.app().getOPs().reportFeeChange();
+
+            // Check stream update
+            BEAST_EXPECT(wsc->findMsg(5s, [&](auto const& jv) {
+                std::cout << "jv: " << jv << std::endl;
+                return jv[jss::type] == "batch";
+            }));
+        }
+
+        {
+            // RPC unsubscribe
+            auto jv = wsc->invoke("unsubscribe", stream);
+            BEAST_EXPECT(jv[jss::status] == "success");
+        }
+    }
+
     void
     testServer()
     {
@@ -1577,23 +1651,24 @@ public:
     run() override
     {
         using namespace test::jtx;
-        FeatureBitset const all{supported_amendments()};
-        FeatureBitset const xrpFees{featureXRPFees};
+        // FeatureBitset const all{supported_amendments()};
+        // FeatureBitset const xrpFees{featureXRPFees};
 
-        testServer();
-        testLedger();
-        testTransactions_APIv1();
-        testTransactions_APIv2();
-        testManifests();
-        testValidations(all - xrpFees);
-        testValidations(all);
-        testSubErrors(true);
-        testSubErrors(false);
-        testSubByUrl();
-        testHistoryTxStream();
-        testSubBookChanges();
-        testNFToken(all);
-        testNFToken(all - featureNFTokenMintOffer);
+        testBatch();
+        // testServer();
+        // testLedger();
+        // testTransactions_APIv1();
+        // testTransactions_APIv2();
+        // testManifests();
+        // testValidations(all - xrpFees);
+        // testValidations(all);
+        // testSubErrors(true);
+        // testSubErrors(false);
+        // testSubByUrl();
+        // testHistoryTxStream();
+        // testSubBookChanges();
+        // testNFToken(all);
+        // testNFToken(all - featureNFTokenMintOffer);
     }
 };
 

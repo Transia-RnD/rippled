@@ -266,6 +266,13 @@ public:
     //
     virtual void
     pubLedger(std::shared_ptr<ReadView const> const& lpAccepted) = 0;
+
+    virtual void
+    pubBatch(
+        uint256 const& parentBatchId,
+        uint256 const& txID,
+        TER result,
+        bool applied) = 0;
     virtual void
     pubProposedTransaction(
         std::shared_ptr<ReadView const> const& ledger,

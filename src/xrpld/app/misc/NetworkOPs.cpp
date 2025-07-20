@@ -483,6 +483,12 @@ public:
         TER result) override;
     void
     pubValidation(std::shared_ptr<STValidation> const& val) override;
+    void
+    pubBatch(
+        uint256 const& parentBatchId,
+        uint256 const& txID,
+        TER result,
+        bool applied) override;
 
     //--------------------------------------------------------------------------
     //
@@ -576,6 +582,11 @@ public:
     subConsensus(InfoSub::ref ispListener) override;
     bool
     unsubConsensus(std::uint64_t uListener) override;
+
+    bool
+    subBatch(InfoSub::ref ispListener) override;
+    bool
+    unsubBatch(std::uint64_t uListener) override;
 
     InfoSub::pointer
     findRpcSub(std::string const& strUrl) override;
@@ -780,6 +791,7 @@ private:
         sPeerStatus,      // Peer status changes.
         sConsensusPhase,  // Consensus phase
         sBookChanges,     // Per-ledger order book changes
+        sBatch,           // Batch
         sLastEntry        // Any new entry must be ADDED ABOVE this one
     };
 
@@ -2373,6 +2385,40 @@ NetworkOPsImp::pubConsensus(ConsensusPhase phase)
         Json::Value jvObj(Json::objectValue);
         jvObj[jss::type] = "consensusPhase";
         jvObj[jss::consensus] = to_string(phase);
+
+        for (auto i = streamMap.begin(); i != streamMap.end();)
+        {
+            if (auto p = i->second.lock())
+            {
+                p->send(jvObj, true);
+                ++i;
+            }
+            else
+            {
+                i = streamMap.erase(i);
+            }
+        }
+    }
+}
+
+void
+NetworkOPsImp::pubBatch(
+    uint256 const& parentBatchId,
+    uint256 const& txID,
+    TER ter,
+    bool applied)
+{
+    std::lock_guard sl(mSubLock);
+
+    auto& streamMap = mStreamMaps[sBatch];
+    if (!streamMap.empty())
+    {
+        Json::Value jvObj(Json::objectValue);
+        jvObj[jss::type] = "batch";
+        jvObj[jss::tx] = to_string(parentBatchId);
+        jvObj[jss::tx_hash] = to_string(txID);
+        jvObj[jss::result] = transToken(ter);
+        jvObj[jss::applied] = applied;
 
         for (auto i = streamMap.begin(); i != streamMap.end();)
         {
@@ -4362,6 +4408,24 @@ NetworkOPsImp::unsubConsensus(std::uint64_t uSeq)
 {
     std::lock_guard sl(mSubLock);
     return mStreamMaps[sConsensusPhase].erase(uSeq);
+}
+
+// <-- bool: true=added, false=already there
+bool
+NetworkOPsImp::subBatch(InfoSub::ref isrListener)
+{
+    std::lock_guard sl(mSubLock);
+    return mStreamMaps[sBatch]
+        .emplace(isrListener->getSeq(), isrListener)
+        .second;
+}
+
+// <-- bool: true=erased, false=was not there
+bool
+NetworkOPsImp::unsubBatch(std::uint64_t uSeq)
+{
+    std::lock_guard sl(mSubLock);
+    return mStreamMaps[sBatch].erase(uSeq);
 }
 
 InfoSub::pointer

@@ -177,6 +177,11 @@ public:
         virtual bool
         unsubConsensus(std::uint64_t uListener) = 0;
 
+        virtual bool
+        subBatch(ref ispListener) = 0;
+        virtual bool
+        unsubBatch(std::uint64_t uListener) = 0;
+
         // VFALCO TODO Remove
         //             This was added for one particular partner, it
         //             "pushes" subscription data to a particular URL.
