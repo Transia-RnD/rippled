@@ -442,6 +442,10 @@ public:
                 generateSecretKey(
                     KeyType::dilithium, generateSeed("masterpassphrase")));
 
+            std::cout << "Dilithium Public Key: " << toBase58(
+                TokenType::NodePublic, pk1)
+                      << std::endl;
+
             auto const pk2 = parseBase58<PublicKey>(
                 TokenType::NodePublic,
                 "p9pow2SA5t1GpXJCZiWeWiKjZ4xav57jYgDzAhesVequQtwp2UMQ1ezUUE81t7"

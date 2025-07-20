@@ -60,6 +60,7 @@
 #include <xrpld/app/tx/detail/SetAccount.h>
 #include <xrpld/app/tx/detail/SetOracle.h>
 #include <xrpld/app/tx/detail/SetRegularKey.h>
+#include <xrpld/app/tx/detail/SetQuantumKey.h>
 #include <xrpld/app/tx/detail/SetSignerList.h>
 #include <xrpld/app/tx/detail/SetTrust.h>
 #include <xrpld/app/tx/detail/VaultClawback.h>

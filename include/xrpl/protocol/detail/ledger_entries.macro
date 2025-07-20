@@ -497,6 +497,14 @@ LEDGER_ENTRY(ltVAULT, 0x0084, Vault, vault, ({
     // no PermissionedDomainID ever (use MPTIssuance.sfDomainID)
 }))
 
+LEDGER_ENTRY(ltQUANTUM_KEY, 0x0085, QuantumKey, quantumKey, ({
+    {sfAccount,              soeREQUIRED},
+    {sfQuantumPublicKey,     soeREQUIRED},
+    {sfPreviousTxnID,        soeREQUIRED},
+    {sfPreviousTxnLgrSeq,    soeREQUIRED},
+    {sfOwnerNode,            soeREQUIRED},
+}))
+
 #undef EXPAND
 #undef LEDGER_ENTRY_DUPLICATE
 

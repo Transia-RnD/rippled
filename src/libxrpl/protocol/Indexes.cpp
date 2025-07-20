@@ -96,6 +96,7 @@ enum class LedgerNameSpace : std::uint16_t {
     PERMISSIONED_DOMAIN = 'm',
     DELEGATE = 'E',
     VAULT = 'V',
+    QUANTUM_KEY = 'b',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
@@ -571,6 +572,18 @@ Keylet
 permissionedDomain(uint256 const& domainID) noexcept
 {
     return {ltPERMISSIONED_DOMAIN, domainID};
+}
+
+Keylet
+quantum(AccountID const& account, Slice const& quantumPublicKey) noexcept
+{
+    return {
+        ltQUANTUM_KEY,
+        indexHash(
+            LedgerNameSpace::QUANTUM_KEY,
+            account,
+            quantumPublicKey)
+    };
 }
 
 }  // namespace keylet

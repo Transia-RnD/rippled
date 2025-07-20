@@ -520,6 +520,10 @@ TRANSACTION(ttBATCH, 71, Batch, Delegation::notDelegatable, ({
     {sfBatchSigners, soeOPTIONAL},
 }))
 
+TRANSACTION(ttSET_QUANTUM_KEY, 72, SetQuantumKey, Delegation::notDelegatable, ({
+    {sfQuantumPublicKey, soeREQUIRED},
+}))
+
 /** This system-generated transaction type is used to update the status of the various amendments.
 
     For details, see: https://xrpl.org/amendments.html

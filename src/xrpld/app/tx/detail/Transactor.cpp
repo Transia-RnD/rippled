@@ -627,7 +627,9 @@ Transactor::checkSign(PreclaimContext const& ctx)
         return terNO_ACCOUNT;
 
     if (ctx.view.rules().enabled(featureQuantum) &&
-        sleAccount->isFlag(lsfForceQuantum) && pubKey.size() != DILITHIUM_PK_SIZE)
+        sleAccount->isFlag(lsfForceQuantum) &&
+        ctx.view.exists(keylet::quantum(account, makeSlice(pkSigner))) &&
+        pubKey.size() != DILITHIUM_PK_SIZE)
         return telBAD_PUBLIC_KEY;
 
     return checkSingleSign(
