@@ -59,8 +59,8 @@ SetQuantumKey::doApply()
     // Set all required fields: sfAccount, sfQuantumPublicKey, etc.
 
     auto const account = ctx_.tx.getAccountID(sfAccount);
-    auto const sle = ctx_.view().peek(keylet::account(account));
-    if (!sle)
+    auto const sleAccount = ctx_.view().peek(keylet::account(account));
+    if (!sleAccount)
         return tefINTERNAL;
 
     // TODO: check account reserve
@@ -91,7 +91,7 @@ SetQuantumKey::doApply()
     }
 
     // TODO: add to the account's owner directory
-    adjustOwnerCount(ctx_.view(), sle, 1, ctx_.journal);
+    adjustOwnerCount(ctx_.view(), sleAccount, 1, ctx_.journal);
 
 
     return tesSUCCESS;
