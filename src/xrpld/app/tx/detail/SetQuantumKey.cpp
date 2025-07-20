@@ -3,6 +3,9 @@
 #include <xrpl/protocol/KeyType.h>
 #include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/Indexes.h>
+#include <xrpld/ledger/Dir.h>
+#include <xrpld/ledger/ApplyView.h>
+#include <xrpld/app/ledger/Ledger.h>
 
 extern "C" {
 #include "api.h"
@@ -67,7 +70,7 @@ SetQuantumKey::doApply()
     {
         auto const balance = STAmount((*sleAccount)[sfBalance]).xrp();
         auto const reserve =
-            ctx.view().fees().accountReserve((*sleAccount)[sfOwnerCount] + 1);
+            ctx_.view().fees().accountReserve((*sleAccount)[sfOwnerCount] + 1);
 
         if (balance < reserve)
             return tecINSUFFICIENT_RESERVE;

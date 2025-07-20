@@ -628,7 +628,7 @@ Transactor::checkSign(PreclaimContext const& ctx)
 
     if (ctx.view.rules().enabled(featureQuantum) &&
         sleAccount->isFlag(lsfForceQuantum) &&
-        ctx.view.exists(keylet::quantum(account, makeSlice(pkSigner))) &&
+        ctx.view.exists(keylet::quantum(idSigner, makeSlice(pkSigner))) &&
         pubKey.size() != DILITHIUM_PK_SIZE)
         return telBAD_PUBLIC_KEY;
 
