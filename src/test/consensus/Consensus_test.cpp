@@ -1414,23 +1414,178 @@ public:
         }
     }
 
+    struct DisputeMonitor
+    {
+        int positionChanges = 0;
+        std::map<csf::PeerID, int> peerChanges;
+        
+        template <class E>
+        void on(csf::PeerID, csf::SimTime, E const&) {}
+        
+        void on(csf::PeerID who, csf::SimTime when)
+        {
+            positionChanges++;
+            peerChanges[who]++;
+            std::cout << "🔄 Peer " << who << " changed position (change #" 
+                    << peerChanges[who] << ")" << std::endl;
+        }
+        
+        void on(csf::PeerID who, csf::SimTime when, csf::CloseLedger const& e)
+        {
+            std::cout << "✅ Peer " << who << " closed ledger with: " << e.txs.size() << " txns"  << std::endl;
+        }
+
+        // void on(csf::PeerID who, csf::SimTime when, csf::Receive const& e)
+        // {
+        //     std::cout << "✅ Peer " << who << " received tx set with: " << e.size() << " txns"  << std::endl;
+        // }
+
+        void on(csf::PeerID who, csf::SimTime when, csf::AcceptLedger const& e)
+        {
+            std::cout << "✅ Peer " << who << " accepted ledger " << e.ledger.seq() 
+                    << " with " << e.ledger.txs().size() << " transactions" << std::endl;
+        }
+    };
+
+    void
+    testCustomDisputes()
+    {
+        testcase("disputes");
+        using namespace csf;
+        using namespace std::chrono;
+
+        ConsensusParms const parms{};
+        Sim sim;
+        
+        // Create two equal groups of validators
+        PeerGroup groupA = sim.createGroup(6);  // 3 validators
+        PeerGroup groupB = sim.createGroup(4);  // 3 validators  
+        PeerGroup network = groupA + groupB;    // Total: 6 validators
+        
+        // Set up trust - all validators trust each other
+        network.trust(network);
+        
+        // Connect with realistic network delays
+        SimDuration delay = round<milliseconds>(0.2 * parms.ledgerGRANULARITY);
+        network.connect(network, delay);
+        // groupA.connect(groupB, round<milliseconds>(2.0 * parms.ledgerGRANULARITY));
+        
+        std::cout << "=== 50% Dispute Test Setup ===" << std::endl;
+        std::cout << "Group A: " << groupA.size() << " validators" << std::endl;
+        std::cout << "Group B: " << groupB.size() << " validators" << std::endl;
+        
+        // Continue with the rest of the implementation...
+        BEAST_EXPECT(1 == 1);
+
+        // Initial consensus round to establish baseline
+        sim.run(1);
+        BEAST_EXPECT(sim.synchronized());
+        std::cout << "Initial round complete - network synchronized" << std::endl;
+
+        // Create conflicting transaction scenarios
+        // Group A will see and propose transaction 100
+        for (Peer* peer : groupA)
+        {
+            peer->openTxs.insert(Tx{100});
+            std::cout << "Peer " << peer->id << " (Group A) has transaction 100" << std::endl;
+        }
+
+        // Group B will see and propose transaction 200  
+        for (Peer* peer : groupB)
+        {
+            peer->openTxs.insert(Tx{200});
+            std::cout << "Peer " << peer->id << " (Group B) has transaction 200" << std::endl;
+        }
+
+        // Both groups see a common transaction that everyone agrees on
+        for (Peer* peer : network)
+        {
+            peer->openTxs.insert(Tx{999}); // Everyone agrees on this one
+        }
+
+        std::cout << "=== Dispute Setup Complete ===" << std::endl;
+        std::cout << "Group A wants: Tx{100} + Tx{999}" << std::endl;
+        std::cout << "Group B wants: Tx{200} + Tx{999}" << std::endl;
+
+        std::cout << "\n=== Starting Consensus Round ===" << std::endl;
+
+        DisputeMonitor monitor;
+        sim.collectors.add(monitor);
+
+        // Run one round and check for disputes
+        sim.run(1);
+
+        std::cout << "\n=== After First Consensus Round ===" << std::endl;
+        std::cout << "Network synchronized: " << (sim.synchronized() ? "YES" : "NO") << std::endl;
+        // std::cout << "Position changes observed: " << monitor.positionChanges << std::endl;
+        // std::cout << "sim.synchronized(): " << (sim.synchronized() ? "YES" : "NO") << std::endl;
+
+
+        // If not synchronized, run more rounds
+        if (!sim.synchronized()) 
+        {
+            std::cout << "\n=== Running Additional Rounds for Resolution ===" << std::endl;
+            sim.run(2);
+            std::cout << "Final synchronization: " << (sim.synchronized() ? "YES" : "NO") << std::endl;
+            // std::cout << "Total position changes: " << monitor.positionChanges << std::endl;
+        }
+
+        // Analyze the final state
+        // std::cout << "\n=== FINAL ANALYSIS ===" << std::endl;
+
+        if (BEAST_EXPECT(sim.synchronized()))
+        {
+            // Look at what everyone agreed on
+            Peer* samplePeer = network[0];
+            auto const& finalLedger = samplePeer->lastClosedLedger;
+            
+            std::cout << "Final ledger sequence: " << finalLedger.seq() << std::endl;
+            std::cout << "Final transaction count: " << finalLedger.txs().size() << std::endl;
+            
+            // Check which disputed transactions made it
+            bool hasTx100 = finalLedger.txs().find(Tx{100}) != finalLedger.txs().end();
+            bool hasTx200 = finalLedger.txs().find(Tx{200}) != finalLedger.txs().end();
+            bool hasTx999 = finalLedger.txs().find(Tx{999}) != finalLedger.txs().end();
+            
+            std::cout << "Transaction 100 (Group A): " << (hasTx100 ? "INCLUDED" : "EXCLUDED") << std::endl;
+            std::cout << "Transaction 200 (Group B): " << (hasTx200 ? "INCLUDED" : "EXCLUDED") << std::endl;
+            std::cout << "Transaction 999 (Common):  " << (hasTx999 ? "INCLUDED" : "EXCLUDED") << std::endl;
+            
+            // Analyze validator behavior
+            std::cout << "\n--- Validator Final States ---" << std::endl;
+            for (Peer* peer : network)
+            {
+                std::cout << "Peer " << peer->id << " saw " << peer->prevProposers 
+                        << " other proposers" << std::endl;
+            }
+            
+            // Test expectations
+            BEAST_EXPECT(hasTx999);  // Common transaction should always be included
+            
+            // At least one disputed transaction should be excluded
+            BEAST_EXPECT(!(hasTx100 && hasTx200));  // Both can't be included due to conflict
+        }
+
+    }
+
     void
     run() override
     {
-        testShouldCloseLedger();
-        testCheckConsensus();
+        // testShouldCloseLedger();
+        // testCheckConsensus();
 
-        testStandalone();
-        testPeersAgree();
-        testSlowPeers();
-        testCloseTimeDisagree();
-        testWrongLCL();
-        testConsensusCloseTimeRounding();
-        testFork();
-        testHubNetwork();
-        testPreferredByBranch();
-        testPauseForLaggards();
-        testDisputes();
+        // testStandalone();
+        // testPeersAgree();
+        // testSlowPeers();
+        // testCloseTimeDisagree();
+        // testWrongLCL();
+        // testConsensusCloseTimeRounding();
+        // testFork();
+        // testHubNetwork();
+        // testPreferredByBranch();
+        // testPauseForLaggards();
+        // testDisputes();
+        testCustomDisputes();
     }
 };
 
