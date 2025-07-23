@@ -511,6 +511,7 @@ LEDGER_ENTRY(ltVAULT, 0x0084, Vault, vault, ({
 LEDGER_ENTRY(ltRECURRING_PAYMENT, 0x0085, RecurringPayment, recurring_payment, ({
     {sfAccount,              soeREQUIRED},
     {sfOwnerNode,            soeREQUIRED},
+    {sfDestinationNode,      soeOPTIONAL},
     {sfSequence,             soeREQUIRED},
     {sfDestination,          soeOPTIONAL},
     {sfDestinationTag,       soeOPTIONAL},

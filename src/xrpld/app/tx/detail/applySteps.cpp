@@ -57,6 +57,8 @@
 #include <xrpld/app/tx/detail/Payment.h>
 #include <xrpld/app/tx/detail/PermissionedDomainDelete.h>
 #include <xrpld/app/tx/detail/PermissionedDomainSet.h>
+#include <xrpld/app/tx/detail/RecurringPaymentCancel.h>
+#include <xrpld/app/tx/detail/RecurringPaymentClaim.h>
 #include <xrpld/app/tx/detail/RecurringPaymentSet.h>
 #include <xrpld/app/tx/detail/SetAccount.h>
 #include <xrpld/app/tx/detail/SetOracle.h>

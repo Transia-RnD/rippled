@@ -50,9 +50,17 @@ RecurringPaymentSet::preflight(PreflightContext const& ctx)
             return temMALFORMED;
         }
 
-        if (ctx.tx.getFieldVL(sfPublicKey) != ctx.tx.getFieldVL(sfSigningPubKey))
+        // if (ctx.tx.getFieldVL(sfPublicKey) != ctx.tx.getFieldVL(sfSigningPubKey))
+        // {
+        //     JLOG(ctx.j.error()) << "RecurringPaymentSet: PublicKey does not match SigningPubKey";
+        //     return temMALFORMED;
+        // }
+    }
+    else
+    {
+        if (ctx.tx.isFieldPresent(sfPublicKey))
         {
-            JLOG(ctx.j.error()) << "RecurringPaymentSet: PublicKey does not match SigningPubKey";
+            JLOG(ctx.j.error()) << "RecurringPaymentSet: PublicKey must not be present when Destination is set";
             return temMALFORMED;
         }
     }
@@ -159,17 +167,18 @@ RecurringPaymentSet::doApply()
         
         auto const keylet = keylet::recurringPayment(account, dest, seq);
         auto const sle = std::make_shared<SLE>(keylet);
+        // required fields
         sle->setAccountID(sfAccount, ctx_.tx.getAccountID(sfAccount));
         sle->setFieldAmount(sfAmount, ctx_.tx.getFieldAmount(sfAmount));
         sle->setFieldU64(sfFrequency, ctx_.tx.getFieldU64(sfFrequency));
+        sle->setFieldAmount(sfClaimedThisPeriod, XRPAmount(0));
+        // optional fields
         if (ctx_.tx.isFieldPresent(sfDestination))
             sle->setAccountID(sfDestination, ctx_.tx.getAccountID(sfDestination));
-        if (ctx_.tx.isFieldPresent(sfStartTime))
-            sle->setFieldU32(sfStartTime, ctx_.tx.getFieldU64(sfStartTime));
+        // if (ctx_.tx.isFieldPresent(sfStartTime))
+        //     sle->setFieldU32(sfStartTime, ctx_.tx.getFieldU64(sfStartTime));
         if (ctx_.tx.isFieldPresent(sfExpiration))
             sle->setFieldU32(sfExpiration, ctx_.tx.getFieldU64(sfExpiration));
-        
-        sle->setFieldAmount(sfClaimedThisPeriod, XRPAmount(0));
         if (ctx_.tx.isFieldPresent(sfStartTime))
             sle->setFieldU32(sfNextResetTime, ctx_.tx.getFieldU32(sfStartTime));
         else

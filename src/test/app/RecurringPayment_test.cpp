@@ -64,6 +64,63 @@ public:
         return jv;
     }
 
+    Json::Value
+    cancel(
+        jtx::Account const& account, 
+        uint256 const& id)
+    {
+        using namespace jtx;
+        Json::Value jv;
+        jv[jss::TransactionType] = jss::RecurringPaymentCancel;
+        jv[jss::Account] = to_string(account.id());
+        jv[sfRecurringPaymentID] = to_string(id);
+        return jv;
+    }
+
+    Json::Value
+    claim(
+        jtx::Account const& account,
+        jtx::Account const& destination,
+        uint256 const& id,
+        STAmount const& amount)
+    {
+        using namespace jtx;
+        Json::Value jv;
+        jv[jss::TransactionType] = jss::RecurringPaymentClaim;
+        jv[jss::Account] = to_string(account.id());
+        jv[jss::Destination] = to_string(destination.id());
+        jv[sfRecurringPaymentID] = to_string(id);
+        jv[jss::Amount] = amount.getJson(JsonOptions::none);
+        return jv;
+    }
+
+    Json::Value
+    claim(
+        jtx::Account const& account, 
+        uint256 const& id,
+        STAmount const& amount,
+        Blob const& sig)
+    {
+        using namespace jtx;
+        Json::Value jv;
+        jv[jss::TransactionType] = jss::RecurringPaymentClaim;
+        jv[jss::Account] = to_string(account.id());
+        jv[sfRecurringPaymentID] = to_string(id);
+        jv[jss::Amount] = amount.getJson(JsonOptions::none);
+        jv[sfSignature] = strHex(sig);
+        return jv;
+    }
+
+    uint256
+    recurringPaymentID(
+        AccountID const& account,
+        AccountID const& dst,
+        std::uint32_t seqProxyValue)
+    {
+        auto const k = keylet::recurringPayment(account, dst, seqProxyValue);
+        return k.key;
+    }
+
     void
     testEnabled(FeatureBitset features)
     {
@@ -76,8 +133,23 @@ public:
         env.fund(XRP(10000), bob, alice);
         env.close();
 
+        // Using Destination
+        auto const id = recurringPaymentID(alice.id(), bob.id(), env.seq(alice));
         auto const frequency = 100s;
-        env(set(alice, XRP(1), frequency, alice.pk()), ter(tesSUCCESS));
+        env(set(alice, XRP(10), frequency, bob), ter(tesSUCCESS));
+        env.close();
+
+        {
+            Json::Value params;
+            params[jss::ledger_index] = env.current()->seq() - 1;
+            params[jss::transactions] = true;
+            params[jss::expand] = true;
+            auto const jrr = env.rpc("json", "ledger", to_string(params));
+            std::cout << jrr << std::endl;
+        }
+
+        env(claim(alice, bob, id, XRP(1)), ter(tesSUCCESS));
+        env(claim(alice, bob, id, XRP(10)), ter(tecINSUFFICIENT_FUNDS));
         env.close();
 
         {
