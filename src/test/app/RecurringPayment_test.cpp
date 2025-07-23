@@ -35,7 +35,7 @@ public:
         jtx::Account const& account, 
         STAmount const& amount,
         NetClock::duration const& frequency,
-        std::optional<jtx::Account> destination = std::nullopt)
+        jtx::Account destination)
     {
         using namespace jtx;
         Json::Value jv;
@@ -43,9 +43,24 @@ public:
         jv[jss::Account] = to_string(account.id());
         jv[jss::Amount] = amount.getJson(JsonOptions::none);
         jv[sfFrequency.fieldName] = frequency.count();
-        if (destination)
-            jv[jss::Destination] = to_string(destination->id());
+        jv[jss::Destination] = to_string(destination.id());
+        return jv;
+    }
 
+    Json::Value
+    set(
+        jtx::Account const& account, 
+        STAmount const& amount,
+        NetClock::duration const& frequency,
+        PublicKey pk)
+    {
+        using namespace jtx;
+        Json::Value jv;
+        jv[jss::TransactionType] = jss::RecurringPaymentSet;
+        jv[jss::Account] = to_string(account.id());
+        jv[jss::Amount] = amount.getJson(JsonOptions::none);
+        jv[sfFrequency.fieldName] = frequency.count();
+        jv[sfPublicKey] = strHex(pk.slice());
         return jv;
     }
 
@@ -62,7 +77,7 @@ public:
         env.close();
 
         auto const frequency = 100s;
-        env(set(alice, XRP(1), frequency), ter(tesSUCCESS));
+        env(set(alice, XRP(1), frequency, alice.pk()), ter(tesSUCCESS));
         env.close();
 
         {

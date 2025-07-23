@@ -351,7 +351,10 @@ Keylet
 permissionedDomain(uint256 const& domainID) noexcept;
 
 Keylet
-recurring_payment(AccountID const& account, AccountID const& destination, std::uint32_t seq) noexcept;
+recurringPayment(AccountID const& account, AccountID const& destination, std::uint32_t seq) noexcept;
+
+Keylet
+recurringPayment(uint256 const& recurringPaymentID) noexcept;
 }  // namespace keylet
 
 // Everything below is deprecated and should be removed in favor of keylets:

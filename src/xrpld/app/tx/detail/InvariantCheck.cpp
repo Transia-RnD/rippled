@@ -543,6 +543,7 @@ LedgerEntryTypesMatch::visitEntry(
             case ltCREDENTIAL:
             case ltPERMISSIONED_DOMAIN:
             case ltVAULT:
+            case ltRECURRING_PAYMENT:
                 break;
             default:
                 invalidTypeAdded_ = true;

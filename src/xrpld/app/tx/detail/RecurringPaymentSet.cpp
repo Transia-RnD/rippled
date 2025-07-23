@@ -17,8 +17,9 @@
 */
 //==============================================================================
 
+#include <xrpld/app/ledger/Ledger.h>
 #include <xrpld/app/tx/detail/RecurringPaymentSet.h>
-#include <xrpld/core/Config.h>
+#include <xrpld/ledger/ApplyView.h>
 #include <xrpld/ledger/View.h>
 
 #include <xrpl/basics/Log.h>
@@ -35,7 +36,48 @@ RecurringPaymentSet::preflight(PreflightContext const& ctx)
 
     std::uint32_t const txFlags = ctx.tx.getFlags();
     if (txFlags & tfUniversalMask)
+    {
+        JLOG(ctx.j.error()) << "RecurringPaymentSet: Invalid flags set";
         return temINVALID_FLAG;
+    }
+
+    // - If `sfDestination` is omitted, `sfPublicKey` **must** be present and must match the account's master or regular key.
+    if (!ctx.tx.isFieldPresent(sfDestination))
+    {
+        if (!ctx.tx.isFieldPresent(sfPublicKey))
+        {
+            JLOG(ctx.j.error()) << "RecurringPaymentSet: PublicKey is required when Destination is not present";
+            return temMALFORMED;
+        }
+
+        if (ctx.tx.getFieldVL(sfPublicKey) != ctx.tx.getFieldVL(sfSigningPubKey))
+        {
+            JLOG(ctx.j.error()) << "RecurringPaymentSet: PublicKey does not match SigningPubKey";
+            return temMALFORMED;
+        }
+    }
+
+    // - `Destination` is the same as `Account`.
+    if (!ctx.tx.isFieldPresent(sfDestination) && ctx.tx.getAccountID(sfAccount) == ctx.tx.getAccountID(sfDestination))
+    {
+        JLOG(ctx.j.error()) << "RecurringPaymentSet: Destination is the same as Account";
+        return temMALFORMED;
+    }
+    // - `Amount` is invalid OR <= 0.
+    if (!ctx.tx.isFieldPresent(sfAmount) || ctx.tx.getFieldAmount(sfAmount) <= XRPAmount(0))
+    {
+        JLOG(ctx.j.error()) << "RecurringPaymentSet: Amount is invalid or <= 0";
+        return temMALFORMED;
+    }
+
+    // - `Frequency` <= SYSTEM_MINIMUM.
+    // auto const SYSTEM_MINIMUM = std::chrono::seconds(2592000); // 30 days
+    // if (!ctx.tx.isFieldPresent(sfFrequency) || ctx.tx.getFieldU64(sfFrequency) < SYSTEM_MINIMUM)
+    //     return temMALFORMED;
+
+    // - `Expiration` is less than the `StartTime`.
+    // if (ctx.tx.isFieldPresent(sfStartTime) && ctx.tx.isFieldPresent(sfExpiration) && ctx.tx.getFieldU64(sfExpiration) < ctx.tx.getFieldU64(sfStartTime))
+    //     return temMALFORMED;
 
     return preflight2(ctx);
 }
@@ -49,12 +91,121 @@ RecurringPaymentSet::checkPermission(ReadView const& view, STTx const& tx)
 TER
 RecurringPaymentSet::preclaim(PreclaimContext const& ctx)
 {
+    AccountID const account = ctx.tx.getAccountID(sfAccount);
+    if (!ctx.view.exists(keylet::account(account)))
+        return terNO_ACCOUNT;
+
+    AccountID const dest = ctx.tx.isFieldPresent(sfDestination) ? ctx.tx.getAccountID(sfDestination) : noAccount();
+    if (dest != noAccount() && !ctx.view.exists(keylet::account(dest)))
+        return tecNO_DST;
+    
+    uint32_t const seq = ctx.tx.getSeqValue();
+
+    if (!ctx.tx.isFieldPresent(sfRecurringPaymentID))
+    {
+        // create
+        // - `RecurringPayment` ledger entry exists (on create).
+        if (ctx.view.exists(keylet::recurringPayment(account, dest, seq)))
+            return tecDUPLICATE;
+
+        // - `Account` does not have a valid Trustline (if IOU).
+        // IGNORE: Not implemented yet.
+    
+        // - `StartTime` is less than the current time.
+        if (ctx.tx.isFieldPresent(sfStartTime) && ctx.tx.getFieldU32(sfStartTime) < ctx.view.parentCloseTime().time_since_epoch().count())
+            return tecEXPIRED;
+        // - `Expiration` is less than the current time.
+        if (ctx.tx.isFieldPresent(sfExpiration) && ctx.tx.getFieldU32(sfExpiration) < ctx.view.parentCloseTime().time_since_epoch().count())
+            return tecEXPIRED;
+    }
+    else
+    {
+        // update
+        // - `RecurringPayment` ledger entry does not exist (on update).
+        if (!ctx.view.exists(keylet::recurringPayment(ctx.tx.getFieldH256(sfRecurringPaymentID))))
+            return tecNO_ENTRY;
+
+        // - `RecurringPaymentID` submitted and `Amount` not present or optional `Expiration` not present.
+        // IGNORE: Not implemented yet.
+        
+        // - `Expiration` is less than the `NextResetTime`.
+        // IGNORE: Not implemented yet.
+    }
     return tesSUCCESS;
 }
 
 TER
 RecurringPaymentSet::doApply()
 {
+    if (!ctx_.tx.isFieldPresent(sfRecurringPaymentID))
+    {
+        // create
+
+        AccountID const account = ctx_.tx.getAccountID(sfAccount);
+        auto const sleAccount = ctx_.view().peek(keylet::account(account));
+        if (!sleAccount)
+            return tefINTERNAL;
+
+        // check reserves
+        STAmount const reserve{ctx_.view().fees().accountReserve(sleAccount->getFieldU32(sfOwnerCount) + 1)};
+        if (mPriorBalance < reserve)
+            return tecINSUFFICIENT_RESERVE;
+
+        AccountID const dest = ctx_.tx.isFieldPresent(sfDestination) ? ctx_.tx.getAccountID(sfDestination) : noAccount();
+        if (dest != noAccount() && !ctx_.view().exists(keylet::account(dest)))
+            return tefINTERNAL;
+
+        uint32_t const seq = ctx_.tx.getSeqValue();
+        
+        auto const keylet = keylet::recurringPayment(account, dest, seq);
+        auto const sle = std::make_shared<SLE>(keylet);
+        sle->setAccountID(sfAccount, ctx_.tx.getAccountID(sfAccount));
+        sle->setFieldAmount(sfAmount, ctx_.tx.getFieldAmount(sfAmount));
+        sle->setFieldU64(sfFrequency, ctx_.tx.getFieldU64(sfFrequency));
+        if (ctx_.tx.isFieldPresent(sfDestination))
+            sle->setAccountID(sfDestination, ctx_.tx.getAccountID(sfDestination));
+        if (ctx_.tx.isFieldPresent(sfStartTime))
+            sle->setFieldU32(sfStartTime, ctx_.tx.getFieldU64(sfStartTime));
+        if (ctx_.tx.isFieldPresent(sfExpiration))
+            sle->setFieldU32(sfExpiration, ctx_.tx.getFieldU64(sfExpiration));
+        
+        sle->setFieldAmount(sfClaimedThisPeriod, XRPAmount(0));
+        if (ctx_.tx.isFieldPresent(sfStartTime))
+            sle->setFieldU32(sfNextResetTime, ctx_.tx.getFieldU32(sfStartTime));
+        else
+            sle->setFieldU32(sfNextResetTime, ctx_.view().parentCloseTime().time_since_epoch().count() + ctx_.tx.getFieldU64(sfFrequency));
+        
+        ctx_.view().insert(sle);
+
+        // add to owner directory
+        {
+            auto const page = ctx_.view().dirInsert(
+                keylet::ownerDir(account),
+                keylet,
+                describeOwnerDir(account));
+            if (!page)
+                return tecDIR_FULL;
+            (*sle)[sfOwnerNode] = *page;
+        }
+
+        // optional: add to destination directory
+        if (dest != noAccount())
+        {
+            auto const page = ctx_.view().dirInsert(
+                keylet::ownerDir(dest), keylet, describeOwnerDir(dest));
+            if (!page)
+                return tecDIR_FULL;
+            (*sle)[sfDestinationNode] = *page;
+        }
+
+        // update owner count
+        adjustOwnerCount(ctx_.view(), sleAccount, 1, ctx_.journal);
+    }
+    else
+    {
+        // update
+        JLOG(ctx_.journal.error()) << "RecurringPaymentSet: Updating existing recurring payment";
+    }
     return tesSUCCESS;
 }
 

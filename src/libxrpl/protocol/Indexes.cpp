@@ -582,11 +582,17 @@ permissionedDomain(uint256 const& domainID) noexcept
 }
 
 Keylet
-recurring_payment(AccountID const& account, AccountID const& destination, std::uint32_t seq) noexcept
+recurringPayment(AccountID const& account, AccountID const& destination, std::uint32_t seq) noexcept
 {
     return {
         ltRECURRING_PAYMENT,
         indexHash(LedgerNameSpace::RECURRING_PAYMENT, account, destination, seq)};
+}
+
+Keylet
+recurringPayment(uint256 const& recurringPaymentID) noexcept
+{
+    return {ltRECURRING_PAYMENT, recurringPaymentID};
 }
 
 }  // namespace keylet
