@@ -1949,6 +1949,7 @@ Enumerations</h2></td></tr>
 <tr class="memitem:a53248e40c0a268c7c59fbe4a6e1179d9"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a53248e40c0a268c7c59fbe4a6e1179d9">warning_code_i</a> { <a class="el" href="namespaceripple.html#a53248e40c0a268c7c59fbe4a6e1179d9a79a88f958ac2f8dad164010cf329c33b">warnRPC_UNSUPPORTED_MAJORITY</a> = 1001
 , <a class="el" href="namespaceripple.html#a53248e40c0a268c7c59fbe4a6e1179d9aacc48aeea6bf2e5a6050dc741d1e37b4">warnRPC_AMENDMENT_BLOCKED</a> = 1002
 , <a class="el" href="namespaceripple.html#a53248e40c0a268c7c59fbe4a6e1179d9a2efcf8a6d04e135dcf594a1d47a930ca">warnRPC_EXPIRED_VALIDATOR_LIST</a> = 1003
+, <a class="el" href="namespaceripple.html#a53248e40c0a268c7c59fbe4a6e1179d9a60e4f4d040e75e1cb8723f9b4c7f22cb">warnRPC_FIELDS_DEPRECATED</a> = 2004
  }</td></tr>
 <tr class="memdesc:a53248e40c0a268c7c59fbe4a6e1179d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Codes returned in the <code>warnings</code> array of certain RPC commands.  <a href="namespaceripple.html#a53248e40c0a268c7c59fbe4a6e1179d9">More...</a><br /></td></tr>
 <tr class="separator:a53248e40c0a268c7c59fbe4a6e1179d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -4180,6 +4181,9 @@ requires ( <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same
 <tr class="memitem:a62e9ba0cf1379cc7c73007cafd91b972"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classripple_1_1Expected.html">Expected</a>&lt; bool, <a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a62e9ba0cf1379cc7c73007cafd91b972">isOnlyLiquidityProvider</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;view, <a class="el" href="classripple_1_1Issue.html">Issue</a> const &amp;ammIssue, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;lpAccount)</td></tr>
 <tr class="memdesc:a62e9ba0cf1379cc7c73007cafd91b972"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the Liquidity Provider is the only AMM provider, false otherwise.  <a href="namespaceripple.html#a62e9ba0cf1379cc7c73007cafd91b972">More...</a><br /></td></tr>
 <tr class="separator:a62e9ba0cf1379cc7c73007cafd91b972"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c0288f25088dd5b24ce567290b2a75b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classripple_1_1Expected.html">Expected</a>&lt; bool, <a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a6c0288f25088dd5b24ce567290b2a75b">verifyAndAdjustLPTokenBalance</a> (<a class="el" href="classripple_1_1Sandbox.html">Sandbox</a> &amp;sb, <a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;lpTokens, <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/shared_ptr.html">std::shared_ptr</a>&lt; <a class="el" href="namespaceripple.html#abbba3966df1925ac76f6d04c0aa1abe3">SLE</a> &gt; &amp;ammSle, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;account)</td></tr>
+<tr class="memdesc:a6c0288f25088dd5b24ce567290b2a75b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Due to rounding, the LPTokenBalance of the last LP might not match the LP's trustline balance.  <a href="namespaceripple.html#a6c0288f25088dd5b24ce567290b2a75b">More...</a><br /></td></tr>
+<tr class="separator:a6c0288f25088dd5b24ce567290b2a75b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7f0e432d5fa980cfc588654bb6c77d7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#ae7f0e432d5fa980cfc588654bb6c77d7">operator&lt;</a> (<a class="el" href="classripple_1_1CanonicalTXSet_1_1Key.html">CanonicalTXSet::Key</a> const &amp;lhs, <a class="el" href="classripple_1_1CanonicalTXSet_1_1Key.html">CanonicalTXSet::Key</a> const &amp;rhs)</td></tr>
 <tr class="separator:ae7f0e432d5fa980cfc588654bb6c77d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace07ad1d6a80473343ca26e55942008c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#ace07ad1d6a80473343ca26e55942008c">verifyValidDomain</a> (<a class="el" href="classripple_1_1ApplyView.html">ApplyView</a> &amp;view, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;account, <a class="el" href="namespaceripple.html#a356c68147333a9a48a344718038576d9">uint256</a> domainID, <a class="el" href="classbeast_1_1Journal.html">beast::Journal</a> j)</td></tr>
@@ -6502,7 +6506,7 @@ template&lt;class Value , class Hash  = hardened_hash&lt;strong_hash&gt;, class 
 
 <p>A 160-bit unsigned that uniquely identifies an account. </p>
 
-<p class="definition">Definition at line <a class="el" href="AccountID_8h_source.html#l00049">49</a> of file <a class="el" href="AccountID_8h_source.html">AccountID.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AccountID_8h_source.html#l00048">48</a> of file <a class="el" href="AccountID_8h_source.html">AccountID.h</a>.</p>
 
 </div>
 </div>
@@ -6520,7 +6524,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="b58__utils_8h_source.html#l00038">38</a> of file <a class="el" href="b58__utils_8h_source.html">b58_utils.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="b58__utils_8h_source.html#l00037">37</a> of file <a class="el" href="b58__utils_8h_source.html">b58_utils.h</a>.</p>
 
 </div>
 </div>
@@ -6536,7 +6540,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00115">115</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00114">114</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
 
 </div>
 </div>
@@ -6552,7 +6556,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00116">116</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00115">115</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
 
 </div>
 </div>
@@ -6568,7 +6572,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00117">117</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00116">116</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
 
 </div>
 </div>
@@ -6584,7 +6588,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00215">215</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00214">214</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
 
 </div>
 </div>
@@ -6600,7 +6604,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00218">218</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00217">217</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
 
 </div>
 </div>
@@ -6618,7 +6622,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00472">472</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00467">467</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -6634,7 +6638,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00473">473</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00468">468</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -6650,7 +6654,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00474">474</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00469">469</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -6682,7 +6686,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="MultiApiJson_8h_source.html#l00237">237</a> of file <a class="el" href="MultiApiJson_8h_source.html">MultiApiJson.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="MultiApiJson_8h_source.html#l00236">236</a> of file <a class="el" href="MultiApiJson_8h_source.html">MultiApiJson.h</a>.</p>
 
 </div>
 </div>
@@ -7616,7 +7620,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="CreateOffer_8h_source.html#l00158">158</a> of file <a class="el" href="CreateOffer_8h_source.html">CreateOffer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="CreateOffer_8h_source.html#l00151">151</a> of file <a class="el" href="CreateOffer_8h_source.html">CreateOffer.h</a>.</p>
 
 </div>
 </div>
@@ -8407,6 +8411,7 @@ template&lt;class T &gt; </div>
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a53248e40c0a268c7c59fbe4a6e1179d9a79a88f958ac2f8dad164010cf329c33b" name="a53248e40c0a268c7c59fbe4a6e1179d9a79a88f958ac2f8dad164010cf329c33b"></a>warnRPC_UNSUPPORTED_MAJORITY&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a53248e40c0a268c7c59fbe4a6e1179d9aacc48aeea6bf2e5a6050dc741d1e37b4" name="a53248e40c0a268c7c59fbe4a6e1179d9aacc48aeea6bf2e5a6050dc741d1e37b4"></a>warnRPC_AMENDMENT_BLOCKED&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a53248e40c0a268c7c59fbe4a6e1179d9a2efcf8a6d04e135dcf594a1d47a930ca" name="a53248e40c0a268c7c59fbe4a6e1179d9a2efcf8a6d04e135dcf594a1d47a930ca"></a>warnRPC_EXPIRED_VALIDATOR_LIST&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a53248e40c0a268c7c59fbe4a6e1179d9a60e4f4d040e75e1cb8723f9b4c7f22cb" name="a53248e40c0a268c7c59fbe4a6e1179d9a60e4f4d040e75e1cb8723f9b4c7f22cb"></a>warnRPC_FIELDS_DEPRECATED&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 <p class="definition">Definition at line <a class="el" href="ErrorCodes_8h_source.html#l00167">167</a> of file <a class="el" href="ErrorCodes_8h_source.html">ErrorCodes.h</a>.</p>
@@ -8438,7 +8443,7 @@ template&lt;class T &gt; </div>
 <tr><td class="fieldname"><a id="aa5778f9faa15e3677dcda7975d9db7c6a7edd41da231424c2a5df0cffd15af6bf" name="aa5778f9faa15e3677dcda7975d9db7c6a7edd41da231424c2a5df0cffd15af6bf"></a>DefaultYes&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="Feature_8h_source.html#l00088">88</a> of file <a class="el" href="Feature_8h_source.html">Feature.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Feature_8h_source.html#l00087">87</a> of file <a class="el" href="Feature_8h_source.html">Feature.h</a>.</p>
 
 </div>
 </div>
@@ -8467,7 +8472,7 @@ template&lt;class T &gt; </div>
 <tr><td class="fieldname"><a id="a3330933c50c449b7830586d1450da8f5ab4080bdf74febf04d578ff105cce9d3f" name="a3330933c50c449b7830586d1450da8f5ab4080bdf74febf04d578ff105cce9d3f"></a>Unsupported&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="Feature_8h_source.html#l00089">89</a> of file <a class="el" href="Feature_8h_source.html">Feature.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Feature_8h_source.html#l00088">88</a> of file <a class="el" href="Feature_8h_source.html">Feature.h</a>.</p>
 
 </div>
 </div>
@@ -8692,7 +8697,7 @@ ledger.
 <p>We have both transaction type permissions and granular type permissions. </p>
 <p >Since we will reuse the TransactionFormats to parse the <a class="el" href="classripple_1_1Transaction.html">Transaction</a> Permissions, only the GranularPermissionType is defined here. To prevent conflicts with TxType, the GranularPermissionType is always set to a value greater than the maximum value of uint16. </p>
 
-<p class="definition">Definition at line <a class="el" href="Permissions_8h_source.html#l00038">38</a> of file <a class="el" href="Permissions_8h_source.html">Permissions.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Permissions_8h_source.html#l00037">37</a> of file <a class="el" href="Permissions_8h_source.html">Permissions.h</a>.</p>
 
 </div>
 </div>
@@ -8712,7 +8717,7 @@ ledger.
 <tr><td class="fieldname"><a id="a363cfa5e5caa476560a24c0e226eaefdace6d317507cefd3ef6e07cf00bb2ec84" name="a363cfa5e5caa476560a24c0e226eaefdace6d317507cefd3ef6e07cf00bb2ec84"></a>notDelegatable&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="Permissions_8h_source.html#l00050">50</a> of file <a class="el" href="Permissions_8h_source.html">Permissions.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Permissions_8h_source.html#l00049">49</a> of file <a class="el" href="Permissions_8h_source.html">Permissions.h</a>.</p>
 
 </div>
 </div>
@@ -8740,7 +8745,7 @@ ledger.
 <tr><td class="fieldname"><a id="a286745fec5429abb3893001b4982522ba3e23eeda3fe3fb70d1e274eab59199d1" name="a286745fec5429abb3893001b4982522ba3e23eeda3fe3fb70d1e274eab59199d1"></a>fullyCanonical&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00194">194</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00193">193</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
 
 </div>
 </div>
@@ -8783,7 +8788,7 @@ ledger.
 <tr><td class="fieldname"><a id="ad905dc8b70717f4492bebb6b7e189042a6e29f8256eb42e1331d2820986b09643" name="ad905dc8b70717f4492bebb6b7e189042a6e29f8256eb42e1331d2820986b09643"></a>soeDEFAULT&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="SOTemplate_8h_source.html#l00034">34</a> of file <a class="el" href="SOTemplate_8h_source.html">SOTemplate.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SOTemplate_8h_source.html#l00033">33</a> of file <a class="el" href="SOTemplate_8h_source.html">SOTemplate.h</a>.</p>
 
 </div>
 </div>
@@ -8806,7 +8811,7 @@ ledger.
 <tr><td class="fieldname"><a id="abd329a8849fd0c4cb884992c5963523dae2050423628dda0de67fea879e2368a7" name="abd329a8849fd0c4cb884992c5963523dae2050423628dda0de67fea879e2368a7"></a>soeMPTNotSupported&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="SOTemplate_8h_source.html#l00044">44</a> of file <a class="el" href="SOTemplate_8h_source.html">SOTemplate.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SOTemplate_8h_source.html#l00043">43</a> of file <a class="el" href="SOTemplate_8h_source.html">SOTemplate.h</a>.</p>
 
 </div>
 </div>
@@ -9221,7 +9226,7 @@ ledger.
 <tr><td class="fieldname"><a id="aad512dea42da4cc179f20c67de593c26ae3cc92c14a5e6dd1a7d94b6ff634d7fc" name="aad512dea42da4cc179f20c67de593c26ae3cc92c14a5e6dd1a7d94b6ff634d7fc"></a>match&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="XChainAttestations_8h_source.html#l00258">258</a> of file <a class="el" href="XChainAttestations_8h_source.html">XChainAttestations.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="XChainAttestations_8h_source.html#l00256">256</a> of file <a class="el" href="XChainAttestations_8h_source.html">XChainAttestations.h</a>.</p>
 
 </div>
 </div>
@@ -10467,7 +10472,7 @@ ledger.
 </pre> </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="SHAMap_8h_source.html#l00048">48</a> of file <a class="el" href="SHAMap_8h_source.html">SHAMap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SHAMap_8h_source.html#l00049">49</a> of file <a class="el" href="SHAMap_8h_source.html">SHAMap.h</a>.</p>
 
 </div>
 </div>
@@ -10583,7 +10588,7 @@ template&lt;class InputIter1 , class InputIter2 , class Action , class Comp &gt;
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="algorithm_8h_source.html#l00037">37</a> of file <a class="el" href="algorithm_8h_source.html">algorithm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="algorithm_8h_source.html#l00036">36</a> of file <a class="el" href="algorithm_8h_source.html">algorithm.h</a>.</p>
 
 </div>
 </div>
@@ -10639,7 +10644,7 @@ template&lt;class FwdIter1 , class InputIter2 , class Pred , class Comp &gt; </d
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="algorithm_8h_source.html#l00075">75</a> of file <a class="el" href="algorithm_8h_source.html">algorithm.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="algorithm_8h_source.html#l00074">74</a> of file <a class="el" href="algorithm_8h_source.html">algorithm.h</a>.</p>
 
 </div>
 </div>
@@ -11389,7 +11394,7 @@ template&lt;&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Buffer_8h_source.html#l00219">219</a> of file <a class="el" href="Buffer_8h_source.html">Buffer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Buffer_8h_source.html#l00220">220</a> of file <a class="el" href="Buffer_8h_source.html">Buffer.h</a>.</p>
 
 </div>
 </div>
@@ -11427,7 +11432,7 @@ template&lt;&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Buffer_8h_source.html#l00231">231</a> of file <a class="el" href="Buffer_8h_source.html">Buffer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Buffer_8h_source.html#l00232">232</a> of file <a class="el" href="Buffer_8h_source.html">Buffer.h</a>.</p>
 
 </div>
 </div>
@@ -13609,7 +13614,7 @@ template&lt;class Iterator &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StringUtilities_8h_source.html#l00052">52</a> of file <a class="el" href="StringUtilities_8h_source.html">StringUtilities.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StringUtilities_8h_source.html#l00051">51</a> of file <a class="el" href="StringUtilities_8h_source.html">StringUtilities.h</a>.</p>
 
 </div>
 </div>
@@ -13629,7 +13634,7 @@ template&lt;class Iterator &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StringUtilities_8h_source.html#l00107">107</a> of file <a class="el" href="StringUtilities_8h_source.html">StringUtilities.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StringUtilities_8h_source.html#l00106">106</a> of file <a class="el" href="StringUtilities_8h_source.html">StringUtilities.h</a>.</p>
 
 </div>
 </div>
@@ -13649,7 +13654,7 @@ template&lt;class Iterator &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="StringUtilities_8h_source.html#l00113">113</a> of file <a class="el" href="StringUtilities_8h_source.html">StringUtilities.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="StringUtilities_8h_source.html#l00112">112</a> of file <a class="el" href="StringUtilities_8h_source.html">StringUtilities.h</a>.</p>
 
 </div>
 </div>
@@ -14048,7 +14053,7 @@ template&lt;&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AccountID_8h_source.html#l00091">91</a> of file <a class="el" href="AccountID_8h_source.html">AccountID.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AccountID_8h_source.html#l00090">90</a> of file <a class="el" href="AccountID_8h_source.html">AccountID.h</a>.</p>
 
 </div>
 </div>
@@ -14070,7 +14075,7 @@ template&lt;&gt; </div>
 
 <p>Returns "", "XRP", or three letter ISO code. </p>
 
-<p class="definition">Definition at line <a class="el" href="AccountID_8h_source.html#l00098">98</a> of file <a class="el" href="AccountID_8h_source.html">AccountID.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AccountID_8h_source.html#l00097">97</a> of file <a class="el" href="AccountID_8h_source.html">AccountID.h</a>.</p>
 
 </div>
 </div>
@@ -14100,7 +14105,7 @@ template&lt;&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AccountID_8h_source.html#l00104">104</a> of file <a class="el" href="AccountID_8h_source.html">AccountID.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AccountID_8h_source.html#l00103">103</a> of file <a class="el" href="AccountID_8h_source.html">AccountID.h</a>.</p>
 
 </div>
 </div>
@@ -14906,7 +14911,7 @@ requires (maxVer &gt;= minVer) &amp;&amp; (minVer &gt;= <a class="el" href="name
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ApiVersion_8h_source.html#l00080">80</a> of file <a class="el" href="ApiVersion_8h_source.html">ApiVersion.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ApiVersion_8h_source.html#l00079">79</a> of file <a class="el" href="ApiVersion_8h_source.html">ApiVersion.h</a>.</p>
 
 </div>
 </div>
@@ -14939,7 +14944,7 @@ requires requires { <a class="el" href="namespaceripple.html#afa35799caaa5a9f071
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ApiVersion_8h_source.html#l00102">102</a> of file <a class="el" href="ApiVersion_8h_source.html">ApiVersion.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ApiVersion_8h_source.html#l00101">101</a> of file <a class="el" href="ApiVersion_8h_source.html">ApiVersion.h</a>.</p>
 
 </div>
 </div>
@@ -15514,7 +15519,7 @@ template&lt;class... Args&gt; </div>
 
 <p>Returns the SHA512-Half of a series of objects. </p>
 
-<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00225">225</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00224">224</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
 
 </div>
 </div>
@@ -15539,7 +15544,7 @@ template&lt;class... Args&gt; </div>
 <p>Returns the SHA512-Half of a series of objects. </p>
 <p >Postconditions: Temporary memory storing copies of input messages will be cleared. </p>
 
-<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00241">241</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="digest_8h_source.html#l00240">240</a> of file <a class="el" href="digest_8h_source.html">digest.h</a>.</p>
 
 </div>
 </div>
@@ -15695,7 +15700,7 @@ template&lt;class F &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Feature_8h_source.html#l00356">356</a> of file <a class="el" href="Feature_8h_source.html">Feature.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Feature_8h_source.html#l00355">355</a> of file <a class="el" href="Feature_8h_source.html">Feature.h</a>.</p>
 
 </div>
 </div>
@@ -15733,7 +15738,7 @@ template&lt;class Source1 , class Source2 , class Dest , class  = feeunit::enabl
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00482">482</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00477">477</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -15771,7 +15776,7 @@ template&lt;class Source1 , class Source2 , class Dest , class  = feeunit::enabl
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00493">493</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00488">488</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -15809,7 +15814,7 @@ template&lt;class Dest , class  = feeunit::enable_muldiv_dest_t&lt;Dest&gt;&gt; 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00501">501</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00496">496</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -15847,7 +15852,7 @@ template&lt;class Dest , class  = feeunit::enable_muldiv_dest_t&lt;Dest&gt;&gt; 
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00510">510</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00505">505</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -15885,7 +15890,7 @@ template&lt;class Source1 , class Source2 , class  = feeunit::enable_muldiv_sour
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00521">521</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00516">516</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -15923,7 +15928,7 @@ template&lt;class Source1 , class Source2 , class  = feeunit::enable_muldiv_sour
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00538">538</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00533">533</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -15953,7 +15958,7 @@ template&lt;class Dest , class Src &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00550">550</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00545">545</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -15983,7 +15988,7 @@ template&lt;class Dest , class Src &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00562">562</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FeeUnits_8h_source.html#l00557">557</a> of file <a class="el" href="FeeUnits_8h_source.html">FeeUnits.h</a>.</p>
 
 </div>
 </div>
@@ -16416,7 +16421,7 @@ template&lt;class Hasher &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00083">83</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00080">80</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
 
 </div>
 </div>
@@ -16456,7 +16461,7 @@ template&lt;class Hasher &gt; </div>
 
 <p>Equality comparison. </p>
 
-<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00092">92</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00089">89</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
 
 </div>
 </div>
@@ -16496,7 +16501,7 @@ template&lt;class Hasher &gt; </div>
 
 <p>Strict weak ordering. </p>
 
-<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00101">101</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00098">98</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
 
 </div>
 </div>
@@ -16517,7 +16522,7 @@ template&lt;class Hasher &gt; </div>
 
 <p>Returns an asset specifier that represents XRP. </p>
 
-<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00118">118</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00115">115</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
 
 </div>
 </div>
@@ -16538,7 +16543,7 @@ template&lt;class Hasher &gt; </div>
 
 <p>Returns an asset specifier that represents no account and currency. </p>
 
-<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00126">126</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00123">123</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
 
 </div>
 </div>
@@ -16558,7 +16563,7 @@ template&lt;class Hasher &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00133">133</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Issue_8h_source.html#l00130">130</a> of file <a class="el" href="Issue_8h_source.html">Issue.h</a>.</p>
 
 </div>
 </div>
@@ -17268,7 +17273,7 @@ template&lt;class Stream &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00140">140</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00139">139</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
 
 </div>
 </div>
@@ -17298,7 +17303,7 @@ template&lt;class Stream &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00145">145</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00144">144</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
 
 </div>
 </div>
@@ -17330,7 +17335,7 @@ template&lt;class Hasher &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00157">157</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00156">156</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
 
 </div>
 </div>
@@ -17360,7 +17365,7 @@ template&lt;class Hasher &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00185">185</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00184">184</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
 
 </div>
 </div>
@@ -17473,7 +17478,7 @@ template&lt;&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00234">234</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8h_source.html#l00233">233</a> of file <a class="el" href="PublicKey_8h_source.html">PublicKey.h</a>.</p>
 
 </div>
 </div>
@@ -18943,7 +18948,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Sign_8h_source.html#l00086">86</a> of file <a class="el" href="Sign_8h_source.html">Sign.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Sign_8h_source.html#l00084">84</a> of file <a class="el" href="Sign_8h_source.html">Sign.h</a>.</p>
 
 </div>
 </div>
@@ -19950,7 +19955,7 @@ requires requires(T const&amp; t) { { t.getJson(<a class="el" href="structripple
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STBase_8h_source.html#l00100">100</a> of file <a class="el" href="STBase_8h_source.html">STBase.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STBase_8h_source.html#l00099">99</a> of file <a class="el" href="STBase_8h_source.html">STBase.h</a>.</p>
 
 </div>
 </div>
@@ -21901,7 +21906,7 @@ template&lt;class TAttestation &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="XChainAttestations_8h_source.html#l00444">444</a> of file <a class="el" href="XChainAttestations_8h_source.html">XChainAttestations.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="XChainAttestations_8h_source.html#l00442">442</a> of file <a class="el" href="XChainAttestations_8h_source.html">XChainAttestations.h</a>.</p>
 
 </div>
 </div>
@@ -27615,7 +27620,7 @@ template&lt;class ApplyTxs &gt; </div>
 
 <p>Given a <a class="el" href="classripple_1_1Ledger.html" title="Holds a ledger.">Ledger</a> and options, fill a <a class="el" href="classJson_1_1Object.html" title="Represents a JSON object being written to a Writer.">Json::Object</a> or <a class="el" href="classJson_1_1Value.html" title="Represents a JSON value.">Json::Value</a> with a description of the ledger. </p>
 
-<p class="definition">Definition at line <a class="el" href="LedgerToJson_8cpp_source.html#l00350">350</a> of file <a class="el" href="LedgerToJson_8cpp_source.html">LedgerToJson.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerToJson_8cpp_source.html#l00347">347</a> of file <a class="el" href="LedgerToJson_8cpp_source.html">LedgerToJson.cpp</a>.</p>
 
 </div>
 </div>
@@ -27637,7 +27642,7 @@ template&lt;class ApplyTxs &gt; </div>
 
 <p>Return a new <a class="el" href="classJson_1_1Value.html" title="Represents a JSON value.">Json::Value</a> representing the ledger with given options. </p>
 
-<p class="definition">Definition at line <a class="el" href="LedgerToJson_8cpp_source.html#l00360">360</a> of file <a class="el" href="LedgerToJson_8cpp_source.html">LedgerToJson.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerToJson_8cpp_source.html#l00357">357</a> of file <a class="el" href="LedgerToJson_8cpp_source.html">LedgerToJson.cpp</a>.</p>
 
 </div>
 </div>
@@ -29785,7 +29790,7 @@ template&lt;typename A &gt; </div>
 
 <p>Get AMM pool balances. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00030">30</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00031">31</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
 
 </div>
 </div>
@@ -29842,7 +29847,7 @@ template&lt;typename A &gt; </div>
 <p>Get AMM pool and LP token balances. </p>
 <p >If both optIssue are provided then they are used as the AMM token pair issues. Otherwise the missing issues are fetched from ammSle. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00046">46</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00047">47</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
 
 </div>
 </div>
@@ -29898,7 +29903,7 @@ template&lt;typename A &gt; </div>
 
 <p>Get the balance of LP tokens. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00112">112</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00113">113</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
 
 </div>
 </div>
@@ -29940,7 +29945,7 @@ template&lt;typename A &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00162">162</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00163">163</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
 
 </div>
 </div>
@@ -29979,7 +29984,7 @@ template&lt;typename A &gt; </div>
 <p>Get AMM trading fee for the given account. </p>
 <p >The fee is discounted if the account is the auction slot owner or one of the slot's authorized accounts. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00178">178</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00179">179</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
 
 </div>
 </div>
@@ -30017,7 +30022,7 @@ template&lt;typename A &gt; </div>
 
 <p>Returns total amount held by AMM for the given token. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00210">210</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00211">211</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
 
 </div>
 </div>
@@ -30062,7 +30067,7 @@ template&lt;typename A &gt; </div>
 <p>Delete trustlines to AMM. </p>
 <p >If all trustlines are deleted then AMM object and account are deleted. Otherwise tecIMPCOMPLETE is returned. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00282">282</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00283">283</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
 
 </div>
 </div>
@@ -30112,7 +30117,7 @@ template&lt;typename A &gt; </div>
 
 <p>Initialize Auction and Voting slots and set the trading/discounted fee. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00339">339</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00340">340</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
 
 </div>
 </div>
@@ -30151,7 +30156,52 @@ template&lt;typename A &gt; </div>
 <p>Return true if the Liquidity Provider is the only AMM provider, false otherwise. </p>
 <p >Return tecINTERNAL if encountered an unexpected condition, for instance Liquidity Provider has more than one LPToken trustline. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00386">386</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00387">387</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a6c0288f25088dd5b24ce567290b2a75b" name="a6c0288f25088dd5b24ce567290b2a75b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c0288f25088dd5b24ce567290b2a75b">&#9670;&#160;</a></span>verifyAndAdjustLPTokenBalance()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classripple_1_1Expected.html">Expected</a>&lt; bool, <a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a> &gt; ripple::verifyAndAdjustLPTokenBalance </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1Sandbox.html">Sandbox</a> &amp;&#160;</td>
+          <td class="paramname"><em>sb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;&#160;</td>
+          <td class="paramname"><em>lpTokens</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/shared_ptr.html">std::shared_ptr</a>&lt; <a class="el" href="namespaceripple.html#abbba3966df1925ac76f6d04c0aa1abe3">SLE</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>ammSle</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;&#160;</td>
+          <td class="paramname"><em>account</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Due to rounding, the LPTokenBalance of the last LP might not match the LP's trustline balance. </p>
+<p >If it's within the tolerance, update LPTokenBalance to match the LP's trustline balance. </p>
+
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00469">469</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
 
 </div>
 </div>
@@ -30525,7 +30575,7 @@ template&lt;typename A &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00236">236</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMUtils_8cpp_source.html#l00237">237</a> of file <a class="el" href="AMMUtils_8cpp_source.html">AMMUtils.cpp</a>.</p>
 
 </div>
 </div>
@@ -32197,7 +32247,7 @@ template&lt;class TCollection &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BookStep_8cpp_source.html#l01005">1005</a> of file <a class="el" href="BookStep_8cpp_source.html">BookStep.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BookStep_8cpp_source.html#l01004">1004</a> of file <a class="el" href="BookStep_8cpp_source.html">BookStep.cpp</a>.</p>
 
 </div>
 </div>
@@ -32243,7 +32293,7 @@ template&lt;class TIn , class TOut &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BookStep_8cpp_source.html#l01451">1451</a> of file <a class="el" href="BookStep_8cpp_source.html">BookStep.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BookStep_8cpp_source.html#l01450">1450</a> of file <a class="el" href="BookStep_8cpp_source.html">BookStep.cpp</a>.</p>
 
 </div>
 </div>
@@ -32279,7 +32329,7 @@ template&lt;class TIn , class TOut &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BookStep_8cpp_source.html#l01476">1476</a> of file <a class="el" href="BookStep_8cpp_source.html">BookStep.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BookStep_8cpp_source.html#l01475">1475</a> of file <a class="el" href="BookStep_8cpp_source.html">BookStep.cpp</a>.</p>
 
 </div>
 </div>
@@ -32309,7 +32359,7 @@ template&lt;class TIn , class TOut &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BookStep_8cpp_source.html#l01482">1482</a> of file <a class="el" href="BookStep_8cpp_source.html">BookStep.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BookStep_8cpp_source.html#l01481">1481</a> of file <a class="el" href="BookStep_8cpp_source.html">BookStep.cpp</a>.</p>
 
 </div>
 </div>
@@ -32339,7 +32389,7 @@ template&lt;class TIn , class TOut &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="BookStep_8cpp_source.html#l01488">1488</a> of file <a class="el" href="BookStep_8cpp_source.html">BookStep.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="BookStep_8cpp_source.html#l01487">1487</a> of file <a class="el" href="BookStep_8cpp_source.html">BookStep.cpp</a>.</p>
 
 </div>
 </div>
@@ -35533,7 +35583,7 @@ template&lt;class T , class C &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMWithdraw_8cpp_source.html#l00687">687</a> of file <a class="el" href="AMMWithdraw_8cpp_source.html">AMMWithdraw.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMWithdraw_8cpp_source.html#l00672">672</a> of file <a class="el" href="AMMWithdraw_8cpp_source.html">AMMWithdraw.cpp</a>.</p>
 
 </div>
 </div>
@@ -45786,7 +45836,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="LedgerHandler_8cpp_source.html#l00103">103</a> of file <a class="el" href="LedgerHandler_8cpp_source.html">LedgerHandler.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="LedgerHandler_8cpp_source.html#l00099">99</a> of file <a class="el" href="LedgerHandler_8cpp_source.html">LedgerHandler.cpp</a>.</p>
 
 </div>
 </div>
@@ -49399,7 +49449,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="SHAMap_8h_source.html#l00740">740</a> of file <a class="el" href="SHAMap_8h_source.html">SHAMap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SHAMap_8h_source.html#l00741">741</a> of file <a class="el" href="SHAMap_8h_source.html">SHAMap.h</a>.</p>
 
 </div>
 </div>
@@ -49429,7 +49479,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="SHAMap_8h_source.html#l00750">750</a> of file <a class="el" href="SHAMap_8h_source.html">SHAMap.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="SHAMap_8h_source.html#l00751">751</a> of file <a class="el" href="SHAMap_8h_source.html">SHAMap.h</a>.</p>
 
 </div>
 </div>
@@ -49665,7 +49715,7 @@ template&lt;class T &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="mulDiv_8h_source.html#l00029">29</a> of file <a class="el" href="mulDiv_8h_source.html">mulDiv.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="mulDiv_8h_source.html#l00028">28</a> of file <a class="el" href="mulDiv_8h_source.html">mulDiv.h</a>.</p>
 
 </div>
 </div>
@@ -49968,7 +50018,7 @@ template&lt;class Dest , class Src &gt; </div>
 <div class="line">     {&amp;keylet::nftpage_max, jss::NFTokenPage, <span class="keyword">true</span>},</div>
 <div class="line">     {&amp;keylet::did, jss::DID, <span class="keyword">true</span>}}}</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="Indexes_8h_source.html#l00381">381</a> of file <a class="el" href="Indexes_8h_source.html">Indexes.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Indexes_8h_source.html#l00382">382</a> of file <a class="el" href="Indexes_8h_source.html">Indexes.h</a>.</p>
 
 </div>
 </div>
@@ -51024,7 +51074,7 @@ template&lt;class Dest , class Src &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STValidation_8h_source.html#l00041">41</a> of file <a class="el" href="STValidation_8h_source.html">STValidation.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STValidation_8h_source.html#l00039">39</a> of file <a class="el" href="STValidation_8h_source.html">STValidation.h</a>.</p>
 
 </div>
 </div>
@@ -51048,7 +51098,7 @@ template&lt;class Dest , class Src &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="STValidation_8h_source.html#l00044">44</a> of file <a class="el" href="STValidation_8h_source.html">STValidation.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="STValidation_8h_source.html#l00042">42</a> of file <a class="el" href="STValidation_8h_source.html">STValidation.h</a>.</p>
 
 </div>
 </div>
