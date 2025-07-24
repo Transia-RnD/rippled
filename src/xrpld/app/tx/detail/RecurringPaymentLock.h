@@ -17,39 +17,36 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_PROTOCOL_PAYCHAN_H_INCLUDED
-#define RIPPLE_PROTOCOL_PAYCHAN_H_INCLUDED
+#ifndef RIPPLE_TX_RECURRINGPAYMENTLOCK_H_INCLUDED
+#define RIPPLE_TX_RECURRINGPAYMENTLOCK_H_INCLUDED
 
-#include <xrpl/basics/base_uint.h>
-#include <xrpl/protocol/HashPrefix.h>
-#include <xrpl/protocol/Serializer.h>
-#include <xrpl/protocol/XRPAmount.h>
+#include <xrpld/app/tx/detail/Transactor.h>
+
+#include <xrpl/protocol/TxFlags.h>
 
 namespace ripple {
 
-inline void
-serializePayChanAuthorization(
-    Serializer& msg,
-    uint256 const& key,
-    XRPAmount const& amt)
+class RecurringPaymentLock : public Transactor
 {
-    msg.add32(HashPrefix::paymentChannelClaim);
-    msg.addBitString(key);
-    msg.add64(amt.drops());
-}
+public:
+    static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-inline void
-serializeRecurringAuthorization(
-    Serializer& msg,
-    uint256 const& key,
-    AccountID const& dest,
-    XRPAmount const& amt)
-{
-    msg.add32(HashPrefix::recurringClaim);
-    msg.addBitString(key);
-    msg.addBitString(dest);
-    msg.add64(amt.drops());
-}
+    explicit RecurringPaymentLock(ApplyContext& ctx) : Transactor(ctx)
+    {
+    }
+
+    static NotTEC
+    preflight(PreflightContext const& ctx);
+
+    static TER
+    checkPermission(ReadView const& view, STTx const& tx);
+
+    static TER
+    preclaim(PreclaimContext const& ctx);
+
+    TER
+    doApply() override;
+};
 
 }  // namespace ripple
 

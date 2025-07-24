@@ -540,7 +540,13 @@ TRANSACTION(ttRECURRING_PAYMENT_CANCEL, 73, RecurringPaymentCancel, Delegation::
 }))
 
 /** This transaction type . */
-TRANSACTION(ttRECURRING_PAYMENT_CLAIM, 74, RecurringPaymentClaim, Delegation::delegatable, ({
+TRANSACTION(ttRECURRING_PAYMENT_LOCK, 75, RecurringPaymentLock, Delegation::delegatable, ({
+    {sfRecurringPaymentID, soeREQUIRED},
+    {sfAmount, soeREQUIRED},
+}))
+
+/** This transaction type . */
+TRANSACTION(ttRECURRING_PAYMENT_CLAIM, 76, RecurringPaymentClaim, Delegation::delegatable, ({
     {sfRecurringPaymentID, soeREQUIRED},
     {sfAmount, soeREQUIRED},
     {sfDestination, soeOPTIONAL},

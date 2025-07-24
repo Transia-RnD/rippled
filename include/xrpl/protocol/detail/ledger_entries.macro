@@ -515,12 +515,12 @@ LEDGER_ENTRY(ltRECURRING_PAYMENT, 0x0085, RecurringPayment, recurring_payment, (
     {sfSequence,             soeREQUIRED},
     {sfDestination,          soeOPTIONAL},
     {sfDestinationTag,       soeOPTIONAL},
-    {sfAmount,               soeREQUIRED},
+    {sfAmount,               soeDEFAULT},
+    {sfLimitAmount,          soeREQUIRED},
     {sfFrequency,            soeREQUIRED},
     {sfNextResetTime,        soeREQUIRED},
     {sfExpiration,           soeOPTIONAL},
     {sfClaimedThisPeriod,    soeREQUIRED},
-    {sfLockedAmount,         soeOPTIONAL},
     {sfPublicKey,            soeOPTIONAL},
 }))
 

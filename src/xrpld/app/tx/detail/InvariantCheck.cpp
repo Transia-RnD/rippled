@@ -112,6 +112,10 @@ XRPNotCreated::visitEntry(
                 if (isXRP((*before)[sfAmount]))
                     drops_ -= (*before)[sfAmount].xrp().drops();
                 break;
+            case ltRECURRING_PAYMENT:
+                if (isXRP((*before)[sfAmount]))
+                    drops_ -= (*before)[sfAmount].xrp().drops();
+                break;
             default:
                 break;
         }
@@ -131,6 +135,10 @@ XRPNotCreated::visitEntry(
                                   .drops();
                 break;
             case ltESCROW:
+                if (!isDelete && isXRP((*after)[sfAmount]))
+                    drops_ += (*after)[sfAmount].xrp().drops();
+                break;
+            case ltRECURRING_PAYMENT:
                 if (!isDelete && isXRP((*after)[sfAmount]))
                     drops_ += (*after)[sfAmount].xrp().drops();
                 break;

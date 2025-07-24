@@ -19,6 +19,7 @@
 
 #include <test/jtx.h>
 
+#include <xrpl/protocol/PayChan.h>
 #include <xrpl/protocol/TxFlags.h>
 #include <xrpl/protocol/jss.h>
 
@@ -80,7 +81,6 @@ public:
     Json::Value
     claim(
         jtx::Account const& account,
-        jtx::Account const& destination,
         uint256 const& id,
         STAmount const& amount)
     {
@@ -88,7 +88,6 @@ public:
         Json::Value jv;
         jv[jss::TransactionType] = jss::RecurringPaymentClaim;
         jv[jss::Account] = to_string(account.id());
-        jv[jss::Destination] = to_string(destination.id());
         jv[sfRecurringPaymentID] = to_string(id);
         jv[jss::Amount] = amount.getJson(JsonOptions::none);
         return jv;
@@ -96,10 +95,10 @@ public:
 
     Json::Value
     claim(
-        jtx::Account const& account, 
+        jtx::Account const& account,
         uint256 const& id,
         STAmount const& amount,
-        Blob const& sig)
+        Slice const& sig)
     {
         using namespace jtx;
         Json::Value jv;
@@ -108,6 +107,21 @@ public:
         jv[sfRecurringPaymentID] = to_string(id);
         jv[jss::Amount] = amount.getJson(JsonOptions::none);
         jv[sfSignature] = strHex(sig);
+        return jv;
+    }
+
+    Json::Value
+    lock(
+        jtx::Account const& account,
+        uint256 const& id,
+        STAmount const& amount)
+    {
+        using namespace jtx;
+        Json::Value jv;
+        jv[jss::TransactionType] = jss::RecurringPaymentLock;
+        jv[jss::Account] = to_string(account.id());
+        jv[sfRecurringPaymentID] = to_string(id);
+        jv[jss::Amount] = amount.getJson(JsonOptions::none);
         return jv;
     }
 
@@ -121,10 +135,23 @@ public:
         return k.key;
     }
 
-    void
-    testEnabled(FeatureBitset features)
+    static Buffer
+    signClaimAuth(
+        PublicKey const& pk,
+        SecretKey const& sk,
+        uint256 const& id,
+        jtx::Account const& account,
+        STAmount const& amount)
     {
-        testcase("enabled");
+        Serializer msg;
+        serializeRecurringAuthorization(msg, id, account.id(), amount.xrp());
+        return sign(pk, sk, msg.slice());
+    }
+
+    void
+    testDest(FeatureBitset features)
+    {
+        testcase("destination");
         using namespace jtx;
         using namespace std::literals::chrono_literals;
         Env env(*this);
@@ -148,9 +175,90 @@ public:
             std::cout << jrr << std::endl;
         }
 
-        env(claim(alice, bob, id, XRP(1)), ter(tesSUCCESS));
-        env(claim(alice, bob, id, XRP(10)), ter(tecINSUFFICIENT_FUNDS));
+        env(claim(bob, id, XRP(1)), ter(tesSUCCESS));
+        env(claim(bob, id, XRP(10)), ter(tecINSUFFICIENT_FUNDS));
         env.close();
+
+        {
+            Json::Value params;
+            params[jss::ledger_index] = env.current()->seq() - 1;
+            params[jss::transactions] = true;
+            params[jss::expand] = true;
+            auto const jrr = env.rpc("json", "ledger", to_string(params));
+            std::cout << jrr << std::endl;
+        }
+    }
+
+    void
+    testNoDest(FeatureBitset features)
+    {
+        testcase("no destination");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+        Env env(*this);
+        Account const alice = Account{"alice"};
+        Account const bob = Account{"bob"};
+        Account const signer = Account{"signer"};
+        env.fund(XRP(10000), bob, alice);
+        env.close();
+
+        // Using Destination
+        auto const id = recurringPaymentID(alice.id(), noAccount(), env.seq(alice));
+        auto const frequency = 100s;
+        env(set(alice, XRP(10), frequency, signer.pk()), ter(tesSUCCESS));
+        env.close();
+
+        {
+            Json::Value params;
+            params[jss::ledger_index] = env.current()->seq() - 1;
+            params[jss::transactions] = true;
+            params[jss::expand] = true;
+            auto const jrr = env.rpc("json", "ledger", to_string(params));
+            std::cout << jrr << std::endl;
+        }
+
+        {
+            auto const sig = signClaimAuth(signer.pk(), signer.sk(), id, bob, XRP(10));
+            env(claim(bob, id, XRP(10), sig), ter(tesSUCCESS));
+            env.close();
+        }
+
+        env.close(100s);
+
+        {
+            auto const sig = signClaimAuth(signer.pk(), signer.sk(), id, bob, XRP(10));
+            env(claim(bob, id, XRP(10), sig), ter(tecINSUFFICIENT_FUNDS));
+            env.close();
+        }
+
+        {
+            env(lock(alice, id, XRP(100)), ter(tesSUCCESS));
+            env.close();
+        }
+
+        {
+            auto const sig = signClaimAuth(signer.pk(), signer.sk(), id, bob, XRP(10));
+            env(claim(bob, id, XRP(10), sig), ter(tesSUCCESS));
+            env.close();
+        }
+
+        env.close(100s);
+
+        {
+            auto const sig = signClaimAuth(signer.pk(), signer.sk(), id, bob, XRP(10));
+            env(claim(bob, id, XRP(10), sig), ter(tesSUCCESS));
+            env(claim(bob, id, XRP(10), sig), ter(tecLIMIT_EXCEEDED));
+            env.close();
+        }
+
+        env.close(100s);
+
+        {
+            auto const sig = signClaimAuth(signer.pk(), signer.sk(), id, bob, XRP(10));
+            env(claim(bob, id, XRP(10), sig), ter(tesSUCCESS));
+            env.close();
+        }
+
 
         {
             Json::Value params;
@@ -165,7 +273,8 @@ public:
     void
     testWithFeats(FeatureBitset features)
     {
-        testEnabled(features);
+        // testDest(features);
+        testNoDest(features);
     }
 
 public:

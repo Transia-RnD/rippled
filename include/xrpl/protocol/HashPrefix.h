@@ -91,6 +91,9 @@ enum class HashPrefix : std::uint32_t {
 
     /** Batch */
     batch = detail::make_hash_prefix('B', 'C', 'H'),
+
+    /** Recurring Claim */
+    recurringClaim = detail::make_hash_prefix('R', 'C', 'C'),
 };
 
 template <class Hasher>
