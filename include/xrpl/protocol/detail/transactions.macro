@@ -523,19 +523,19 @@ TRANSACTION(ttBATCH, 71, Batch, Delegation::notDelegatable, ({
 }))
 
 /** This transaction type creates an WithdrawPreauth instance */
-TRANSACTION(ttWITHDRAW_PREAUTH, 72, WithdrawPreauth, ({
+TRANSACTION(ttWITHDRAW_PREAUTH, 72, WithdrawPreauth, Delegation::delegatable, ({
     {sfAuthorize, soeOPTIONAL},
     {sfUnauthorize, soeOPTIONAL},
-    {sfFirewallSigners, soeOPTIONAL},
+    // {sfFirewallSigners, soeOPTIONAL},
     {sfFirewallID, soeREQUIRED},
 }))
 
 /** This transaction type creates an Firewall instance */
-TRANSACTION(ttFIREWALL_SET, 73, FirewallSet, ({
+TRANSACTION(ttFIREWALL_SET, 73, FirewallSet, Delegation::notDelegatable, ({
     {sfIssuer, soeOPTIONAL},
     {sfAuthorize, soeOPTIONAL},
     {sfFirewallRules, soeOPTIONAL},
-    {sfFirewallSigners, soeOPTIONAL},
+    // {sfFirewallSigners, soeOPTIONAL},
     {sfFirewallID, soeOPTIONAL},
 }))
 

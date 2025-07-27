@@ -192,8 +192,8 @@ public:
     static NotTEC
     checkBatchSign(PreclaimContext const& ctx);
 
-    static NotTEC
-    checkFirewallSign(PreclaimContext const& ctx);
+    // static NotTEC
+    // checkFirewallSign(PreclaimContext const& ctx);
 
     // Returns the fee in fee units, not scaled for load.
     static XRPAmount

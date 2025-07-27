@@ -185,13 +185,21 @@ InnerObjectFormats::InnerObjectFormats()
             {sfTimeAmount, soeOPTIONAL},  // Used By Protocol
         });
 
-    add(sfFirewallSigner.jsonName.c_str(),
-        sfFirewallSigner.getCode(),
+    add(sfCounterpartySignature.jsonName,
+        sfCounterpartySignature.getCode(),
         {
-            {sfAccount, soeREQUIRED},
-            {sfSigningPubKey, soeREQUIRED},
-            {sfTxnSignature, soeREQUIRED},
+            {sfSigningPubKey, soeOPTIONAL},
+            {sfTxnSignature, soeOPTIONAL},
+            {sfSigners, soeOPTIONAL},
         });
+
+    // add(sfFirewallSigner.jsonName.c_str(),
+    //     sfFirewallSigner.getCode(),
+    //     {
+    //         {sfAccount, soeREQUIRED},
+    //         {sfSigningPubKey, soeREQUIRED},
+    //         {sfTxnSignature, soeREQUIRED},
+    //     });
 }
 
 InnerObjectFormats const&

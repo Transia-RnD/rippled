@@ -103,20 +103,20 @@ sig::operator()(Env& env, JTx& jt) const
         Rethrow();
     }
     auto const mySigners = signers;
-    auto& js = jt[sfFirewallSigners.getJsonName()];
-    for (std::size_t i = 0; i < mySigners.size(); ++i)
-    {
-        auto const& e = mySigners[i];
-        auto& jo = js[i][sfFirewallSigner.getJsonName()];
-        jo[jss::Account] = e.acct.human();
-        jo[jss::SigningPubKey] = strHex(e.sig.pk().slice());
+    // auto& js = jt[sfFirewallSigners.getJsonName()];
+    // for (std::size_t i = 0; i < mySigners.size(); ++i)
+    // {
+    //     auto const& e = mySigners[i];
+    //     auto& jo = js[i][sfFirewallSigner.getJsonName()];
+    //     jo[jss::Account] = e.acct.human();
+    //     jo[jss::SigningPubKey] = strHex(e.sig.pk().slice());
 
-        Serializer ss;
-        ss.add32(HashPrefix::txSign);
-        st->addWithoutSigningFields(ss);
-        auto const sig = ripple::sign(*publicKeyType(e.sig.pk().slice()), e.sig.sk(), ss.slice());
-        jo[jss::TxnSignature] = strHex(Slice{sig.data(), sig.size()});
-    }
+    //     Serializer ss;
+    //     ss.add32(HashPrefix::txSign);
+    //     st->addWithoutSigningFields(ss);
+    //     auto const sig = ripple::sign(*publicKeyType(e.sig.pk().slice()), e.sig.sk(), ss.slice());
+    //     jo[jss::TxnSignature] = strHex(Slice{sig.data(), sig.size()});
+    // }
 }
 
 msig::msig(Account const& masterAccount, std::vector<msig::Reg> signers_)
@@ -144,26 +144,26 @@ msig::operator()(Env& env, JTx& jt) const
         env.test.log << pretty(jt.jv) << std::endl;
         Rethrow();
     }
-    auto& bs = jt[sfFirewallSigners.getJsonName()];
-    auto const index = jt[sfFirewallSigners.jsonName].size();
-    auto& bso = bs[index][sfFirewallSigner.getJsonName()];
-    bso[jss::Account] = master.human();
-    bso[jss::SigningPubKey] = "";
-    auto& is = bso[sfSigners.getJsonName()];
-    for (std::size_t i = 0; i < mySigners.size(); ++i)
-    {
-        auto const& e = mySigners[i];
-        auto& iso = is[i][sfSigner.getJsonName()];
-        iso[jss::Account] = e.acct.human();
-        iso[jss::SigningPubKey] = strHex(e.sig.pk().slice());
+    // auto& bs = jt[sfFirewallSigners.getJsonName()];
+    // auto const index = jt[sfFirewallSigners.jsonName].size();
+    // auto& bso = bs[index][sfFirewallSigner.getJsonName()];
+    // bso[jss::Account] = master.human();
+    // bso[jss::SigningPubKey] = "";
+    // auto& is = bso[sfSigners.getJsonName()];
+    // for (std::size_t i = 0; i < mySigners.size(); ++i)
+    // {
+    //     auto const& e = mySigners[i];
+    //     auto& iso = is[i][sfSigner.getJsonName()];
+    //     iso[jss::Account] = e.acct.human();
+    //     iso[jss::SigningPubKey] = strHex(e.sig.pk().slice());
 
-        Serializer msg;
-        // serializeBatch(msg, st->getFlags(), st->getFieldV256(sfTxIDs));
-        // auto const sig = ripple::sign(
-        //     *publicKeyType(e.sig.pk().slice()), e.sig.sk(), msg.slice());
-        // iso[sfTxnSignature.getJsonName()] =
-        //     strHex(Slice{sig.data(), sig.size()});
-    }
+    //     Serializer msg;
+    //     // serializeBatch(msg, st->getFlags(), st->getFieldV256(sfTxIDs));
+    //     // auto const sig = ripple::sign(
+    //     //     *publicKeyType(e.sig.pk().slice()), e.sig.sk(), msg.slice());
+    //     // iso[sfTxnSignature.getJsonName()] =
+    //     //     strHex(Slice{sig.data(), sig.size()});
+    // }
 }
 
 }  // namespace firewall

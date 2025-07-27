@@ -215,13 +215,13 @@ invoke_preclaim(PreclaimContext const& ctx)
                 if (result != tesSUCCESS)
                     return result;
 
-                if (ctx.tx.getTxnType() == ttFIREWALL_SET ||
-                    ctx.tx.getTxnType() == ttWITHDRAW_PREAUTH)
-                {
-                    result = T::checkFirewallSign(ctx);
-                    if (result != tesSUCCESS)
-                        return result;
-                }
+                // if (ctx.tx.getTxnType() == ttFIREWALL_SET ||
+                //     ctx.tx.getTxnType() == ttWITHDRAW_PREAUTH)
+                // {
+                //     result = T::checkFirewallSign(ctx);
+                //     if (result != tesSUCCESS)
+                //         return result;
+                // }
             }
 
             return T::preclaim(ctx);

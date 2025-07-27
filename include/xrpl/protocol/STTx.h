@@ -121,18 +121,32 @@ public:
     void
     sign(PublicKey const& publicKey, SecretKey const& secretKey);
 
-    /** Check the signature.
-        @return `true` if valid signature. If invalid, the error message string.
-    */
     enum class RequireFullyCanonicalSig : bool { no, yes };
 
+    /** Check the signature.
+        @param requireCanonicalSig If `true`, check that the signature is fully
+            canonical. If `false`, only check that the signature is valid.
+        @param rules The current ledger rules.
+        @param pSig Pointer to object that contains the signature fields, if not
+            using "this". Will most often be null
+        @return `true` if valid signature. If invalid, the error message string.
+    */
+    Expected<void, std::string>
+    checkSign(
+        RequireFullyCanonicalSig requireCanonicalSig,
+        Rules const& rules,
+        STObject const* pSig) const;
+
+    /** Check the signature.
+        @param requireCanonicalSig If `true`, check that the signature is fully
+            canonical. If `false`, only check that the signature is valid.
+        @param rules The current ledger rules.
+        @return `true` if valid signature. If invalid, the error message string.
+    */
     Expected<void, std::string>
     checkSign(RequireFullyCanonicalSig requireCanonicalSig, Rules const& rules)
         const;
 
-    Expected<void, std::string>
-    checkFirewallSign(RequireFullyCanonicalSig requireCanonicalSig, Rules const& rules) const;
-    
     Expected<void, std::string>
     checkBatchSign(
         RequireFullyCanonicalSig requireCanonicalSig,
@@ -158,13 +172,15 @@ public:
 
 private:
     Expected<void, std::string>
-    checkSingleSign(STObject const& obj, RequireFullyCanonicalSig requireCanonicalSig) const;
+    checkSingleSign(
+        RequireFullyCanonicalSig requireCanonicalSig,
+        STObject const* pSig) const;
 
     Expected<void, std::string>
     checkMultiSign(
-        STObject const& obj,
         RequireFullyCanonicalSig requireCanonicalSig,
-        Rules const& rules) const;
+        Rules const& rules,
+        STObject const* pSig) const;
 
     Expected<void, std::string>
     checkBatchSingleSign(

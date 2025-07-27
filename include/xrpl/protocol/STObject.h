@@ -242,6 +242,8 @@ public:
     getFieldPathSet(SField const& field) const;
     STVector256 const&
     getFieldV256(SField const& field) const;
+    STObject
+    getFieldObject(SField const& field) const;
     STArray const&
     getFieldArray(SField const& field) const;
     STCurrency const&
