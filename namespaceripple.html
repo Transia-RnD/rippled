@@ -272,9 +272,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1BasicConfig.html">BasicConfig</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Holds unparsed configuration information.  <a href="classripple_1_1BasicConfig.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1BasicTaker.html">BasicTaker</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">State for the active party during order book or payment operations.  <a href="classripple_1_1BasicTaker.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Batch.html">Batch</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structripple_1_1batch__view__t.html">batch_view_t</a></td></tr>
@@ -1305,10 +1302,6 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1TaggedPointer.html">TaggedPointer</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="classripple_1_1TaggedPointer.html" title="TaggedPointer is a combination of a pointer and a mask stored in the lowest two bits.">TaggedPointer</a> is a combination of a pointer and a mask stored in the lowest two bits.  <a href="classripple_1_1TaggedPointer.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Taker.html">Taker</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Taker__test.html">Taker_test</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structripple_1_1TER__test.html">TER_test</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -2449,6 +2442,23 @@ Enumerations</h2></td></tr>
 , <a class="el" href="namespaceripple.html#aa9819bf6e2ef44707a0144da6c874890a93cba07454f06a4a960172bbd6e2a435">Yes</a> = true
  }</td></tr>
 <tr class="separator:aa9819bf6e2ef44707a0144da6c874890"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79683ec651b1658886d9c9ce8434f972"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> : std::uint16_t { <br />
+&#160;&#160;<a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972a0db45d2a4141101bdfe48e3314cfbca3">UNDEFINED</a> = 0x00
+, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972af1b68d66337a81cfa0d2076171cba2a8">BAD</a> = 0x02
+, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972aec09e9e688c30b57cd64c0180da5c34a">SAVED</a> = 0x04
+, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972ab33343cae11179cc3df2575f7f6ddc33">HELD</a> = 0x08
+, <br />
+&#160;&#160;<a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972ae832adef915418a62df152b813f48316">TRUSTED</a> = 0x10
+, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972ae296c6c3b3cc3e8b8e2726de19b42bff">PRIVATE1</a> = 0x0100
+, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972a86f44d33b80079696b49985e7cb1ffaf">PRIVATE2</a> = 0x0200
+, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972a842a64c8cf4edede85b9aaef7f3652b4">PRIVATE3</a> = 0x0400
+, <br />
+&#160;&#160;<a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972aadd4f6f0aba82c972d00e2229928f45e">PRIVATE4</a> = 0x0800
+, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972af2eabd5227bad5ab01c8e90c3bb8edfd">PRIVATE5</a> = 0x1000
+, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972a1492bf6d7fc2ce461a9399ecbca58717">PRIVATE6</a> = 0x2000
+<br />
+ }</td></tr>
+<tr class="separator:a79683ec651b1658886d9c9ce8434f972"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a16d6f665a032453ec4cbfca01929b6"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a8a16d6f665a032453ec4cbfca01929b6">ManifestDisposition</a> { <br />
 &#160;&#160;<a class="el" href="namespaceripple.html#a8a16d6f665a032453ec4cbfca01929b6a3e4d891a5df3d6d0d7dd9432a1bc6470">accepted</a> = 0
 , <a class="el" href="namespaceripple.html#a8a16d6f665a032453ec4cbfca01929b6a36f34fd8319cf30f8e132ef294c616af">stale</a>
@@ -2555,12 +2565,6 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a0ef1f7396e14a26a1d23238d68149a63"><td class="mdescLeft">&#160;</td><td class="mdescRight">AMMWithdraw implements AMM withdraw Transactor.  <a href="namespaceripple.html#a0ef1f7396e14a26a1d23238d68149a63">More...</a><br /></td></tr>
 <tr class="separator:a0ef1f7396e14a26a1d23238d68149a63"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae9b6ac4bca5f49e1aa2753e0d9faa2a1"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#ae9b6ac4bca5f49e1aa2753e0d9faa2a1">CrossType</a> { <a class="el" href="namespaceripple.html#ae9b6ac4bca5f49e1aa2753e0d9faa2a1a5453323c4d02a5c6a6ec19cbcdfb70e5">XrpToIou</a>
-, <a class="el" href="namespaceripple.html#ae9b6ac4bca5f49e1aa2753e0d9faa2a1accb98a576f83dae3d3c01ecffcb2e38e">IouToXrp</a>
-, <a class="el" href="namespaceripple.html#ae9b6ac4bca5f49e1aa2753e0d9faa2a1aa1208156363280ec3589296c38553e82">IouToIou</a>
- }</td></tr>
-<tr class="memdesc:ae9b6ac4bca5f49e1aa2753e0d9faa2a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">The flavor of an offer crossing.  <a href="namespaceripple.html#ae9b6ac4bca5f49e1aa2753e0d9faa2a1">More...</a><br /></td></tr>
-<tr class="separator:ae9b6ac4bca5f49e1aa2753e0d9faa2a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a33f8b6e68b5f63faf2e9755cc251563e"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a33f8b6e68b5f63faf2e9755cc251563e">ConsensusMode</a> { <a class="el" href="namespaceripple.html#a33f8b6e68b5f63faf2e9755cc251563ea80dcf57f5ecd4be3cbfa37eccbcb6f44">proposing</a>
 , <a class="el" href="namespaceripple.html#a33f8b6e68b5f63faf2e9755cc251563eaea5234685f43dcab142e132c0e7be2ce">observing</a>
 , <a class="el" href="namespaceripple.html#a33f8b6e68b5f63faf2e9755cc251563ea1dde5f68261b60a2e4655f5ad1f13e0b">wrongLedger</a>
@@ -2703,10 +2707,11 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:a5b188f8f22827b2e24b506ef852ffd69"><td class="mdescLeft">&#160;</td><td class="mdescRight">Controls the treatment of unauthorized MPT balances.  <a href="namespaceripple.html#a5b188f8f22827b2e24b506ef852ffd69">More...</a><br /></td></tr>
 <tr class="separator:a5b188f8f22827b2e24b506ef852ffd69"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac257f40046c4e897b1109124734c7026"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026">MPTAuthType</a> : bool { <a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026a7559328fba92acce7308a39180e16441">StrongAuth</a> = true
-, <a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026a41aee20744fc47f976626aa2ade7adcb">WeakAuth</a> = false
+<tr class="memitem:a4e070aef85986336795216a3e5336f8d"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8d">AuthType</a> { <a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8da7559328fba92acce7308a39180e16441">StrongAuth</a>
+, <a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8da41aee20744fc47f976626aa2ade7adcb">WeakAuth</a>
+, <a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8da0cc0a0507cf3d31e5089f420a4cf8b4b">Legacy</a>
  }</td></tr>
-<tr class="separator:ac257f40046c4e897b1109124734c7026"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:a4e070aef85986336795216a3e5336f8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57d7e7b27df7e719fdf5569f96be60a3"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a57d7e7b27df7e719fdf5569f96be60a3">NodeObjectType</a> : std::uint32_t { <br />
 &#160;&#160;<a class="el" href="namespaceripple.html#a57d7e7b27df7e719fdf5569f96be60a3ac9d2b0df1bd24ef0d09db1040dceac6b">hotUNKNOWN</a> = 0
 , <a class="el" href="namespaceripple.html#a57d7e7b27df7e719fdf5569f96be60a3ae32ab8a0b50eee52b61ca3c8e5a56da1">hotLEDGER</a> = 1
@@ -3704,8 +3709,6 @@ requires requires(T const&amp; t) { { t.getJson(<a class="el" href="structripple
 <tr class="separator:a409262339843a2785f29845c7ec5c7f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c231e0a6ac493297e442e8e99af8037"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#a356c68147333a9a48a344718038576d9">uint256</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a8c231e0a6ac493297e442e8e99af8037">retireFeature</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> const &amp;name)</td></tr>
 <tr class="separator:a8c231e0a6ac493297e442e8e99af8037"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae8b631d3b5f27967f0e7a7132aa2738"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#a356c68147333a9a48a344718038576d9">uint256</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#aae8b631d3b5f27967f0e7a7132aa2738">abandonFeature</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> const &amp;name)</td></tr>
-<tr class="separator:aae8b631d3b5f27967f0e7a7132aa2738"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac52a0eb5ca3e6aec7bc695eb44ed1ab8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#ac52a0eb5ca3e6aec7bc695eb44ed1ab8">registrationIsDone</a> ()</td></tr>
 <tr class="memdesc:ac52a0eb5ca3e6aec7bc695eb44ed1ab8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tell FeatureCollections when registration is complete.  <a href="namespaceripple.html#ac52a0eb5ca3e6aec7bc695eb44ed1ab8">More...</a><br /></td></tr>
 <tr class="separator:ac52a0eb5ca3e6aec7bc695eb44ed1ab8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -3854,8 +3857,6 @@ requires requires(T const&amp; t) { { t.getJson(<a class="el" href="structripple
 <tr class="separator:aedab5d7167dc2d78c71b40c3eedae952"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6461824da1787612809c88aaff23c90"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#ac6461824da1787612809c88aaff23c90">BEAST_DEFINE_TESTSUITE</a> (<a class="el" href="classripple_1_1SetRegularKey.html">SetRegularKey</a>, app, ripple)</td></tr>
 <tr class="separator:ac6461824da1787612809c88aaff23c90"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a03dbf5f241341d950a4b3efbb23e5c98"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a03dbf5f241341d950a4b3efbb23e5c98">BEAST_DEFINE_TESTSUITE</a> (<a class="el" href="classripple_1_1Taker.html">Taker</a>, tx, ripple)</td></tr>
-<tr class="separator:a03dbf5f241341d950a4b3efbb23e5c98"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6cdd712acdbff0518f8e6ad462f2cdd3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a6cdd712acdbff0518f8e6ad462f2cdd3">BEAST_DEFINE_TESTSUITE</a> (Ticket, tx, ripple)</td></tr>
 <tr class="separator:a6cdd712acdbff0518f8e6ad462f2cdd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa7db8f922cdc3258a1b25e2887d25f77"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#aa7db8f922cdc3258a1b25e2887d25f77">BEAST_DEFINE_TESTSUITE</a> (TrustAndBalance, app, ripple)</td></tr>
@@ -4241,6 +4242,16 @@ requires ( <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same
 <tr class="separator:a56634a05bfc2b4f7c95169c75f370554"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f144181c0c4a92fb35865688c3f49be"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structripple_1_1HashRouter_1_1Setup.html">HashRouter::Setup</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a9f144181c0c4a92fb35865688c3f49be">setup_HashRouter</a> (<a class="el" href="classripple_1_1Config.html">Config</a> const &amp;config)</td></tr>
 <tr class="separator:a9f144181c0c4a92fb35865688c3f49be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abd6d915eb3a195d06abed070e41c0c82"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#abd6d915eb3a195d06abed070e41c0c82">operator|</a> (<a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> lhs, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> rhs)</td></tr>
+<tr class="separator:abd6d915eb3a195d06abed070e41c0c82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc135ac3c81540f58dc174e76cf2ed64"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#afc135ac3c81540f58dc174e76cf2ed64">operator|=</a> (<a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> &amp;lhs, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> rhs)</td></tr>
+<tr class="separator:afc135ac3c81540f58dc174e76cf2ed64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c9ccb834f0fcfaf5ddde0bd4c4c808a"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a6c9ccb834f0fcfaf5ddde0bd4c4c808a">operator&amp;</a> (<a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> lhs, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> rhs)</td></tr>
+<tr class="separator:a6c9ccb834f0fcfaf5ddde0bd4c4c808a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5b6305c4e35ec076cd49fcb6ca26f0d"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#af5b6305c4e35ec076cd49fcb6ca26f0d">operator&amp;=</a> (<a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> &amp;lhs, <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> rhs)</td></tr>
+<tr class="separator:af5b6305c4e35ec076cd49fcb6ca26f0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab61dcdbe0f204e4c9c9237f6389a4ec9"><td class="memItemLeft" align="right" valign="top">constexpr bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#ab61dcdbe0f204e4c9c9237f6389a4ec9">any</a> (<a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> flags)</td></tr>
+<tr class="separator:ab61dcdbe0f204e4c9c9237f6389a4ec9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a7f562868748b9246dbcab39091021c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a4a7f562868748b9246dbcab39091021c">operator==</a> (<a class="el" href="structripple_1_1Manifest.html">Manifest</a> const &amp;lhs, <a class="el" href="structripple_1_1Manifest.html">Manifest</a> const &amp;rhs)</td></tr>
 <tr class="separator:a4a7f562868748b9246dbcab39091021c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a068a05c4d658a764ce2be1810e1779fd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a068a05c4d658a764ce2be1810e1779fd">operator!=</a> (<a class="el" href="structripple_1_1Manifest.html">Manifest</a> const &amp;lhs, <a class="el" href="structripple_1_1Manifest.html">Manifest</a> const &amp;rhs)</td></tr>
@@ -4647,12 +4658,6 @@ requires (T::ConsequencesFactory == <a class="el" href="classripple_1_1Transacto
 <tr class="separator:a224f97e143a942bf29a6308854d7d89c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a474b3ad651022903a32bfb1161a481cf"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a474b3ad651022903a32bfb1161a481cf">removeSignersFromLedger</a> (<a class="el" href="classripple_1_1Application.html">Application</a> &amp;app, <a class="el" href="classripple_1_1ApplyView.html">ApplyView</a> &amp;view, <a class="el" href="structripple_1_1Keylet.html">Keylet</a> const &amp;accountKeylet, <a class="el" href="structripple_1_1Keylet.html">Keylet</a> const &amp;ownerDirKeylet, <a class="el" href="structripple_1_1Keylet.html">Keylet</a> const &amp;signerListKeylet, <a class="el" href="classbeast_1_1Journal.html">beast::Journal</a> j)</td></tr>
 <tr class="separator:a474b3ad651022903a32bfb1161a481cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa491cad6e6d8d237402acf737ad77db9"><td class="memItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#aa491cad6e6d8d237402acf737ad77db9">format_amount</a> (<a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;amount)</td></tr>
-<tr class="separator:aa491cad6e6d8d237402acf737ad77db9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf182931325f21018d58ea44b776860e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classripple_1_1STAmount.html">STAmount</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#aaf182931325f21018d58ea44b776860e">qual_div</a> (<a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;amount, Quality const &amp;quality, <a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;output)</td></tr>
-<tr class="separator:aaf182931325f21018d58ea44b776860e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9038aae96ec0ef3139c731ef397fe96b"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classripple_1_1STAmount.html">STAmount</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a9038aae96ec0ef3139c731ef397fe96b">qual_mul</a> (<a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;amount, Quality const &amp;quality, <a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;output)</td></tr>
-<tr class="separator:a9038aae96ec0ef3139c731ef397fe96b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a362865ef53c336f61de3da6dfc05664a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#af99ba2263d2a1e29207c40a35fc9f6b3">NotTEC</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a362865ef53c336f61de3da6dfc05664a">preflight0</a> (<a class="el" href="structripple_1_1PreflightContext.html">PreflightContext</a> const &amp;ctx)</td></tr>
 <tr class="memdesc:a362865ef53c336f61de3da6dfc05664a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Performs early sanity checks on the txid.  <a href="namespaceripple.html#a362865ef53c336f61de3da6dfc05664a">More...</a><br /></td></tr>
 <tr class="separator:a362865ef53c336f61de3da6dfc05664a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -4882,12 +4887,12 @@ requires (T::ConsequencesFactory == <a class="el" href="classripple_1_1Transacto
 <tr class="separator:a48d07c0de207fab49cfc61ff0de202f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5ee3f52d4feaf2ad6775033fbae860da"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a5ee3f52d4feaf2ad6775033fbae860da">transferXRP</a> (<a class="el" href="classripple_1_1ApplyView.html">ApplyView</a> &amp;view, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;from, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;to, <a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;amount, <a class="el" href="classbeast_1_1Journal.html">beast::Journal</a> j)</td></tr>
 <tr class="separator:a5ee3f52d4feaf2ad6775033fbae860da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e046f4b7ab06562107485513edb7098"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a3e046f4b7ab06562107485513edb7098">requireAuth</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const  &amp;view, <a class="el" href="classripple_1_1Issue.html">Issue</a> const  &amp;issue, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const  &amp;account)</td></tr>
-<tr class="memdesc:a3e046f4b7ab06562107485513edb7098"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the account lacks required authorization.  <a href="namespaceripple.html#a3e046f4b7ab06562107485513edb7098">More...</a><br /></td></tr>
-<tr class="separator:a3e046f4b7ab06562107485513edb7098"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e86974b4b9b0ad30c48c3c3268335f7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a3e86974b4b9b0ad30c48c3c3268335f7">requireAuth</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const  &amp;view, <a class="el" href="classripple_1_1MPTIssue.html">MPTIssue</a> const  &amp;mptIssue, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const  &amp;account, <a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026">MPTAuthType</a> authType=<a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026a7559328fba92acce7308a39180e16441">MPTAuthType::StrongAuth</a>, int depth=0)</td></tr>
-<tr class="memdesc:a3e86974b4b9b0ad30c48c3c3268335f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the account lacks required authorization.  <a href="namespaceripple.html#a3e86974b4b9b0ad30c48c3c3268335f7">More...</a><br /></td></tr>
-<tr class="separator:a3e86974b4b9b0ad30c48c3c3268335f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a16b466cc38b73c15e032e268db4c4de7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a16b466cc38b73c15e032e268db4c4de7">requireAuth</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const  &amp;view, <a class="el" href="classripple_1_1Issue.html">Issue</a> const  &amp;issue, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const  &amp;account, <a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8d">AuthType</a> authType=<a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8da0cc0a0507cf3d31e5089f420a4cf8b4b">AuthType::Legacy</a>)</td></tr>
+<tr class="memdesc:a16b466cc38b73c15e032e268db4c4de7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the account lacks required authorization.  <a href="namespaceripple.html#a16b466cc38b73c15e032e268db4c4de7">More...</a><br /></td></tr>
+<tr class="separator:a16b466cc38b73c15e032e268db4c4de7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a44c66100660cf38589aa34b804222615"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a44c66100660cf38589aa34b804222615">requireAuth</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const  &amp;view, <a class="el" href="classripple_1_1MPTIssue.html">MPTIssue</a> const  &amp;mptIssue, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const  &amp;account, <a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8d">AuthType</a> authType=<a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8da0cc0a0507cf3d31e5089f420a4cf8b4b">AuthType::Legacy</a>, int depth=0)</td></tr>
+<tr class="memdesc:a44c66100660cf38589aa34b804222615"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the account lacks required authorization.  <a href="namespaceripple.html#a44c66100660cf38589aa34b804222615">More...</a><br /></td></tr>
+<tr class="separator:a44c66100660cf38589aa34b804222615"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f3c8c47a0495d2cc0667d32d0bc6ce0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a5f3c8c47a0495d2cc0667d32d0bc6ce0">enforceMPTokenAuthorization</a> (<a class="el" href="classripple_1_1ApplyView.html">ApplyView</a> &amp;view, <a class="el" href="namespaceripple.html#a48dcfc87a5a55b47e868c00da3daa3f1">MPTID</a> const  &amp;mptIssuanceID, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const  &amp;account, <a class="el" href="classripple_1_1XRPAmount.html">XRPAmount</a> const  &amp;priorBalance, <a class="el" href="classbeast_1_1Journal.html">beast::Journal</a> j)</td></tr>
 <tr class="memdesc:a5f3c8c47a0495d2cc0667d32d0bc6ce0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enforce account has MPToken to match its authorization.  <a href="namespaceripple.html#a5f3c8c47a0495d2cc0667d32d0bc6ce0">More...</a><br /></td></tr>
 <tr class="separator:a5f3c8c47a0495d2cc0667d32d0bc6ce0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -4924,6 +4929,12 @@ requires (T::ConsequencesFactory == <a class="el" href="classripple_1_1Transacto
 <tr class="memitem:a305f4975d04b00d2114318dbf78a6fa0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a305f4975d04b00d2114318dbf78a6fa0">isFrozen</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;view, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;account, <a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;asset, int depth=0)</td></tr>
 <tr class="memdesc:a305f4975d04b00d2114318dbf78a6fa0"><td class="mdescLeft">&#160;</td><td class="mdescRight">isFrozen check is recursive for MPT shares in a vault, descending to assets in the vault, up to maxAssetCheckDepth recursion depth.  <a href="namespaceripple.html#a305f4975d04b00d2114318dbf78a6fa0">More...</a><br /></td></tr>
 <tr class="separator:a305f4975d04b00d2114318dbf78a6fa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13dda1015b76a3c1dfddf1ccd3360ae8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a13dda1015b76a3c1dfddf1ccd3360ae8">checkFrozen</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;view, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;account, <a class="el" href="classripple_1_1Issue.html">Issue</a> const &amp;issue)</td></tr>
+<tr class="separator:a13dda1015b76a3c1dfddf1ccd3360ae8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e8fe28e2b2a79a9cdc137c5b00b0258"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a6e8fe28e2b2a79a9cdc137c5b00b0258">checkFrozen</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;view, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;account, <a class="el" href="classripple_1_1MPTIssue.html">MPTIssue</a> const &amp;mptIssue)</td></tr>
+<tr class="separator:a6e8fe28e2b2a79a9cdc137c5b00b0258"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a310ce0640511be1a5763ee1127c12e59"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a310ce0640511be1a5763ee1127c12e59">checkFrozen</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;view, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;account, <a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;asset)</td></tr>
+<tr class="separator:a310ce0640511be1a5763ee1127c12e59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9654a7ede9d938d2f49bdb6265b08261"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a9654a7ede9d938d2f49bdb6265b08261">isAnyFrozen</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;view, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list</a>&lt; <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> &gt; const &amp;accounts, <a class="el" href="classripple_1_1Issue.html">Issue</a> const &amp;issue)</td></tr>
 <tr class="separator:a9654a7ede9d938d2f49bdb6265b08261"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9537971d7f67ef92bc1452bdd19e74bd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a9537971d7f67ef92bc1452bdd19e74bd">isAnyFrozen</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;view, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/initializer_list.html">std::initializer_list</a>&lt; <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> &gt; const &amp;accounts, <a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;asset, int depth=0)</td></tr>
@@ -4943,8 +4954,8 @@ requires (T::ConsequencesFactory == <a class="el" href="classripple_1_1Transacto
 <tr class="separator:a78c1236640e9d9be1dd67bdfb65edbe4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43e3413a809d25a0efb3f79b7aa2e605"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a43e3413a809d25a0efb3f79b7aa2e605">removeEmptyHolding</a> (<a class="el" href="classripple_1_1ApplyView.html">ApplyView</a> &amp;view, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;accountID, <a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;asset, <a class="el" href="classbeast_1_1Journal.html">beast::Journal</a> journal)</td></tr>
 <tr class="separator:a43e3413a809d25a0efb3f79b7aa2e605"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3231fd02e360a6181b211f140a65b2f3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a3231fd02e360a6181b211f140a65b2f3">requireAuth</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;view, <a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;asset, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;account, <a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026">MPTAuthType</a> authType=<a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026a7559328fba92acce7308a39180e16441">MPTAuthType::StrongAuth</a>)</td></tr>
-<tr class="separator:a3231fd02e360a6181b211f140a65b2f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8135627a7f4071f11e215d3db39fab2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#ab8135627a7f4071f11e215d3db39fab2">requireAuth</a> (<a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;view, <a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;asset, <a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;account, <a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8d">AuthType</a> authType=<a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8da0cc0a0507cf3d31e5089f420a4cf8b4b">AuthType::Legacy</a>)</td></tr>
+<tr class="separator:ab8135627a7f4071f11e215d3db39fab2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6afbbc2fe9c45f1a268aeda92e6108ba"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a6afbbc2fe9c45f1a268aeda92e6108ba">cleanupOnAccountDelete</a> (<a class="el" href="classripple_1_1ApplyView.html">ApplyView</a> &amp;view, <a class="el" href="structripple_1_1Keylet.html">Keylet</a> const &amp;ownerDirKeylet, <a class="el" href="namespaceripple.html#a40d4978b34a7cdb77b860efda3f16a7a">EntryDeleter</a> const &amp;deleter, <a class="el" href="classbeast_1_1Journal.html">beast::Journal</a> j, <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint16_t</a> &gt; maxNodesToDelete=std::nullopt)</td></tr>
 <tr class="memdesc:a6afbbc2fe9c45f1a268aeda92e6108ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cleanup owner directory entries on account delete.  <a href="namespaceripple.html#a6afbbc2fe9c45f1a268aeda92e6108ba">More...</a><br /></td></tr>
 <tr class="separator:a6afbbc2fe9c45f1a268aeda92e6108ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -6007,6 +6018,18 @@ Variables</h2></td></tr>
 <tr class="separator:a7e3310117dc1be31deb29308f839473a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff90ecbfedede0c0814cb99e4b4c8756"><td class="memItemLeft" align="right" valign="top">static auto const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#aff90ecbfedede0c0814cb99e4b4c8756">genesisAccountId</a></td></tr>
 <tr class="separator:aff90ecbfedede0c0814cb99e4b4c8756"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5b687b6a4df326e72ae0c99bf7fcfb2"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#aa5b687b6a4df326e72ae0c99bf7fcfb2">SF_SIGBAD</a></td></tr>
+<tr class="separator:aa5b687b6a4df326e72ae0c99bf7fcfb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37acdb1e14d015b496585da85dfd0383"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a37acdb1e14d015b496585da85dfd0383">SF_SIGGOOD</a></td></tr>
+<tr class="separator:a37acdb1e14d015b496585da85dfd0383"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d719c09c5cd9dfe1c505766f9ddaf6e"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a9d719c09c5cd9dfe1c505766f9ddaf6e">SF_LOCALBAD</a></td></tr>
+<tr class="separator:a9d719c09c5cd9dfe1c505766f9ddaf6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdb2f6cd1d63bd194e0f058760b06e42"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#afdb2f6cd1d63bd194e0f058760b06e42">SF_LOCALGOOD</a></td></tr>
+<tr class="separator:afdb2f6cd1d63bd194e0f058760b06e42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2711b68b31e3391ad2e8203abf716b5"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#ab2711b68b31e3391ad2e8203abf716b5">SF_CF_INVALID</a> = <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972af2eabd5227bad5ab01c8e90c3bb8edfd">HashRouterFlags::PRIVATE5</a></td></tr>
+<tr class="separator:ab2711b68b31e3391ad2e8203abf716b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74fe9492132be2c47b97e7bb4de18cb8"><td class="memItemLeft" align="right" valign="top">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a74fe9492132be2c47b97e7bb4de18cb8">SF_CF_VALID</a> = <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972a1492bf6d7fc2ce461a9399ecbca58717">HashRouterFlags::PRIVATE6</a></td></tr>
+<tr class="separator:a74fe9492132be2c47b97e7bb4de18cb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af57f046893fb23af18bd13e423714a17"><td class="memItemLeft" align="right" valign="top">static <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint32_t</a> const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#af57f046893fb23af18bd13e423714a17">defaultSignerListID_</a> = 0</td></tr>
 <tr class="separator:af57f046893fb23af18bd13e423714a17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a25c9defcdfda1f87e16cd9b20563f37d"><td class="memItemLeft" align="right" valign="top">constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceripple.html#a25c9defcdfda1f87e16cd9b20563f37d">xbridgeMaxAccountCreateClaims</a> = 128</td></tr>
@@ -7620,7 +7643,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="CreateOffer_8h_source.html#l00151">151</a> of file <a class="el" href="CreateOffer_8h_source.html">CreateOffer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="CreateOffer_8h_source.html#l00092">92</a> of file <a class="el" href="CreateOffer_8h_source.html">CreateOffer.h</a>.</p>
 
 </div>
 </div>
@@ -7908,7 +7931,7 @@ template&lt;class T &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00378">378</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00401">401</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -7927,7 +7950,7 @@ template&lt;class T &gt; </div>
 <p>Deleter function prototype. </p>
 <p >Returns the status of the entry deletion (if should not be skipped) and if the entry should be skipped. The status is always tesSUCCESS if the entry should be skipped. </p>
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00830">830</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00875">875</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -8262,7 +8285,7 @@ template&lt;class T &gt; </div>
 <tr><td class="fieldname"><a id="afc7159a6877417e38472fbbd425f2244acb980b97f93585b5b1f20725a2256c23" name="afc7159a6877417e38472fbbd425f2244acb980b97f93585b5b1f20725a2256c23"></a>lsFATAL&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="Log_8h_source.html#l00037">37</a> of file <a class="el" href="Log_8h_source.html">Log.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Log_8h_source.html#l00038">38</a> of file <a class="el" href="Log_8h_source.html">Log.h</a>.</p>
 
 </div>
 </div>
@@ -9418,6 +9441,43 @@ ledger.
 
 </div>
 </div>
+<a id="a79683ec651b1658886d9c9ce8434f972" name="a79683ec651b1658886d9c9ce8434f972"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a79683ec651b1658886d9c9ce8434f972">&#9670;&#160;</a></span>HashRouterFlags</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">ripple::HashRouterFlags</a> : <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint16_t</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972a0db45d2a4141101bdfe48e3314cfbca3" name="a79683ec651b1658886d9c9ce8434f972a0db45d2a4141101bdfe48e3314cfbca3"></a>UNDEFINED&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972af1b68d66337a81cfa0d2076171cba2a8" name="a79683ec651b1658886d9c9ce8434f972af1b68d66337a81cfa0d2076171cba2a8"></a>BAD&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972aec09e9e688c30b57cd64c0180da5c34a" name="a79683ec651b1658886d9c9ce8434f972aec09e9e688c30b57cd64c0180da5c34a"></a>SAVED&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972ab33343cae11179cc3df2575f7f6ddc33" name="a79683ec651b1658886d9c9ce8434f972ab33343cae11179cc3df2575f7f6ddc33"></a>HELD&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972ae832adef915418a62df152b813f48316" name="a79683ec651b1658886d9c9ce8434f972ae832adef915418a62df152b813f48316"></a>TRUSTED&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972ae296c6c3b3cc3e8b8e2726de19b42bff" name="a79683ec651b1658886d9c9ce8434f972ae296c6c3b3cc3e8b8e2726de19b42bff"></a>PRIVATE1&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972a86f44d33b80079696b49985e7cb1ffaf" name="a79683ec651b1658886d9c9ce8434f972a86f44d33b80079696b49985e7cb1ffaf"></a>PRIVATE2&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972a842a64c8cf4edede85b9aaef7f3652b4" name="a79683ec651b1658886d9c9ce8434f972a842a64c8cf4edede85b9aaef7f3652b4"></a>PRIVATE3&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972aadd4f6f0aba82c972d00e2229928f45e" name="a79683ec651b1658886d9c9ce8434f972aadd4f6f0aba82c972d00e2229928f45e"></a>PRIVATE4&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972af2eabd5227bad5ab01c8e90c3bb8edfd" name="a79683ec651b1658886d9c9ce8434f972af2eabd5227bad5ab01c8e90c3bb8edfd"></a>PRIVATE5&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a79683ec651b1658886d9c9ce8434f972a1492bf6d7fc2ce461a9399ecbca58717" name="a79683ec651b1658886d9c9ce8434f972a1492bf6d7fc2ce461a9399ecbca58717"></a>PRIVATE6&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="HashRouter_8h_source.html#l00034">34</a> of file <a class="el" href="HashRouter_8h_source.html">HashRouter.h</a>.</p>
+
+</div>
+</div>
 <a id="a8a16d6f665a032453ec4cbfca01929b6" name="a8a16d6f665a032453ec4cbfca01929b6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8a16d6f665a032453ec4cbfca01929b6">&#9670;&#160;</a></span>ManifestDisposition</h2>
 
@@ -9890,37 +9950,6 @@ ledger.
 
 </div>
 </div>
-<a id="ae9b6ac4bca5f49e1aa2753e0d9faa2a1" name="ae9b6ac4bca5f49e1aa2753e0d9faa2a1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae9b6ac4bca5f49e1aa2753e0d9faa2a1">&#9670;&#160;</a></span>CrossType</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum class <a class="el" href="namespaceripple.html#ae9b6ac4bca5f49e1aa2753e0d9faa2a1">ripple::CrossType</a></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>The flavor of an offer crossing. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ae9b6ac4bca5f49e1aa2753e0d9faa2a1a5453323c4d02a5c6a6ec19cbcdfb70e5" name="ae9b6ac4bca5f49e1aa2753e0d9faa2a1a5453323c4d02a5c6a6ec19cbcdfb70e5"></a>XrpToIou&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ae9b6ac4bca5f49e1aa2753e0d9faa2a1accb98a576f83dae3d3c01ecffcb2e38e" name="ae9b6ac4bca5f49e1aa2753e0d9faa2a1accb98a576f83dae3d3c01ecffcb2e38e"></a>IouToXrp&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ae9b6ac4bca5f49e1aa2753e0d9faa2a1aa1208156363280ec3589296c38553e82" name="ae9b6ac4bca5f49e1aa2753e0d9faa2a1aa1208156363280ec3589296c38553e82"></a>IouToIou&#160;</td><td class="fielddoc"></td></tr>
-</table>
-
-<p class="definition">Definition at line <a class="el" href="Taker_8h_source.html#l00035">35</a> of file <a class="el" href="Taker_8h_source.html">Taker.h</a>.</p>
-
-</div>
-</div>
 <a id="a33f8b6e68b5f63faf2e9755cc251563e" name="a33f8b6e68b5f63faf2e9755cc251563e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a33f8b6e68b5f63faf2e9755cc251563e">&#9670;&#160;</a></span>ConsensusMode</h2>
 
@@ -10319,8 +10348,8 @@ ledger.
 
 </div>
 </div>
-<a id="ac257f40046c4e897b1109124734c7026" name="ac257f40046c4e897b1109124734c7026"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac257f40046c4e897b1109124734c7026">&#9670;&#160;</a></span>MPTAuthType</h2>
+<a id="a4e070aef85986336795216a3e5336f8d" name="a4e070aef85986336795216a3e5336f8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4e070aef85986336795216a3e5336f8d">&#9670;&#160;</a></span>AuthType</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -10329,7 +10358,7 @@ ledger.
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">enum class <a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026">ripple::MPTAuthType</a> : bool</td>
+          <td class="memname">enum class <a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8d">ripple::AuthType</a></td>
         </tr>
       </table>
   </td>
@@ -10339,11 +10368,12 @@ ledger.
 </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ac257f40046c4e897b1109124734c7026a7559328fba92acce7308a39180e16441" name="ac257f40046c4e897b1109124734c7026a7559328fba92acce7308a39180e16441"></a>StrongAuth&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ac257f40046c4e897b1109124734c7026a41aee20744fc47f976626aa2ade7adcb" name="ac257f40046c4e897b1109124734c7026a41aee20744fc47f976626aa2ade7adcb"></a>WeakAuth&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a4e070aef85986336795216a3e5336f8da7559328fba92acce7308a39180e16441" name="a4e070aef85986336795216a3e5336f8da7559328fba92acce7308a39180e16441"></a>StrongAuth&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4e070aef85986336795216a3e5336f8da41aee20744fc47f976626aa2ade7adcb" name="a4e070aef85986336795216a3e5336f8da41aee20744fc47f976626aa2ade7adcb"></a>WeakAuth&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a4e070aef85986336795216a3e5336f8da0cc0a0507cf3d31e5089f420a4cf8b4b" name="a4e070aef85986336795216a3e5336f8da0cc0a0507cf3d31e5089f420a4cf8b4b"></a>Legacy&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00732">732</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00760">760</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -10924,7 +10954,7 @@ template&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/types/size_t
 </div>
 </div>
 <a id="a5ddd19c77040601f9462ac551bfeddcc" name="a5ddd19c77040601f9462ac551bfeddcc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ddd19c77040601f9462ac551bfeddcc">&#9670;&#160;</a></span>operator&amp;() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ddd19c77040601f9462ac551bfeddcc">&#9670;&#160;</a></span>operator&amp;() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -10964,7 +10994,7 @@ template&lt;<a class="elRef" href="http://en.cppreference.com/w/cpp/types/size_t
 </div>
 </div>
 <a id="a2a8170acd3b55b6b2be63665f0b76ce8" name="a2a8170acd3b55b6b2be63665f0b76ce8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a8170acd3b55b6b2be63665f0b76ce8">&#9670;&#160;</a></span>operator|() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a8170acd3b55b6b2be63665f0b76ce8">&#9670;&#160;</a></span>operator|() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -11749,7 +11779,7 @@ template&lt;typename E , <a class="elRef" href="http://en.cppreference.com/w/cpp
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FileUtilities_8cpp_source.html#l00039">39</a> of file <a class="el" href="FileUtilities_8cpp_source.html">FileUtilities.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FileUtilities_8cpp_source.html#l00040">40</a> of file <a class="el" href="FileUtilities_8cpp_source.html">FileUtilities.cpp</a>.</p>
 
 </div>
 </div>
@@ -11785,7 +11815,7 @@ template&lt;typename E , <a class="elRef" href="http://en.cppreference.com/w/cpp
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="FileUtilities_8cpp_source.html#l00080">80</a> of file <a class="el" href="FileUtilities_8cpp_source.html">FileUtilities.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="FileUtilities_8cpp_source.html#l00081">81</a> of file <a class="el" href="FileUtilities_8cpp_source.html">FileUtilities.cpp</a>.</p>
 
 </div>
 </div>
@@ -15628,7 +15658,7 @@ template&lt;class... Args&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00417">417</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00409">409</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
 
 </div>
 </div>
@@ -15648,7 +15678,7 @@ template&lt;class... Args&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00423">423</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00415">415</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
 
 </div>
 </div>
@@ -15668,7 +15698,7 @@ template&lt;class... Args&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00429">429</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00421">421</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
 
 </div>
 </div>
@@ -15700,7 +15730,7 @@ template&lt;class F &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Feature_8h_source.html#l00355">355</a> of file <a class="el" href="Feature_8h_source.html">Feature.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Feature_8h_source.html#l00350">350</a> of file <a class="el" href="Feature_8h_source.html">Feature.h</a>.</p>
 
 </div>
 </div>
@@ -17435,7 +17465,7 @@ template&lt;&gt; </div>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>For more details please see: <a href="https://xrpl.org/transaction-malleability.html">https://xrpl.org/transaction-malleability.html</a> <a href="https://bitcointalk.org/index.php?topic=8392.msg127623#msg127623">https://bitcointalk.org/index.php?topic=8392.msg127623#msg127623</a> <a href="https://github.com/sipa/bitcoin/commit/58bc86e37fda1aec270bccb3df6c20fbd2a6591c">https://github.com/sipa/bitcoin/commit/58bc86e37fda1aec270bccb3df6c20fbd2a6591c</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00129">129</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00130">130</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
 
 </div>
 </div>
@@ -17458,7 +17488,7 @@ template&lt;&gt; </div>
 <p>Returns the type of public key. </p>
 <dl class="section return"><dt>Returns</dt><dd>std::nullopt If the public key does not represent a known type. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00223">223</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00224">224</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
 
 </div>
 </div>
@@ -17530,7 +17560,7 @@ template&lt;&gt; </div>
 
 <p>Verify a secp256k1 signature on the digest of a message. </p>
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00238">238</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00239">239</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
 
 </div>
 </div>
@@ -17583,7 +17613,7 @@ template&lt;&gt; </div>
 <p>Verify a signature on a message. </p>
 <p >With secp256k1 signatures, the data is first hashed with SHA512-Half, and the resulting digest is signed. </p>
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00288">288</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00289">289</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
 
 </div>
 </div>
@@ -17605,7 +17635,7 @@ template&lt;&gt; </div>
 
 <p>Calculate the 160-bit node ID from a node public key. </p>
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00319">319</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00320">320</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
 
 </div>
 </div>
@@ -22399,26 +22429,6 @@ template&lt;&gt; </div>
 
 </div>
 </div>
-<a id="aae8b631d3b5f27967f0e7a7132aa2738" name="aae8b631d3b5f27967f0e7a7132aa2738"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae8b631d3b5f27967f0e7a7132aa2738">&#9670;&#160;</a></span>abandonFeature()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceripple.html#a356c68147333a9a48a344718038576d9">uint256</a> ripple::abandonFeature </td>
-          <td>(</td>
-          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> const &amp;&#160;</td>
-          <td class="paramname"><em>name</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00404">404</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
-
-</div>
-</div>
 <a id="ac52a0eb5ca3e6aec7bc695eb44ed1ab8" name="ac52a0eb5ca3e6aec7bc695eb44ed1ab8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac52a0eb5ca3e6aec7bc695eb44ed1ab8">&#9670;&#160;</a></span>registrationIsDone()</h2>
 
@@ -22436,7 +22446,7 @@ template&lt;&gt; </div>
 
 <p>Tell FeatureCollections when registration is complete. </p>
 
-<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00411">411</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00403">403</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
 
 </div>
 </div>
@@ -22594,7 +22604,7 @@ template&lt;&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00171">171</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PublicKey_8cpp_source.html#l00172">172</a> of file <a class="el" href="PublicKey_8cpp_source.html">PublicKey.cpp</a>.</p>
 
 </div>
 </div>
@@ -23860,7 +23870,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a2701412a11b118c19256a4c901db2938" name="a2701412a11b118c19256a4c901db2938"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2701412a11b118c19256a4c901db2938">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[1/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2701412a11b118c19256a4c901db2938">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[1/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -23894,7 +23904,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="afb5372f21ba2fb52ff9a660d0ba0206c" name="afb5372f21ba2fb52ff9a660d0ba0206c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb5372f21ba2fb52ff9a660d0ba0206c">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[2/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afb5372f21ba2fb52ff9a660d0ba0206c">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[2/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -23928,7 +23938,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aaa484a9c6e720820f5a135b42c8bfdad" name="aaa484a9c6e720820f5a135b42c8bfdad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaa484a9c6e720820f5a135b42c8bfdad">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[3/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa484a9c6e720820f5a135b42c8bfdad">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[3/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -23962,7 +23972,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a0c4a5724bef35eab096dbb61b9260227" name="a0c4a5724bef35eab096dbb61b9260227"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0c4a5724bef35eab096dbb61b9260227">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[4/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c4a5724bef35eab096dbb61b9260227">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[4/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -23996,7 +24006,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a01bbe36e1fb6d66f4fa5a93be2d34f4f" name="a01bbe36e1fb6d66f4fa5a93be2d34f4f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a01bbe36e1fb6d66f4fa5a93be2d34f4f">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[5/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a01bbe36e1fb6d66f4fa5a93be2d34f4f">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[5/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -24030,7 +24040,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a9959959b7e85d4aef6f138422d3b91dd" name="a9959959b7e85d4aef6f138422d3b91dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9959959b7e85d4aef6f138422d3b91dd">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[6/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a9959959b7e85d4aef6f138422d3b91dd">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[6/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -24064,7 +24074,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a9f05967f9926212c8708151fd74d4a2c" name="a9f05967f9926212c8708151fd74d4a2c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f05967f9926212c8708151fd74d4a2c">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[7/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f05967f9926212c8708151fd74d4a2c">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[7/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -24098,7 +24108,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a0897f400554aaf7f19ab5326ba5d5074" name="a0897f400554aaf7f19ab5326ba5d5074"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0897f400554aaf7f19ab5326ba5d5074">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[8/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a0897f400554aaf7f19ab5326ba5d5074">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[8/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -24132,7 +24142,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a48240e490f755b7b881ece9ebfc17f77" name="a48240e490f755b7b881ece9ebfc17f77"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a48240e490f755b7b881ece9ebfc17f77">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[9/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a48240e490f755b7b881ece9ebfc17f77">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[9/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -24766,7 +24776,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aedab5d7167dc2d78c71b40c3eedae952" name="aedab5d7167dc2d78c71b40c3eedae952"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aedab5d7167dc2d78c71b40c3eedae952">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[10/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aedab5d7167dc2d78c71b40c3eedae952">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[10/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -24800,7 +24810,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="ac6461824da1787612809c88aaff23c90" name="ac6461824da1787612809c88aaff23c90"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac6461824da1787612809c88aaff23c90">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[11/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6461824da1787612809c88aaff23c90">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[11/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -24833,42 +24843,8 @@ template&lt;class Hasher , class... Args&gt; </div>
 
 </div>
 </div>
-<a id="a03dbf5f241341d950a4b3efbb23e5c98" name="a03dbf5f241341d950a4b3efbb23e5c98"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a03dbf5f241341d950a4b3efbb23e5c98">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[12/65]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">ripple::BEAST_DEFINE_TESTSUITE </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classripple_1_1Taker.html">Taker</a>&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">tx&#160;</td>
-          <td class="paramname">, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">ripple&#160;</td>
-          <td class="paramname">&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a6cdd712acdbff0518f8e6ad462f2cdd3" name="a6cdd712acdbff0518f8e6ad462f2cdd3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6cdd712acdbff0518f8e6ad462f2cdd3">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[13/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a6cdd712acdbff0518f8e6ad462f2cdd3">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[12/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -24902,7 +24878,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aa7db8f922cdc3258a1b25e2887d25f77" name="aa7db8f922cdc3258a1b25e2887d25f77"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa7db8f922cdc3258a1b25e2887d25f77">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[14/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7db8f922cdc3258a1b25e2887d25f77">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[13/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -24936,7 +24912,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="ae86bf5b713e5abd36976f0afeed0bb71" name="ae86bf5b713e5abd36976f0afeed0bb71"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae86bf5b713e5abd36976f0afeed0bb71">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[15/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ae86bf5b713e5abd36976f0afeed0bb71">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[14/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25010,7 +24986,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="afe4699b6785fc6d988e73ef268021fa6" name="afe4699b6785fc6d988e73ef268021fa6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afe4699b6785fc6d988e73ef268021fa6">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[16/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afe4699b6785fc6d988e73ef268021fa6">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[15/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25044,7 +25020,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aafd5a992b97119d058df34de5e095478" name="aafd5a992b97119d058df34de5e095478"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aafd5a992b97119d058df34de5e095478">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[17/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aafd5a992b97119d058df34de5e095478">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[16/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25078,7 +25054,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a17423ccf408d8907ab2abf83ed99a36b" name="a17423ccf408d8907ab2abf83ed99a36b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a17423ccf408d8907ab2abf83ed99a36b">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[18/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a17423ccf408d8907ab2abf83ed99a36b">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[17/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25112,7 +25088,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a933cef9da9664b6bd6ff1148cb208a1e" name="a933cef9da9664b6bd6ff1148cb208a1e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a933cef9da9664b6bd6ff1148cb208a1e">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[19/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a933cef9da9664b6bd6ff1148cb208a1e">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[18/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25146,7 +25122,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a40a9d7a6c6f7eec70d24b10933835ae8" name="a40a9d7a6c6f7eec70d24b10933835ae8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a40a9d7a6c6f7eec70d24b10933835ae8">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[20/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a40a9d7a6c6f7eec70d24b10933835ae8">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[19/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25180,7 +25156,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aa7cf90d60733517501f553ee73f2e237" name="aa7cf90d60733517501f553ee73f2e237"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa7cf90d60733517501f553ee73f2e237">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[21/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7cf90d60733517501f553ee73f2e237">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[20/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25214,7 +25190,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a814b56a37c04a2c01c28e555fb76347a" name="a814b56a37c04a2c01c28e555fb76347a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a814b56a37c04a2c01c28e555fb76347a">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[22/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a814b56a37c04a2c01c28e555fb76347a">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[21/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25248,7 +25224,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a4fef33f462ee545a95317e929f497606" name="a4fef33f462ee545a95317e929f497606"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4fef33f462ee545a95317e929f497606">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[23/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a4fef33f462ee545a95317e929f497606">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[22/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25282,7 +25258,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="af9f602454bc7e1774c9d2a1bfb191c61" name="af9f602454bc7e1774c9d2a1bfb191c61"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af9f602454bc7e1774c9d2a1bfb191c61">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[24/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#af9f602454bc7e1774c9d2a1bfb191c61">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[23/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25316,7 +25292,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a21e4f715e219bcb80b6716963e2544ac" name="a21e4f715e219bcb80b6716963e2544ac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a21e4f715e219bcb80b6716963e2544ac">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[25/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a21e4f715e219bcb80b6716963e2544ac">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[24/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25350,7 +25326,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="af1d0659db6f254777bef7caea8caa4f5" name="af1d0659db6f254777bef7caea8caa4f5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af1d0659db6f254777bef7caea8caa4f5">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[26/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#af1d0659db6f254777bef7caea8caa4f5">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[25/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25384,7 +25360,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a6462beaa9588dfb8c3526b1d56f6d826" name="a6462beaa9588dfb8c3526b1d56f6d826"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6462beaa9588dfb8c3526b1d56f6d826">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[27/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a6462beaa9588dfb8c3526b1d56f6d826">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[26/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25418,7 +25394,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a0e4d71656ea917b62973285af2c0b50e" name="a0e4d71656ea917b62973285af2c0b50e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0e4d71656ea917b62973285af2c0b50e">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[28/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e4d71656ea917b62973285af2c0b50e">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[27/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25452,7 +25428,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a22bb60f949856e6879060387ae8b555a" name="a22bb60f949856e6879060387ae8b555a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a22bb60f949856e6879060387ae8b555a">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[29/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a22bb60f949856e6879060387ae8b555a">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[28/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25486,7 +25462,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="afe2053afb2ff5dbbceba9f9f2f1f7ca6" name="afe2053afb2ff5dbbceba9f9f2f1f7ca6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afe2053afb2ff5dbbceba9f9f2f1f7ca6">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[30/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afe2053afb2ff5dbbceba9f9f2f1f7ca6">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[29/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25520,7 +25496,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aae18687a39603d393d092a3f0bad9ad5" name="aae18687a39603d393d092a3f0bad9ad5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae18687a39603d393d092a3f0bad9ad5">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[31/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aae18687a39603d393d092a3f0bad9ad5">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[30/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25554,7 +25530,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a5df6f03e29b3198a6efe5fbce4b29a0a" name="a5df6f03e29b3198a6efe5fbce4b29a0a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5df6f03e29b3198a6efe5fbce4b29a0a">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[32/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5df6f03e29b3198a6efe5fbce4b29a0a">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[31/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25588,7 +25564,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a58d8a91ea77825b7a19be3f05a2beaee" name="a58d8a91ea77825b7a19be3f05a2beaee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a58d8a91ea77825b7a19be3f05a2beaee">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[33/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a58d8a91ea77825b7a19be3f05a2beaee">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[32/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25622,7 +25598,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a0619e3f7edaca90fbb1f53f542f3c510" name="a0619e3f7edaca90fbb1f53f542f3c510"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0619e3f7edaca90fbb1f53f542f3c510">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[34/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a0619e3f7edaca90fbb1f53f542f3c510">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[33/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25656,7 +25632,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a7e6ed97c08eb9e82cdbe9d67b35fbfb6" name="a7e6ed97c08eb9e82cdbe9d67b35fbfb6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7e6ed97c08eb9e82cdbe9d67b35fbfb6">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[35/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a7e6ed97c08eb9e82cdbe9d67b35fbfb6">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[34/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25690,7 +25666,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aaec73da6fbefb4f4d5d20f9f812a4feb" name="aaec73da6fbefb4f4d5d20f9f812a4feb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaec73da6fbefb4f4d5d20f9f812a4feb">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[36/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aaec73da6fbefb4f4d5d20f9f812a4feb">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[35/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25724,7 +25700,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a07d31708bf6a262a2efedb4d0cf54721" name="a07d31708bf6a262a2efedb4d0cf54721"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a07d31708bf6a262a2efedb4d0cf54721">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[37/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a07d31708bf6a262a2efedb4d0cf54721">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[36/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25758,7 +25734,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="ab4d8d97b94bbef03c9bf7eff4140f8f9" name="ab4d8d97b94bbef03c9bf7eff4140f8f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab4d8d97b94bbef03c9bf7eff4140f8f9">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[38/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab4d8d97b94bbef03c9bf7eff4140f8f9">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[37/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25792,7 +25768,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a1dd8248a25d1f72679f48ac97bc56f44" name="a1dd8248a25d1f72679f48ac97bc56f44"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1dd8248a25d1f72679f48ac97bc56f44">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[39/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a1dd8248a25d1f72679f48ac97bc56f44">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[38/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25826,7 +25802,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a932fbe077b6ec3a5f57b210331693c89" name="a932fbe077b6ec3a5f57b210331693c89"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a932fbe077b6ec3a5f57b210331693c89">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[40/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a932fbe077b6ec3a5f57b210331693c89">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[39/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25860,7 +25836,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a26bbcf7be28e824c140216fac63345f3" name="a26bbcf7be28e824c140216fac63345f3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a26bbcf7be28e824c140216fac63345f3">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[41/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a26bbcf7be28e824c140216fac63345f3">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[40/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25894,7 +25870,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a646682015344f34ec02d6965fc7ba864" name="a646682015344f34ec02d6965fc7ba864"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a646682015344f34ec02d6965fc7ba864">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[42/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a646682015344f34ec02d6965fc7ba864">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[41/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25928,7 +25904,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a3dc34096185cd363aaed0a2ac3a2d845" name="a3dc34096185cd363aaed0a2ac3a2d845"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3dc34096185cd363aaed0a2ac3a2d845">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[43/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a3dc34096185cd363aaed0a2ac3a2d845">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[42/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25962,7 +25938,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a4a8088d5aaa8cc301489a7177c38813b" name="a4a8088d5aaa8cc301489a7177c38813b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4a8088d5aaa8cc301489a7177c38813b">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[44/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a8088d5aaa8cc301489a7177c38813b">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[43/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -25996,7 +25972,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aebd90a249e5c085ac534966bde9e1e63" name="aebd90a249e5c085ac534966bde9e1e63"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aebd90a249e5c085ac534966bde9e1e63">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[45/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aebd90a249e5c085ac534966bde9e1e63">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[44/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26050,7 +26026,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="ae0ecfa4d4cb97b309255f4c7a12c4fc1" name="ae0ecfa4d4cb97b309255f4c7a12c4fc1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae0ecfa4d4cb97b309255f4c7a12c4fc1">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[46/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0ecfa4d4cb97b309255f4c7a12c4fc1">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[45/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26117,7 +26093,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="ad95ff440efdda3179423cf4b4af61e7b" name="ad95ff440efdda3179423cf4b4af61e7b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad95ff440efdda3179423cf4b4af61e7b">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[47/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ad95ff440efdda3179423cf4b4af61e7b">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[46/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26151,7 +26127,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a82d97b0ba131cfe79c43d9c7c77563a5" name="a82d97b0ba131cfe79c43d9c7c77563a5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a82d97b0ba131cfe79c43d9c7c77563a5">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[48/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a82d97b0ba131cfe79c43d9c7c77563a5">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[47/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26185,7 +26161,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a96c3046f88c54b27ee1d7f18d6439524" name="a96c3046f88c54b27ee1d7f18d6439524"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a96c3046f88c54b27ee1d7f18d6439524">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[49/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a96c3046f88c54b27ee1d7f18d6439524">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[48/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26219,7 +26195,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aa6dd7ca485e0f4a38d1e7a70b21a799c" name="aa6dd7ca485e0f4a38d1e7a70b21a799c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6dd7ca485e0f4a38d1e7a70b21a799c">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[50/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa6dd7ca485e0f4a38d1e7a70b21a799c">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[49/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26253,7 +26229,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a8a84d7b4ed94c1ad2683afb0501da55c" name="a8a84d7b4ed94c1ad2683afb0501da55c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8a84d7b4ed94c1ad2683afb0501da55c">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[51/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a84d7b4ed94c1ad2683afb0501da55c">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[50/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26287,7 +26263,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="ae12798a7d7033493f71288ca8c047186" name="ae12798a7d7033493f71288ca8c047186"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae12798a7d7033493f71288ca8c047186">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[52/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ae12798a7d7033493f71288ca8c047186">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[51/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26361,7 +26337,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a5105bc3dcb33a3764924315743134fc4" name="a5105bc3dcb33a3764924315743134fc4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5105bc3dcb33a3764924315743134fc4">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[53/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5105bc3dcb33a3764924315743134fc4">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[52/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26395,7 +26371,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a2448d3fb1b0e7708e7060ac02dd139cb" name="a2448d3fb1b0e7708e7060ac02dd139cb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2448d3fb1b0e7708e7060ac02dd139cb">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[54/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a2448d3fb1b0e7708e7060ac02dd139cb">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[53/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26429,7 +26405,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a0f69e2428d6879d0eecfad78a4bbf671" name="a0f69e2428d6879d0eecfad78a4bbf671"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f69e2428d6879d0eecfad78a4bbf671">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[55/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f69e2428d6879d0eecfad78a4bbf671">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[54/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26463,7 +26439,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a6fe5f093a3f7355e7657ef0cfdea2b27" name="a6fe5f093a3f7355e7657ef0cfdea2b27"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6fe5f093a3f7355e7657ef0cfdea2b27">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[56/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fe5f093a3f7355e7657ef0cfdea2b27">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[55/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26497,7 +26473,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="ab0d3cc70e0b74e81aa74bcd7918055e8" name="ab0d3cc70e0b74e81aa74bcd7918055e8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab0d3cc70e0b74e81aa74bcd7918055e8">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[57/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0d3cc70e0b74e81aa74bcd7918055e8">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[56/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26571,7 +26547,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aa61635f922ff925225efbe2e15f1a868" name="aa61635f922ff925225efbe2e15f1a868"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa61635f922ff925225efbe2e15f1a868">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[58/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa61635f922ff925225efbe2e15f1a868">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[57/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26605,7 +26581,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="aedbe2033c7030f8ddd1ea6743897b3f9" name="aedbe2033c7030f8ddd1ea6743897b3f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aedbe2033c7030f8ddd1ea6743897b3f9">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[59/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aedbe2033c7030f8ddd1ea6743897b3f9">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[58/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26679,7 +26655,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a60134e6787fd51a3424332ae3c44d0df" name="a60134e6787fd51a3424332ae3c44d0df"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a60134e6787fd51a3424332ae3c44d0df">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[60/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a60134e6787fd51a3424332ae3c44d0df">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[59/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26713,7 +26689,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a9b56a4d10a913739d58afc9980077dd6" name="a9b56a4d10a913739d58afc9980077dd6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9b56a4d10a913739d58afc9980077dd6">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[61/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b56a4d10a913739d58afc9980077dd6">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[60/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26747,7 +26723,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="afb7ca38b990a2096b32ecc0366216c53" name="afb7ca38b990a2096b32ecc0366216c53"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb7ca38b990a2096b32ecc0366216c53">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[62/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afb7ca38b990a2096b32ecc0366216c53">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[61/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26781,7 +26757,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a23e30ea1b012c17d54d9c6ee67f9775f" name="a23e30ea1b012c17d54d9c6ee67f9775f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a23e30ea1b012c17d54d9c6ee67f9775f">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[63/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a23e30ea1b012c17d54d9c6ee67f9775f">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[62/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26815,7 +26791,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a9f292a9734b06a834006849844975c65" name="a9f292a9734b06a834006849844975c65"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f292a9734b06a834006849844975c65">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[64/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f292a9734b06a834006849844975c65">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[63/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -26849,7 +26825,7 @@ template&lt;class Hasher , class... Args&gt; </div>
 </div>
 </div>
 <a id="a43d1826897d9c36f6873022d072be267" name="a43d1826897d9c36f6873022d072be267"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a43d1826897d9c36f6873022d072be267">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[65/65]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a43d1826897d9c36f6873022d072be267">&#9670;&#160;</a></span>BEAST_DEFINE_TESTSUITE() <span class="overload">[64/64]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -27954,7 +27930,7 @@ template&lt;class ApplyTxs &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Ledger_8cpp_source.html#l01065">1065</a> of file <a class="el" href="Ledger_8cpp_source.html">Ledger.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Ledger_8cpp_source.html#l01066">1066</a> of file <a class="el" href="Ledger_8cpp_source.html">Ledger.cpp</a>.</p>
 
 </div>
 </div>
@@ -27998,7 +27974,7 @@ template&lt;class ApplyTxs &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Ledger_8cpp_source.html#l01083">1083</a> of file <a class="el" href="Ledger_8cpp_source.html">Ledger.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Ledger_8cpp_source.html#l01084">1084</a> of file <a class="el" href="Ledger_8cpp_source.html">Ledger.cpp</a>.</p>
 
 </div>
 </div>
@@ -28018,7 +27994,7 @@ template&lt;class ApplyTxs &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Ledger_8cpp_source.html#l01103">1103</a> of file <a class="el" href="Ledger_8cpp_source.html">Ledger.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Ledger_8cpp_source.html#l01104">1104</a> of file <a class="el" href="Ledger_8cpp_source.html">Ledger.cpp</a>.</p>
 
 </div>
 </div>
@@ -28054,7 +28030,7 @@ template&lt;class ApplyTxs &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Ledger_8cpp_source.html#l01113">1113</a> of file <a class="el" href="Ledger_8cpp_source.html">Ledger.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Ledger_8cpp_source.html#l01114">1114</a> of file <a class="el" href="Ledger_8cpp_source.html">Ledger.cpp</a>.</p>
 
 </div>
 </div>
@@ -28090,7 +28066,7 @@ template&lt;class ApplyTxs &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="Ledger_8cpp_source.html#l01126">1126</a> of file <a class="el" href="Ledger_8cpp_source.html">Ledger.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Ledger_8cpp_source.html#l01127">1127</a> of file <a class="el" href="Ledger_8cpp_source.html">Ledger.cpp</a>.</p>
 
 </div>
 </div>
@@ -31206,7 +31182,187 @@ template&lt;class Stream &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="HashRouter_8cpp_source.html#l00133">133</a> of file <a class="el" href="HashRouter_8cpp_source.html">HashRouter.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="HashRouter_8cpp_source.html#l00137">137</a> of file <a class="el" href="HashRouter_8cpp_source.html">HashRouter.cpp</a>.</p>
+
+</div>
+</div>
+<a id="abd6d915eb3a195d06abed070e41c0c82" name="abd6d915eb3a195d06abed070e41c0c82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd6d915eb3a195d06abed070e41c0c82">&#9670;&#160;</a></span>operator|() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> ripple::operator| </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="HashRouter_8h_source.html#l00053">53</a> of file <a class="el" href="HashRouter_8h_source.html">HashRouter.h</a>.</p>
+
+</div>
+</div>
+<a id="afc135ac3c81540f58dc174e76cf2ed64" name="afc135ac3c81540f58dc174e76cf2ed64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc135ac3c81540f58dc174e76cf2ed64">&#9670;&#160;</a></span>operator|=() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> &amp; ripple::operator|= </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> &amp;&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="HashRouter_8h_source.html#l00061">61</a> of file <a class="el" href="HashRouter_8h_source.html">HashRouter.h</a>.</p>
+
+</div>
+</div>
+<a id="a6c9ccb834f0fcfaf5ddde0bd4c4c808a" name="a6c9ccb834f0fcfaf5ddde0bd4c4c808a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6c9ccb834f0fcfaf5ddde0bd4c4c808a">&#9670;&#160;</a></span>operator&amp;() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> ripple::operator&amp; </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="HashRouter_8h_source.html#l00068">68</a> of file <a class="el" href="HashRouter_8h_source.html">HashRouter.h</a>.</p>
+
+</div>
+</div>
+<a id="af5b6305c4e35ec076cd49fcb6ca26f0d" name="af5b6305c4e35ec076cd49fcb6ca26f0d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5b6305c4e35ec076cd49fcb6ca26f0d">&#9670;&#160;</a></span>operator&amp;=() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> &amp; ripple::operator&amp;= </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> &amp;&#160;</td>
+          <td class="paramname"><em>lhs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td>
+          <td class="paramname"><em>rhs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="HashRouter_8h_source.html#l00076">76</a> of file <a class="el" href="HashRouter_8h_source.html">HashRouter.h</a>.</p>
+
+</div>
+</div>
+<a id="ab61dcdbe0f204e4c9c9237f6389a4ec9" name="ab61dcdbe0f204e4c9c9237f6389a4ec9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab61dcdbe0f204e4c9c9237f6389a4ec9">&#9670;&#160;</a></span>any()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr bool ripple::any </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a>&#160;</td>
+          <td class="paramname"><em>flags</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="HashRouter_8h_source.html#l00083">83</a> of file <a class="el" href="HashRouter_8h_source.html">HashRouter.h</a>.</p>
 
 </div>
 </div>
@@ -31376,7 +31532,7 @@ template&lt;class T , class  = std::enable_if_t&lt;        std::is_same&lt;T, ch
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="NetworkOPs_8cpp_source.html#l02290">2290</a> of file <a class="el" href="NetworkOPs_8cpp_source.html">NetworkOPs.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NetworkOPs_8cpp_source.html#l02295">2295</a> of file <a class="el" href="NetworkOPs_8cpp_source.html">NetworkOPs.cpp</a>.</p>
 
 </div>
 </div>
@@ -31460,7 +31616,7 @@ template&lt;class T , class  = std::enable_if_t&lt;        std::is_same&lt;T, ch
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="NetworkOPs_8cpp_source.html#l04840">4840</a> of file <a class="el" href="NetworkOPs_8cpp_source.html">NetworkOPs.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NetworkOPs_8cpp_source.html#l04849">4849</a> of file <a class="el" href="NetworkOPs_8cpp_source.html">NetworkOPs.cpp</a>.</p>
 
 </div>
 </div>
@@ -34791,7 +34947,7 @@ template&lt;class T , class C &gt; </div>
 <dl class="section return"><dt>Returns</dt><dd><code><a class="elRef" href="http://en.cppreference.com/w/cpp/utility/pair.html">std::pair</a></code>, where <code>.first</code> is the status, and <code>.second</code> is the reason if appropriate.</dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceripple.html#abcad59b0151763334cc398263373bcdd" title="Describes the pre-processing validity of a transaction.">Validity</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00039">39</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00044">44</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
 
 </div>
 </div>
@@ -34832,7 +34988,7 @@ template&lt;class T , class C &gt; </div>
 <dl class="section note"><dt>Note</dt><dd>Can only raise the validity to a more valid state, and can not override anything cached bad.</dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceripple.html#adb47f5675e01882e14c2cf9cc5700648" title="Checks transaction signature and local checks.">checkValidity</a>, <a class="el" href="namespaceripple.html#abcad59b0151763334cc398263373bcdd" title="Describes the pre-processing validity of a transaction.">Validity</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00113">113</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00118">118</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
 
 </div>
 </div>
@@ -34903,7 +35059,7 @@ template&lt;class T , class C &gt; </div>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceripple.html#a24280b80536d1afd09e24a75f4596922" title="Gate a transaction based on static information.">preflight</a>, <a class="el" href="namespaceripple.html#a5027a5209e954b9478fab70357963466" title="Gate a transaction based on static ledger information.">preclaim</a>, <a class="el" href="namespaceripple.html#a2b59523126e4050b583017ce8465f3b6" title="Apply a prechecked transaction to an OpenView.">doApply</a></dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>A pair with the <code>TER</code> and a <code>bool</code> indicating whether or not the transaction was applied. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00143">143</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00148">148</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
 
 </div>
 </div>
@@ -34961,7 +35117,7 @@ template&lt;class T , class C &gt; </div>
 <p >Provides more detailed logging and decodes the correct behavior based on the <code>TER</code> type</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="namespaceripple.html#a3352ead78ab1510016d3f728004acd63" title="Enum class for return value from applyTransaction">ApplyTransactionResult</a> </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00236">236</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00241">241</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
 
 </div>
 </div>
@@ -35621,7 +35777,7 @@ template&lt;typename PreflightChecks &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00134">134</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00139">139</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
 
 </div>
 </div>
@@ -35675,7 +35831,7 @@ template&lt;typename PreflightChecks &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00156">156</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00161">161</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
 
 </div>
 </div>
@@ -35725,7 +35881,7 @@ template&lt;typename PreflightChecks &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00170">170</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00175">175</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
 
 </div>
 </div>
@@ -37762,122 +37918,6 @@ template&lt;class TIn , class TOut &gt; </div>
 
 </div>
 </div>
-<a id="aa491cad6e6d8d237402acf737ad77db9" name="aa491cad6e6d8d237402acf737ad77db9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa491cad6e6d8d237402acf737ad77db9">&#9670;&#160;</a></span>format_amount()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> ripple::format_amount </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;&#160;</td>
-          <td class="paramname"><em>amount</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="Taker_8cpp_source.html#l00028">28</a> of file <a class="el" href="Taker_8cpp_source.html">Taker.cpp</a>.</p>
-
-</div>
-</div>
-<a id="aaf182931325f21018d58ea44b776860e" name="aaf182931325f21018d58ea44b776860e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaf182931325f21018d58ea44b776860e">&#9670;&#160;</a></span>qual_div()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="classripple_1_1STAmount.html">STAmount</a> ripple::qual_div </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;&#160;</td>
-          <td class="paramname"><em>amount</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Quality const &amp;&#160;</td>
-          <td class="paramname"><em>quality</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;&#160;</td>
-          <td class="paramname"><em>output</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="Taker_8cpp_source.html#l00193">193</a> of file <a class="el" href="Taker_8cpp_source.html">Taker.cpp</a>.</p>
-
-</div>
-</div>
-<a id="a9038aae96ec0ef3139c731ef397fe96b" name="a9038aae96ec0ef3139c731ef397fe96b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9038aae96ec0ef3139c731ef397fe96b">&#9670;&#160;</a></span>qual_mul()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static <a class="el" href="classripple_1_1STAmount.html">STAmount</a> ripple::qual_mul </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;&#160;</td>
-          <td class="paramname"><em>amount</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">Quality const &amp;&#160;</td>
-          <td class="paramname"><em>quality</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classripple_1_1STAmount.html">STAmount</a> const &amp;&#160;</td>
-          <td class="paramname"><em>output</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="Taker_8cpp_source.html#l00200">200</a> of file <a class="el" href="Taker_8cpp_source.html">Taker.cpp</a>.</p>
-
-</div>
-</div>
 <a id="a362865ef53c336f61de3da6dfc05664a" name="a362865ef53c336f61de3da6dfc05664a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a362865ef53c336f61de3da6dfc05664a">&#9670;&#160;</a></span>preflight0()</h2>
 
@@ -39323,7 +39363,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 </div>
 </div>
 <a id="a5455f0e8e8ca5221546f7af7544e1b08" name="a5455f0e8e8ca5221546f7af7544e1b08"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5455f0e8e8ca5221546f7af7544e1b08">&#9670;&#160;</a></span>operator|() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5455f0e8e8ca5221546f7af7544e1b08">&#9670;&#160;</a></span>operator|() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -39361,7 +39401,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 </div>
 </div>
 <a id="aa26cbe6f51d61113541a7b6f962c6866" name="aa26cbe6f51d61113541a7b6f962c6866"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa26cbe6f51d61113541a7b6f962c6866">&#9670;&#160;</a></span>operator&amp;() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aa26cbe6f51d61113541a7b6f962c6866">&#9670;&#160;</a></span>operator&amp;() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -39427,7 +39467,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 </div>
 </div>
 <a id="a0807551a7ab907a795266255ea7b05a2" name="a0807551a7ab907a795266255ea7b05a2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0807551a7ab907a795266255ea7b05a2">&#9670;&#160;</a></span>operator|=()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a0807551a7ab907a795266255ea7b05a2">&#9670;&#160;</a></span>operator|=() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -39457,7 +39497,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 </div>
 </div>
 <a id="a4d08485f43bd15fe6626fd599d612863" name="a4d08485f43bd15fe6626fd599d612863"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d08485f43bd15fe6626fd599d612863">&#9670;&#160;</a></span>operator&amp;=()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d08485f43bd15fe6626fd599d612863">&#9670;&#160;</a></span>operator&amp;=() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -42220,8 +42260,8 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 
 </div>
 </div>
-<a id="a3e046f4b7ab06562107485513edb7098" name="a3e046f4b7ab06562107485513edb7098"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e046f4b7ab06562107485513edb7098">&#9670;&#160;</a></span>requireAuth() <span class="overload">[1/3]</span></h2>
+<a id="a16b466cc38b73c15e032e268db4c4de7" name="a16b466cc38b73c15e032e268db4c4de7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a16b466cc38b73c15e032e268db4c4de7">&#9670;&#160;</a></span>requireAuth() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -42242,7 +42282,13 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;&#160;</td>
-          <td class="paramname"><em>account</em>&#160;</td>
+          <td class="paramname"><em>account</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8d">AuthType</a>&#160;</td>
+          <td class="paramname"><em>authType</em> = <code><a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8da0cc0a0507cf3d31e5089f420a4cf8b4b">AuthType::Legacy</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -42253,14 +42299,17 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 </div><div class="memdoc">
 
 <p>Check if the account lacks required authorization. </p>
-<p >Return tecNO_AUTH or tecNO_LINE if it does and tesSUCCESS otherwise. </p>
+<p >Return tecNO_AUTH or tecNO_LINE if it does and tesSUCCESS otherwise.</p>
+<p >If StrongAuth then return tecNO_LINE if the RippleState doesn't exist. Return tecNO_AUTH if lsfRequireAuth is set on the issuer's AccountRoot, and the RippleState does exist, and the RippleState is not authorized.</p>
+<p >If WeakAuth then return tecNO_AUTH if lsfRequireAuth is set, and the RippleState exists, and is not authorized. Return tecNO_LINE if lsfRequireAuth is set and the RippleState doesn't exist. Consequently, if WeakAuth and lsfRequireAuth is <em>not</em> set, this function will return tesSUCCESS even if RippleState does <em>not</em> exist.</p>
+<p >The default "Legacy" auth type is equivalent to WeakAuth. </p>
 
 <p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02301">2301</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
-<a id="a3e86974b4b9b0ad30c48c3c3268335f7" name="a3e86974b4b9b0ad30c48c3c3268335f7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e86974b4b9b0ad30c48c3c3268335f7">&#9670;&#160;</a></span>requireAuth() <span class="overload">[2/3]</span></h2>
+<a id="a44c66100660cf38589aa34b804222615" name="a44c66100660cf38589aa34b804222615"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a44c66100660cf38589aa34b804222615">&#9670;&#160;</a></span>requireAuth() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -42286,8 +42335,8 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026">MPTAuthType</a>&#160;</td>
-          <td class="paramname"><em>authType</em> = <code><a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026a7559328fba92acce7308a39180e16441">MPTAuthType::StrongAuth</a></code>, </td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8d">AuthType</a>&#160;</td>
+          <td class="paramname"><em>authType</em> = <code><a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8da0cc0a0507cf3d31e5089f420a4cf8b4b">AuthType::Legacy</a></code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -42306,9 +42355,11 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 <p>Check if the account lacks required authorization. </p>
 <p >This will also check for expired credentials. If it is called directly from preclaim, the user should convert result tecEXPIRED to tesSUCCESS and proceed to also check permissions with enforceMPTokenAuthorization inside doApply. This will ensure that any expired credentials are deleted.</p>
 <p >requireAuth check is recursive for MPT shares in a vault, descending to assets in the vault, up to maxAssetCheckDepth recursion depth. This is purely defensive, as we currently do not allow such vaults to be created.</p>
-<p >If StrongAuth then return tecNO_AUTH if MPToken doesn't exist or lsfMPTRequireAuth is set and MPToken is not authorized. If WeakAuth then return tecNO_AUTH if lsfMPTRequireAuth is set and MPToken doesn't exist or is not authorized (explicitly or via credentials, if DomainID is set in MPTokenIssuance). Consequently, if WeakAuth and lsfMPTRequireAuth is <em>not</em> set, this function will return true even if MPToken does <em>not</em> exist. </p>
+<p >If StrongAuth then return tecNO_AUTH if MPToken doesn't exist or lsfMPTRequireAuth is set and MPToken is not authorized.</p>
+<p >If WeakAuth then return tecNO_AUTH if lsfMPTRequireAuth is set and MPToken doesn't exist or is not authorized (explicitly or via credentials, if DomainID is set in MPTokenIssuance). Consequently, if WeakAuth and lsfMPTRequireAuth is <em>not</em> set, this function will return true even if MPToken does <em>not</em> exist.</p>
+<p >The default "Legacy" auth type is equivalent to StrongAuth. </p>
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02321">2321</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02333">2333</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42363,7 +42414,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 <p >The caller does NOT need to look for existing MPToken to match mptIssue/account - this function checks lsfMPTAuthorized of an existing MPToken iff DomainID is not set.</p>
 <p >Do not use for accounts which hold implied permission e.g. object owners or if MPTokenIssuance does not require authorization. In both cases use <a class="el" href="classripple_1_1MPTokenAuthorize.html#ae05b1d7698a2d531de63057594025666">MPTokenAuthorize::authorize</a> if MPToken does not yet exist. </p>
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02406">2406</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02419">2419</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42408,7 +42459,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 <p>Check if the destination account is allowed to receive MPT. </p>
 <p >Return tecNO_AUTH if it doesn't and tesSUCCESS otherwise. </p>
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02509">2509</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02522">2522</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42456,7 +42507,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02529">2529</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02542">2542</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42501,7 +42552,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 <p>Delete trustline to AMM. </p>
 <p >The passed <code>sle</code> must be obtained from a prior call to view.peek(). Fail if neither side of the trustline is AMM or if ammAccountID is seated and is not one of the trustline's side. </p>
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02607">2607</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02620">2620</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42558,7 +42609,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 <p>Calls static rippleCreditIOU if saAmount represents <a class="el" href="classripple_1_1Issue.html" title="A currency issued by an account.">Issue</a>. </p>
 <p >Calls static rippleCreditMPT if saAmount represents <a class="el" href="classripple_1_1MPTIssue.html">MPTIssue</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02656">2656</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02669">2669</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42594,7 +42645,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02684">2684</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02697">2697</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42630,7 +42681,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02702">2702</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02715">2715</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42666,7 +42717,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02721">2721</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02734">2734</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42708,7 +42759,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02740">2740</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02753">2753</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42756,7 +42807,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02837">2837</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02850">2850</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42796,7 +42847,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if <em>now</em> refers to a time strictly after <em>mark</em>, else false. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02984">2984</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8cpp_source.html#l02997">2997</a> of file <a class="el" href="View_8cpp_source.html">View.cpp</a>.</p>
 
 </div>
 </div>
@@ -42959,6 +43010,114 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 
 </div>
 </div>
+<a id="a13dda1015b76a3c1dfddf1ccd3360ae8" name="a13dda1015b76a3c1dfddf1ccd3360ae8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13dda1015b76a3c1dfddf1ccd3360ae8">&#9670;&#160;</a></span>checkFrozen() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a> ripple::checkFrozen </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;&#160;</td>
+          <td class="paramname"><em>view</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;&#160;</td>
+          <td class="paramname"><em>account</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classripple_1_1Issue.html">Issue</a> const &amp;&#160;</td>
+          <td class="paramname"><em>issue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00179">179</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+
+</div>
+</div>
+<a id="a6e8fe28e2b2a79a9cdc137c5b00b0258" name="a6e8fe28e2b2a79a9cdc137c5b00b0258"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e8fe28e2b2a79a9cdc137c5b00b0258">&#9670;&#160;</a></span>checkFrozen() <span class="overload">[2/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a> ripple::checkFrozen </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;&#160;</td>
+          <td class="paramname"><em>view</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;&#160;</td>
+          <td class="paramname"><em>account</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classripple_1_1MPTIssue.html">MPTIssue</a> const &amp;&#160;</td>
+          <td class="paramname"><em>mptIssue</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00185">185</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+
+</div>
+</div>
+<a id="a310ce0640511be1a5763ee1127c12e59" name="a310ce0640511be1a5763ee1127c12e59"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a310ce0640511be1a5763ee1127c12e59">&#9670;&#160;</a></span>checkFrozen() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceripple.html#adfb760bc3e4ccb79d5d4f6ecff2f1817">TER</a> ripple::checkFrozen </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1ReadView.html">ReadView</a> const &amp;&#160;</td>
+          <td class="paramname"><em>view</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a00ae0d729cb3e35b6bcac9a27ebb5284">AccountID</a> const &amp;&#160;</td>
+          <td class="paramname"><em>account</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classripple_1_1Asset.html">Asset</a> const &amp;&#160;</td>
+          <td class="paramname"><em>asset</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00194">194</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+
+</div>
+</div>
 <a id="a9654a7ede9d938d2f49bdb6265b08261" name="a9654a7ede9d938d2f49bdb6265b08261"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9654a7ede9d938d2f49bdb6265b08261">&#9670;&#160;</a></span>isAnyFrozen() <span class="overload">[2/3]</span></h2>
 
@@ -42991,7 +43150,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00186">186</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00209">209</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -43033,7 +43192,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00200">200</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00223">223</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -43071,7 +43230,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 
 <p>Iterate all items in an account's owner directory. </p>
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00318">318</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00341">341</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -43136,7 +43295,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><code>false</code> if the iteration failed </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00333">333</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00356">356</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -43160,7 +43319,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
 <p >The index that we return should meet two requirements: 1) It must be the index of a ledger that has the hash of the ledger we are looking for. This means that its sequence must be equal to greater than the sequence that we want but not more than 256 greater since each ledger contains the hashes of the 256 previous ledgers.</p>
 <p >2) Its hash must be easy for us to find. This means it must be 0 mod 256 because every such ledger is permanently enshrined in a LedgerHashes page which we can easily retrieve via the skip list. </p>
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00407">407</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00430">430</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -43190,7 +43349,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00543">543</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00566">566</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -43238,7 +43397,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00565">565</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00588">588</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -43280,12 +43439,12 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00622">622</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00645">645</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
-<a id="a3231fd02e360a6181b211f140a65b2f3" name="a3231fd02e360a6181b211f140a65b2f3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3231fd02e360a6181b211f140a65b2f3">&#9670;&#160;</a></span>requireAuth() <span class="overload">[3/3]</span></h2>
+<a id="ab8135627a7f4071f11e215d3db39fab2" name="ab8135627a7f4071f11e215d3db39fab2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8135627a7f4071f11e215d3db39fab2">&#9670;&#160;</a></span>requireAuth() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -43311,8 +43470,8 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026">MPTAuthType</a>&#160;</td>
-          <td class="paramname"><em>authType</em> = <code><a class="el" href="namespaceripple.html#ac257f40046c4e897b1109124734c7026a7559328fba92acce7308a39180e16441">MPTAuthType::StrongAuth</a></code>&#160;</td>
+          <td class="paramtype"><a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8d">AuthType</a>&#160;</td>
+          <td class="paramname"><em>authType</em> = <code><a class="el" href="namespaceripple.html#a4e070aef85986336795216a3e5336f8da0cc0a0507cf3d31e5089f420a4cf8b4b">AuthType::Legacy</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -43322,7 +43481,7 @@ template&lt;class Clock , class Duration , class Rep , class Period &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00768">768</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="View_8h_source.html#l00816">816</a> of file <a class="el" href="View_8h_source.html">View.h</a>.</p>
 
 </div>
 </div>
@@ -44537,7 +44696,7 @@ template&lt;typename headers &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="PeerImp_8cpp_source.html#l03064">3064</a> of file <a class="el" href="PeerImp_8cpp_source.html">PeerImp.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PeerImp_8cpp_source.html#l03069">3069</a> of file <a class="el" href="PeerImp_8cpp_source.html">PeerImp.cpp</a>.</p>
 
 </div>
 </div>
@@ -44587,7 +44746,7 @@ template&lt;typename headers &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="PeerImp_8cpp_source.html#l03088">3088</a> of file <a class="el" href="PeerImp_8cpp_source.html">PeerImp.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="PeerImp_8cpp_source.html#l03093">3093</a> of file <a class="el" href="PeerImp_8cpp_source.html">PeerImp.cpp</a>.</p>
 
 </div>
 </div>
@@ -53942,7 +54101,7 @@ template&lt;class Dest , class Src &gt; </div>
 <b>Initial value:</b><div class="fragment"><div class="line">=</div>
 <div class="line">    featureCollections.registrationIsDone()</div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00479">479</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Feature_8cpp_source.html#l00462">462</a> of file <a class="el" href="Feature_8cpp_source.html">Feature.cpp</a>.</p>
 
 </div>
 </div>
@@ -54956,6 +55115,158 @@ template&lt;class Dest , class Src &gt; </div>
 <div class="ttc" id="anamespaceripple_html_adb9531b2a54f33b8227d9b029be9439b"><div class="ttname"><a href="namespaceripple.html#adb9531b2a54f33b8227d9b029be9439b">ripple::generateSeed</a></div><div class="ttdeci">Seed generateSeed(std::string const &amp;passPhrase)</div><div class="ttdoc">Generate a seed deterministically.</div><div class="ttdef"><b>Definition:</b> <a href="Seed_8cpp_source.html#l00076">Seed.cpp:76</a></div></div>
 </div><!-- fragment -->
 <p class="definition">Definition at line <a class="el" href="NetworkOPs_8cpp_source.html#l00884">884</a> of file <a class="el" href="NetworkOPs_8cpp_source.html">NetworkOPs.cpp</a>.</p>
+
+</div>
+</div>
+<a id="aa5b687b6a4df326e72ae0c99bf7fcfb2" name="aa5b687b6a4df326e72ae0c99bf7fcfb2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa5b687b6a4df326e72ae0c99bf7fcfb2">&#9670;&#160;</a></span>SF_SIGBAD</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> ripple::SF_SIGBAD</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">    HashRouterFlags::PRIVATE1</div>
+</div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00032">32</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a37acdb1e14d015b496585da85dfd0383" name="a37acdb1e14d015b496585da85dfd0383"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a37acdb1e14d015b496585da85dfd0383">&#9670;&#160;</a></span>SF_SIGGOOD</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> ripple::SF_SIGGOOD</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">    HashRouterFlags::PRIVATE2</div>
+</div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00034">34</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a9d719c09c5cd9dfe1c505766f9ddaf6e" name="a9d719c09c5cd9dfe1c505766f9ddaf6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d719c09c5cd9dfe1c505766f9ddaf6e">&#9670;&#160;</a></span>SF_LOCALBAD</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> ripple::SF_LOCALBAD</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">    HashRouterFlags::PRIVATE3</div>
+</div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00036">36</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+
+</div>
+</div>
+<a id="afdb2f6cd1d63bd194e0f058760b06e42" name="afdb2f6cd1d63bd194e0f058760b06e42"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afdb2f6cd1d63bd194e0f058760b06e42">&#9670;&#160;</a></span>SF_LOCALGOOD</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> ripple::SF_LOCALGOOD</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">=</div>
+<div class="line">    HashRouterFlags::PRIVATE4</div>
+</div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="apply_8cpp_source.html#l00038">38</a> of file <a class="el" href="apply_8cpp_source.html">apply.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ab2711b68b31e3391ad2e8203abf716b5" name="ab2711b68b31e3391ad2e8203abf716b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2711b68b31e3391ad2e8203abf716b5">&#9670;&#160;</a></span>SF_CF_INVALID</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> ripple::SF_CF_INVALID = <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972af2eabd5227bad5ab01c8e90c3bb8edfd">HashRouterFlags::PRIVATE5</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Escrow_8cpp_source.html#l00042">42</a> of file <a class="el" href="Escrow_8cpp_source.html">Escrow.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a74fe9492132be2c47b97e7bb4de18cb8" name="a74fe9492132be2c47b97e7bb4de18cb8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74fe9492132be2c47b97e7bb4de18cb8">&#9670;&#160;</a></span>SF_CF_VALID</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972">HashRouterFlags</a> ripple::SF_CF_VALID = <a class="el" href="namespaceripple.html#a79683ec651b1658886d9c9ce8434f972a1492bf6d7fc2ce461a9399ecbca58717">HashRouterFlags::PRIVATE6</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="Escrow_8cpp_source.html#l00043">43</a> of file <a class="el" href="Escrow_8cpp_source.html">Escrow.cpp</a>.</p>
 
 </div>
 </div>
