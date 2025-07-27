@@ -155,6 +155,24 @@ InnerObjectFormats::InnerObjectFormats()
             {sfCredentialType, soeREQUIRED},
         });
 
+    add(sfPermission.jsonName.c_str(),
+        sfPermission.getCode(),
+        {{sfPermissionValue, soeREQUIRED}});
+
+    add(sfBatchSigner.jsonName.c_str(),
+        sfBatchSigner.getCode(),
+        {{sfAccount, soeREQUIRED},
+         {sfSigningPubKey, soeOPTIONAL},
+         {sfTxnSignature, soeOPTIONAL},
+         {sfSigners, soeOPTIONAL}});
+
+    add(sfBook.jsonName,
+        sfBook.getCode(),
+        {
+            {sfBookDirectory, soeREQUIRED},
+            {sfBookNode, soeREQUIRED},
+        });
+
     add(sfFirewallRule.jsonName.c_str(),
         sfFirewallRule.getCode(),
         {

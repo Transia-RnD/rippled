@@ -22,7 +22,9 @@
 
 #include <xrpld/app/tx/applySteps.h>
 #include <xrpld/app/tx/detail/ApplyContext.h>
+
 #include <xrpl/beast/utility/Journal.h>
+#include <xrpl/protocol/Permissions.h>
 #include <xrpl/protocol/XRPAmount.h>
 
 namespace ripple {
@@ -35,14 +37,38 @@ public:
     STTx const& tx;
     Rules const rules;
     ApplyFlags flags;
+    std::optional<uint256 const> parentBatchId;
     beast::Journal const j;
+
+    PreflightContext(
+        Application& app_,
+        STTx const& tx_,
+        uint256 parentBatchId_,
+        Rules const& rules_,
+        ApplyFlags flags_,
+        beast::Journal j_ = beast::Journal{beast::Journal::getNullSink()})
+        : app(app_)
+        , tx(tx_)
+        , rules(rules_)
+        , flags(flags_)
+        , parentBatchId(parentBatchId_)
+        , j(j_)
+    {
+        XRPL_ASSERT(
+            (flags_ & tapBATCH) == tapBATCH, "Batch apply flag should be set");
+    }
 
     PreflightContext(
         Application& app_,
         STTx const& tx_,
         Rules const& rules_,
         ApplyFlags flags_,
-        beast::Journal j_);
+        beast::Journal j_ = beast::Journal{beast::Journal::getNullSink()})
+        : app(app_), tx(tx_), rules(rules_), flags(flags_), j(j_)
+    {
+        XRPL_ASSERT(
+            (flags_ & tapBATCH) == 0, "Batch apply flag should not be set");
+    }
 
     PreflightContext&
     operator=(PreflightContext const&) = delete;
@@ -55,8 +81,9 @@ public:
     Application& app;
     ReadView const& view;
     TER preflightResult;
-    STTx const& tx;
     ApplyFlags flags;
+    STTx const& tx;
+    std::optional<uint256 const> const parentBatchId;
     beast::Journal const j;
 
     PreclaimContext(
@@ -65,14 +92,39 @@ public:
         TER preflightResult_,
         STTx const& tx_,
         ApplyFlags flags_,
+        std::optional<uint256> parentBatchId_,
         beast::Journal j_ = beast::Journal{beast::Journal::getNullSink()})
         : app(app_)
         , view(view_)
         , preflightResult(preflightResult_)
-        , tx(tx_)
         , flags(flags_)
+        , tx(tx_)
+        , parentBatchId(parentBatchId_)
         , j(j_)
     {
+        XRPL_ASSERT(
+            parentBatchId.has_value() == ((flags_ & tapBATCH) == tapBATCH),
+            "Parent Batch ID should be set if batch apply flag is set");
+    }
+
+    PreclaimContext(
+        Application& app_,
+        ReadView const& view_,
+        TER preflightResult_,
+        STTx const& tx_,
+        ApplyFlags flags_,
+        beast::Journal j_ = beast::Journal{beast::Journal::getNullSink()})
+        : PreclaimContext(
+              app_,
+              view_,
+              preflightResult_,
+              tx_,
+              flags_,
+              std::nullopt,
+              j_)
+    {
+        XRPL_ASSERT(
+            (flags_ & tapBATCH) == 0, "Batch apply flag should not be set");
     }
 
     PreclaimContext&
@@ -138,6 +190,9 @@ public:
     checkSign(PreclaimContext const& ctx);
 
     static NotTEC
+    checkBatchSign(PreclaimContext const& ctx);
+
+    static NotTEC
     checkFirewallSign(PreclaimContext const& ctx);
 
     // Returns the fee in fee units, not scaled for load.
@@ -151,6 +206,9 @@ public:
         // after checkSeq/Fee/Sign.
         return tesSUCCESS;
     }
+
+    static TER
+    checkPermission(ReadView const& view, STTx const& tx);
     /////////////////////////////////////////////////////
 
     // Interface used by DeleteAccount
@@ -202,14 +260,18 @@ private:
     payFee();
     static NotTEC
     checkSingleSign(
-        PreclaimContext const& ctx,
+        AccountID const& idSigner,
         AccountID const& idAccount,
-        Blob const& pkSigner);
+        std::shared_ptr<SLE const> sleAccount,
+        Rules const& rules,
+        beast::Journal j);
     static NotTEC
     checkMultiSign(
-        PreclaimContext const& ctx,
-        AccountID const& id,
-        STArray const& txSigners);
+        ReadView const& view,
+        AccountID const& idAccount,
+        STArray const& txSigners,
+        ApplyFlags const& flags,
+        beast::Journal j);
 
     void trapTransaction(uint256) const;
 };
