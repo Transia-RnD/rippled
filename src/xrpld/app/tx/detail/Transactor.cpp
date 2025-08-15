@@ -27,6 +27,8 @@
 #include <xrpld/app/tx/detail/Transactor.h>
 #include <xrpld/core/Config.h>
 #include <xrpld/ledger/View.h>
+#include <xrpld/conditions/Condition.h>
+#include <xrpld/conditions/Fulfillment.h>
 
 #include <xrpl/basics/Log.h>
 #include <xrpl/basics/contract.h>
@@ -631,6 +633,83 @@ Transactor::checkSign(PreclaimContext const& ctx)
         idSigner, idAccount, sleAccount, ctx.view.rules(), ctx.j);
 }
 
+static bool
+checkCondition(Slice f, Slice c)
+{
+    using namespace ripple::cryptoconditions;
+
+    std::error_code ec;
+
+    auto condition = Condition::deserialize(c, ec);
+    if (!condition)
+        return false;
+
+    auto fulfillment = Fulfillment::deserialize(f, ec);
+    if (!fulfillment)
+        return false;
+
+    return validate(*fulfillment, *condition);
+}
+
+TER
+Transactor::checkFirewall()
+{
+    AccountID const account = ctx_.tx.getAccountID(sfAccount);
+    auto const sleFirewall = ctx_.view().peek(keylet::firewall(account));
+    if (!sleFirewall || ctx_.tx.getTxnType() == ttFIREWALL_SET)
+        return tesSUCCESS;
+
+    // Check if sfDestination is present
+    if (ctx_.tx.isFieldPresent(sfDestination))
+    {
+        AccountID const dest = ctx_.tx.getAccountID(sfDestination);
+        if (ctx_.view().exists(keylet::withdrawPreauth(account, dest)))
+        {
+            JLOG(j_.trace())
+                << "checkFirewall: Withdrawal preauthorization exists for destination";
+            return tesSUCCESS;
+        }
+    }
+
+    // Check OTP
+    auto const currentOTP = ctx_.tx[~sfCurrentOTP];
+    auto const nextOTPHash = ctx_.tx[~sfNextOTPHash];
+    auto const lastOTPHash = (*sleFirewall)[sfNextOTPHash];
+    if (!currentOTP)
+    {
+        JLOG(j_.trace())
+            << "checkFirewall: No current OTP provided";
+        return tecFIREWALL_BLOCK;
+    }
+
+    if (!nextOTPHash)
+    {
+        JLOG(j_.trace())
+            << "checkFirewall: No next OTP hash provided";
+        return tecFIREWALL_BLOCK;
+    }
+
+    // if (!lastOTPHash)
+    // {
+    //     JLOG(j_.error())
+    //         << "checkFirewall: No last OTP hash in firewall";
+    //     return tecFIREWALL_BLOCK;
+    // }
+
+    if (!checkCondition(*currentOTP, lastOTPHash))
+    {
+        JLOG(j_.trace())
+            << "checkFirewall: OTP condition failed";
+        return tecFIREWALL_BLOCK;
+    }
+
+    // Update firewall with next OTP hash
+    sleFirewall->setFieldVL(sfNextOTPHash, *nextOTPHash);
+    ctx_.view().update(sleFirewall);
+
+    return tesSUCCESS;
+}
+
 NotTEC
 Transactor::checkBatchSign(PreclaimContext const& ctx)
 {
@@ -1213,6 +1292,26 @@ Transactor::operator()()
                 view(), expiredCredentials, ctx_.app.journal("View"));
 
         applied = isTecClaim(result);
+    }
+
+    if (applied && view().rules().enabled(featureFirewall))
+    {
+        // Check firewall: if `tecFIREWALL_BLOCK` is not returned, we can
+        // proceed to apply the tx
+        result = checkFirewall();
+        if (result == tecFIREWALL_BLOCK)
+        {
+            // if firewall checking failed again, reset the context and
+            // attempt to only claim a fee.
+            auto const resetResult = reset(fee);
+            if (!isTesSuccess(resetResult.first))
+                result = resetResult.first;
+        }
+
+        // We ran through the firewall checker, which can, in some cases,
+        // return a tef error code. Don't apply the transaction in that case.
+        if (!isTecClaim(result) && !isTesSuccess(result))
+            applied = false;
     }
 
     if (applied)

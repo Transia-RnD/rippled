@@ -42,6 +42,8 @@
 #include <xrpld/app/tx/detail/DeleteOracle.h>
 #include <xrpld/app/tx/detail/DepositPreauth.h>
 #include <xrpld/app/tx/detail/Escrow.h>
+#include <xrpld/app/tx/detail/FirewallSet.h>
+#include <xrpld/app/tx/detail/WithdrawPreauth.h>
 #include <xrpld/app/tx/detail/LedgerStateFix.h>
 #include <xrpld/app/tx/detail/MPTokenAuthorize.h>
 #include <xrpld/app/tx/detail/MPTokenIssuanceCreate.h>
@@ -212,6 +214,14 @@ invoke_preclaim(PreclaimContext const& ctx)
 
                 if (result != tesSUCCESS)
                     return result;
+
+                // if (ctx.tx.getTxnType() == ttFIREWALL_SET || ctx.tx.getTxnType() == ttWITHDRAW_PREAUTH)
+                // {
+                //     return tesSUCCESS;
+                //     // result = T::checkFirewallSign(ctx);
+                //     // if (result != tesSUCCESS)
+                //     //     return result;
+                // }
             }
 
             return T::preclaim(ctx);

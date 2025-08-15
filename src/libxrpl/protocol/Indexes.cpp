@@ -96,6 +96,8 @@ enum class LedgerNameSpace : std::uint16_t {
     PERMISSIONED_DOMAIN = 'm',
     DELEGATE = 'E',
     VAULT = 'V',
+    WITHDRAW_PREAUTH = 'F',
+    FIREWALL = 'z',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
@@ -579,6 +581,24 @@ permissionedDomain(uint256 const& domainID) noexcept
 {
     return {ltPERMISSIONED_DOMAIN, domainID};
 }
+
+Keylet
+withdrawPreauth(AccountID const& owner, AccountID const& preauthorized) noexcept
+{
+    return {
+        ltWITHDRAW_PREAUTH,
+        indexHash(LedgerNameSpace::WITHDRAW_PREAUTH, owner, preauthorized)};
+}
+
+Keylet
+firewall(AccountID const& account) noexcept
+{
+    return {
+        ltFIREWALL,
+        indexHash(LedgerNameSpace::FIREWALL, account)};
+}
+
+
 
 }  // namespace keylet
 

@@ -226,6 +226,7 @@ doAccountObjects(RPC::JsonContext& context)
             {jss::mptoken, ltMPTOKEN},
             {jss::permissioned_domain, ltPERMISSIONED_DOMAIN},
             {jss::vault, ltVAULT},
+            {jss::firewall, ltFIREWALL},
         };
 
         typeFilter.emplace();
