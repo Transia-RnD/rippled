@@ -34,6 +34,14 @@ namespace ripple {
 
 namespace nft {
 
+AccountID
+getAccountIDFromNFTPageID(uint256 const& pageID)
+{
+    AccountID owner;
+    std::memcpy(owner.data(), pageID.data(), 20);
+    return owner;
+}
+
 static std::shared_ptr<SLE const>
 locatePage(ReadView const& view, AccountID const& owner, uint256 const& id)
 {
