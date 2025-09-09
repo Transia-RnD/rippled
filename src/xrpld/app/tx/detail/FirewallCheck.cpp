@@ -86,7 +86,8 @@ AccountRootBalance::finalize(
 
         STArray const firewallRules =
             sleFirewall->getFieldArray(sfFirewallRules);
-        auto const leRules = firewall::getFirewallRules(firewallRules, ltACCOUNT_ROOT);
+        auto const leRules =
+            firewall::getFirewallRules(firewallRules, ltACCOUNT_ROOT);
         if (leRules.size() == 0)
             continue;
 
@@ -165,7 +166,8 @@ AccountRootBalance::handleRule(
     }
     else
     {
-        if (!firewall::evaluateComparison(changeAmount, ruleValue, operatorCode))
+        if (!firewall::evaluateComparison(
+                changeAmount, ruleValue, operatorCode))
             return true;
     }
 
@@ -251,8 +253,8 @@ ValidWithdraw::calculateBalanceChange(
     }
 
     auto const getMPTAmount = [](auto const& sle,
-                                    auto const& other,
-                                    bool zero) {
+                                 auto const& other,
+                                 bool zero) {
         std::uint64_t amt = sle ? sle->at(sfMPTAmount) : other->at(sfMPTAmount);
         return zero ? 0 : amt;
     };
@@ -261,18 +263,21 @@ ValidWithdraw::calculateBalanceChange(
     {
         auto const balanceBefore = getMPTAmount(before, after, false);
         auto const balanceAfter = getMPTAmount(after, before, isDelete);
-        
+
         // Get the MPTIssue from the MPToken entry
         auto const mptID = after->at(sfMPTokenIssuanceID);
         MPTIssue mptIssue(mptID);
-        
+
         // Convert to STAmount for consistent handling
-        int64_t diff = static_cast<int64_t>(balanceAfter) - static_cast<int64_t>(balanceBefore);
+        int64_t diff = static_cast<int64_t>(balanceAfter) -
+            static_cast<int64_t>(balanceBefore);
         // Create STAmount using the explicit constructor
         if (diff < 0)
-            return STAmount(mptIssue, static_cast<std::uint64_t>(-diff), 0, true);
+            return STAmount(
+                mptIssue, static_cast<std::uint64_t>(-diff), 0, true);
         else
-            return STAmount(mptIssue, static_cast<std::uint64_t>(diff), 0, false);
+            return STAmount(
+                mptIssue, static_cast<std::uint64_t>(diff), 0, false);
     }
 
     // NFTokenPage doesn't directly track balance changes
@@ -306,9 +311,7 @@ ValidWithdraw::recordBalanceChanges(
     if (after->getType() == ltACCOUNT_ROOT)
     {
         Asset const xrpAsset{xrpIssue()};
-        recordBalance(
-            xrpAsset,
-            {after->at(sfAccount), balanceChange.signum()});
+        recordBalance(xrpAsset, {after->at(sfAccount), balanceChange.signum()});
     }
     else if (after->getType() == ltRIPPLE_STATE)
     {
@@ -318,7 +321,7 @@ ValidWithdraw::recordBalanceChanges(
         // Create Issues and convert to Assets
         Issue lowIssue{currency, after->at(sfLowLimit).getIssuer()};
         Issue highIssue{currency, after->at(sfHighLimit).getIssuer()};
-        
+
         recordBalance(
             Asset{highIssue},
             {after->at(sfLowLimit).getIssuer(), balanceChangeSign});
@@ -330,17 +333,15 @@ ValidWithdraw::recordBalanceChanges(
     else if (after->getType() == ltESCROW || after->getType() == ltPAYCHAN)
     {
         recordBalance(
-            xrpIssue(),
-            {after->at(sfDestination), balanceChange.signum()});
+            xrpIssue(), {after->at(sfDestination), balanceChange.signum()});
     }
     else if (after->getType() == ltMPTOKEN)
     {
         auto const mptID = after->at(sfMPTokenIssuanceID);
         MPTIssue mptIssue(mptID);
-        
+
         recordBalance(
-            Asset{mptIssue},
-            {after->at(sfAccount), balanceChange.signum()});
+            Asset{mptIssue}, {after->at(sfAccount), balanceChange.signum()});
     }
 }
 
@@ -362,26 +363,24 @@ ValidWithdraw::visitEntry(
         // Extract the account ID from the NFTokenPage ID
         AccountID const owner = nft::getAccountIDFromNFTPageID(after->key());
 
-        // Use a special marker to track NFT transfers separately from monetary transfers
+        // Use a special marker to track NFT transfers separately from monetary
+        // transfers
         static Currency const nftCurrency = Currency(1);
-        
-        // Create an Issue with the special NFT currency and use xrpAccount() as issuer
+
+        // Create an Issue with the special NFT currency and use xrpAccount() as
+        // issuer
         Issue const nftIssue{nftCurrency, xrpAccount()};
         Asset const nftAsset{nftIssue};
 
         if (isDelete)
         {
             // NFTokenPage deleted: tokens leaving this account (sender)
-            recordBalance(
-                nftAsset,
-                {owner, -1});  // Negative for sender
+            recordBalance(nftAsset, {owner, -1});  // Negative for sender
         }
         else if (!before)
         {
-            // NFTokenPage created: tokens entering this account (receiver)  
-            recordBalance(
-                nftAsset,
-                {owner, 1});  // Positive for receiver
+            // NFTokenPage created: tokens entering this account (receiver)
+            recordBalance(nftAsset, {owner, 1});  // Positive for receiver
         }
         return;
     }

@@ -20,7 +20,6 @@
 #pragma once
 
 #include <xrpld/app/tx/detail/Transactor.h>
-
 #include <xrpld/ledger/ApplyView.h>
 #include <xrpld/ledger/ReadView.h>
 

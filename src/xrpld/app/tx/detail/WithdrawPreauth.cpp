@@ -115,7 +115,8 @@ WithdrawPreauth::preclaim(PreclaimContext const& ctx)
         std::uint32_t dtag = ctx.tx.isFieldPresent(sfDestinationTag)
             ? ctx.tx.getFieldU32(sfDestinationTag)
             : 0;
-        if (ctx.view.exists(keylet::withdrawPreauth(ctx.tx[sfAccount], auth, dtag)))
+        if (ctx.view.exists(
+                keylet::withdrawPreauth(ctx.tx[sfAccount], auth, dtag)))
             return tecDUPLICATE;
     }
     else
@@ -153,8 +154,8 @@ TER
 WithdrawPreauth::doApply()
 {
     std::uint32_t dtag = ctx_.tx.isFieldPresent(sfDestinationTag)
-            ? ctx_.tx.getFieldU32(sfDestinationTag)
-            : 0;
+        ? ctx_.tx.getFieldU32(sfDestinationTag)
+        : 0;
     if (ctx_.tx.isFieldPresent(sfAuthorize))
     {
         auto const sleOwner = view().peek(keylet::account(account_));
@@ -175,7 +176,8 @@ WithdrawPreauth::doApply()
         // Preclaim already verified that the Preauth entry does not yet exist.
         // Create and populate the Preauth entry.
         AccountID const auth{ctx_.tx[sfAuthorize]};
-        Keylet const preauthKeylet = keylet::withdrawPreauth(account_, auth, dtag);
+        Keylet const preauthKeylet =
+            keylet::withdrawPreauth(account_, auth, dtag);
         auto slePreauth = std::make_shared<SLE>(preauthKeylet);
 
         slePreauth->setAccountID(sfAccount, account_);

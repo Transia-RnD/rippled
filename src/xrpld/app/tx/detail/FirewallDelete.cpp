@@ -135,7 +135,8 @@ FirewallDelete::doApply()
         return ter;
 
     std::uint64_t const page{(*sleFirewall)[sfOwnerNode]};
-    if (!ctx_.view().dirRemove(keylet::ownerDir(account_), page, firewallID, false))
+    if (!ctx_.view().dirRemove(
+            keylet::ownerDir(account_), page, firewallID, false))
     {
         JLOG(j_.fatal()) << "Unable to delete Firewall from owner.";
         return tefBAD_LEDGER;

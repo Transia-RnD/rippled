@@ -31,7 +31,7 @@
 namespace ripple {
 
 namespace nft {
-    
+
 AccountID
 getAccountIDFromNFTPageID(uint256 const& pageID);
 

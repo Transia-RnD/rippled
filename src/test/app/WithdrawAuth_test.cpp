@@ -94,8 +94,8 @@ struct WithdrawAuth_test : public beast::unit_test::suite
             env.close();
 
             // Verify it's gone
-            BEAST_EXPECT(
-                !env.current()->exists(keylet::withdrawPreauth(alice, dave, 0)));
+            BEAST_EXPECT(!env.current()->exists(
+                keylet::withdrawPreauth(alice, dave, 0)));
         }
     }
 
@@ -310,8 +310,8 @@ struct WithdrawAuth_test : public beast::unit_test::suite
             env.close();
 
             // Verify it's gone
-            BEAST_EXPECT(
-                !env.current()->exists(keylet::withdrawPreauth(alice, dave, 0)));
+            BEAST_EXPECT(!env.current()->exists(
+                keylet::withdrawPreauth(alice, dave, 0)));
         }
     }
 
@@ -474,8 +474,8 @@ struct WithdrawAuth_test : public beast::unit_test::suite
             env.close();
 
             // Verify it's gone
-            BEAST_EXPECT(
-                !env.current()->exists(keylet::withdrawPreauth(alice, dave, 0)));
+            BEAST_EXPECT(!env.current()->exists(
+                keylet::withdrawPreauth(alice, dave, 0)));
 
             // Verify owner count decreased
             auto const sleOwnerAfter =
@@ -571,8 +571,8 @@ struct WithdrawAuth_test : public beast::unit_test::suite
             env.close();
 
             // Verify it was removed
-            BEAST_EXPECT(
-                !env.current()->exists(keylet::withdrawPreauth(alice, dave, 0)));
+            BEAST_EXPECT(!env.current()->exists(
+                keylet::withdrawPreauth(alice, dave, 0)));
         }
     }
 

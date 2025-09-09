@@ -19,6 +19,7 @@
 
 #include <test/jtx/firewall.h>
 #include <test/jtx/utility.h>
+
 #include <xrpl/protocol/HashPrefix.h>
 #include <xrpl/protocol/Sign.h>
 #include <xrpl/protocol/TxFlags.h>
