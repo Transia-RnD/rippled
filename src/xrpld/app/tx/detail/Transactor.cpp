@@ -20,7 +20,7 @@
 #include <xrpld/app/main/Application.h>
 #include <xrpld/app/misc/CredentialHelpers.h>
 #include <xrpld/app/misc/DelegateUtils.h>
-#include <xrpld/app/misc/FirewallUtils.h>
+#include <xrpld/app/misc/FirewallHelpers.h>
 #include <xrpld/app/misc/LoadFeeTrack.h>
 #include <xrpld/app/tx/apply.h>
 #include <xrpld/app/tx/detail/NFTokenUtils.h>

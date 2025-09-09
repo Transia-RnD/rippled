@@ -123,6 +123,17 @@ FirewallSet::preflight(PreflightContext const& ctx)
             return ter;
     }
 
+    // Validate firewall rules if present (common for both create and update)
+    if (ctx.tx.isFieldPresent(sfFirewallRules))
+    {
+        if (auto const ret = firewall::validateFirewallRules(
+                ctx.tx.getFieldArray(sfFirewallRules), ctx.j);
+            !isTesSuccess(ret))
+        {
+            return ret;
+        }
+    }
+
     return preflight2(ctx);
 }
 
@@ -241,6 +252,12 @@ FirewallSet::createFirewall(std::shared_ptr<SLE> const& sleOwner)
     sleFirewall->setAccountID(
         sfCounterParty, ctx_.tx.getAccountID(sfCounterParty));
 
+    if (ctx_.tx.isFieldPresent(sfFirewallRules))
+    {
+        sleFirewall->setFieldArray(
+            sfFirewallRules, ctx_.tx.getFieldArray(sfFirewallRules));
+    }
+
     // Insert firewall into owner directory
     if (auto const page = ctx_.view().dirInsert(
             keylet::ownerDir(account_),
@@ -314,6 +331,20 @@ FirewallSet::updateFirewall()
     {
         sleFirewall->setAccountID(
             sfCounterParty, ctx_.tx.getAccountID(sfCounterParty));
+    }
+
+    // Update FirewallRules if provided
+    if (ctx_.tx.isFieldPresent(sfFirewallRules))
+    {
+        auto const& newRules = ctx_.tx.getFieldArray(sfFirewallRules);
+        if (newRules.empty())
+        {
+            sleFirewall->makeFieldAbsent(sfFirewallRules);
+        }
+        else
+        {
+            sleFirewall->setFieldArray(sfFirewallRules, newRules);
+        }
     }
 
     ctx_.view().update(sleFirewall);

@@ -17,7 +17,7 @@
 */
 //==============================================================================
 
-#include <xrpld/app/misc/FirewallUtils.h>
+#include <xrpld/app/misc/FirewallHelpers.h>
 #include <xrpld/app/tx/detail/FirewallCheck.h>
 #include <xrpld/app/tx/detail/NFTokenUtils.h>
 #include <xrpld/ledger/ReadView.h>
@@ -86,7 +86,7 @@ AccountRootBalance::finalize(
 
         STArray const firewallRules =
             sleFirewall->getFieldArray(sfFirewallRules);
-        auto const leRules = getFirewallRules(firewallRules, ltACCOUNT_ROOT);
+        auto const leRules = firewall::getFirewallRules(firewallRules, ltACCOUNT_ROOT);
         if (leRules.size() == 0)
             continue;
 
@@ -121,6 +121,19 @@ AccountRootBalance::handleRule(
     bool const hasTimeLimit = rule.isFieldPresent(sfTimePeriod) &&
         rule.isFieldPresent(sfTimeStart) && rule.isFieldPresent(sfTimeValue);
 
+    STArray firewallRules = sleFirewall->getFieldArray(sfFirewallRules);
+    auto const fieldCode = rule.getFieldU32(sfFieldCode);
+
+    auto it = std::find_if(
+        firewallRules.begin(),
+        firewallRules.end(),
+        [&fieldCode](auto& existingRule) {
+            return existingRule.getFieldU32(sfFieldCode) == fieldCode;
+        });
+
+    if (it == firewallRules.end())
+        return false;
+
     if (hasTimeLimit)
     {
         std::uint32_t const currentTime =
@@ -132,7 +145,7 @@ AccountRootBalance::handleRule(
 
         if (startTime == 0 || (currentTime - startTime > timePeriod))
         {
-            resetRuleTimer(view, sleFirewall, rule, currentTime);
+            it->setFieldU32(sfTimeStart, currentTime);
             total = changeAmount;
         }
         else
@@ -140,67 +153,23 @@ AccountRootBalance::handleRule(
             total += changeAmount;
         }
 
-        if (!evaluateComparison(total, ruleValue, operatorCode))
+        if (!firewall::evaluateComparison(total, ruleValue, operatorCode))
         {
-            updateRuleTotal(view, sleFirewall, rule, total);
+            it->setFieldData(sfFirewallValue, STData{sfFirewallValue, total});
+            sleFirewall->setFieldArray(sfFirewallRules, firewallRules);
+            view.update(sleFirewall);
             return true;
         }
+        sleFirewall->setFieldArray(sfFirewallRules, firewallRules);
+        view.update(sleFirewall);
     }
     else
     {
-        if (!evaluateComparison(changeAmount, ruleValue, operatorCode))
+        if (!firewall::evaluateComparison(changeAmount, ruleValue, operatorCode))
             return true;
     }
 
     return false;
-}
-
-void
-AccountRootBalance::updateRuleTotal(
-    ApplyView& view,
-    SLE::pointer const& sleFirewall,
-    STObject const& rule,
-    STAmount const& totalOut)
-{
-    STArray firewallRules = sleFirewall->getFieldArray(sfFirewallRules);
-    auto const fieldCode = rule.getFieldU32(sfFieldCode);
-
-    auto it = std::find_if(
-        firewallRules.begin(),
-        firewallRules.end(),
-        [&fieldCode](auto& existingRule) {
-            return existingRule.getFieldU32(sfFieldCode) == fieldCode;
-        });
-
-    if (it != firewallRules.end())
-        it->setFieldData(sfFirewallValue, STData{sfFirewallValue, totalOut});
-
-    sleFirewall->setFieldArray(sfFirewallRules, firewallRules);
-    view.update(sleFirewall);
-}
-
-void
-AccountRootBalance::resetRuleTimer(
-    ApplyView& view,
-    SLE::pointer const& sleFirewall,
-    STObject const& rule,
-    std::uint32_t const& currentTime)
-{
-    STArray firewallRules = sleFirewall->getFieldArray(sfFirewallRules);
-    auto const fieldCode = rule.getFieldU32(sfFieldCode);
-
-    auto it = std::find_if(
-        firewallRules.begin(),
-        firewallRules.end(),
-        [&fieldCode](auto& existingRule) {
-            return existingRule.getFieldU32(sfFieldCode) == fieldCode;
-        });
-
-    if (it != firewallRules.end())
-        it->setFieldU32(sfTimeStart, currentTime);
-
-    sleFirewall->setFieldArray(sfFirewallRules, firewallRules);
-    view.update(sleFirewall);
 }
 
 //------------------------------------------------------------------------------
