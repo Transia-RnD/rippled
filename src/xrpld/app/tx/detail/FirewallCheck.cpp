@@ -19,6 +19,7 @@
 
 #include <xrpld/app/misc/FirewallUtils.h>
 #include <xrpld/app/tx/detail/FirewallCheck.h>
+#include <xrpld/app/tx/detail/NFTokenUtils.h>
 #include <xrpld/ledger/ReadView.h>
 #include <xrpld/ledger/View.h>
 
@@ -222,6 +223,26 @@ ValidWithdraw::isValidEntry(
         (!before || before->getType() == ltRIPPLE_STATE))
         return true;
 
+    if (after->getType() == ltESCROW &&
+        (!before || before->getType() == ltESCROW))
+        return true;
+
+    if (after->getType() == ltPAYCHAN &&
+        (!before || before->getType() == ltPAYCHAN))
+        return true;
+
+    if (after->getType() == ltNFTOKEN_OFFER &&
+        (!before || before->getType() == ltNFTOKEN_OFFER))
+        return true;
+
+    if (after->getType() == ltNFTOKEN_PAGE &&
+        (!before || before->getType() == ltNFTOKEN_PAGE))
+        return true;
+
+    if (after->getType() == ltMPTOKEN &&
+        (!before || before->getType() == ltMPTOKEN))
+        return true;
+
     return false;
 }
 
@@ -244,17 +265,64 @@ ValidWithdraw::calculateBalanceChange(
         return balanceAfter - balanceBefore;
     }
 
+    // Creating an Escrow or PayChan results in a new object with an sfAmount
+    // field instead of an sfBalance field.
+    auto const getObjectAmount = [](auto const& sle,
+                                    auto const& other,
+                                    bool zero) {
+        STAmount amt = sle ? sle->at(sfAmount) : other->at(sfAmount).zeroed();
+        return zero ? amt.zeroed() : amt;
+    };
+
+    if (after->getType() == ltESCROW || after->getType() == ltPAYCHAN)
+    {
+        auto const balanceBefore = getObjectAmount(before, after, false);
+        auto const balanceAfter = getObjectAmount(after, before, isDelete);
+        return balanceAfter - balanceBefore;
+    }
+
+    auto const getMPTAmount = [](auto const& sle,
+                                    auto const& other,
+                                    bool zero) {
+        std::uint64_t amt = sle ? sle->at(sfMPTAmount) : other->at(sfMPTAmount);
+        return zero ? 0 : amt;
+    };
+
+    if (after->getType() == ltMPTOKEN)
+    {
+        auto const balanceBefore = getMPTAmount(before, after, false);
+        auto const balanceAfter = getMPTAmount(after, before, isDelete);
+        
+        // Get the MPTIssue from the MPToken entry
+        auto const mptID = after->at(sfMPTokenIssuanceID);
+        MPTIssue mptIssue(mptID);
+        
+        // Convert to STAmount for consistent handling
+        int64_t diff = static_cast<int64_t>(balanceAfter) - static_cast<int64_t>(balanceBefore);
+        // Create STAmount using the explicit constructor
+        if (diff < 0)
+            return STAmount(mptIssue, static_cast<std::uint64_t>(-diff), 0, true);
+        else
+            return STAmount(mptIssue, static_cast<std::uint64_t>(diff), 0, false);
+    }
+
+    // NFTokenPage doesn't directly track balance changes
+    if (after->getType() == ltNFTOKEN_PAGE)
+    {
+        return STAmount{};
+    }
+
     return STAmount{};
 }
 
 void
-ValidWithdraw::recordBalance(Issue const& issue, BalanceChange change)
+ValidWithdraw::recordBalance(Asset const& asset, BalanceChange change)
 {
     XRPL_ASSERT(
         change.balanceChangeSign,
         "ripple::TransfersNotFrozen::recordBalance : valid trustline "
         "balance sign.");
-    auto& changes = balanceChanges_[issue];
+    auto& changes = balanceChanges_[asset];
     if (change.balanceChangeSign < 0)
         changes.senders.emplace_back(std::move(change));
     else
@@ -268,8 +336,9 @@ ValidWithdraw::recordBalanceChanges(
 {
     if (after->getType() == ltACCOUNT_ROOT)
     {
+        Asset const xrpAsset{xrpIssue()};
         recordBalance(
-            {xrpCurrency(), xrpAccount()},
+            xrpAsset,
             {after->at(sfAccount), balanceChange.signum()});
     }
     else if (after->getType() == ltRIPPLE_STATE)
@@ -277,15 +346,32 @@ ValidWithdraw::recordBalanceChanges(
         auto const balanceChangeSign = balanceChange.signum();
         auto const currency = after->at(sfBalance).getCurrency();
 
-        // Change from low account's perspective, which is trust line default
+        // Create Issues and convert to Assets
+        Issue lowIssue{currency, after->at(sfLowLimit).getIssuer()};
+        Issue highIssue{currency, after->at(sfHighLimit).getIssuer()};
+        
         recordBalance(
-            {currency, after->at(sfHighLimit).getIssuer()},
+            Asset{highIssue},
             {after->at(sfLowLimit).getIssuer(), balanceChangeSign});
 
-        // Change from high account's perspective, which reverses the sign.
         recordBalance(
-            {currency, after->at(sfLowLimit).getIssuer()},
+            Asset{lowIssue},
             {after->at(sfHighLimit).getIssuer(), -balanceChangeSign});
+    }
+    else if (after->getType() == ltESCROW || after->getType() == ltPAYCHAN)
+    {
+        recordBalance(
+            xrpIssue(),
+            {after->at(sfDestination), balanceChange.signum()});
+    }
+    else if (after->getType() == ltMPTOKEN)
+    {
+        auto const mptID = after->at(sfMPTokenIssuanceID);
+        MPTIssue mptIssue(mptID);
+        
+        recordBalance(
+            Asset{mptIssue},
+            {after->at(sfAccount), balanceChange.signum()});
     }
 }
 
@@ -299,6 +385,39 @@ ValidWithdraw::visitEntry(
         return;
 
     auto const balanceChange = calculateBalanceChange(before, after, isDelete);
+
+    // Special handling for NFTokenPage changes (NFT transfers)
+    if (after->getType() == ltNFTOKEN_PAGE)
+    {
+        // For NFT transfers, we need to track the token movement
+        // Extract the account ID from the NFTokenPage ID
+        AccountID const owner = nft::getAccountIDFromNFTPageID(after->key());
+
+        // Use a special marker to track NFT transfers separately from monetary transfers
+        static Currency const nftCurrency = Currency(1);
+        
+        // Create an Issue with the special NFT currency and use xrpAccount() as issuer
+        Issue const nftIssue{nftCurrency, xrpAccount()};
+        Asset const nftAsset{nftIssue};
+
+        if (isDelete)
+        {
+            // NFTokenPage deleted: tokens leaving this account (sender)
+            recordBalance(
+                nftAsset,
+                {owner, -1});  // Negative for sender
+        }
+        else if (!before)
+        {
+            // NFTokenPage created: tokens entering this account (receiver)  
+            recordBalance(
+                nftAsset,
+                {owner, 1});  // Positive for receiver
+        }
+        return;
+    }
+
+    // Skip if no balance change
     if (balanceChange.signum() == 0)
         return;
 
@@ -313,7 +432,7 @@ ValidWithdraw::finalize(
     ReadView const& view,
     beast::Journal const& j)
 {
-    for (auto const& [issue, changes] : balanceChanges_)
+    for (auto const& [asset, changes] : balanceChanges_)
     {
         if (!validateWithdrawPreauth(view, changes, tx, j))
             return false;
@@ -329,7 +448,8 @@ ValidWithdraw::validateWithdrawPreauth(
     STTx const& tx,
     beast::Journal const& j)
 {
-    if (changes.receivers.empty() || changes.senders.empty())
+    // No Senders and No Receivers (e.g. EscrowCreate)
+    if (changes.senders.empty() && changes.receivers.empty())
         return true;
 
     for (auto const& change : changes.senders)
@@ -338,16 +458,24 @@ ValidWithdraw::validateWithdrawPreauth(
         AccountID const account = change.account;
 
         // Check if sender has a firewall
-        auto const sleFirewall = view.read(keylet::firewall(account));
-        if (!sleFirewall)
+        if (!view.exists(keylet::firewall(account)))
             return true;
 
         // If sender has a firewall, check all receivers for valid withdraw
         // preauth
         for (auto const& receiver : changes.receivers)
         {
+            // Skip if sending to self
+            if (receiver.account == account)
+                continue;
+
             if (!view.exists(
-                    keylet::withdrawPreauth(account, receiver.account)))
+                    keylet::withdrawPreauth(
+                        account,
+                        receiver.account,
+                        tx.isFieldPresent(sfDestinationTag)
+                            ? tx.getFieldU32(sfDestinationTag)
+                            : 0)))
                 return false;
         }
     }

@@ -76,6 +76,7 @@
 #include <test/jtx/trust.h>
 #include <test/jtx/txflags.h>
 #include <test/jtx/utility.h>
+#include <test/jtx/withdraw.h>
 
 #include <xrpl/json/to_string.h>
 

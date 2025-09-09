@@ -521,6 +521,7 @@ LEDGER_ENTRY(ltFIREWALL, 0x0085, Firewall, firewall, ({
 LEDGER_ENTRY_DUPLICATE(ltWITHDRAW_PREAUTH, 0x00856, WithdrawPreauth, withdraw_preauth, ({
     {sfAccount,              soeREQUIRED},
     {sfAuthorize,            soeREQUIRED},
+    {sfDestinationTag,       soeOPTIONAL},
     {sfOwnerNode,            soeREQUIRED},
     {sfPreviousTxnID,        soeREQUIRED},
     {sfPreviousTxnLgrSeq,    soeREQUIRED},

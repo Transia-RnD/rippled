@@ -17,42 +17,20 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_TX_WITHDRAW_PREAUTH_H_INCLUDED
-#define RIPPLE_TX_WITHDRAW_PREAUTH_H_INCLUDED
+#pragma once
 
 #include <xrpld/app/tx/detail/Transactor.h>
 
+#include <xrpl/basics/Log.h>
+#include <xrpl/basics/base_uint.h>
+#include <xrpl/beast/utility/Journal.h>
+#include <xrpl/protocol/TER.h>
+
 namespace ripple {
+namespace firewall {
 
-class WithdrawPreauth : public Transactor
-{
-public:
-    static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
+NotTEC
+checkFirewallSigners(PreflightContext const& ctx);
 
-    explicit WithdrawPreauth(ApplyContext& ctx) : Transactor(ctx)
-    {
-    }
-
-    static NotTEC
-    preflight(PreflightContext const& ctx);
-
-    static TER
-    preclaim(PreclaimContext const& ctx);
-
-    static NotTEC
-    checkSign(PreclaimContext const& ctx);
-
-    TER
-    doApply() override;
-
-    // Interface used by DeleteAccount
-    static TER
-    removeFromLedger(
-        ApplyView& view,
-        uint256 const& delIndex,
-        beast::Journal j);
-};
-
+}  // namespace firewall
 }  // namespace ripple
-
-#endif

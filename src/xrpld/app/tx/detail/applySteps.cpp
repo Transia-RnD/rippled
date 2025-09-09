@@ -43,6 +43,8 @@
 #include <xrpld/app/tx/detail/DepositPreauth.h>
 #include <xrpld/app/tx/detail/Escrow.h>
 #include <xrpld/app/tx/detail/Firewall.h>
+#include <xrpld/app/tx/detail/FirewallDelete.h>
+#include <xrpld/app/tx/detail/FirewallSet.h>
 #include <xrpld/app/tx/detail/LedgerStateFix.h>
 #include <xrpld/app/tx/detail/MPTokenAuthorize.h>
 #include <xrpld/app/tx/detail/MPTokenIssuanceCreate.h>

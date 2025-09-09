@@ -589,11 +589,11 @@ firewall(AccountID const& account) noexcept
 }
 
 Keylet
-withdrawPreauth(AccountID const& owner, AccountID const& preauthorized) noexcept
+withdrawPreauth(AccountID const& owner, AccountID const& preauthorized, std::uint32_t dtag) noexcept
 {
     return {
         ltWITHDRAW_PREAUTH,
-        indexHash(LedgerNameSpace::WITHDRAW_PREAUTH, owner, preauthorized)};
+        indexHash(LedgerNameSpace::WITHDRAW_PREAUTH, owner, preauthorized, dtag)};
 }
 
 }  // namespace keylet

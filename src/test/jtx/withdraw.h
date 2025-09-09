@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 /*
     This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2025 Ripple Labs Inc.
+    Copyright (c) 2018 Ripple Labs Inc.
 
     Permission to use, copy, modify, and/or distribute this software for any
     purpose  with  or without fee is hereby granted, provided that the above
@@ -17,42 +17,42 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_TX_WITHDRAW_PREAUTH_H_INCLUDED
-#define RIPPLE_TX_WITHDRAW_PREAUTH_H_INCLUDED
+#ifndef RIPPLE_TEST_JTX_WITHDRAW_H_INCLUDED
+#define RIPPLE_TEST_JTX_WITHDRAW_H_INCLUDED
 
-#include <xrpld/app/tx/detail/Transactor.h>
+#include <test/jtx/Account.h>
+#include <test/jtx/Env.h>
 
 namespace ripple {
+namespace test {
+namespace jtx {
 
-class WithdrawPreauth : public Transactor
-{
-public:
-    static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
+/** Withdraw preauthorize operations */
+namespace withdraw {
 
-    explicit WithdrawPreauth(ApplyContext& ctx) : Transactor(ctx)
-    {
-    }
+/** Preauthorize for withdraw.  Invoke as withdraw::auth. */
+Json::Value
+auth(
+    Account const& account,
+    Account const& auth,
+    uint256 const& firewallID,
+    uint32_t seq,
+    STAmount const& fee);
 
-    static NotTEC
-    preflight(PreflightContext const& ctx);
+/** Remove preauthorization for withdraw.  Invoke as withdraw::unauth. */
+Json::Value
+unauth(
+    Account const& account,
+    Account const& unauth,
+    uint256 const& firewallID,
+    uint32_t seq,
+    STAmount const& fee);
 
-    static TER
-    preclaim(PreclaimContext const& ctx);
+}  // namespace withdraw
 
-    static NotTEC
-    checkSign(PreclaimContext const& ctx);
+}  // namespace jtx
 
-    TER
-    doApply() override;
-
-    // Interface used by DeleteAccount
-    static TER
-    removeFromLedger(
-        ApplyView& view,
-        uint256 const& delIndex,
-        beast::Journal j);
-};
-
+}  // namespace test
 }  // namespace ripple
 
 #endif

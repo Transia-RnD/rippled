@@ -97,7 +97,7 @@ class ValidWithdraw
         std::vector<BalanceChange> receivers;
     };
 
-    using ByIssuer = std::map<Issue, BalanceChanges>;
+    using ByIssuer = std::map<Asset, BalanceChanges>;
     ByIssuer balanceChanges_;
 
     std::map<AccountID, std::shared_ptr<SLE const> const> possibleIssuers_;
@@ -125,7 +125,7 @@ private:
         bool isDelete);
 
     void
-    recordBalance(Issue const& issue, BalanceChange change);
+    recordBalance(Asset const& asset, BalanceChange change);
 
     void
     recordBalanceChanges(

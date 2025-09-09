@@ -34,7 +34,10 @@ namespace jtx {
 namespace firewall {
 
 XRPAmount
-calcFirewallFee(test::jtx::Env const& env, uint32_t const& numSigners);
+calcFee(test::jtx::Env const& env, uint32_t const& numSigners);
+
+std::pair<uint256, std::shared_ptr<SLE const>>
+keyAndSle(ReadView const& view, Account const& account);
 
 /** Set a firewall. */
 Json::Value
@@ -107,6 +110,12 @@ public:
     void
     operator()(Env&, JTx& jtx) const;
 };
+/** Delete a firewall. */
+Json::Value
+del(Account const& account,
+    uint256 const& firewallID,
+    uint32_t seq,
+    STAmount const& fee);
 
 /** Sets the optional sfCounterParty on a JTx. */
 class counter_party

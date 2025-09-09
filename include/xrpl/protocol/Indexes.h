@@ -362,7 +362,8 @@ firewall(uint256 const& firewallID)
 Keylet
 withdrawPreauth(
     AccountID const& owner,
-    AccountID const& preauthorized) noexcept;
+    AccountID const& preauthorized,
+    std::uint32_t dtag) noexcept;
 
 inline Keylet
 withdrawPreauth(uint256 const& key) noexcept

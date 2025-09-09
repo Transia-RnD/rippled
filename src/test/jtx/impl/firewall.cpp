@@ -19,7 +19,6 @@
 
 #include <test/jtx/firewall.h>
 #include <test/jtx/utility.h>
-// #include <xrpl/protocol/Batch.h>
 #include <xrpl/protocol/HashPrefix.h>
 #include <xrpl/protocol/Sign.h>
 #include <xrpl/protocol/TxFlags.h>
@@ -34,10 +33,17 @@ namespace jtx {
 namespace firewall {
 
 XRPAmount
-calcFirewallFee(test::jtx::Env const& env, uint32_t const& numSigners)
+calcFee(test::jtx::Env const& env, uint32_t const& numSigners)
 {
     XRPAmount const feeDrops = env.current()->fees().base;
     return ((numSigners + 2) * feeDrops);
+}
+
+std::pair<uint256, std::shared_ptr<SLE const>>
+keyAndSle(ReadView const& view, Account const& account)
+{
+    auto const k = keylet::firewall(account);
+    return {k.key, view.read(k)};
 }
 
 Json::Value
@@ -66,10 +72,20 @@ set(Account const& account,
     return jv;
 }
 
-void
-time_period::operator()(Env& env, JTx& jt) const
+Json::Value
+del(Account const& account,
+    uint256 const& firewallID,
+    uint32_t seq,
+    STAmount const& fee)
 {
-    jt.jv[sfTimePeriod.jsonName] = value_;
+    Json::Value jv;
+    jv[jss::Account] = account.human();
+    jv[jss::TransactionType] = jss::FirewallDelete;
+    jv[jss::Sequence] = seq;
+    jv[jss::Fee] = to_string(fee);
+    jv[sfFirewallID] = strHex(firewallID);
+    jv[jss::SigningPubKey] = strHex(account.pk().slice());
+    return jv;
 }
 
 void
@@ -82,6 +98,12 @@ void
 backup::operator()(Env& env, JTx& jt) const
 {
     jt.jv[sfBackup.jsonName] = backup_.human();
+}
+
+void
+time_period::operator()(Env& env, JTx& jt) const
+{
+    jt.jv[sfTimePeriod.jsonName] = value_;
 }
 
 sig::sig(std::vector<sig::Reg> signers_) : signers(std::move(signers_))

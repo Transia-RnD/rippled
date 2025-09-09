@@ -17,21 +17,29 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_TX_WITHDRAW_PREAUTH_H_INCLUDED
-#define RIPPLE_TX_WITHDRAW_PREAUTH_H_INCLUDED
+#ifndef RIPPLE_TX_FIREWALLDELETE_H_INCLUDED
+#define RIPPLE_TX_FIREWALLDELETE_H_INCLUDED
 
 #include <xrpld/app/tx/detail/Transactor.h>
+#include <xrpld/ledger/Sandbox.h>
+
+#include <xrpl/basics/Log.h>
+#include <xrpl/protocol/Indexes.h>
+#include <xrpl/protocol/TxFlags.h>
 
 namespace ripple {
 
-class WithdrawPreauth : public Transactor
+class FirewallDelete : public Transactor
 {
 public:
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-    explicit WithdrawPreauth(ApplyContext& ctx) : Transactor(ctx)
+    explicit FirewallDelete(ApplyContext& ctx) : Transactor(ctx)
     {
     }
+
+    static XRPAmount
+    calculateBaseFee(ReadView const& view, STTx const& tx);
 
     static NotTEC
     preflight(PreflightContext const& ctx);
@@ -44,13 +52,6 @@ public:
 
     TER
     doApply() override;
-
-    // Interface used by DeleteAccount
-    static TER
-    removeFromLedger(
-        ApplyView& view,
-        uint256 const& delIndex,
-        beast::Journal j);
 };
 
 }  // namespace ripple

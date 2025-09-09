@@ -17,21 +17,28 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_TX_WITHDRAW_PREAUTH_H_INCLUDED
-#define RIPPLE_TX_WITHDRAW_PREAUTH_H_INCLUDED
+#ifndef RIPPLE_TX_FIREWALLSET_H_INCLUDED
+#define RIPPLE_TX_FIREWALLSET_H_INCLUDED
 
 #include <xrpld/app/tx/detail/Transactor.h>
 
+#include <xrpl/basics/Log.h>
+#include <xrpl/protocol/Indexes.h>
+#include <xrpl/protocol/TxFlags.h>
+
 namespace ripple {
 
-class WithdrawPreauth : public Transactor
+class FirewallSet : public Transactor
 {
 public:
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-    explicit WithdrawPreauth(ApplyContext& ctx) : Transactor(ctx)
+    explicit FirewallSet(ApplyContext& ctx) : Transactor(ctx)
     {
     }
+
+    static XRPAmount
+    calculateBaseFee(ReadView const& view, STTx const& tx);
 
     static NotTEC
     preflight(PreflightContext const& ctx);
@@ -45,12 +52,22 @@ public:
     TER
     doApply() override;
 
-    // Interface used by DeleteAccount
-    static TER
-    removeFromLedger(
-        ApplyView& view,
-        uint256 const& delIndex,
-        beast::Journal j);
+    /** Create a new firewall for the account.
+
+        @param sb The sandbox to apply changes to
+        @param sleOwner The owner account's SLE
+        @return The result of the operation
+     */
+    TER
+    createFirewall(SLE::pointer const& sleOwner);
+
+    /** Update an existing firewall for the account.
+
+        @param sb The sandbox to apply changes to
+        @return The result of the operation
+     */
+    TER
+    updateFirewall();
 };
 
 }  // namespace ripple

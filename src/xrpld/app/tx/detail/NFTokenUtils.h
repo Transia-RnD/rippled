@@ -31,6 +31,9 @@
 namespace ripple {
 
 namespace nft {
+    
+AccountID
+getAccountIDFromNFTPageID(uint256 const& pageID);
 
 /** Delete up to a specified number of offers from the specified token offer
  * directory. */

@@ -17,6 +17,7 @@
 */
 //==============================================================================
 
+#include <xrpld/app/misc/FirewallHelpers.h>
 #include <xrpld/app/tx/detail/WithdrawPreauth.h>
 #include <xrpld/ledger/View.h>
 
@@ -75,7 +76,23 @@ WithdrawPreauth::preflight(PreflightContext const& ctx)
         return temCANNOT_PREAUTH_SELF;
     }
 
+    if (auto const ter = firewall::checkFirewallSigners(ctx);
+        !isTesSuccess(ter))
+        return ter;
+
     return preflight2(ctx);
+}
+
+NotTEC
+WithdrawPreauth::checkSign(PreclaimContext const& ctx)
+{
+    if (auto ret = Transactor::checkSign(ctx); !isTesSuccess(ret))
+        return ret;
+
+    if (auto ret = Transactor::checkFirewallSign(ctx); !isTesSuccess(ret))
+        return ret;
+
+    return tesSUCCESS;
 }
 
 TER
@@ -84,32 +101,35 @@ WithdrawPreauth::preclaim(PreclaimContext const& ctx)
     Serializer msg;
     AccountID const accountID = ctx.tx[sfAccount];
 
-    // // Determine which operation we're performing: authorizing or
-    // unauthorizing. if (ctx.tx.isFieldPresent(sfAuthorize))
-    // {
-    //     // Verify that the Authorize account is present in the ledger.
-    //     AccountID const auth{ctx.tx[sfAuthorize]};
-    //     if (!ctx.view.exists(keylet::account(auth)))
-    //         return tecNO_TARGET;
+    // Determine which operation we're performing: authorizing or
+    // unauthorizing.
+    if (ctx.tx.isFieldPresent(sfAuthorize))
+    {
+        // Verify that the Authorize account is present in the ledger.
+        AccountID const auth{ctx.tx[sfAuthorize]};
+        if (!ctx.view.exists(keylet::account(auth)))
+            return tecNO_TARGET;
 
-    //     // Verify that the Preauth entry they asked to add is not already
-    //     // in the ledger.
-    //     if (ctx.view.exists(keylet::withdrawPreauth(ctx.tx[sfAccount],
-    //     auth)))
-    //         return tecDUPLICATE;
-
-    //     serializeFirewallAuthorization(msg, accountID, auth);
-    // }
-    // else
-    // {
-    //     // Verify that the Preauth entry they asked to remove is in the
-    //     ledger. AccountID const unauth{ctx.tx[sfUnauthorize]}; if
-    //     (!ctx.view.exists(
-    //             keylet::withdrawPreauth(ctx.tx[sfAccount], unauth)))
-    //         return tecNO_ENTRY;
-
-    //     serializeFirewallAuthorization(msg, accountID, unauth);
-    // }
+        // Verify that the Preauth entry they asked to add is not already
+        // in the ledger.
+        std::uint32_t dtag = ctx.tx.isFieldPresent(sfDestinationTag)
+            ? ctx.tx.getFieldU32(sfDestinationTag)
+            : 0;
+        if (ctx.view.exists(keylet::withdrawPreauth(ctx.tx[sfAccount], auth, dtag)))
+            return tecDUPLICATE;
+    }
+    else
+    {
+        // Verify that the Preauth entry they asked to remove is in the
+        // ledger.
+        AccountID const unauth{ctx.tx[sfUnauthorize]};
+        std::uint32_t dtag = ctx.tx.isFieldPresent(sfDestinationTag)
+            ? ctx.tx.getFieldU32(sfDestinationTag)
+            : 0;
+        if (!ctx.view.exists(
+                keylet::withdrawPreauth(ctx.tx[sfAccount], unauth, dtag)))
+            return tecNO_ENTRY;
+    }
 
     // Validate Signature
     ripple::Keylet const firewallKeylet = keylet::firewall(accountID);
@@ -119,18 +139,12 @@ WithdrawPreauth::preclaim(PreclaimContext const& ctx)
         JLOG(ctx.j.debug()) << "WithdrawPreauth: Firewall does not exist.";
         return tecNO_TARGET;
     }
-    if (!sleFirewall->isFieldPresent(sfIssuer))
+
+    if (!sleFirewall->isFieldPresent(sfCounterParty))
     {
-        JLOG(ctx.j.debug()) << "WithdrawPreauth: Missing Firewall Issuer.";
+        JLOG(ctx.j.debug())
+            << "WithdrawPreauth: Missing Firewall CounterParty.";
         return tecINTERNAL;
-    }
-    auto const sig = ctx.tx.getFieldVL(sfSignature);
-    PublicKey const pk(makeSlice(ctx.tx.getFieldVL(sfPublicKey)));
-    // TODO: Valid PK (AccountID) == sfIssuer
-    if (!verify(pk, msg.slice(), makeSlice(sig), /*canonical*/ true))
-    {
-        JLOG(ctx.j.debug()) << "WithdrawPreauth: Bad Signature for update.";
-        return temBAD_SIGNATURE;
     }
     return tesSUCCESS;
 }
@@ -138,6 +152,9 @@ WithdrawPreauth::preclaim(PreclaimContext const& ctx)
 TER
 WithdrawPreauth::doApply()
 {
+    std::uint32_t dtag = ctx_.tx.isFieldPresent(sfDestinationTag)
+            ? ctx_.tx.getFieldU32(sfDestinationTag)
+            : 0;
     if (ctx_.tx.isFieldPresent(sfAuthorize))
     {
         auto const sleOwner = view().peek(keylet::account(account_));
@@ -158,11 +175,12 @@ WithdrawPreauth::doApply()
         // Preclaim already verified that the Preauth entry does not yet exist.
         // Create and populate the Preauth entry.
         AccountID const auth{ctx_.tx[sfAuthorize]};
-        Keylet const preauthKeylet = keylet::withdrawPreauth(account_, auth);
+        Keylet const preauthKeylet = keylet::withdrawPreauth(account_, auth, dtag);
         auto slePreauth = std::make_shared<SLE>(preauthKeylet);
 
         slePreauth->setAccountID(sfAccount, account_);
         slePreauth->setAccountID(sfAuthorize, auth);
+        slePreauth->setFieldU32(sfDestinationTag, dtag);
         view().insert(slePreauth);
 
         auto viewJ = ctx_.app.journal("View");
@@ -186,17 +204,15 @@ WithdrawPreauth::doApply()
     else
     {
         auto const preauth =
-            keylet::withdrawPreauth(account_, ctx_.tx[sfUnauthorize]);
+            keylet::withdrawPreauth(account_, ctx_.tx[sfUnauthorize], dtag);
 
-        return WithdrawPreauth::removeFromLedger(
-            ctx_.app, view(), preauth.key, j_);
+        return WithdrawPreauth::removeFromLedger(view(), preauth.key, j_);
     }
     return tesSUCCESS;
 }
 
 TER
 WithdrawPreauth::removeFromLedger(
-    Application& app,
     ApplyView& view,
     uint256 const& preauthIndex,
     beast::Journal j)
@@ -224,7 +240,7 @@ WithdrawPreauth::removeFromLedger(
     if (!sleOwner)
         return tefINTERNAL;
 
-    adjustOwnerCount(view, sleOwner, -1, app.journal("View"));
+    adjustOwnerCount(view, sleOwner, -1, j);
 
     // Remove WithdrawPreauth from ledger.
     view.erase(slePreauth);

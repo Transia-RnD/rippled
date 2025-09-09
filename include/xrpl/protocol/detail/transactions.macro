@@ -529,7 +529,8 @@ TRANSACTION(ttBATCH, 71, Batch, Delegation::notDelegatable, ({
 TRANSACTION(ttWITHDRAW_PREAUTH, 72, WithdrawPreauth, Delegation::delegatable, ({
     {sfAuthorize, soeOPTIONAL},
     {sfUnauthorize, soeOPTIONAL},
-    {sfFirewallSigners, soeOPTIONAL},
+    {sfDestinationTag, soeOPTIONAL},
+    {sfFirewallSigners, soeREQUIRED},
     {sfFirewallID, soeREQUIRED},
 }))
 
@@ -538,8 +539,15 @@ TRANSACTION(ttFIREWALL_SET, 73, FirewallSet, Delegation::notDelegatable, ({
     {sfCounterParty, soeOPTIONAL},
     {sfBackup, soeOPTIONAL},
     {sfFirewallRules, soeOPTIONAL},
+    {sfDestinationTag, soeOPTIONAL},
     {sfFirewallSigners, soeOPTIONAL},
     {sfFirewallID, soeOPTIONAL},
+}))
+
+/** This transaction type creates an Firewall instance */
+TRANSACTION(ttFIREWALL_DELETE, 74, FirewallDelete, Delegation::notDelegatable, ({
+    {sfFirewallSigners, soeREQUIRED},
+    {sfFirewallID, soeREQUIRED},
 }))
 
 /** This system-generated transaction type is used to update the status of the various amendments.
