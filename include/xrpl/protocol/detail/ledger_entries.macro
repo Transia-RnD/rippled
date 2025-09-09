@@ -519,7 +519,7 @@ LEDGER_ENTRY(ltFIREWALL, 0x0085, Firewall, firewall, ({
 /** A ledger object which tracks WithdrawPreauth
     \sa keylet::WithdrawPreauth
  */
-LEDGER_ENTRY_DUPLICATE(ltWITHDRAW_PREAUTH, 0x00856, WithdrawPreauth, withdraw_preauth, ({
+LEDGER_ENTRY_DUPLICATE(ltWITHDRAW_PREAUTH, 0x0086, WithdrawPreauth, withdraw_preauth, ({
     {sfAccount,              soeREQUIRED},
     {sfAuthorize,            soeREQUIRED},
     {sfDestinationTag,       soeOPTIONAL},
