@@ -722,7 +722,8 @@ parseWithdrawPreauth(Json::Value const& wp, Json::StaticString const fieldName)
         return LedgerEntryHelpers::malformedError("malformedRequest", "");
     }
 
-    auto const authorized = LedgerEntryHelpers::parse<AccountID>(wp[jss::authorized]);
+    auto const authorized =
+        LedgerEntryHelpers::parse<AccountID>(wp[jss::authorized]);
     if (!authorized)
     {
         return LedgerEntryHelpers::invalidFieldError(
