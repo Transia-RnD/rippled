@@ -87,7 +87,7 @@ AccountRootBalance::finalize(
         STArray const firewallRules =
             sleFirewall->getFieldArray(sfFirewallRules);
         auto const leRules =
-            firewall::getFirewallRules(firewallRules, ltACCOUNT_ROOT);
+            firewall::filterFirewallRulesByLE(firewallRules, ltACCOUNT_ROOT);
         if (leRules.size() == 0)
             continue;
 
@@ -437,13 +437,12 @@ ValidWithdraw::validateWithdrawPreauth(
             if (receiver.account == account)
                 continue;
 
-            if (!view.exists(
-                    keylet::withdrawPreauth(
-                        account,
-                        receiver.account,
-                        tx.isFieldPresent(sfDestinationTag)
-                            ? tx.getFieldU32(sfDestinationTag)
-                            : 0)))
+            if (!view.exists(keylet::withdrawPreauth(
+                    account,
+                    receiver.account,
+                    tx.isFieldPresent(sfDestinationTag)
+                        ? tx.getFieldU32(sfDestinationTag)
+                        : 0)))
                 return false;
         }
     }

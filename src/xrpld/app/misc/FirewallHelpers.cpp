@@ -135,7 +135,7 @@ isFieldProtected(LedgerEntryType const& type, SField const& field)
 }
 
 std::vector<STObject>
-getFirewallRules(STArray const& rules, LedgerEntryType const& type)
+filterFirewallRulesByLE(STArray const& rules, LedgerEntryType const& type)
 {
     std::vector<STObject> matchingRules;
     for (auto const& rule : rules)

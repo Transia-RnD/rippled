@@ -68,7 +68,7 @@ bool
 isFieldProtected(LedgerEntryType const& type, SField const& field);
 
 std::vector<STObject>
-getFirewallRules(STArray const& rules, LedgerEntryType const& type);
+filterFirewallRulesByLE(STArray const& rules, LedgerEntryType const& type);
 
 template <typename T>
 inline bool

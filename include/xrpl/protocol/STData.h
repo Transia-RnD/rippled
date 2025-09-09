@@ -95,12 +95,9 @@ public:
 
     void
     setFieldU8(unsigned char);
-    void
-    setFieldU16(std::uint16_t);
-    void
-    setFieldU32(std::uint32_t);
-    void
-    setFieldU64(std::uint64_t);
+    void setFieldU16(std::uint16_t);
+    void setFieldU32(std::uint32_t);
+    void setFieldU64(std::uint64_t);
     void
     setFieldH128(uint128 const&);
     void
