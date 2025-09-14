@@ -370,8 +370,6 @@ UNTYPED_SFIELD(sfRawTransaction,         OBJECT,    34)
 UNTYPED_SFIELD(sfBatchSigner,            OBJECT,    35)
 UNTYPED_SFIELD(sfBook,                   OBJECT,    36)
 UNTYPED_SFIELD(sfFirewallSigner,         OBJECT,    37)
-UNTYPED_SFIELD(sfFirewallRule,           OBJECT,    38)
-UNTYPED_SFIELD(sfFieldCondition,         OBJECT,    39)
 
 // array of objects (common)
 // ARRAY/1 is reserved for end of array
@@ -407,8 +405,3 @@ UNTYPED_SFIELD(sfPermissions,            ARRAY,     29)
 UNTYPED_SFIELD(sfRawTransactions,        ARRAY,     30)
 UNTYPED_SFIELD(sfBatchSigners,           ARRAY,     31, SField::sMD_Default, SField::notSigning)
 UNTYPED_SFIELD(sfFirewallSigners,        ARRAY,     32, SField::sMD_Default, SField::notSigning)
-UNTYPED_SFIELD(sfFirewallRules,          ARRAY,     33)
-
-// data
-TYPED_SFIELD(sfFirewallValue,            DATA,       1, SField::sMD_BaseTen|SField::sMD_Default)
-TYPED_SFIELD(sfTimeValue,                DATA,       2, SField::sMD_BaseTen|SField::sMD_Default)

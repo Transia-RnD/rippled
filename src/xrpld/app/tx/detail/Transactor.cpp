@@ -941,6 +941,52 @@ Transactor::checkFirewallSign(PreclaimContext const& ctx)
         idSigner, idAccount, sleAccount, ctx.view.rules(), ctx.j);
 }
 
+NotTEC
+Transactor::checkFirewall(PreclaimContext const& ctx)
+{
+    auto const account = ctx.tx.isFieldPresent(sfDelegate)
+        ? ctx.tx.getAccountID(sfDelegate)
+        : ctx.tx.getAccountID(sfAccount);
+
+    auto const sleFirewall = ctx.view.read(keylet::firewall(account));
+    if (!sleFirewall)
+        return tesSUCCESS;
+
+    // Allow: Firewall is disabled
+    if (Firewall::getInstance().isAllowed(
+            ctx.tx.getFieldU16(sfTransactionType)))
+        return tesSUCCESS;
+
+    // Block: Firewall is enabled
+    if (Firewall::getInstance().isBlocked(
+            ctx.tx.getFieldU16(sfTransactionType)))
+        return tefFIREWALL_BLOCK;
+
+    // Block: ttPAYMENT
+    if (ctx.tx.getTxnType() == ttPAYMENT)
+    {
+        // Block: SelfPayments && Paths
+        if (ctx.tx.getAccountID(sfDestination) == account ||
+            ctx.tx.isFieldPresent(sfPaths))
+            return tefFIREWALL_BLOCK;
+    }
+
+    if (!ctx.tx.isFieldPresent(sfDestination))
+        return tefFIREWALL_BLOCK;
+
+    if (ctx.tx.isFieldPresent(sfDestination) &&
+        !ctx.view.exists(
+            keylet::withdrawPreauth(
+                account,
+                ctx.tx.getAccountID(sfDestination),
+                ctx.tx.isFieldPresent(sfDestinationTag)
+                    ? ctx.tx.getFieldU32(sfDestinationTag)
+                    : 0)))
+        return tefFIREWALL_BLOCK;
+
+    return tesSUCCESS;
+}
+
 //------------------------------------------------------------------------------
 
 static void
@@ -1246,23 +1292,23 @@ Transactor::operator()()
         applied = isTecClaim(result);
     }
 
-    if (applied && view().rules().enabled(featureFirewall))
-    {
-        result = ctx_.checkFirewalls(result, fee);
-        if (result == tecFIREWALL_BLOCK)
-        {
-            // if firewall checking failed again, reset the context and
-            // attempt to only claim a fee.
-            auto const resetResult = reset(fee);
-            if (!isTesSuccess(resetResult.first))
-                result = resetResult.first;
-        }
+    // if (applied && view().rules().enabled(featureFirewall))
+    // {
+    //     result = ctx_.checkFirewalls(result, fee);
+    //     if (result == tecFIREWALL_BLOCK)
+    //     {
+    //         // if firewall checking failed again, reset the context and
+    //         // attempt to only claim a fee.
+    //         auto const resetResult = reset(fee);
+    //         if (!isTesSuccess(resetResult.first))
+    //             result = resetResult.first;
+    //     }
 
-        // We ran through the firewall checker, which can, in some cases,
-        // return a tef error code. Don't apply the transaction in that case.
-        if (!isTecClaim(result) && !isTesSuccess(result))
-            applied = false;
-    }
+    //     // We ran through the firewall checker, which can, in some cases,
+    //     // return a tef error code. Don't apply the transaction in that case.
+    //     if (!isTecClaim(result) && !isTesSuccess(result))
+    //         applied = false;
+    // }
 
     if (applied)
     {

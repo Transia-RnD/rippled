@@ -101,12 +101,6 @@ backup::operator()(Env& env, JTx& jt) const
     jt.jv[sfBackup.jsonName] = backup_.human();
 }
 
-void
-time_period::operator()(Env& env, JTx& jt) const
-{
-    jt.jv[sfTimePeriod.jsonName] = value_;
-}
-
 sig::sig(std::vector<sig::Reg> signers_) : signers(std::move(signers_))
 {
     // Signatures must be applied in sorted order.

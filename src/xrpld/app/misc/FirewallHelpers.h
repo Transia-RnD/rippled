@@ -37,59 +37,7 @@ namespace ripple {
 namespace firewall {
 
 NotTEC
-validateFirewallRules(STArray const& rules, beast::Journal const& j);
-
-NotTEC
 checkFirewallSigners(PreflightContext const& ctx);
-
-/**
- * Check if a ledger entry type has firewall protection available.
- * @param type The ledger entry type.
- * @return true if firewall protection is available for this type.
- */
-bool
-hasFirewallProtection(LedgerEntryType const& type);
-
-/**
- * Get all fields protected by firewalls for a ledger entry type.
- * @param type The ledger entry type.
- * @return vector of protected fields.
- */
-std::vector<SField const*>
-getProtectedFields(LedgerEntryType const& type);
-
-/**
- * Check if a specific field is protected by firewall for a ledger entry type.
- * @param type The ledger entry type.
- * @param field The field to check.
- * @return true if the field is protected.
- */
-bool
-isFieldProtected(LedgerEntryType const& type, SField const& field);
-
-std::vector<STObject>
-filterFirewallRulesByLE(STArray const& rules, LedgerEntryType const& type);
-
-template <typename T>
-inline bool
-evaluateComparison(T const& left, T const& right, std::uint16_t operatorCode)
-{
-    switch (operatorCode)
-    {
-        case 1:
-            return left < right;
-        case 2:
-            return left <= right;
-        case 3:
-            return left == right;
-        case 4:
-            return left >= right;
-        case 5:
-            return left > right;
-        default:
-            return left <= right;
-    }
-}
 
 }  // namespace firewall
 }  // namespace ripple

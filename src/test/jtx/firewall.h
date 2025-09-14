@@ -50,66 +50,6 @@ set(Account const& account,
     uint32_t seq,
     STAmount const& fee);
 
-/** Adds a new Incoming Firewall Rule on a JTx and autofills. */
-template <typename T>
-class rule
-{
-private:
-    std::uint16_t leType_;
-    SField const& field_;
-    FirewallOperator op_;
-    T value_;
-    std::optional<std::uint32_t> timePeriod_;
-
-public:
-    rule(
-        std::uint16_t const& leType,
-        SField const& field,
-        FirewallOperator const& op,
-        T const& value,
-        std::optional<std::uint32_t> const& timePeriod = std::nullopt)
-        : leType_(leType)
-        , field_(field)
-        , op_(op)
-        , value_(value)
-        , timePeriod_(timePeriod)
-    {
-    }
-
-    void
-    operator()(Env& env, JTx& jt) const
-    {
-        auto const index = jt.jv[jss::FirewallRules].size();
-        Json::Value& rule = jt.jv[jss::FirewallRules][index];
-
-        // Initialize the firewall rule
-        rule = Json::Value{};
-        rule[jss::FirewallRule][sfLedgerEntryType.jsonName] = leType_;
-        rule[jss::FirewallRule][sfFieldCode.jsonName] = field_.fieldCode;
-        rule[jss::FirewallRule][sfComparisonOperator.jsonName] =
-            static_cast<std::uint16_t>(op_);
-        rule[jss::FirewallRule][sfFirewallValue][jss::type] =
-            getTypeString(field_.fieldType);
-        rule[jss::FirewallRule][sfFirewallValue][jss::value] = value_;
-        if (timePeriod_.has_value())
-            rule[jss::FirewallRule][sfTimePeriod.jsonName] = *timePeriod_;
-    }
-};
-
-/** Sets the optional TimePeriod on a JTx. */
-class time_period
-{
-private:
-    std::uint32_t value_;
-
-public:
-    explicit time_period(std::uint32_t const& value) : value_(value)
-    {
-    }
-
-    void
-    operator()(Env&, JTx& jtx) const;
-};
 /** Delete a firewall. */
 Json::Value
 del(Account const& account,

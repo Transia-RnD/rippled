@@ -190,6 +190,9 @@ public:
     checkSign(PreclaimContext const& ctx);
 
     static NotTEC
+    checkFirewall(PreclaimContext const& ctx);
+
+    static NotTEC
     checkBatchSign(PreclaimContext const& ctx);
 
     static NotTEC
@@ -246,9 +249,6 @@ protected:
         XRPAmount baseFee,
         Fees const& fees,
         ApplyFlags flags);
-
-    TER
-    checkFirewall();
 
 private:
     std::pair<TER, XRPAmount>

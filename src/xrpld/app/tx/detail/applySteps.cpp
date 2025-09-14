@@ -100,8 +100,8 @@ with_txn_type(TxType txnType, F&& f)
 #pragma push_macro("TRANSACTION")
 #undef TRANSACTION
 
-#define TRANSACTION(tag, value, name, delegatable, fields) \
-    case tag:                                              \
+#define TRANSACTION(tag, value, name, delegatable, firewall, fields) \
+    case tag:                                                        \
         return f.template operator()<name>();
 
 #include <xrpl/protocol/detail/transactions.macro>
@@ -212,6 +212,11 @@ invoke_preclaim(PreclaimContext const& ctx)
                     return result;
 
                 result = T::checkSign(ctx);
+
+                if (result != tesSUCCESS)
+                    return result;
+
+                result = T::checkFirewall(ctx);
 
                 if (result != tesSUCCESS)
                     return result;

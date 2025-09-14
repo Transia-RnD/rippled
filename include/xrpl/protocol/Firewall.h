@@ -20,49 +20,22 @@
 #ifndef RIPPLE_PROTOCOL_FIREWALL_H_INCLUDED
 #define RIPPLE_PROTOCOL_FIREWALL_H_INCLUDED
 
-#include <xrpl/protocol/LedgerFormats.h>
-#include <xrpl/protocol/TER.h>
+#include <xrpl/protocol/TxFormats.h>
 
-#include <functional>
 #include <optional>
 #include <string>
 #include <unordered_map>
 
 namespace ripple {
 
-enum class FirewallOperator : std::uint8_t {
-    LESS_THAN = 1,
-    LESS_THAN_EQUAL = 2,
-    EQUAL = 3,
-    GREATER_THAN_EQUAL = 4,
-    GREATER_THAN = 5
-};
-
-/**
- * Firewall types for different ledger entries
- */
-enum FirewallType : std::uint32_t {
-#pragma push_macro("FIREWALL_ENTRY")
-#undef FIREWALL_ENTRY
-
-#define FIREWALL_ENTRY(name, ledgerType, fields, value) name = value,
-
-#include <xrpl/protocol/detail/firewall.macro>
-
-#undef FIREWALL_ENTRY
-#pragma pop_macro("FIREWALL_ENTRY")
-};
+enum FirewallAction { check, allow, block };
 
 class Firewall
 {
 private:
     Firewall();
 
-    std::unordered_map<std::string, FirewallType> firewallNameMap_;
-    std::unordered_map<FirewallType, std::string> firewallTypeNameMap_;
-    std::unordered_map<FirewallType, LedgerEntryType> firewallLedgerTypeMap_;
-    std::unordered_map<FirewallType, std::vector<SField const*>>
-        firewallFieldsMap_;
+    std::unordered_map<std::uint16_t, FirewallAction> blockTx_;
 
 public:
     static Firewall const&
@@ -72,26 +45,12 @@ public:
     Firewall&
     operator=(Firewall const&) = delete;
 
-    std::optional<FirewallType>
-    getFirewallType(std::string const& name) const;
-
-    std::optional<std::string>
-    getFirewallName(FirewallType const& type) const;
-
-    std::optional<LedgerEntryType>
-    getLedgerType(FirewallType const& type) const;
-
-    std::optional<std::vector<SField const*>>
-    getFields(FirewallType const& type) const;
-
-    std::vector<SField const*>
-    getFieldsForLedgerType(LedgerEntryType const& ledgerType) const;
-
     bool
-    handlesField(LedgerEntryType const& ledgerType, SField const& field) const;
-
+    isBlocked(std::uint16_t const& txType) const;
     bool
-    hasFirewall(LedgerEntryType const& ledgerType) const;
+    isAllowed(std::uint16_t const& txType) const;
+    bool
+    isCheck(std::uint16_t const& txType) const;
 };
 
 }  // namespace ripple

@@ -17,115 +17,60 @@
 */
 //==============================================================================
 
+#include <xrpl/beast/utility/instrumentation.h>
 #include <xrpl/protocol/Firewall.h>
+#include <xrpl/protocol/Permissions.h>
+#include <xrpl/protocol/jss.h>
 
 namespace ripple {
 
 Firewall::Firewall()
 {
-    // Initialize the maps using the macro definitions
-#pragma push_macro("FIREWALL_ENTRY")
-#undef FIREWALL_ENTRY
+    blockTx_ = {
+#pragma push_macro("TRANSACTION")
+#undef TRANSACTION
 
-#define FIREWALL_ENTRY(name, ledgerType, fields, value)      \
-    firewallNameMap_[#name] = FirewallType::name;            \
-    firewallTypeNameMap_[FirewallType::name] = #name;        \
-    firewallLedgerTypeMap_[FirewallType::name] = ledgerType; \
-    firewallFieldsMap_[FirewallType::name] = std::vector<SField const*> fields;
+#define TRANSACTION(tag, value, name, delegatable, firewall, fields) \
+    {value, firewall},
 
-#include <xrpl/protocol/detail/firewall.macro>
+#include <xrpl/protocol/detail/transactions.macro>
 
-#undef FIREWALL_ENTRY
-#pragma pop_macro("FIREWALL_ENTRY")
+#undef TRANSACTION
+#pragma pop_macro("TRANSACTION")
+    };
 }
 
 Firewall const&
 Firewall::getInstance()
 {
-    static Firewall instance;
+    static Firewall const instance;
     return instance;
 }
 
-std::optional<FirewallType>
-Firewall::getFirewallType(std::string const& name) const
-{
-    auto it = firewallNameMap_.find(name);
-    if (it != firewallNameMap_.end())
-        return it->second;
-    return std::nullopt;
-}
-
-std::optional<std::string>
-Firewall::getFirewallName(FirewallType const& type) const
-{
-    auto it = firewallTypeNameMap_.find(type);
-    if (it != firewallTypeNameMap_.end())
-        return it->second;
-    return std::nullopt;
-}
-
-std::optional<LedgerEntryType>
-Firewall::getLedgerType(FirewallType const& type) const
-{
-    auto it = firewallLedgerTypeMap_.find(type);
-    if (it != firewallLedgerTypeMap_.end())
-        return it->second;
-    return std::nullopt;
-}
-
-std::optional<std::vector<SField const*>>
-Firewall::getFields(FirewallType const& type) const
-{
-    auto it = firewallFieldsMap_.find(type);
-    if (it != firewallFieldsMap_.end())
-        return it->second;
-    return std::nullopt;
-}
-
-std::vector<SField const*>
-Firewall::getFieldsForLedgerType(LedgerEntryType const& ledgerType) const
-{
-    std::vector<SField const*> allFields;
-
-    for (auto const& pair : firewallLedgerTypeMap_)
-    {
-        if (pair.second == ledgerType)
-        {
-            auto fieldsIt = firewallFieldsMap_.find(pair.first);
-            if (fieldsIt != firewallFieldsMap_.end())
-            {
-                auto const& fields = fieldsIt->second;
-                allFields.insert(allFields.end(), fields.begin(), fields.end());
-            }
-        }
-    }
-
-    return allFields;
-}
-
 bool
-Firewall::handlesField(LedgerEntryType const& ledgerType, SField const& field)
-    const
+Firewall::isBlocked(std::uint16_t const& txType) const
 {
-    auto fields = getFieldsForLedgerType(ledgerType);
-
-    for (auto const* fieldPtr : fields)
-    {
-        if (fieldPtr && *fieldPtr == field)
-            return true;
-    }
-
+    auto const it = blockTx_.find(txType);
+    if (it != blockTx_.end())
+        return it->second == FirewallAction::block;
     return false;
 }
 
 bool
-Firewall::hasFirewall(LedgerEntryType const& ledgerType) const
+Firewall::isAllowed(std::uint16_t const& txType) const
 {
-    for (auto const& pair : firewallLedgerTypeMap_)
-    {
-        if (pair.second == ledgerType)
-            return true;
-    }
+    auto const it = blockTx_.find(txType);
+    if (it != blockTx_.end())
+        return it->second == FirewallAction::allow;
+    return false;
+}
+
+bool
+Firewall::isCheck(std::uint16_t const& txType) const
+{
+    auto const it = blockTx_.find(txType);
+    if (it != blockTx_.end())
+        return it->second == FirewallAction::check;
     return false;
 }
 
