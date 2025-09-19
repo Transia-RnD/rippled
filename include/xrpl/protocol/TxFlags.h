@@ -285,6 +285,11 @@ constexpr std::uint32_t tfIndependent                  = 0x00080000;
 constexpr std::uint32_t const tfBatchMask =
     ~(tfUniversal | tfAllOrNothing | tfOnlyOne | tfUntilFailure | tfIndependent) | tfInnerBatchTxn;
 
+// Firewall Flags:
+constexpr std::uint32_t tfOTPRequired                   = 0x00010000;
+constexpr std::uint32_t const tfFirewallMask =
+    ~(tfUniversal | tfOTPRequired);
+
 // clang-format on
 
 }  // namespace ripple

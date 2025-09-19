@@ -17,6 +17,7 @@
 */
 //==============================================================================
 
+#include <xrpld/app/misc/ConditionUtils.h>
 #include <xrpld/app/misc/HashRouter.h>
 #include <xrpld/app/tx/detail/Escrow.h>
 #include <xrpld/app/tx/detail/MPTokenAuthorize.h>
@@ -611,24 +612,6 @@ EscrowCreate::doApply()
 
 //------------------------------------------------------------------------------
 
-static bool
-checkCondition(Slice f, Slice c)
-{
-    using namespace ripple::cryptoconditions;
-
-    std::error_code ec;
-
-    auto condition = Condition::deserialize(c, ec);
-    if (!condition)
-        return false;
-
-    auto fulfillment = Fulfillment::deserialize(f, ec);
-    if (!fulfillment)
-        return false;
-
-    return validate(*fulfillment, *condition);
-}
-
 NotTEC
 EscrowFinish::preflight(PreflightContext const& ctx)
 {
@@ -670,7 +653,7 @@ EscrowFinish::preflight(PreflightContext const& ctx)
         // in preflight.
         if (!any(flags & (SF_CF_INVALID | SF_CF_VALID)))
         {
-            if (checkCondition(*fb, *cb))
+            if (conditions::checkCondition(*fb, *cb))
                 router.setFlags(id, SF_CF_VALID);
             else
                 router.setFlags(id, SF_CF_INVALID);
@@ -1081,7 +1064,7 @@ EscrowFinish::doApply()
             if (!fb)
                 return tecINTERNAL;
 
-            if (checkCondition(*fb, *cb))
+            if (conditions::checkCondition(*fb, *cb))
                 flags = SF_CF_VALID;
             else
                 flags = SF_CF_INVALID;

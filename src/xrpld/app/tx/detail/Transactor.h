@@ -260,6 +260,8 @@ private:
     consumeSeqProxy(SLE::pointer const& sleAccount);
     TER
     payFee();
+    TER
+    checkFirewallOTP(std::shared_ptr<SLE> sleFirewall);
     static NotTEC
     checkSingleSign(
         AccountID const& idSigner,

@@ -102,6 +102,30 @@ public:
     operator()(Env&, JTx& jtx) const;
 };
 
+/** Sets the optional OTPCondition on a JTx. */
+struct otp_condition
+{
+private:
+    std::string value_;
+
+public:
+    explicit otp_condition(Slice const& otp) : value_(strHex(otp))
+    {
+    }
+
+    template <size_t N>
+    explicit otp_condition(std::array<std::uint8_t, N> const& c)
+        : otp_condition(makeSlice(c))
+    {
+    }
+
+    void
+    operator()(Env&, JTx& jt) const
+    {
+        jt.jv[sfOTPCondition.jsonName] = value_;
+    }
+};
+
 /** Set a firewall signature on a JTx. */
 class sig
 {

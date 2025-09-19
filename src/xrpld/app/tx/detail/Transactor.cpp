@@ -18,6 +18,7 @@
 //==============================================================================
 
 #include <xrpld/app/main/Application.h>
+#include <xrpld/app/misc/ConditionUtils.h>
 #include <xrpld/app/misc/DelegateUtils.h>
 #include <xrpld/app/misc/FirewallHelpers.h>
 #include <xrpld/app/misc/LoadFeeTrack.h>
@@ -245,7 +246,15 @@ Transactor::calculateBaseFee(ReadView const& view, STTx const& tx)
     std::size_t const signerCount =
         tx.isFieldPresent(sfSigners) ? tx.getFieldArray(sfSigners).size() : 0;
 
-    return baseFee + (signerCount * baseFee);
+    XRPAmount extraFee{0};
+    if (tx.isFieldPresent(sfOTPCondition) && 
+        tx.isFieldPresent(sfOTPFulfillment))
+    {
+        auto const fb = tx[~sfOTPFulfillment];
+        extraFee += baseFee * (32 + (fb->size() / 16));
+    }
+
+    return baseFee + (signerCount * baseFee) + extraFee;
 }
 
 XRPAmount
@@ -958,16 +967,25 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
     if (sleFirewall->isFieldPresent(sfMaxFee) &&
         ctx.tx.getFieldAmount(sfFee) > sleFirewall->getFieldAmount(sfMaxFee))
     {
-        JLOG(ctx.j.trace()) << "Transaction fee exceeds firewall limit.";
+        JLOG(ctx.j.trace())
+            << "checkFirewall: Transaction fee exceeds firewall limit.";
         return tefFIREWALL_BLOCK;
+    }
+
+    // Allow: OTP is required
+    if (sleFirewall->getFieldU32(sfFlags) & lsfOTPRequired)
+    {
+        JLOG(ctx.j.trace()) << "checkFirewall: OTP is required by firewall.";
+        return tesSUCCESS;
     }
 
     // Allow: Firewall is disabled
     if (Firewall::getInstance().isAllowed(
             ctx.tx.getFieldU16(sfTransactionType)))
     {
-        JLOG(ctx.j.trace()) << "Transaction type: " << ctx.tx.getTxnType()
-                            << " is allowed by firewall.";
+        JLOG(ctx.j.trace())
+            << "checkFirewall: Transaction type: " << ctx.tx.getTxnType()
+            << " is allowed by firewall.";
         return tesSUCCESS;
     }
 
@@ -975,8 +993,9 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
     if (Firewall::getInstance().isBlocked(
             ctx.tx.getFieldU16(sfTransactionType)))
     {
-        JLOG(ctx.j.trace()) << "Transaction type: " << ctx.tx.getTxnType()
-                            << " is blocked by firewall.";
+        JLOG(ctx.j.trace())
+            << "checkFirewall: Transaction type: " << ctx.tx.getTxnType()
+            << " is blocked by firewall.";
         return tefFIREWALL_BLOCK;
     }
 
@@ -987,16 +1006,17 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
         if (ctx.tx.getAccountID(sfDestination) == account ||
             ctx.tx.isFieldPresent(sfPaths))
         {
-            JLOG(ctx.j.trace())
-                << "Self payment or payment with paths is blocked by firewall.";
+            JLOG(ctx.j.trace()) << "checkFirewall: Self payment or payment "
+                                   "with paths is blocked by firewall.";
             return tefFIREWALL_BLOCK;
         }
     }
 
     if (!ctx.tx.isFieldPresent(sfDestination))
     {
-        JLOG(ctx.j.trace()) << "Not Allowed Transaction without destination is "
-                               "blocked by firewall.";
+        JLOG(ctx.j.trace())
+            << "checkFirewall: Not Allowed Transaction without destination is "
+               "blocked by firewall.";
         return tefFIREWALL_BLOCK;
     }
 
@@ -1009,11 +1029,44 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
                     ? ctx.tx.getFieldU32(sfDestinationTag)
                     : 0)))
     {
-        JLOG(ctx.j.trace())
-            << "Not Authorized Destination is blocked by firewall.";
+        JLOG(ctx.j.trace()) << "checkFirewall: Not Authorized Destination is "
+                               "blocked by firewall.";
         return tefFIREWALL_BLOCK;
     }
 
+    return tesSUCCESS;
+}
+
+TER
+Transactor::checkFirewallOTP(std::shared_ptr<SLE> sleFirewall)
+{
+    // Check OTP
+    auto const fulfillment = ctx_.tx[~sfOTPFulfillment];
+    auto const nextCondition = ctx_.tx[~sfOTPCondition];
+    auto const lastCondition = (*sleFirewall)[sfOTPCondition];
+    if (!fulfillment)
+    {
+        JLOG(j_.trace()) << "checkFirewall: No current OTP provided";
+        return tecFIREWALL_BLOCK;
+    }
+
+    // if (!nextCondition || !lastCondition)
+    if (!nextCondition)
+    {
+        JLOG(j_.trace())
+            << "checkFirewall: No next or last OTP condition in firewall";
+        return tecFIREWALL_BLOCK;
+    }
+
+    if (!conditions::checkCondition(*fulfillment, lastCondition))
+    {
+        JLOG(j_.trace()) << "checkFirewall: OTP condition failed";
+        return tecFIREWALL_BLOCK;
+    }
+
+    // Update firewall with OTP Condition
+    sleFirewall->setFieldVL(sfOTPCondition, *nextCondition);
+    ctx_.view().update(sleFirewall);
     return tesSUCCESS;
 }
 
@@ -1320,6 +1373,35 @@ Transactor::operator()()
                 view(), expiredCredentials, ctx_.app.journal("View"));
 
         applied = isTecClaim(result);
+    }
+
+    if (view().rules().enabled(featureFirewall))
+    {
+        // Check firewall: if `tecFIREWALL_BLOCK` is not returned, we can
+        // proceed to apply the tx
+        auto const account = ctx_.tx.isFieldPresent(sfDelegate)
+            ? ctx_.tx.getAccountID(sfDelegate)
+            : ctx_.tx.getAccountID(sfAccount);
+
+        auto const sleFirewall = ctx_.view().peek(keylet::firewall(account));
+        if (sleFirewall && sleFirewall->getFieldU32(sfFlags) & lsfOTPRequired)
+        {
+            result = checkFirewallOTP(sleFirewall);
+            if (result == tecFIREWALL_BLOCK)
+            {
+                // if firewall checking failed again, reset the context and
+                // attempt to only claim a fee.
+                auto const resetResult = reset(fee);
+                if (!isTesSuccess(resetResult.first))
+                    result = resetResult.first;
+            }
+
+            // We ran through the firewall checker, which can, in some cases,
+            // return a tef error code. Don't apply the transaction in that
+            // case.
+            if (!isTecClaim(result) && !isTesSuccess(result))
+                applied = false;
+        }
     }
 
     if (applied)

@@ -205,6 +205,9 @@ enum LedgerSpecificFlags {
 
     // ltVAULT
     lsfVaultPrivate = 0x00010000,
+
+    // ltFIREWALL
+    lsfOTPRequired = 0x00010000,
 };
 
 //------------------------------------------------------------------------------

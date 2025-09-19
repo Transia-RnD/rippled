@@ -54,7 +54,7 @@ FirewallSet::preflight(PreflightContext const& ctx)
     if (auto const ret = preflight1(ctx); !isTesSuccess(ret))
         return ret;
 
-    if (ctx.tx.getFlags() & tfUniversalMask)
+    if (ctx.tx.getFlags() & tfFirewallMask)
     {
         JLOG(ctx.j.trace()) << "FirewallSet: sfFlags are invalid for this tx";
         return temINVALID_FLAG;
@@ -247,11 +247,16 @@ FirewallSet::createFirewall(std::shared_ptr<SLE> const& sleOwner)
 {
     // Create Firewall entry
     auto const sleFirewall = std::make_shared<SLE>(keylet::firewall(account_));
+    sleFirewall->setFieldU32(sfFlags, ctx_.tx.getFlags());
     sleFirewall->setAccountID(sfOwner, account_);
     sleFirewall->setAccountID(
         sfCounterParty, ctx_.tx.getAccountID(sfCounterParty));
     if (ctx_.tx.isFieldPresent(sfMaxFee))
         sleFirewall->setFieldAmount(sfMaxFee, ctx_.tx.getFieldAmount(sfMaxFee));
+
+    if (ctx_.tx.isFieldPresent(sfOTPCondition))
+        sleFirewall->setFieldVL(
+            sfOTPCondition, ctx_.tx.getFieldVL(sfOTPCondition));
 
     // Insert firewall into owner directory
     if (auto const page = ctx_.view().dirInsert(
@@ -321,6 +326,9 @@ FirewallSet::updateFirewall()
         return tefINTERNAL;
     }
 
+    // Update Flags if provided
+    sleFirewall->setFieldU32(sfFlags, ctx_.tx.getFlags());
+
     // Update CounterParty if provided
     if (ctx_.tx.isFieldPresent(sfCounterParty))
     {
@@ -337,6 +345,10 @@ FirewallSet::updateFirewall()
             sleFirewall->setFieldAmount(
                 sfMaxFee, ctx_.tx.getFieldAmount(sfMaxFee));
     }
+
+    if (ctx_.tx.isFieldPresent(sfOTPCondition))
+        sleFirewall->setFieldVL(
+            sfOTPCondition, ctx_.tx.getFieldVL(sfOTPCondition));
 
     ctx_.view().update(sleFirewall);
     return tesSUCCESS;

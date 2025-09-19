@@ -280,6 +280,8 @@ TYPED_SFIELD(sfAssetClass,               VL,        28)
 TYPED_SFIELD(sfProvider,                 VL,        29)
 TYPED_SFIELD(sfMPTokenMetadata,          VL,        30)
 TYPED_SFIELD(sfCredentialType,           VL,        31)
+TYPED_SFIELD(sfOTPFulfillment,           VL,        32, SField::sMD_Default, SField::notSigning)
+TYPED_SFIELD(sfOTPCondition,             VL,        33, SField::sMD_Default, SField::notSigning)
 
 // account (common)
 TYPED_SFIELD(sfAccount,                  ACCOUNT,    1)
