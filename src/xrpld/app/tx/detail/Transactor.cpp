@@ -963,7 +963,8 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
     if (Firewall::getInstance().isAllowed(
             ctx.tx.getFieldU16(sfTransactionType)))
     {
-        JLOG(ctx.j.trace()) << "Transaction type: " << ctx.tx.getTxnType() << " is allowed by firewall.";
+        JLOG(ctx.j.trace()) << "Transaction type: " << ctx.tx.getTxnType()
+                            << " is allowed by firewall.";
         return tesSUCCESS;
     }
 
@@ -971,7 +972,8 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
     if (Firewall::getInstance().isBlocked(
             ctx.tx.getFieldU16(sfTransactionType)))
     {
-        JLOG(ctx.j.trace()) << "Transaction type: " << ctx.tx.getTxnType() << " is blocked by firewall.";
+        JLOG(ctx.j.trace()) << "Transaction type: " << ctx.tx.getTxnType()
+                            << " is blocked by firewall.";
         return tefFIREWALL_BLOCK;
     }
 
@@ -982,14 +984,16 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
         if (ctx.tx.getAccountID(sfDestination) == account ||
             ctx.tx.isFieldPresent(sfPaths))
         {
-            JLOG(ctx.j.trace()) << "Self payment or payment with paths is blocked by firewall.";
+            JLOG(ctx.j.trace())
+                << "Self payment or payment with paths is blocked by firewall.";
             return tefFIREWALL_BLOCK;
         }
     }
 
     if (!ctx.tx.isFieldPresent(sfDestination))
     {
-        JLOG(ctx.j.trace()) << "Not Allowed Transaction without destination is blocked by firewall.";
+        JLOG(ctx.j.trace()) << "Not Allowed Transaction without destination is "
+                               "blocked by firewall.";
         return tefFIREWALL_BLOCK;
     }
 
@@ -1002,7 +1006,8 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
                     ? ctx.tx.getFieldU32(sfDestinationTag)
                     : 0)))
     {
-        JLOG(ctx.j.trace()) << "Not Authorized Destination is blocked by firewall.";
+        JLOG(ctx.j.trace())
+            << "Not Authorized Destination is blocked by firewall.";
         return tefFIREWALL_BLOCK;
     }
 
