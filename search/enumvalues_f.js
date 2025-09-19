@@ -4,7 +4,7 @@ var searchData=
   ['objectfield_1',['ObjectField',['../namespaceripple_1_1test.html#a33d206712667192f356d3283738a0411a47e2b666357b76444093d14ece757aaa',1,'ripple::test']]],
   ['objectvalue_2',['objectValue',['../namespaceJson.html#a7d654b75c16a57007925868e38212b4eae8386dcfc36d1ae897745f7b4f77a1f6',1,'Json']]],
   ['observing_3',['observing',['../namespaceripple.html#a33f8b6e68b5f63faf2e9755cc251563eaea5234685f43dcab142e132c0e7be2ce',1,'ripple']]],
-  ['obsolete_4',['obsolete',['../namespaceripple.html#a1dcb4cf27e683bd94d11f5322836c689a28a39c5d0e09f2b9f423c9864ecf1db8',1,'ripple::obsolete'],['../namespaceripple.html#aa5778f9faa15e3677dcda7975d9db7c6aec30c235d0eb792797af1aa1d11759a7',1,'ripple::Obsolete'],['../namespaceripple.html#a2e97c395a5e1ef4ed1052299e0e60843ad8d4ab290d0006e2cbe215ff1b11e5ea',1,'ripple::OBSOLETE']]],
+  ['obsolete_4',['obsolete',['../namespaceripple.html#a2e97c395a5e1ef4ed1052299e0e60843ad8d4ab290d0006e2cbe215ff1b11e5ea',1,'ripple::OBSOLETE'],['../namespaceripple.html#a1dcb4cf27e683bd94d11f5322836c689a28a39c5d0e09f2b9f423c9864ecf1db8',1,'ripple::obsolete'],['../namespaceripple.html#aa5778f9faa15e3677dcda7975d9db7c6aec30c235d0eb792797af1aa1d11759a7',1,'ripple::Obsolete']]],
   ['off_5',['off',['../classripple_1_1test_1_1reduce__relay__test.html#a14441737f30e94f46c7a775c1a504b5bae88c8a9b1380f3477d59cadc90316492',1,'ripple::test::reduce_relay_test::Off'],['../namespaceripple_1_1compression.html#a63d59b12f7e712c378860771ef3fdf5fad15305d7a4e34e02489c74a5ef542f36',1,'ripple::compression::Off']]],
   ['offer_6',['OFFER',['../namespaceripple.html#a22768e0a41b646442c98d38f2f2a307ba10a5fc93fb200eb05fc816628f0b1d32',1,'ripple']]],
   ['ok_7',['ok',['../namespaceripple_1_1Resource.html#ae12997de115c1cf0032794aa5ea1b15daadeb01a5ff7ccf891ad10c735db17661',1,'ripple::Resource::ok'],['../namespaceripple_1_1NodeStore.html#af127c2e4fc73b5d35647147ef45b350ca852178e08b8b1f2eb19fd271e63830ef',1,'ripple::NodeStore::ok']]],
@@ -21,6 +21,7 @@ var searchData=
   ['outputtoosmall_18',['outputTooSmall',['../namespaceripple.html#a8f71b86b6529e14eaa595d90bc74ae52afad9310fafa56ee8ea813d9c6843d06d',1,'ripple']]],
   ['overflowadd_19',['overflowAdd',['../namespaceripple.html#a8f71b86b6529e14eaa595d90bc74ae52a0d1bed8214edf223c0ec5305c02b85c8',1,'ripple']]],
   ['overlay_20',['overlay',['../namespaceripple_1_1CrawlOptions.html#a88da1dd344ca0dc87a10a49f34fa38daa1271a017d6478a90750e5b2141279eac',1,'ripple::CrawlOptions::Overlay'],['../classripple_1_1TrafficCount.html#adbaee77c7a063c9aac783e54594aeda7a53b8a74c2b773d10759ccf8738b6bd3c',1,'ripple::TrafficCount::overlay']]],
-  ['owner_5fdir_21',['OWNER_DIR',['../namespaceripple.html#a22768e0a41b646442c98d38f2f2a307baade6e4ef934ffe83be3eeb5207ac5f1c',1,'ripple']]],
-  ['ownerfunds_22',['ownerFunds',['../structripple_1_1LedgerFill.html#acb9af41b82a8550a08d2288b6f9fc826a4d567fe1eb1b4268e9ef85e4d2993ff6',1,'ripple::LedgerFill']]]
+  ['overridefreeze_21',['overrideFreeze',['../namespaceripple.html#a56626079606ddd359a5c40cbe9e9761ba97e21cc12caa2e0e16c343adddf4d15c',1,'ripple']]],
+  ['owner_5fdir_22',['OWNER_DIR',['../namespaceripple.html#a22768e0a41b646442c98d38f2f2a307baade6e4ef934ffe83be3eeb5207ac5f1c',1,'ripple']]],
+  ['ownerfunds_23',['ownerFunds',['../structripple_1_1LedgerFill.html#acb9af41b82a8550a08d2288b6f9fc826a4d567fe1eb1b4268e9ef85e4d2993ff6',1,'ripple::LedgerFill']]]
 ];
