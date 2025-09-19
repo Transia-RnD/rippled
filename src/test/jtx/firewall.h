@@ -88,6 +88,21 @@ public:
     operator()(Env&, JTx& jtx) const;
 };
 
+/** Sets the optional sfMaxFee on a JTx. */
+class max_fee
+{
+private:
+    STAmount max_fee_;
+
+public:
+    explicit max_fee(STAmount const& max_fee) : max_fee_(max_fee)
+    {
+    }
+
+    void
+    operator()(Env&, JTx& jtx) const;
+};
+
 /** Set a firewall signature on a JTx. */
 class sig
 {

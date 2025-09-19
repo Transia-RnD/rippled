@@ -539,6 +539,7 @@ TRANSACTION(ttWITHDRAW_PREAUTH, 72, WithdrawPreauth, Delegation::notDelegatable,
 TRANSACTION(ttFIREWALL_SET, 73, FirewallSet, Delegation::notDelegatable, FirewallAction::allow, ({
     {sfCounterParty, soeOPTIONAL},
     {sfBackup, soeOPTIONAL},
+    {sfMaxFee, soeOPTIONAL},
     {sfDestinationTag, soeOPTIONAL},
     {sfFirewallSigners, soeOPTIONAL},
     {sfFirewallID, soeOPTIONAL},

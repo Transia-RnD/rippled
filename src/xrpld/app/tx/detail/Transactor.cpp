@@ -952,15 +952,28 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
     if (!sleFirewall)
         return tesSUCCESS;
 
+    if (sleFirewall->isFieldPresent(sfMaxFee) &&
+        ctx.tx.getFieldAmount(sfFee) > sleFirewall->getFieldAmount(sfMaxFee))
+    {
+        JLOG(ctx.j.trace()) << "Transaction fee exceeds firewall limit.";
+        return tefFIREWALL_BLOCK;
+    }
+
     // Allow: Firewall is disabled
     if (Firewall::getInstance().isAllowed(
             ctx.tx.getFieldU16(sfTransactionType)))
+    {
+        JLOG(ctx.j.trace()) << "Transaction type: " << ctx.tx.getTxnType() << " is allowed by firewall.";
         return tesSUCCESS;
+    }
 
     // Block: Firewall is enabled
     if (Firewall::getInstance().isBlocked(
             ctx.tx.getFieldU16(sfTransactionType)))
+    {
+        JLOG(ctx.j.trace()) << "Transaction type: " << ctx.tx.getTxnType() << " is blocked by firewall.";
         return tefFIREWALL_BLOCK;
+    }
 
     // Block: ttPAYMENT
     if (ctx.tx.getTxnType() == ttPAYMENT)
@@ -968,11 +981,17 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
         // Block: SelfPayments && Paths
         if (ctx.tx.getAccountID(sfDestination) == account ||
             ctx.tx.isFieldPresent(sfPaths))
+        {
+            JLOG(ctx.j.trace()) << "Self payment or payment with paths is blocked by firewall.";
             return tefFIREWALL_BLOCK;
+        }
     }
 
     if (!ctx.tx.isFieldPresent(sfDestination))
+    {
+        JLOG(ctx.j.trace()) << "Not Allowed Transaction without destination is blocked by firewall.";
         return tefFIREWALL_BLOCK;
+    }
 
     if (ctx.tx.isFieldPresent(sfDestination) &&
         !ctx.view.exists(
@@ -982,7 +1001,10 @@ Transactor::checkFirewall(PreclaimContext const& ctx)
                 ctx.tx.isFieldPresent(sfDestinationTag)
                     ? ctx.tx.getFieldU32(sfDestinationTag)
                     : 0)))
+    {
+        JLOG(ctx.j.trace()) << "Not Authorized Destination is blocked by firewall.";
         return tefFIREWALL_BLOCK;
+    }
 
     return tesSUCCESS;
 }

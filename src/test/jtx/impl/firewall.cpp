@@ -101,6 +101,12 @@ backup::operator()(Env& env, JTx& jt) const
     jt.jv[sfBackup.jsonName] = backup_.human();
 }
 
+void
+max_fee::operator()(Env& env, JTx& jt) const
+{
+    jt.jv[sfMaxFee.jsonName] = max_fee_.getJson(JsonOptions::none);
+}
+
 sig::sig(std::vector<sig::Reg> signers_) : signers(std::move(signers_))
 {
     // Signatures must be applied in sorted order.

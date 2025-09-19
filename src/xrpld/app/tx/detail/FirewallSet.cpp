@@ -123,6 +123,16 @@ FirewallSet::preflight(PreflightContext const& ctx)
             return ter;
     }
 
+    if (ctx.tx.isFieldPresent(sfMaxFee))
+    {
+        auto const maxFee = ctx.tx.getFieldAmount(sfMaxFee);
+        if (!maxFee.native() || maxFee.negative() || !isLegalNet(maxFee))
+        {
+            JLOG(ctx.j.trace()) << "FirewallSet: sfMaxFee is invalid";
+            return temBAD_AMOUNT;
+        }
+    }
+
     return preflight2(ctx);
 }
 
@@ -240,6 +250,8 @@ FirewallSet::createFirewall(std::shared_ptr<SLE> const& sleOwner)
     sleFirewall->setAccountID(sfOwner, account_);
     sleFirewall->setAccountID(
         sfCounterParty, ctx_.tx.getAccountID(sfCounterParty));
+    if (ctx_.tx.isFieldPresent(sfMaxFee))
+        sleFirewall->setFieldAmount(sfMaxFee, ctx_.tx.getFieldAmount(sfMaxFee));
 
     // Insert firewall into owner directory
     if (auto const page = ctx_.view().dirInsert(
@@ -314,6 +326,16 @@ FirewallSet::updateFirewall()
     {
         sleFirewall->setAccountID(
             sfCounterParty, ctx_.tx.getAccountID(sfCounterParty));
+    }
+
+    // Update MaxFee if provided
+    if (ctx_.tx.isFieldPresent(sfMaxFee))
+    {
+        if (ctx_.tx.getFieldAmount(sfMaxFee) == beast::zero)
+            sleFirewall->makeFieldAbsent(sfMaxFee);
+        else
+            sleFirewall->setFieldAmount(
+                sfMaxFee, ctx_.tx.getFieldAmount(sfMaxFee));
     }
 
     ctx_.view().update(sleFirewall);

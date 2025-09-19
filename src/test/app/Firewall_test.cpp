@@ -1289,7 +1289,8 @@ struct Firewall_test : public beast::unit_test::suite
             // Attempt to drain account with high fee
             // KNOWN ISSUE: There is no way to block non payment transaction
             // that attempt to drain a fee
-            env(noop(alice), fee(XRP(50)), ter(tesSUCCESS));
+            auto const baseFee = env.current()->fees().base;
+            env(noop(alice), firewall::max_fee(baseFee), fee(XRP(50)), ter(tefFIREWALL_BLOCK));
 
             // Regular key operations work
             env(regkey(alice, dave), ter(tesSUCCESS));
@@ -1695,17 +1696,17 @@ struct Firewall_test : public beast::unit_test::suite
     void
     testWithFeats(FeatureBitset features)
     {
-        // testSetPreflightCreate(features);
-        // testSetPreflightUpdate(features);
-        // testSetPreclaimCreate(features);
-        // testSetPreclaimUpdate(features);
-        // testSetDoApplyCreate(features);
-        // testSetDoApplyUpdate(features);
-        // testMasterKeyDisable(features);
+        testSetPreflightCreate(features);
+        testSetPreflightUpdate(features);
+        testSetPreclaimCreate(features);
+        testSetPreclaimUpdate(features);
+        testSetDoApplyCreate(features);
+        testSetDoApplyUpdate(features);
+        testMasterKeyDisable(features);
         testTransactionType(features);
-        // testDeletePreflight(features);
-        // testDeletePreclaim(features);
-        // testDeleteDoApply(features);
+        testDeletePreflight(features);
+        testDeletePreclaim(features);
+        testDeleteDoApply(features);
     }
 
 public:
