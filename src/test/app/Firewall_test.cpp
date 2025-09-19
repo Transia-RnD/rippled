@@ -1280,17 +1280,18 @@ struct Firewall_test : public beast::unit_test::suite
             env.close();
 
             // Create firewall for alice
+            auto const baseFee = env.current()->fees().base;
             env(firewall::set(alice),
                 firewall::backup(bob),
                 firewall::counter_party(carol),
+                firewall::max_fee(baseFee),
                 ter(tesSUCCESS));
             env.close();
 
             // Attempt to drain account with high fee
             // KNOWN ISSUE: There is no way to block non payment transaction
             // that attempt to drain a fee
-            auto const baseFee = env.current()->fees().base;
-            env(noop(alice), firewall::max_fee(baseFee), fee(XRP(50)), ter(tefFIREWALL_BLOCK));
+            env(noop(alice), fee(XRP(50)), ter(tefFIREWALL_BLOCK));
 
             // Regular key operations work
             env(regkey(alice, dave), ter(tesSUCCESS));
