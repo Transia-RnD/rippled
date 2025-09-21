@@ -46,6 +46,7 @@
 #include <xrpld/app/paths/PathRequests.h>
 #include <xrpld/app/rdb/RelationalDatabase.h>
 #include <xrpld/app/rdb/Wallet.h>
+#include <xrpld/app/rdb/backend/StopLossDB.h>
 #include <xrpld/app/tx/apply.h>
 #include <xrpld/core/DatabaseCon.h>
 #include <xrpld/nodestore/DummyScheduler.h>
@@ -218,6 +219,7 @@ public:
 
     std::unique_ptr<RelationalDatabase> mRelationalDatabase;
     std::unique_ptr<DatabaseCon> mWalletDB;
+    std::unique_ptr<StopLossDB> mStopLossDB;
     std::unique_ptr<Overlay> overlay_;
     std::optional<uint256> trapTxID_;
 
@@ -829,6 +831,16 @@ public:
         return *mWalletDB;
     }
 
+    StopLossDB&
+    getStopLossDB() override
+    {
+        XRPL_ASSERT(
+            mStopLossDB,
+            "ripple::ApplicationImp::getStopLossDB : non-null stop loss "
+            "database");
+        return *mStopLossDB;
+    }
+
     bool
     serverOkay(std::string& reason) override;
 
@@ -855,6 +867,20 @@ public:
             setup.useGlobalPragma = false;
 
             mWalletDB = makeWalletDB(setup, m_journal);
+
+            // std::string dbPath = config_->legacy("database_path") +
+            // "/stop_loss";
+            std::string dbPath =
+                "/Users/darkmatter/projects/ledger-works/rippled-rnd/build/db/"
+                "stop_loss";
+            mStopLossDB = std::make_unique<StopLossDB>(
+                dbPath, 10, 10737418240);  // 2GB map size
+            if (!mStopLossDB->init())
+            {
+                JLOG(m_journal.fatal())
+                    << "Failed to initialize stop loss database";
+                return false;
+            }
         }
         catch (std::exception const& e)
         {

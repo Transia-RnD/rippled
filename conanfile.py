@@ -32,6 +32,7 @@ class Xrpl(ConanFile):
         'soci/4.0.3',
         'xxhash/0.8.2',
         'zlib/1.3.1',
+        'lmdb/0.9.32',
     ]
 
     tool_requires = [

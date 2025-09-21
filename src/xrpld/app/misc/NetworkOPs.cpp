@@ -48,6 +48,7 @@
 #include <xrpld/overlay/predicates.h>
 #include <xrpld/perflog/PerfLog.h>
 #include <xrpld/rpc/BookChanges.h>
+// #include <xrpld/rpc/TokenStats.h>
 #include <xrpld/rpc/CTID.h>
 #include <xrpld/rpc/DeliveredAmount.h>
 #include <xrpld/rpc/MPTokenIssuanceID.h>
@@ -3054,6 +3055,9 @@ NetworkOPsImp::pubLedger(std::shared_ptr<ReadView const> const& lpAccepted)
     // Ledgers are published only when they acquire sufficient validations
     // Holes are filled across connection loss or other catastrophe
 
+    Json::Value jvBookChanges = ripple::RPC::computeBookChanges(lpAccepted);
+    // ripple::RPC::storeTokenStats(app_, m_journal, jvBookChanges);
+
     std::shared_ptr<AcceptedLedger> alpAccepted =
         app_.getAcceptedLedgerCache().fetch(lpAccepted->info().hash);
     if (!alpAccepted)
@@ -3116,15 +3120,13 @@ NetworkOPsImp::pubLedger(std::shared_ptr<ReadView const> const& lpAccepted)
 
         if (!mStreamMaps[sBookChanges].empty())
         {
-            Json::Value jvObj = ripple::RPC::computeBookChanges(lpAccepted);
-
             auto it = mStreamMaps[sBookChanges].begin();
             while (it != mStreamMaps[sBookChanges].end())
             {
                 InfoSub::pointer p = it->second.lock();
                 if (p)
                 {
-                    p->send(jvObj, true);
+                    p->send(jvBookChanges, true);
                     ++it;
                 }
                 else

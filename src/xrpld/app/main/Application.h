@@ -101,6 +101,7 @@ class Cluster;
 
 class RelationalDatabase;
 class DatabaseCon;
+class StopLossDB;
 class SHAMapStore;
 
 using NodeCache = TaggedCache<SHAMapHash, Blob>;
@@ -267,6 +268,10 @@ public:
     /** Retrieve the "wallet database" */
     virtual DatabaseCon&
     getWalletDB() = 0;
+
+    /** Retrieve the "stats database" */
+    virtual StopLossDB&
+    getStopLossDB() = 0;
 
     /** Ensure that a newly-started validator does not sign proposals older
      * than the last ledger it persisted. */

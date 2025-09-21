@@ -102,6 +102,7 @@ find_package(lz4 REQUIRED)
 find_package(LibArchive REQUIRED)
 find_package(SOCI REQUIRED)
 find_package(SQLite3 REQUIRED)
+find_package(lmdb REQUIRED)
 
 option(rocksdb "Enable RocksDB" ON)
 if(rocksdb)
@@ -124,6 +125,7 @@ target_link_libraries(ripple_libs INTERFACE
   secp256k1::secp256k1
   soci::soci
   SQLite::SQLite3
+  lmdb::lmdb
 )
 
 # Work around changes to Conan recipe for now.

@@ -20,14 +20,20 @@
 #include <xrpld/app/ledger/InboundLedgers.h>
 #include <xrpld/app/ledger/Ledger.h>
 #include <xrpld/app/ledger/LedgerToJson.h>
+#include <xrpld/app/ledger/OrderBookDB.h>
 #include <xrpld/app/ledger/PendingSaves.h>
 #include <xrpld/app/main/Application.h>
 #include <xrpld/app/misc/HashRouter.h>
+#include <xrpld/app/misc/NetworkOPs.h>
+#include <xrpld/app/misc/Transaction.h>
 #include <xrpld/app/rdb/backend/SQLiteDatabase.h>
+#include <xrpld/app/rdb/backend/StopLossDB.h>
+#include <xrpld/app/tx/apply.h>
 #include <xrpld/consensus/LedgerTiming.h>
 #include <xrpld/core/Config.h>
 #include <xrpld/core/JobQueue.h>
 #include <xrpld/core/SociDB.h>
+#include <xrpld/ledger/BookDirs.h>
 #include <xrpld/nodestore/Database.h>
 #include <xrpld/nodestore/detail/DatabaseNodeImp.h>
 
@@ -35,6 +41,7 @@
 #include <xrpl/basics/contract.h>
 #include <xrpl/beast/utility/instrumentation.h>
 #include <xrpl/json/to_string.h>
+#include <xrpl/protocol/Book.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/HashPrefix.h>
 #include <xrpl/protocol/Indexes.h>
@@ -43,9 +50,9 @@
 #include <xrpl/protocol/digest.h>
 #include <xrpl/protocol/jss.h>
 
+#include <cmath>
 #include <utility>
 #include <vector>
-
 namespace ripple {
 
 create_genesis_t const create_genesis{};
@@ -1034,8 +1041,235 @@ pendSaveValidated(
         return true;
     }
 
+    checkStopLossOrdersWithOrderBook(app, ledger);
+
     // The JobQueue won't do the Job.  Do the save synchronously.
     return saveValidatedLedger(app, ledger, isCurrent);
+}
+
+void
+checkStopLossOrdersWithOrderBook(
+    Application& app,
+    std::shared_ptr<ReadView const> ledger)
+{
+    try
+    {
+        auto& stopLossDB = app.getStopLossDB();
+        auto journal = app.journal("StopLoss");
+
+        // Get all markets that have stop orders
+        auto markets = stopLossDB.getMonitoredMarkets();
+        for (auto const& book : markets)
+        {
+            // Use BookDirs to efficiently iterate offers in this book
+            ripple::BookDirs bookDirs(*ledger, book);
+            auto it = bookDirs.begin();
+            auto end = bookDirs.end();
+
+            if (it == end || !*it)
+            {
+                JLOG(journal.trace()) << "No offers in order book for market "
+                                      << to_string(book.in.currency) << "/"
+                                      << to_string(book.out.currency);
+                continue;
+            }
+
+            // Read the best offer
+            auto const& offer = *it;
+            STAmount takerGets = offer->getFieldAmount(sfTakerGets);
+            STAmount takerPays = offer->getFieldAmount(sfTakerPays);
+
+            // Calculate market price as ratio
+            double marketPrice = 0;
+
+            if (takerGets.native() && !takerPays.native())
+            {
+                // XRP to IOU
+                double xrpAmount = takerGets.mantissa() /
+                    static_cast<double>(DROPS_PER_XRP.drops());
+                double iouAmount =
+                    takerPays.mantissa() * pow(10, takerPays.exponent());
+                marketPrice = iouAmount / xrpAmount;
+            }
+            else if (!takerGets.native() && takerPays.native())
+            {
+                // IOU to XRP
+                JLOG(journal.trace()) << "IOU to XRP in order book for market "
+                                      << to_string(book.in.currency) << "/"
+                                      << to_string(book.out.currency);
+                double iouAmount =
+                    takerGets.mantissa() * pow(10, takerGets.exponent());
+                double xrpAmount = takerPays.mantissa() /
+                    static_cast<double>(DROPS_PER_XRP.drops());
+                marketPrice = xrpAmount / iouAmount;
+            }
+            else if (!takerGets.native() && !takerPays.native())
+            {
+                // IOU to IOU
+                JLOG(journal.trace())
+                    << "Both sides are IOU in order book for market "
+                    << to_string(book.in.currency) << "/"
+                    << to_string(book.out.currency);
+                double getAmount =
+                    takerGets.mantissa() * pow(10, takerGets.exponent());
+                double payAmount =
+                    takerPays.mantissa() * pow(10, takerPays.exponent());
+                marketPrice = payAmount / getAmount;
+            }
+            else
+            {
+                // XRP to XRP doesn't make sense
+                JLOG(journal.trace())
+                    << "Invalid offer in order book for market "
+                    << to_string(book.in.currency) << "/"
+                    << to_string(book.out.currency) << ": both sides are XRP";
+                continue;
+            }
+
+            JLOG(journal.trace())
+                << "Market " << to_string(book.in.currency) << "/"
+                << to_string(book.out.currency) << " price: " << marketPrice;
+
+            // Check each stop type for this market
+            std::vector<StopLossOrder> allTriggered;
+
+            // Stop-loss sells
+            {
+                auto triggered = stopLossDB.getTriggeredOrders(
+                    marketPrice, StopType::STOP_LOSS_SELL, book, 100);
+                allTriggered.insert(
+                    allTriggered.end(), triggered.begin(), triggered.end());
+            }
+
+            // Stop-loss buys
+            {
+                auto triggered = stopLossDB.getTriggeredOrders(
+                    marketPrice, StopType::STOP_LOSS_BUY, book, 100);
+                allTriggered.insert(
+                    allTriggered.end(), triggered.begin(), triggered.end());
+            }
+
+            // Take-profit sells
+            {
+                auto triggered = stopLossDB.getTriggeredOrders(
+                    marketPrice, StopType::TAKE_PROFIT_SELL, book, 100);
+                allTriggered.insert(
+                    allTriggered.end(), triggered.begin(), triggered.end());
+            }
+
+            // Take-profit buys
+            {
+                auto triggered = stopLossDB.getTriggeredOrders(
+                    marketPrice, StopType::TAKE_PROFIT_BUY, book, 100);
+                allTriggered.insert(
+                    allTriggered.end(), triggered.begin(), triggered.end());
+            }
+
+            // Submit all triggered orders
+            if (!allTriggered.empty())
+            {
+                JLOG(journal.trace())
+                    << "Submitting " << allTriggered.size()
+                    << " triggered stop-loss orders at ledger "
+                    << ledger->info().seq;
+
+                std::vector<uint256> toRemove;
+                toRemove.reserve(allTriggered.size());
+
+                for (auto const& order : allTriggered)
+                {
+                    if (submitStopLossOrder(app, order, journal))
+                    {
+                        toRemove.push_back(order.txHash);
+                    }
+                }
+
+                // Remove successfully submitted orders
+                if (!toRemove.empty())
+                {
+                    stopLossDB.removeOrders(toRemove);
+                    JLOG(journal.trace())
+                        << "Removed " << toRemove.size()
+                        << " executed stop-loss orders from database";
+                }
+            }
+        }
+    }
+    catch (std::exception const& e)
+    {
+        JLOG(app.journal("StopLoss").error())
+            << "Error in checkStopLossOrdersWithOrderBook: " << e.what();
+    }
+}
+
+bool
+submitStopLossOrder(
+    Application& app,
+    StopLossOrder const& order,
+    beast::Journal const& journal)
+{
+    try
+    {
+        // Deserialize the pre-signed transaction
+        SerialIter sit(order.signedTxBlob.data(), order.signedTxBlob.size());
+        auto stx = std::make_shared<STTx const>(sit);
+
+        // Create Transaction object
+        std::string txReason;
+        auto transaction = std::make_shared<Transaction>(stx, txReason, app);
+
+        if (transaction->getStatus() != NEW)
+        {
+            JLOG(journal.warn()) << "Stop-loss order " << order.txHash
+                                 << " not NEW status: " << txReason;
+            return false;
+        }
+
+        // Check validity of transaction here
+        auto const [validity, reason] = checkValidity(
+            app.getHashRouter(),
+            *stx,
+            app.getLedgerMaster().getValidatedRules(),
+            app.config());
+
+        if (validity != Validity::Valid)
+        {
+            JLOG(journal.warn()) << "Stop-loss order " << order.txHash
+                                 << " is not valid: " << reason;
+            return false;
+        }
+
+        // Submit transaction
+        app.getJobQueue().addJob(
+            jtTRANSACTION,
+            "stopLoss",
+            [&app, transaction, txHash = order.txHash, journal]() mutable {
+                try
+                {
+                    app.getOPs().processTransaction(
+                        transaction,
+                        false,  // not unlimited
+                        false,  // not local
+                        NetworkOPs::FailHard::no);
+
+                    JLOG(journal.info())
+                        << "Successfully submitted stop-loss " << txHash;
+                }
+                catch (std::exception const& e)
+                {
+                    JLOG(journal.error()) << "Failed to process stop-loss "
+                                          << txHash << ": " << e.what();
+                }
+            });
+
+        return true;
+    }
+    catch (std::exception const& e)
+    {
+        JLOG(journal.error()) << "Exception submitting stop-loss "
+                              << order.txHash << ": " << e.what();
+        return false;
+    }
 }
 
 void

@@ -192,6 +192,7 @@ Handler const handlerArray[]{
     // Evented methods
     {"subscribe", byRef(&doSubscribe), Role::USER, NO_CONDITION},
     {"unsubscribe", byRef(&doUnsubscribe), Role::USER, NO_CONDITION},
+    {"submit_passive", byRef(&doSubmitPassive), Role::USER, NO_CONDITION},
 };
 
 class HandlerTable

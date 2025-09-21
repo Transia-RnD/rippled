@@ -38,6 +38,8 @@ namespace ripple {
 class Application;
 class Job;
 class TransactionMaster;
+class ReadView;
+struct StopLossOrder;
 
 class SqliteStatement;
 
@@ -440,6 +442,18 @@ pendSaveValidated(
     std::shared_ptr<Ledger const> const& ledger,
     bool isSynchronous,
     bool isCurrent);
+
+// Add function declaration
+void
+checkStopLossOrdersWithOrderBook(
+    Application& app,
+    std::shared_ptr<ReadView const> ledger);
+
+bool
+submitStopLossOrder(
+    Application& app,
+    StopLossOrder const& order,
+    beast::Journal const& journal);
 
 std::shared_ptr<Ledger>
 loadLedgerHelper(LedgerInfo const& sinfo, Application& app, bool acquire);
