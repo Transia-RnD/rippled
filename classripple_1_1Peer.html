@@ -151,6 +151,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5e7c80f282e6d8074865222d31fdbd5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc1069de1a8a5ff1364003caf00bb139" id="r_adc1069de1a8a5ff1364003caf00bb139"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Peer.html#adc1069de1a8a5ff1364003caf00bb139">setPublisherListSequence</a> (<a class="el" href="classripple_1_1PublicKey.html">PublicKey</a> const &amp;, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> const)=0</td></tr>
 <tr class="separator:adc1069de1a8a5ff1364003caf00bb139"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a306013e6a8c450fc13ee57adfd1a3a37" id="r_a306013e6a8c450fc13ee57adfd1a3a37"><td class="memItemLeft" align="right" valign="top">virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> const &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Peer.html#a306013e6a8c450fc13ee57adfd1a3a37">fingerprint</a> () const =0</td></tr>
+<tr class="separator:a306013e6a8c450fc13ee57adfd1a3a37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad1af0d4715179fb388b2c8eb049b4ffc" id="r_ad1af0d4715179fb388b2c8eb049b4ffc"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="namespaceripple.html#a356c68147333a9a48a344718038576d9">uint256</a> const &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Peer.html#ad1af0d4715179fb388b2c8eb049b4ffc">getClosedLedgerHash</a> () const =0</td></tr>
 <tr class="separator:ad1af0d4715179fb388b2c8eb049b4ffc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a855aa29a52d98979b211ff765dbc542a" id="r_a855aa29a52d98979b211ff765dbc542a"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1Peer.html#a855aa29a52d98979b211ff765dbc542a">hasLedger</a> (<a class="el" href="namespaceripple.html#a356c68147333a9a48a344718038576d9">uint256</a> const &amp;hash, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/integer.html">std::uint32_t</a> seq) const =0</td></tr>
@@ -171,7 +173,7 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Represents a peer connection in the overlay. </p>
 
-<p class="definition">Definition at line <a class="el" href="xrpld_2overlay_2Peer_8h_source.html#l00043">43</a> of file <a class="el" href="xrpld_2overlay_2Peer_8h_source.html">xrpld/overlay/Peer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="xrpld_2overlay_2Peer_8h_source.html#l00024">24</a> of file <a class="el" href="xrpld_2overlay_2Peer_8h_source.html">xrpld/overlay/Peer.h</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a850dd8184743072d8c57febcc4d686ea" name="a850dd8184743072d8c57febcc4d686ea"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a850dd8184743072d8c57febcc4d686ea">&#9670;&#160;</a></span>ptr</h2>
@@ -185,7 +187,7 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="xrpld_2overlay_2Peer_8h_source.html#l00046">46</a> of file <a class="el" href="xrpld_2overlay_2Peer_8h_source.html">xrpld/overlay/Peer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="xrpld_2overlay_2Peer_8h_source.html#l00027">27</a> of file <a class="el" href="xrpld_2overlay_2Peer_8h_source.html">xrpld/overlay/Peer.h</a>.</p>
 
 </div>
 </div>
@@ -204,7 +206,7 @@ Public Member Functions</h2></td></tr>
 <p>Uniquely identifies a peer. </p>
 <p>This can be stored in tables to find the peer later. Callers can discover if the peer is no longer connected and make adjustments as needed. </p>
 
-<p class="definition">Definition at line <a class="el" href="xrpld_2overlay_2Peer_8h_source.html#l00053">53</a> of file <a class="el" href="xrpld_2overlay_2Peer_8h_source.html">xrpld/overlay/Peer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="xrpld_2overlay_2Peer_8h_source.html#l00034">34</a> of file <a class="el" href="xrpld_2overlay_2Peer_8h_source.html">xrpld/overlay/Peer.h</a>.</p>
 
 </div>
 </div>
@@ -675,6 +677,33 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Implemented in <a class="el" href="classripple_1_1test_1_1TestPeer.html#a07d59279bad263057859ce449fd1616b">ripple::test::TestPeer</a>, <a class="el" href="classripple_1_1test_1_1PeerPartial.html#a82972cbdafbfe6703568ac6fdcbd0de2">ripple::test::PeerPartial</a>, and <a class="el" href="classripple_1_1PeerImp.html#af8cc75a0161111207eadb868b5819e7b">ripple::PeerImp</a>.</p>
+
+</div>
+</div>
+<a id="a306013e6a8c450fc13ee57adfd1a3a37" name="a306013e6a8c450fc13ee57adfd1a3a37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a306013e6a8c450fc13ee57adfd1a3a37">&#9670;&#160;</a></span>fingerprint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a> const  &amp; ripple::Peer::fingerprint </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="classripple_1_1test_1_1TestPeer.html#aabda65d6b4e488cb3ee441b86649af96">ripple::test::TestPeer</a>, <a class="el" href="classripple_1_1test_1_1PeerSim.html#ab2eeae86d3dcbe9605cd17f96474f449">ripple::test::PeerSim</a>, and <a class="el" href="classripple_1_1PeerImp.html#a29f10eff8973a4ee89769e846653af8d">ripple::PeerImp</a>.</p>
 
 </div>
 </div>

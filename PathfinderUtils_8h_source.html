@@ -81,76 +81,57 @@ $(document).ready(function() { init_codefold(0); });
   <div class="headertitle"><div class="title">PathfinderUtils.h</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">//------------------------------------------------------------------------------</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment">/*</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">    This file is part of rippled: https://github.com/ripple/rippled</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment">    Copyright (c) 2020 Ripple Labs Inc.</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"></span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment">    Permission to use, copy, modify, and/or distribute this software for any</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment">    purpose  with  or without fee is hereby granted, provided that the above</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment">    copyright notice and this permission notice appear in all copies.</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"></span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment">    THE  SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment">    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment">    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment">    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment">    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment">    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment">    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment">*/</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment">//==============================================================================</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#ifndef RIPPLE_PATH_IMPL_PATHFINDERUTILS_H_INCLUDED</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#define RIPPLE_PATH_IMPL_PATHFINDERUTILS_H_INCLUDED</span></div>
+<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef XRPL_PATH_IMPL_PATHFINDERUTILS_H_INCLUDED</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define XRPL_PATH_IMPL_PATHFINDERUTILS_H_INCLUDED</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;xrpl/protocol/STAmount.h&gt;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceripple.html">ripple</a> {</div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="keyword">inline</span> STAmount</div>
+<div class="foldopen" id="foldopen00009" data-start="{" data-end="}">
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno"><a class="line" href="namespaceripple.html#acc022dd1f2122859acff200e4f2cb0f0">    9</a></span><a class="code hl_function" href="namespaceripple.html#acc022dd1f2122859acff200e4f2cb0f0">largestAmount</a>(<a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a> <span class="keyword">const</span>&amp; amt)</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>{</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>    <span class="keywordflow">if</span> (amt.<a class="code hl_function" href="classripple_1_1STAmount.html#af3a02d7e9cd0b11509a90e0e6980bd64">native</a>())</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="namespaceripple.html#a55a2a537e79363b71783d5f6eaca5abf">INITIAL_XRP</a>;</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    <span class="keywordflow">return</span> <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>(amt.<a class="code hl_function" href="classripple_1_1STAmount.html#acab76380a95d902071fd26ab3425bbe5">issue</a>(), <a class="code hl_variable" href="classripple_1_1STAmount.html#aa0f01e6eacfb24a14b792ab8bd288de3">STAmount::cMaxValue</a>, <a class="code hl_variable" href="classripple_1_1STAmount.html#a5392e4fd5eef1038f40b1d260b7ad1ae">STAmount::cMaxOffset</a>);</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>}</div>
+</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">inline</span> STAmount</div>
+<div class="foldopen" id="foldopen00018" data-start="{" data-end="}">
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="namespaceripple.html#a1988d4481dfdf83033a40e7e43ed2c1f">   18</a></span><a class="code hl_function" href="namespaceripple.html#a1988d4481dfdf83033a40e7e43ed2c1f">convertAmount</a>(<a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a> <span class="keyword">const</span>&amp; amt, <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceripple.html#a7ffb3f54d739bb8f967d695f08fb66ccaa181a603769c1f98ad927e7367c7aa51">all</a>)</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>{</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keywordflow">if</span> (!<a class="code hl_enumvalue" href="namespaceripple.html#a7ffb3f54d739bb8f967d695f08fb66ccaa181a603769c1f98ad927e7367c7aa51">all</a>)</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>        <span class="keywordflow">return</span> amt;</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;xrpl/protocol/STAmount.h&gt;</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceripple.html">ripple</a> {</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">inline</span> STAmount</div>
-<div class="foldopen" id="foldopen00028" data-start="{" data-end="}">
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="namespaceripple.html#acc022dd1f2122859acff200e4f2cb0f0">   28</a></span><a class="code hl_function" href="namespaceripple.html#acc022dd1f2122859acff200e4f2cb0f0">largestAmount</a>(<a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a> <span class="keyword">const</span>&amp; amt)</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>{</div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    <span class="keywordflow">if</span> (amt.<a class="code hl_function" href="classripple_1_1STAmount.html#af3a02d7e9cd0b11509a90e0e6980bd64">native</a>())</div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>        <span class="keywordflow">return</span> <a class="code hl_variable" href="namespaceripple.html#a55a2a537e79363b71783d5f6eaca5abf">INITIAL_XRP</a>;</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    <span class="keywordflow">return</span> <a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a>(amt.<a class="code hl_function" href="classripple_1_1STAmount.html#acab76380a95d902071fd26ab3425bbe5">issue</a>(), <a class="code hl_variable" href="classripple_1_1STAmount.html#aa0f01e6eacfb24a14b792ab8bd288de3">STAmount::cMaxValue</a>, <a class="code hl_variable" href="classripple_1_1STAmount.html#a5392e4fd5eef1038f40b1d260b7ad1ae">STAmount::cMaxOffset</a>);</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>}</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceripple.html#acc022dd1f2122859acff200e4f2cb0f0">largestAmount</a>(amt);</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>};</div>
 </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="keyword">inline</span> STAmount</div>
-<div class="foldopen" id="foldopen00037" data-start="{" data-end="}">
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="namespaceripple.html#a1988d4481dfdf83033a40e7e43ed2c1f">   37</a></span><a class="code hl_function" href="namespaceripple.html#a1988d4481dfdf83033a40e7e43ed2c1f">convertAmount</a>(<a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a> <span class="keyword">const</span>&amp; amt, <span class="keywordtype">bool</span> <a class="code hl_enumvalue" href="namespaceripple.html#a7ffb3f54d739bb8f967d695f08fb66ccaa181a603769c1f98ad927e7367c7aa51">all</a>)</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>{</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordflow">if</span> (!<a class="code hl_enumvalue" href="namespaceripple.html#a7ffb3f54d739bb8f967d695f08fb66ccaa181a603769c1f98ad927e7367c7aa51">all</a>)</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        <span class="keywordflow">return</span> amt;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <span class="keywordflow">return</span> <a class="code hl_function" href="namespaceripple.html#acc022dd1f2122859acff200e4f2cb0f0">largestAmount</a>(amt);</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>};</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">inline</span> <span class="keywordtype">bool</span></div>
+<div class="foldopen" id="foldopen00027" data-start="{" data-end="}">
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="namespaceripple.html#a4305eab0b3a5773888210c37c497a1e3">   27</a></span><a class="code hl_function" href="namespaceripple.html#a4305eab0b3a5773888210c37c497a1e3">convertAllCheck</a>(<a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a> <span class="keyword">const</span>&amp; a)</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>{</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keywordflow">return</span> a == <a class="code hl_function" href="namespaceripple.html#acc022dd1f2122859acff200e4f2cb0f0">largestAmount</a>(a);</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>}</div>
 </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="keyword">inline</span> <span class="keywordtype">bool</span></div>
-<div class="foldopen" id="foldopen00046" data-start="{" data-end="}">
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno"><a class="line" href="namespaceripple.html#a4305eab0b3a5773888210c37c497a1e3">   46</a></span><a class="code hl_function" href="namespaceripple.html#a4305eab0b3a5773888210c37c497a1e3">convertAllCheck</a>(<a class="code hl_class" href="classripple_1_1STAmount.html">STAmount</a> <span class="keyword">const</span>&amp; a)</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>{</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="keywordflow">return</span> a == <a class="code hl_function" href="namespaceripple.html#acc022dd1f2122859acff200e4f2cb0f0">largestAmount</a>(a);</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>}</div>
-</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>}  <span class="comment">// namespace ripple</span></div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassripple_1_1STAmount_html"><div class="ttname"><a href="classripple_1_1STAmount.html">ripple::STAmount</a></div><div class="ttdef"><b>Definition</b> <a href="STAmount_8h_source.html#l00049">STAmount.h:50</a></div></div>
-<div class="ttc" id="aclassripple_1_1STAmount_html_a5392e4fd5eef1038f40b1d260b7ad1ae"><div class="ttname"><a href="classripple_1_1STAmount.html#a5392e4fd5eef1038f40b1d260b7ad1ae">ripple::STAmount::cMaxOffset</a></div><div class="ttdeci">static int const cMaxOffset</div><div class="ttdef"><b>Definition</b> <a href="STAmount_8h_source.html#l00066">STAmount.h:66</a></div></div>
-<div class="ttc" id="aclassripple_1_1STAmount_html_aa0f01e6eacfb24a14b792ab8bd288de3"><div class="ttname"><a href="classripple_1_1STAmount.html#aa0f01e6eacfb24a14b792ab8bd288de3">ripple::STAmount::cMaxValue</a></div><div class="ttdeci">static std::uint64_t const cMaxValue</div><div class="ttdef"><b>Definition</b> <a href="STAmount_8h_source.html#l00070">STAmount.h:70</a></div></div>
-<div class="ttc" id="aclassripple_1_1STAmount_html_acab76380a95d902071fd26ab3425bbe5"><div class="ttname"><a href="classripple_1_1STAmount.html#acab76380a95d902071fd26ab3425bbe5">ripple::STAmount::issue</a></div><div class="ttdeci">Issue const &amp; issue() const</div><div class="ttdef"><b>Definition</b> <a href="STAmount_8h_source.html#l00496">STAmount.h:496</a></div></div>
-<div class="ttc" id="aclassripple_1_1STAmount_html_af3a02d7e9cd0b11509a90e0e6980bd64"><div class="ttname"><a href="classripple_1_1STAmount.html#af3a02d7e9cd0b11509a90e0e6980bd64">ripple::STAmount::native</a></div><div class="ttdeci">bool native() const noexcept</div><div class="ttdef"><b>Definition</b> <a href="STAmount_8h_source.html#l00458">STAmount.h:458</a></div></div>
-<div class="ttc" id="anamespaceripple_html"><div class="ttname"><a href="namespaceripple.html">ripple</a></div><div class="ttdoc">Use hash_* containers for keys that do not need a cryptographically secure hashing algorithm.</div><div class="ttdef"><b>Definition</b> <a href="algorithm_8h_source.html#l00025">algorithm.h:25</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a1988d4481dfdf83033a40e7e43ed2c1f"><div class="ttname"><a href="namespaceripple.html#a1988d4481dfdf83033a40e7e43ed2c1f">ripple::convertAmount</a></div><div class="ttdeci">STAmount convertAmount(STAmount const &amp;amt, bool all)</div><div class="ttdef"><b>Definition</b> <a href="PathfinderUtils_8h_source.html#l00037">PathfinderUtils.h:37</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a4305eab0b3a5773888210c37c497a1e3"><div class="ttname"><a href="namespaceripple.html#a4305eab0b3a5773888210c37c497a1e3">ripple::convertAllCheck</a></div><div class="ttdeci">bool convertAllCheck(STAmount const &amp;a)</div><div class="ttdef"><b>Definition</b> <a href="PathfinderUtils_8h_source.html#l00046">PathfinderUtils.h:46</a></div></div>
-<div class="ttc" id="anamespaceripple_html_a55a2a537e79363b71783d5f6eaca5abf"><div class="ttname"><a href="namespaceripple.html#a55a2a537e79363b71783d5f6eaca5abf">ripple::INITIAL_XRP</a></div><div class="ttdeci">constexpr XRPAmount INITIAL_XRP</div><div class="ttdoc">Configure the native currency.</div><div class="ttdef"><b>Definition</b> <a href="SystemParameters_8h_source.html#l00044">SystemParameters.h:44</a></div></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span> </div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>}  <span class="comment">// namespace ripple</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassripple_1_1STAmount_html"><div class="ttname"><a href="classripple_1_1STAmount.html">ripple::STAmount</a></div><div class="ttdef"><b>Definition</b> <a href="STAmount_8h_source.html#l00030">STAmount.h:31</a></div></div>
+<div class="ttc" id="aclassripple_1_1STAmount_html_a5392e4fd5eef1038f40b1d260b7ad1ae"><div class="ttname"><a href="classripple_1_1STAmount.html#a5392e4fd5eef1038f40b1d260b7ad1ae">ripple::STAmount::cMaxOffset</a></div><div class="ttdeci">static int const cMaxOffset</div><div class="ttdef"><b>Definition</b> <a href="STAmount_8h_source.html#l00047">STAmount.h:47</a></div></div>
+<div class="ttc" id="aclassripple_1_1STAmount_html_aa0f01e6eacfb24a14b792ab8bd288de3"><div class="ttname"><a href="classripple_1_1STAmount.html#aa0f01e6eacfb24a14b792ab8bd288de3">ripple::STAmount::cMaxValue</a></div><div class="ttdeci">static std::uint64_t const cMaxValue</div><div class="ttdef"><b>Definition</b> <a href="STAmount_8h_source.html#l00051">STAmount.h:51</a></div></div>
+<div class="ttc" id="aclassripple_1_1STAmount_html_acab76380a95d902071fd26ab3425bbe5"><div class="ttname"><a href="classripple_1_1STAmount.html#acab76380a95d902071fd26ab3425bbe5">ripple::STAmount::issue</a></div><div class="ttdeci">Issue const &amp; issue() const</div><div class="ttdef"><b>Definition</b> <a href="STAmount_8h_source.html#l00477">STAmount.h:477</a></div></div>
+<div class="ttc" id="aclassripple_1_1STAmount_html_af3a02d7e9cd0b11509a90e0e6980bd64"><div class="ttname"><a href="classripple_1_1STAmount.html#af3a02d7e9cd0b11509a90e0e6980bd64">ripple::STAmount::native</a></div><div class="ttdeci">bool native() const noexcept</div><div class="ttdef"><b>Definition</b> <a href="STAmount_8h_source.html#l00439">STAmount.h:439</a></div></div>
+<div class="ttc" id="anamespaceripple_html"><div class="ttname"><a href="namespaceripple.html">ripple</a></div><div class="ttdoc">Use hash_* containers for keys that do not need a cryptographically secure hashing algorithm.</div><div class="ttdef"><b>Definition</b> <a href="algorithm_8h_source.html#l00006">algorithm.h:6</a></div></div>
+<div class="ttc" id="anamespaceripple_html_a1988d4481dfdf83033a40e7e43ed2c1f"><div class="ttname"><a href="namespaceripple.html#a1988d4481dfdf83033a40e7e43ed2c1f">ripple::convertAmount</a></div><div class="ttdeci">STAmount convertAmount(STAmount const &amp;amt, bool all)</div><div class="ttdef"><b>Definition</b> <a href="PathfinderUtils_8h_source.html#l00018">PathfinderUtils.h:18</a></div></div>
+<div class="ttc" id="anamespaceripple_html_a4305eab0b3a5773888210c37c497a1e3"><div class="ttname"><a href="namespaceripple.html#a4305eab0b3a5773888210c37c497a1e3">ripple::convertAllCheck</a></div><div class="ttdeci">bool convertAllCheck(STAmount const &amp;a)</div><div class="ttdef"><b>Definition</b> <a href="PathfinderUtils_8h_source.html#l00027">PathfinderUtils.h:27</a></div></div>
+<div class="ttc" id="anamespaceripple_html_a55a2a537e79363b71783d5f6eaca5abf"><div class="ttname"><a href="namespaceripple.html#a55a2a537e79363b71783d5f6eaca5abf">ripple::INITIAL_XRP</a></div><div class="ttdeci">constexpr XRPAmount INITIAL_XRP</div><div class="ttdoc">Configure the native currency.</div><div class="ttdef"><b>Definition</b> <a href="SystemParameters_8h_source.html#l00025">SystemParameters.h:25</a></div></div>
 <div class="ttc" id="anamespaceripple_html_a7ffb3f54d739bb8f967d695f08fb66ccaa181a603769c1f98ad927e7367c7aa51"><div class="ttname"><a href="namespaceripple.html#a7ffb3f54d739bb8f967d695f08fb66ccaa181a603769c1f98ad927e7367c7aa51">ripple::TxSearched::all</a></div><div class="ttdeci">@ all</div></div>
-<div class="ttc" id="anamespaceripple_html_acc022dd1f2122859acff200e4f2cb0f0"><div class="ttname"><a href="namespaceripple.html#acc022dd1f2122859acff200e4f2cb0f0">ripple::largestAmount</a></div><div class="ttdeci">STAmount largestAmount(STAmount const &amp;amt)</div><div class="ttdef"><b>Definition</b> <a href="PathfinderUtils_8h_source.html#l00028">PathfinderUtils.h:28</a></div></div>
+<div class="ttc" id="anamespaceripple_html_acc022dd1f2122859acff200e4f2cb0f0"><div class="ttname"><a href="namespaceripple.html#acc022dd1f2122859acff200e4f2cb0f0">ripple::largestAmount</a></div><div class="ttdeci">STAmount largestAmount(STAmount const &amp;amt)</div><div class="ttdef"><b>Definition</b> <a href="PathfinderUtils_8h_source.html#l00009">PathfinderUtils.h:9</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

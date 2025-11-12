@@ -81,59 +81,40 @@ $(document).ready(function() { init_codefold(0); });
   <div class="headertitle"><div class="title">server/Writer.h</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">//------------------------------------------------------------------------------</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment">/*</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">    This file is part of rippled: https://github.com/ripple/rippled</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment">    Copyright (c) 2012, 2013 Ripple Labs Inc.</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"></span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment">    Permission to use, copy, modify, and/or distribute this software for any</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment">    purpose  with  or without fee is hereby granted, provided that the above</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment">    copyright notice and this permission notice appear in all copies.</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"></span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment">    THE  SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment">    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment">    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment">    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment">    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment">    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment">    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment">*/</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment">//==============================================================================</span></div>
+<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef XRPL_SERVER_WRITER_H_INCLUDED</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define XRPL_SERVER_WRITER_H_INCLUDED</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;boost/asio/buffer.hpp&gt;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceripple.html">ripple</a> {</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="foldopen" id="foldopen00011" data-start="{" data-end="};">
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html">   11</a></span><span class="keyword">class </span><a class="code hl_class" href="classripple_1_1Writer.html">Writer</a></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>{</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html#a173844e6daa9f39ecaf275e785267ea7">   14</a></span>    <span class="keyword">virtual</span> <a class="code hl_function" href="classripple_1_1Writer.html#a173844e6daa9f39ecaf275e785267ea7">~Writer</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html#a9e5d614e955a0d73bb1f95014eca5ad5">   18</a></span>    <a class="code hl_function" href="classripple_1_1Writer.html#a9e5d614e955a0d73bb1f95014eca5ad5">complete</a>() = 0;</div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#ifndef RIPPLE_SERVER_WRITER_H_INCLUDED</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#define RIPPLE_SERVER_WRITER_H_INCLUDED</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;boost/asio/buffer.hpp&gt;</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a>&gt;</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a>&gt;</span></div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceripple.html">ripple</a> {</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="foldopen" id="foldopen00030" data-start="{" data-end="};">
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html">   30</a></span><span class="keyword">class </span><a class="code hl_class" href="classripple_1_1Writer.html">Writer</a></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>{</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html#a173844e6daa9f39ecaf275e785267ea7">   33</a></span>    <span class="keyword">virtual</span> <a class="code hl_function" href="classripple_1_1Writer.html#a173844e6daa9f39ecaf275e785267ea7">~Writer</a>() = <span class="keywordflow">default</span>;</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html#af3877b4bdeed64a4dc396a9810b6dec2">   25</a></span>    <a class="code hl_function" href="classripple_1_1Writer.html#af3877b4bdeed64a4dc396a9810b6dec2">consume</a>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> bytes) = 0;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html#aacd6a7817a08ed6b57968154c198db55">   33</a></span>    <a class="code hl_function" href="classripple_1_1Writer.html#aacd6a7817a08ed6b57968154c198db55">prepare</a>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> bytes, <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/utility/functional/function.html">std::function</a>&lt;<span class="keywordtype">void</span>(<span class="keywordtype">void</span>)&gt; resume) = 0;</div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html#a9e5d614e955a0d73bb1f95014eca5ad5">   37</a></span>    <a class="code hl_function" href="classripple_1_1Writer.html#a9e5d614e955a0d73bb1f95014eca5ad5">complete</a>() = 0;</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html#af3877b4bdeed64a4dc396a9810b6dec2">   44</a></span>    <a class="code hl_function" href="classripple_1_1Writer.html#af3877b4bdeed64a4dc396a9810b6dec2">consume</a>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> bytes) = 0;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keyword">virtual</span> <span class="keywordtype">bool</span></div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html#aacd6a7817a08ed6b57968154c198db55">   52</a></span>    <a class="code hl_function" href="classripple_1_1Writer.html#aacd6a7817a08ed6b57968154c198db55">prepare</a>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> bytes, <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/utility/functional/function.html">std::function</a>&lt;<span class="keywordtype">void</span>(<span class="keywordtype">void</span>)&gt; resume) = 0;</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keyword">virtual</span> <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;boost::asio::const_buffer&gt;</a></div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html#a2d540272ca1d26dcedd8b4f2538db53f">   56</a></span>    <a class="code hl_function" href="classripple_1_1Writer.html#a2d540272ca1d26dcedd8b4f2538db53f">data</a>() = 0;</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>};</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    <span class="keyword">virtual</span> <a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector&lt;boost::asio::const_buffer&gt;</a></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="classripple_1_1Writer.html#a2d540272ca1d26dcedd8b4f2538db53f">   37</a></span>    <a class="code hl_function" href="classripple_1_1Writer.html#a2d540272ca1d26dcedd8b4f2538db53f">data</a>() = 0;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>};</div>
 </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>}  <span class="comment">// namespace ripple</span></div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassripple_1_1Writer_html"><div class="ttname"><a href="classripple_1_1Writer.html">ripple::Writer</a></div><div class="ttdef"><b>Definition</b> <a href="server_2Writer_8h_source.html#l00030">server/Writer.h:31</a></div></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>}  <span class="comment">// namespace ripple</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#endif</span></div>
+<div class="ttc" id="aclassripple_1_1Writer_html"><div class="ttname"><a href="classripple_1_1Writer.html">ripple::Writer</a></div><div class="ttdef"><b>Definition</b> <a href="server_2Writer_8h_source.html#l00011">server/Writer.h:12</a></div></div>
 <div class="ttc" id="aclassripple_1_1Writer_html_a173844e6daa9f39ecaf275e785267ea7"><div class="ttname"><a href="classripple_1_1Writer.html#a173844e6daa9f39ecaf275e785267ea7">ripple::Writer::~Writer</a></div><div class="ttdeci">virtual ~Writer()=default</div></div>
 <div class="ttc" id="aclassripple_1_1Writer_html_a2d540272ca1d26dcedd8b4f2538db53f"><div class="ttname"><a href="classripple_1_1Writer.html#a2d540272ca1d26dcedd8b4f2538db53f">ripple::Writer::data</a></div><div class="ttdeci">virtual std::vector&lt; boost::asio::const_buffer &gt; data()=0</div><div class="ttdoc">Returns a ConstBufferSequence representing the input sequence.</div></div>
 <div class="ttc" id="aclassripple_1_1Writer_html_a9e5d614e955a0d73bb1f95014eca5ad5"><div class="ttname"><a href="classripple_1_1Writer.html#a9e5d614e955a0d73bb1f95014eca5ad5">ripple::Writer::complete</a></div><div class="ttdeci">virtual bool complete()=0</div><div class="ttdoc">Returns true if there is no more data to pull.</div></div>
@@ -141,7 +122,7 @@ $(document).ready(function() { init_codefold(0); });
 <div class="ttc" id="aclassripple_1_1Writer_html_af3877b4bdeed64a4dc396a9810b6dec2"><div class="ttname"><a href="classripple_1_1Writer.html#af3877b4bdeed64a4dc396a9810b6dec2">ripple::Writer::consume</a></div><div class="ttdeci">virtual void consume(std::size_t bytes)=0</div><div class="ttdoc">Removes bytes from the input sequence.</div></div>
 <div class="ttc" id="afunction_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/utility/functional/function.html">std::function</a></div></div>
 <div class="ttc" id="afunctional_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/functional.html">functional</a></div></div>
-<div class="ttc" id="anamespaceripple_html"><div class="ttname"><a href="namespaceripple.html">ripple</a></div><div class="ttdoc">Use hash_* containers for keys that do not need a cryptographically secure hashing algorithm.</div><div class="ttdef"><b>Definition</b> <a href="algorithm_8h_source.html#l00025">algorithm.h:25</a></div></div>
+<div class="ttc" id="anamespaceripple_html"><div class="ttname"><a href="namespaceripple.html">ripple</a></div><div class="ttdoc">Use hash_* containers for keys that do not need a cryptographically secure hashing algorithm.</div><div class="ttdef"><b>Definition</b> <a href="algorithm_8h_source.html#l00006">algorithm.h:6</a></div></div>
 <div class="ttc" id="asize_t_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a></div></div>
 <div class="ttc" id="avector_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/vector.html">vector</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

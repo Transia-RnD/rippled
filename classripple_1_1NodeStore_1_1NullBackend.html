@@ -144,6 +144,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a13cce6549b2f525223a86a053d257e50" id="r_a13cce6549b2f525223a86a053d257e50"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1NodeStore_1_1NullBackend.html#a13cce6549b2f525223a86a053d257e50">fdRequired</a> () const override</td></tr>
 <tr class="memdesc:a13cce6549b2f525223a86a053d257e50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of file descriptors the backend expects to need.  <br /></td></tr>
 <tr class="separator:a13cce6549b2f525223a86a053d257e50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6471a9de444ac0df7c1dd102efa95854" id="r_a6471a9de444ac0df7c1dd102efa95854"><td class="memItemLeft" align="right" valign="top">virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a6471a9de444ac0df7c1dd102efa95854">getBlockSize</a> () const</td></tr>
+<tr class="memdesc:a6471a9de444ac0df7c1dd102efa95854"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the block size for backends that support it.  <br /></td></tr>
+<tr class="separator:a6471a9de444ac0df7c1dd102efa95854"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4e7c931c5382d31d877c6f7162dd21e" id="r_ae4e7c931c5382d31d877c6f7162dd21e"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1NodeStore_1_1Backend.html#ae4e7c931c5382d31d877c6f7162dd21e">open</a> (bool createIfMissing, uint64_t appType, uint64_t uid, uint64_t salt)</td></tr>
 <tr class="memdesc:ae4e7c931c5382d31d877c6f7162dd21e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open the backend.  <br /></td></tr>
 <tr class="separator:ae4e7c931c5382d31d877c6f7162dd21e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -153,7 +156,7 @@ Public Member Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00028">28</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00009">9</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aab527918053781c631f7f37667d75a99" name="aab527918053781c631f7f37667d75a99"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aab527918053781c631f7f37667d75a99">&#9670;&#160;</a></span>NullBackend()</h2>
@@ -234,7 +237,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a206d540c4b8359c598f2309c5ee194bd">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00036">36</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00017">17</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -272,7 +275,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a586356a9f6050201be9d184bc3fd2c83">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00042">42</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00023">23</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -303,7 +306,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#acd6ac096e54166098107227a8d168044">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00047">47</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00028">28</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -335,7 +338,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a6b13f9a9bbf0bf6470648f4910a92dd0">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00053">53</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00034">34</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -386,7 +389,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a7d3224e43e89dc098962b986d70e9833">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00058">58</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00039">39</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -418,7 +421,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a9a651edcf0faf1fd93b105d0286015d9">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00064">64</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00045">45</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -457,7 +460,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a8862f8d96713c985c3169e57cbb260c2">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00070">70</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00051">51</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -490,7 +493,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#acb1f22b4101841e695477646c95376a7">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00075">75</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00056">56</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -519,7 +522,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a0756bdfe06dcb0382b47e23b39813394">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00080">80</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00061">61</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -553,7 +556,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a70721d2adc758a808d2536eee864df52">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00085">85</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00066">66</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -584,7 +587,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#ac4d7008b7a616ce05568da3e96a204ec">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00090">90</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00071">71</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -615,7 +618,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a898be5251e9216eb21938e3083c2d1ef">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00096">96</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00077">77</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -646,7 +649,38 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Backend.html#a915130d326c2e63209accb8af09cf8b4">ripple::NodeStore::Backend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00102">102</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NullFactory_8cpp_source.html#l00083">83</a> of file <a class="el" href="NullFactory_8cpp_source.html">NullFactory.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a6471a9de444ac0df7c1dd102efa95854" name="a6471a9de444ac0df7c1dd102efa95854"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6471a9de444ac0df7c1dd102efa95854">&#9670;&#160;</a></span>getBlockSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a>&lt; <a class="elRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> &gt; ripple::NodeStore::Backend::getBlockSize </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the block size for backends that support it. </p>
+
+<p>Reimplemented in <a class="el" href="classripple_1_1NodeStore_1_1NuDBBackend.html#a7ecb3aaf359d9d5159ed350873f4de9e">ripple::NodeStore::NuDBBackend</a>.</p>
+
+<p class="definition">Definition at line <a class="el" href="Backend_8h_source.html#l00040">40</a> of file <a class="el" href="Backend_8h_source.html">Backend.h</a>.</p>
 
 </div>
 </div>
@@ -715,7 +749,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="classripple_1_1NodeStore_1_1NuDBBackend.html#a9e494839a2dcf789bb6cdc300ad65931">ripple::NodeStore::NuDBBackend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="Backend_8h_source.html#l00076">76</a> of file <a class="el" href="Backend_8h_source.html">Backend.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Backend_8h_source.html#l00065">65</a> of file <a class="el" href="Backend_8h_source.html">Backend.h</a>.</p>
 
 </div>
 </div>
@@ -747,7 +781,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Reimplemented in <a class="el" href="classripple_1_1NodeStore_1_1NuDBBackend.html#ab012b4ff123427bc35a5d4ac4c6269c0">ripple::NodeStore::NuDBBackend</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="Backend_8h_source.html#l00147">147</a> of file <a class="el" href="Backend_8h_source.html">Backend.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="Backend_8h_source.html#l00136">136</a> of file <a class="el" href="Backend_8h_source.html">Backend.h</a>.</p>
 
 </div>
 </div>

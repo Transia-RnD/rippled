@@ -195,7 +195,7 @@ Static Private Attributes</h2></td></tr>
 class ripple::AMMLiquidity&lt; TIn, TOut &gt;</div><p><a class="el" href="classripple_1_1AMMLiquidity.html" title="AMMLiquidity class provides AMM offers to BookStep class.">AMMLiquidity</a> class provides AMM offers to <a class="el" href="classripple_1_1BookStep.html">BookStep</a> class. </p>
 <p>The offers are generated in two ways. If there are multiple paths specified to the payment transaction then the offers are generated based on the Fibonacci sequence with a limited number of payment engine iterations consuming AMM offers. These offers behave the same way as CLOB offers in that if there is a limiting step, then the offers are adjusted based on their quality. If there is only one path specified in the payment transaction then the offers are generated based on the competing CLOB offer quality. In this case the offer's size is set in such a way that the new AMM's pool spot price quality is equal to the CLOB's offer quality. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00052">52</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00033">33</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ab64d5ee790ade8eea80a94449a0e120c" name="ab64d5ee790ade8eea80a94449a0e120c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab64d5ee790ade8eea80a94449a0e120c">&#9670;&#160;</a></span>AMMLiquidity() <span class="overload">[1/2]</span></h2>
@@ -255,7 +255,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8cpp_source.html#l00026">26</a> of file <a class="el" href="AMMLiquidity_8cpp_source.html">AMMLiquidity.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8cpp_source.html#l00007">7</a> of file <a class="el" href="AMMLiquidity_8cpp_source.html">AMMLiquidity.cpp</a>.</p>
 
 </div>
 </div>
@@ -374,7 +374,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 <p>Generate AMM offer. </p>
 <p>Returns nullopt if clobQuality is provided and it is better than AMM offer quality. Otherwise returns AMM offer. If clobQuality is provided then AMM offer size is set based on the quality. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8cpp_source.html#l00150">150</a> of file <a class="el" href="AMMLiquidity_8cpp_source.html">AMMLiquidity.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8cpp_source.html#l00131">131</a> of file <a class="el" href="AMMLiquidity_8cpp_source.html">AMMLiquidity.cpp</a>.</p>
 
 </div>
 </div>
@@ -395,7 +395,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00089">89</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00070">70</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -416,7 +416,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00095">95</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00076">76</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -437,7 +437,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00101">101</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00082">82</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -458,7 +458,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00107">107</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00088">88</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -479,7 +479,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00113">113</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00094">94</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -500,7 +500,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00119">119</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00100">100</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -532,7 +532,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 
 <p>Fetches current AMM balances. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8cpp_source.html#l00046">46</a> of file <a class="el" href="AMMLiquidity_8cpp_source.html">AMMLiquidity.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8cpp_source.html#l00027">27</a> of file <a class="el" href="AMMLiquidity_8cpp_source.html">AMMLiquidity.cpp</a>.</p>
 
 </div>
 </div>
@@ -565,7 +565,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 <p>Generate AMM offers with the offer size based on Fibonacci sequence. </p>
 <p>The sequence corresponds to the payment engine iterations with AMM liquidity. Iterations that don't consume AMM offers don't count. The number of iterations with AMM offers is limited. If the generated offer exceeds the pool balance then the function throws overflow exception. </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8cpp_source.html#l00059">59</a> of file <a class="el" href="AMMLiquidity_8cpp_source.html">AMMLiquidity.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8cpp_source.html#l00040">40</a> of file <a class="el" href="AMMLiquidity_8cpp_source.html">AMMLiquidity.cpp</a>.</p>
 
 </div>
 </div>
@@ -609,7 +609,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 <p>If <code>fixAMMOverflowOffer</code> is active, the offer is generated as: takerGets = 99% * balances.out takerPays = swapOut(takerGets). Return nullopt if takerGets is 0 or takerGets == balances.out.</p>
 <p>If <code>fixAMMOverflowOffer</code> is not active, the offer is generated as: takerPays = max input amount; takerGets = swapIn(takerPays). </p>
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8cpp_source.html#l00122">122</a> of file <a class="el" href="AMMLiquidity_8cpp_source.html">AMMLiquidity.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8cpp_source.html#l00103">103</a> of file <a class="el" href="AMMLiquidity_8cpp_source.html">AMMLiquidity.cpp</a>.</p>
 
 </div>
 </div>
@@ -636,7 +636,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00055">55</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00036">36</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -662,7 +662,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00056">56</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00037">37</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -688,7 +688,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00057">57</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00038">38</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -714,7 +714,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00058">58</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00039">39</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -740,7 +740,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00059">59</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00040">40</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -766,7 +766,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00060">60</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00041">41</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -792,7 +792,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00062">62</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00043">43</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>
@@ -818,7 +818,7 @@ template&lt;typename TIn , typename TOut &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00063">63</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AMMLiquidity_8h_source.html#l00044">44</a> of file <a class="el" href="AMMLiquidity_8h_source.html">AMMLiquidity.h</a>.</p>
 
 </div>
 </div>

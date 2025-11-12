@@ -91,15 +91,11 @@ Minimum Requirements</h2>
 
 - &lt;a href="<a href="https://www.python.org/downloads/">https://www.python.org/downloads/</a>" &gt;Python 3.11&lt;/a&gt;, or higher
 - &lt;a href="<a href="https://conan.io/downloads.html">https://conan.io/downloads.html</a>" &gt;Conan 2.17&lt;/a&gt;[^1], or higher
-- &lt;a href="<a href="https://cmake.org/download/">https://cmake.org/download/</a>" &gt;CMake 3.22&lt;/a&gt;[^2], or higher
+- &lt;a href="<a href="https://cmake.org/download/">https://cmake.org/download/</a>" &gt;CMake 3.22&lt;/a&gt;, or higher
 
 [^1]:
     It is possible to build with Conan 1.60+, but the instructions are
     significantly different, which is why we are not recommending it.
-
-[^2]:
-    CMake 4 is not yet supported by all dependencies required by this project.
-    If you are affected by this issue, follow @ref "workaround-for-cmake-4" "conan workaround for cmake 4"
 
 &lt;tt&gt;rippled&lt;/tt&gt; is written in the C++20 dialect and includes the &lt;tt&gt;\&lt;concepts\&gt;&lt;/tt&gt; header.
 The &lt;a href="<a href="https://en.cppreference.com/w/cpp/compiler_support/20">https://en.cppreference.com/w/cpp/compiler_support/20</a>" &gt;minimum compiler versions&lt;/a&gt; required are:
@@ -233,12 +229,6 @@ Select architecture and runtime in Windows</h4>
 </div><!-- fragment --><p><b>Windows</b> developers also must select static runtime:</p>
 <div class="fragment"><div class="line">sed -i.bak -e &#39;s|^compiler\.runtime=.*$|compiler.runtime=static|&#39; $(conan config home)/profiles/default</div>
 </div><!-- fragment --><h4><a class="anchor" id="autotoc_md44"></a>
-Workaround for CMake 4</h4>
-<p>If your system CMake is version 4 rather than 3, you may have to configure Conan profile to use CMake version 3 for dependencies, by adding the following two lines to your profile:</p>
-<div class="fragment"><div class="line">[tool_requires]</div>
-<div class="line">!cmake/*: cmake/[&gt;=3 &lt;4]</div>
-</div><!-- fragment --><p>This will force Conan to download and use a locally cached CMake 3 version, and is needed because some of the dependencies used by this project do not support CMake 4.</p>
-<h4><a class="anchor" id="autotoc_md45"></a>
 Clang workaround for grpc</h4>
 <p>If your compiler is clang, version 19 or later, or apple-clang, version 17 or later, you may encounter a compilation error while building the <code>grpc</code> dependency:</p>
 <div class="fragment"><div class="line">In file included from .../lib/promise/try_seq.h:26:</div>
@@ -248,7 +238,7 @@ Clang workaround for grpc</h4>
 </div><!-- fragment --><p>The workaround for this error is to add two lines to profile:</p>
 <div class="fragment"><div class="line">[conf]</div>
 <div class="line">tools.build:cxxflags=[&#39;-Wno-missing-template-arg-list-after-template-kw&#39;]</div>
-</div><!-- fragment --><h4><a class="anchor" id="autotoc_md46"></a>
+</div><!-- fragment --><h4><a class="anchor" id="autotoc_md45"></a>
 Workaround for gcc 12</h4>
 <p>If your compiler is gcc, version 12, and you have enabled <code>werr</code> option, you may encounter a compilation error such as:</p>
 <div class="fragment"><div class="line">/usr/include/c++/12/bits/char_traits.h:435:56: error: &#39;void* __builtin_memcpy(void*, const void*, long unsigned int)&#39; accessing 9223372036854775810 or more bytes at offsets [2, 9223372036854775807] and 1 may overlap up to 9223372036854775813 bytes at offset -3 [-Werror=restrict]</div>
@@ -258,7 +248,7 @@ Workaround for gcc 12</h4>
 </div><!-- fragment --><p>The workaround for this error is to add two lines to your profile:</p>
 <div class="fragment"><div class="line">[conf]</div>
 <div class="line">tools.build:cxxflags=[&#39;-Wno-restrict&#39;]</div>
-</div><!-- fragment --><h4><a class="anchor" id="autotoc_md47"></a>
+</div><!-- fragment --><h4><a class="anchor" id="autotoc_md46"></a>
 Workaround for clang 16</h4>
 <p>If your compiler is clang, version 16, you may encounter compilation error such as:</p>
 <div class="fragment"><div class="line">In file included from .../boost/beast/websocket/stream.hpp:2857:</div>
@@ -268,7 +258,7 @@ Workaround for clang 16</h4>
 </div><!-- fragment --><p>The workaround for this error is to add two lines to your profile:</p>
 <div class="fragment"><div class="line">[conf]</div>
 <div class="line">tools.build:cxxflags=[&#39;-DBOOST_ASIO_DISABLE_CONCEPTS&#39;]</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md48"></a>
+</div><!-- fragment --><h3><a class="anchor" id="autotoc_md47"></a>
 Build and Test</h3>
 <ol type="1">
 <li><p class="startli">Create a build directory and move into it.</p>
@@ -316,7 +306,7 @@ Build and Test</h3>
 <p class="startli">The location of <code>rippled</code> binary in your build directory depends on your CMake generator. Pass <code>--help</code> to see the rest of the command line options.</p>
 </li>
 </ol>
-<h4><a class="anchor" id="autotoc_md49"></a>
+<h4><a class="anchor" id="autotoc_md48"></a>
 Conan lockfile</h4>
 <p>To achieve reproducible dependencies, we use <a href="https://docs.conan.io/2/tutorial/versioning/lockfiles.html">Conan lockfile</a>.</p>
 <p>The <code>conan.lock</code> file in the repository contains a "snapshot" of the current dependencies. It is implicitly used when running <code>conan</code> commands, you don't need to specify it.</p>
@@ -334,7 +324,7 @@ Conan lockfile</h4>
 </div><!-- fragment --><blockquote class="doxtable">
 <p>&zwj;[!NOTE] If some dependencies are exclusive for some OS, you may need to run the last command for them adding <code>--profile:all &lt;PROFILE&gt;</code>. </p>
 </blockquote>
-<h2><a class="anchor" id="autotoc_md50"></a>
+<h2><a class="anchor" id="autotoc_md49"></a>
 Coverage report</h2>
 <p>The coverage report is intended for developers using compilers GCC or Clang (including Apple Clang). It is generated by the build target <code>coverage</code>, which is only enabled when the <code>coverage</code> option is set, e.g. with <code>--options coverage=True</code> in <code>conan</code> or <code>-Dcoverage=ON</code> variable in <code>cmake</code></p>
 <p>Prerequisites for the coverage report:</p>
@@ -347,12 +337,11 @@ Coverage report</h2>
 <p>A coverage report is created when the following steps are completed, in order:</p>
 <ol type="1">
 <li><code>rippled</code> binary built with instrumentation data, enabled by the <code>coverage</code> option mentioned above</li>
-<li>completed run of unit tests, which populates coverage capture data</li>
+<li>completed one or more run of the unit tests, which populates coverage capture data</li>
 <li>completed run of the <code>gcovr</code> tool (which internally invokes either <code>gcov</code> or <code>llvm-cov</code>) to assemble both instrumentation data and the coverage capture data into a coverage report</li>
 </ol>
-<p>The above steps are automated into a single target <code>coverage</code>. The instrumented <code>rippled</code> binary can also be used for regular development or testing work, at the cost of extra disk space utilization and a small performance hit (to store coverage capture). In case of a spurious failure of unit tests, it is possible to re-run the <code>coverage</code> target without rebuilding the <code>rippled</code> binary (since it is simply a dependency of the coverage report target). It is also possible to select only specific tests for the purpose of the coverage report, by setting the <code>coverage_test</code> variable in <code>cmake</code></p>
+<p>The last step of the above is automated into a single target <code>coverage</code>. The instrumented <code>rippled</code> binary can also be used for regular development or testing work, at the cost of extra disk space utilization and a small performance hit (to store coverage capture data). Since <code>rippled</code> binary is simply a dependency of the coverage report target, it is possible to re-run the <code>coverage</code> target without rebuilding the <code>rippled</code> binary. Note, running of the unit tests before the <code>coverage</code> target is left to the developer. Each such run will append to the coverage data collected in the build directory.</p>
 <p>The default coverage report format is <code>html-details</code>, but the user can override it to any of the formats listed in <code>Builds/CMake/CodeCoverage.cmake</code> by setting the <code>coverage_format</code> variable in <code>cmake</code>. It is also possible to generate more than one format at a time by setting the <code>coverage_extra_args</code> variable in <code>cmake</code>. The specific command line used to run the <code>gcovr</code> tool will be displayed if the <code>CODE_COVERAGE_VERBOSE</code> variable is set.</p>
-<p>By default, the code coverage tool runs parallel unit tests with <code>--unittest-jobs</code> set to the number of available CPU cores. This may cause spurious test errors on Apple. Developers can override the number of unit test jobs with the <code>coverage_test_parallelism</code> variable in <code>cmake</code>.</p>
 <p>Example use with some cmake variables set:</p>
 <div class="fragment"><div class="line">cd .build</div>
 <div class="line">conan install .. --output-folder . --build missing --settings build_type=Debug</div>
@@ -363,7 +352,7 @@ Coverage report</h2>
 <li>file named <code>coverage.</code>_extension_, with a suitable extension for the report format, or</li>
 <li>directory named <code>coverage</code>, with the <code>index.html</code> and other files inside, for the <code>html-details</code> or <code>html-nested</code> report formats.</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md51"></a>
+<h2><a class="anchor" id="autotoc_md50"></a>
 Options</h2>
 <table class="markdownTable">
 <tr class="markdownTableHead">
@@ -386,9 +375,9 @@ Options</h2>
 <td class="markdownTableBodyNone"><code>wextra</code>   </td><td class="markdownTableBodyNone">OFF   </td><td class="markdownTableBodyNone">Enable additional compilation warnings   </td></tr>
 </table>
 <p><a href="https://en.wikipedia.org/wiki/Unity_build">Unity builds</a> may be faster for the first build (at the cost of much more memory) since they concatenate sources into fewer translation units. Non-unity builds may be faster for incremental builds, and can be helpful for detecting <code>#include</code> omissions.</p>
-<h2><a class="anchor" id="autotoc_md52"></a>
+<h2><a class="anchor" id="autotoc_md51"></a>
 Troubleshooting</h2>
-<h3><a class="anchor" id="autotoc_md53"></a>
+<h3><a class="anchor" id="autotoc_md52"></a>
 Conan</h3>
 <p>After any updates or changes to dependencies, you may need to do the following:</p>
 <ol type="1">
@@ -403,13 +392,13 @@ Conan</h3>
 <li>Regenerate lockfile.</li>
 <li>Re-run conan install.</li>
 </ol>
-<h4><a class="anchor" id="autotoc_md54"></a>
+<h4><a class="anchor" id="autotoc_md53"></a>
 ERROR: Package not resolved</h4>
 <p>If you're seeing an error like &lsquo;ERROR: Package 'snappy/1.1.10&rsquo; not resolved: Unable to find 'snappy/1.1.10#968fef506ff261592ec30c574d4a7809%1756234314.246' in remotes.<code>, please add</code>xrplf<code>remote or re-run</code>conan export` for patched recipes.</p>
-<h3><a class="anchor" id="autotoc_md55"></a>
+<h3><a class="anchor" id="autotoc_md54"></a>
 &lt;tt&gt;protobuf/port_def.inc&lt;/tt&gt; file not found</h3>
 <p>If <code>cmake --build .</code> results in an error due to a missing a protobuf file, then you might have generated CMake files for a different <code>build_type</code> than the <code>CMAKE_BUILD_TYPE</code> you passed to Conan.</p>
-<div class="fragment"><div class="line">/rippled/.build/pb-xrpl.libpb/xrpl/proto/ripple.pb.h:10:10: fatal error: &#39;google/protobuf/port_def.inc&#39; file not found</div>
+<div class="fragment"><div class="line">/rippled/.build/pb-xrpl.libpb/xrpl/proto/xrpl.pb.h:10:10: fatal error: &#39;google/protobuf/port_def.inc&#39; file not found</div>
 <div class="line">   10 | #include &lt;google/protobuf/port_def.inc&gt;</div>
 <div class="line">      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</div>
 <div class="line">1 error generated.</div>
@@ -418,7 +407,7 @@ ERROR: Package not resolved</h4>
 <li>For conan install, pass <code>--settings build_type=Debug</code></li>
 <li>For cmake, pass <code>-DCMAKE_BUILD_TYPE=Debug</code></li>
 </ol>
-<h2><a class="anchor" id="autotoc_md56"></a>
+<h2><a class="anchor" id="autotoc_md55"></a>
 Add a Dependency</h2>
 <p>If you want to experiment with a new package, follow these steps:</p>
 <ol type="1">

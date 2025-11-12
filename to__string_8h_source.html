@@ -81,53 +81,34 @@ $(document).ready(function() { init_codefold(0); });
   <div class="headertitle"><div class="title">to_string.h</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">//------------------------------------------------------------------------------</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment">/*</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment">    This file is part of rippled: https://github.com/ripple/rippled</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment">    Copyright (c) 2012, 2013 Ripple Labs Inc.</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"></span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment">    Permission to use, copy, modify, and/or distribute this software for any</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="comment">    purpose  with  or without fee is hereby granted, provided that the above</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="comment">    copyright notice and this permission notice appear in all copies.</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="comment"></span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="comment">    THE  SOFTWARE IS PROVIDED &quot;AS IS&quot; AND THE AUTHOR DISCLAIMS ALL WARRANTIES</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="comment">    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="comment">    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment">    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="comment">    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="comment">    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="comment">    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="comment">*/</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="comment">//==============================================================================</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#ifndef RIPPLE_JSON_TO_STRING_H_INCLUDED</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#define RIPPLE_JSON_TO_STRING_H_INCLUDED</span></div>
+<div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef XRPL_JSON_TO_STRING_H_INCLUDED</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define XRPL_JSON_TO_STRING_H_INCLUDED</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/ostream.html">ostream</a>&gt;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceJson.html">Json</a> {</div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">class </span>Value;</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><a class="code hl_function" href="namespaceJson.html#a56632a388aed5264f3d4eda3c956ff6b">to_string</a>(Value <span class="keyword">const</span>&amp;);</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><a class="code hl_function" href="namespaceJson.html#a2ece5801eae2412e20b1efd0361a33fa">pretty</a>(Value <span class="keyword">const</span>&amp;);</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><a class="code hl_function" href="namespaceJson.html#ab82ffadfc56b76e6d77c85d49f02445e">operator&lt;&lt;</a>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp;, Value <span class="keyword">const</span>&amp; root);</div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/ostream.html">ostream</a>&gt;</span></div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &lt;<a class="codeRef" href="http://en.cppreference.com/w/cpp/header/string.html">string</a>&gt;</span></div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespaceJson.html">Json</a> {</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">class </span>Value;</div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><a class="code hl_function" href="namespaceJson.html#a56632a388aed5264f3d4eda3c956ff6b">to_string</a>(Value <span class="keyword">const</span>&amp;);</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><a class="code hl_function" href="namespaceJson.html#a2ece5801eae2412e20b1efd0361a33fa">pretty</a>(Value <span class="keyword">const</span>&amp;);</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp;</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><a class="code hl_function" href="namespaceJson.html#ab82ffadfc56b76e6d77c85d49f02445e">operator&lt;&lt;</a>(<a class="code hl_classRef" href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a>&amp;, Value <span class="keyword">const</span>&amp; root);</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>}  <span class="comment">// namespace Json</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#endif  </span><span class="comment">// JSON_TO_STRING_H_INCLUDED</span></div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>}  <span class="comment">// namespace Json</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#endif  </span><span class="comment">// JSON_TO_STRING_H_INCLUDED</span></div>
 <div class="ttc" id="abasic_ostream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/io/basic_ostream.html">std::ostream</a></div></div>
 <div class="ttc" id="abasic_string_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a></div></div>
-<div class="ttc" id="anamespaceJson_html"><div class="ttname"><a href="namespaceJson.html">Json</a></div><div class="ttdoc">JSON (JavaScript Object Notation).</div><div class="ttdef"><b>Definition</b> <a href="json__errors_8h_source.html#l00025">json_errors.h:25</a></div></div>
-<div class="ttc" id="anamespaceJson_html_a2ece5801eae2412e20b1efd0361a33fa"><div class="ttname"><a href="namespaceJson.html#a2ece5801eae2412e20b1efd0361a33fa">Json::pretty</a></div><div class="ttdeci">std::string pretty(Value const &amp;)</div><div class="ttdoc">Writes a Json::Value to an std::string.</div><div class="ttdef"><b>Definition</b> <a href="to__string_8cpp_source.html#l00034">to_string.cpp:34</a></div></div>
-<div class="ttc" id="anamespaceJson_html_a56632a388aed5264f3d4eda3c956ff6b"><div class="ttname"><a href="namespaceJson.html#a56632a388aed5264f3d4eda3c956ff6b">Json::to_string</a></div><div class="ttdeci">std::string to_string(Value const &amp;)</div><div class="ttdoc">Writes a Json::Value to an std::string.</div><div class="ttdef"><b>Definition</b> <a href="to__string_8cpp_source.html#l00028">to_string.cpp:28</a></div></div>
-<div class="ttc" id="anamespaceJson_html_ab82ffadfc56b76e6d77c85d49f02445e"><div class="ttname"><a href="namespaceJson.html#ab82ffadfc56b76e6d77c85d49f02445e">Json::operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;, Value const &amp;root)</div><div class="ttdoc">Output using the StyledStreamWriter.</div><div class="ttdef"><b>Definition</b> <a href="json__writer_8cpp_source.html#l00728">json_writer.cpp:729</a></div></div>
+<div class="ttc" id="anamespaceJson_html"><div class="ttname"><a href="namespaceJson.html">Json</a></div><div class="ttdoc">JSON (JavaScript Object Notation).</div><div class="ttdef"><b>Definition</b> <a href="json__errors_8h_source.html#l00006">json_errors.h:6</a></div></div>
+<div class="ttc" id="anamespaceJson_html_a2ece5801eae2412e20b1efd0361a33fa"><div class="ttname"><a href="namespaceJson.html#a2ece5801eae2412e20b1efd0361a33fa">Json::pretty</a></div><div class="ttdeci">std::string pretty(Value const &amp;)</div><div class="ttdoc">Writes a Json::Value to an std::string.</div><div class="ttdef"><b>Definition</b> <a href="to__string_8cpp_source.html#l00015">to_string.cpp:15</a></div></div>
+<div class="ttc" id="anamespaceJson_html_a56632a388aed5264f3d4eda3c956ff6b"><div class="ttname"><a href="namespaceJson.html#a56632a388aed5264f3d4eda3c956ff6b">Json::to_string</a></div><div class="ttdeci">std::string to_string(Value const &amp;)</div><div class="ttdoc">Writes a Json::Value to an std::string.</div><div class="ttdef"><b>Definition</b> <a href="to__string_8cpp_source.html#l00009">to_string.cpp:9</a></div></div>
+<div class="ttc" id="anamespaceJson_html_ab82ffadfc56b76e6d77c85d49f02445e"><div class="ttname"><a href="namespaceJson.html#ab82ffadfc56b76e6d77c85d49f02445e">Json::operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;, Value const &amp;root)</div><div class="ttdoc">Output using the StyledStreamWriter.</div><div class="ttdef"><b>Definition</b> <a href="json__writer_8cpp_source.html#l00709">json_writer.cpp:710</a></div></div>
 <div class="ttc" id="aostream_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/ostream.html">ostream</a></div></div>
 <div class="ttc" id="astring_html"><div class="ttname"><a href="http://en.cppreference.com/w/cpp/header/string.html">string</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

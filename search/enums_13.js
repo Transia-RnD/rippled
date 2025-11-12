@@ -15,8 +15,9 @@ var searchData=
   ['triggerreason_12',['TriggerReason',['../classripple_1_1InboundLedger.html#a6e9a443c8f271522e38916b0f673f07c',1,'ripple::InboundLedger']]],
   ['truncateshares_13',['TruncateShares',['../namespaceripple.html#ac52c3ab9078d3e039b86c985d50be183',1,'ripple']]],
   ['trustflag_14',['TrustFlag',['../namespaceripple_1_1test.html#acf39cc44acdd6b5089f2076897fa3911',1,'ripple::test']]],
-  ['txnsql_15',['TxnSql',['../namespaceripple.html#aae5869c83af3223f1d21900ff39134fe',1,'ripple']]],
-  ['txsearched_16',['TxSearched',['../namespaceripple.html#a7ffb3f54d739bb8f967d695f08fb66cc',1,'ripple']]],
-  ['txtype_17',['TxType',['../namespaceripple.html#a2ce3074a39ea65126b82fc59baf43126',1,'ripple']]],
-  ['type_18',['type',['../structripple_1_1RPC_1_1Status.html#a91ae7a2e1d35abcc49f48d69b5d63541',1,'ripple::RPC::Status::Type'],['../classripple_1_1STPathElement.html#add7ef24fbb39a048d81cdfb65aac5ae3',1,'ripple::STPathElement::Type'],['../classripple_1_1SeqProxy.html#a5f784f2f26fb8ede1c7386011509bead',1,'ripple::SeqProxy::Type'],['../namespaceripple_1_1cryptoconditions.html#aa3107e15003c13674a275abb96856ccd',1,'ripple::cryptoconditions::Type']]]
+  ['txaccount_15',['TxAccount',['../classripple_1_1test_1_1Invariants__test.html#a8cafc3a4d6dff5e31f61b093956630e5',1,'ripple::test::Invariants_test']]],
+  ['txnsql_16',['TxnSql',['../namespaceripple.html#aae5869c83af3223f1d21900ff39134fe',1,'ripple']]],
+  ['txsearched_17',['TxSearched',['../namespaceripple.html#a7ffb3f54d739bb8f967d695f08fb66cc',1,'ripple']]],
+  ['txtype_18',['TxType',['../namespaceripple.html#a2ce3074a39ea65126b82fc59baf43126',1,'ripple']]],
+  ['type_19',['type',['../structripple_1_1RPC_1_1Status.html#a91ae7a2e1d35abcc49f48d69b5d63541',1,'ripple::RPC::Status::Type'],['../classripple_1_1STPathElement.html#add7ef24fbb39a048d81cdfb65aac5ae3',1,'ripple::STPathElement::Type'],['../classripple_1_1SeqProxy.html#a5f784f2f26fb8ede1c7386011509bead',1,'ripple::SeqProxy::Type'],['../namespaceripple_1_1cryptoconditions.html#aa3107e15003c13674a275abb96856ccd',1,'ripple::cryptoconditions::Type']]]
 ];

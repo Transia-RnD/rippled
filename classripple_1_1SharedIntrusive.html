@@ -203,7 +203,7 @@ Friends</h2></td></tr>
 class ripple::SharedIntrusive&lt; T &gt;</div><p>A shared intrusive pointer class that supports weak pointers. </p>
 <p>This is meant to be used for SHAMapInnerNodes, but may be useful for other cases. Since the reference counts are stored on the pointee, the pointee is not destroyed until both the strong <em>and</em> weak pointer counts go to zero. When the strong pointer count goes to zero, the "partialDestructor" is called. This can be used to destroy as much of the object as possible while still retaining the reference counts. For example, for SHAMapInnerNodes the children may be reset in that function. Note that <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::shared_poiner</a> WILL run the destructor when the strong count reaches zero, but may not free the memory used by the object until the weak count reaches zero. In rippled, we typically allocate shared pointers with the <code>make_shared</code> function. When that is used, the memory is not reclaimed until the weak count reaches zero. </p>
 
-<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00087">87</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00068">68</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ae074f4eb5bfaeb45d32b7a0c9ffdde89" name="ae074f4eb5bfaeb45d32b7a0c9ffdde89"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae074f4eb5bfaeb45d32b7a0c9ffdde89">&#9670;&#160;</a></span>SharedIntrusive() <span class="overload">[1/10]</span></h2>
@@ -956,7 +956,7 @@ template&lt;class TT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00196">196</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00177">177</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
 
 </div>
 </div>
@@ -984,7 +984,7 @@ template&lt;class TT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00199">199</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00180">180</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
 
 </div>
 </div>
@@ -1012,7 +1012,7 @@ template&lt;class TT &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00202">202</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00183">183</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
 
 </div>
 </div>
@@ -1047,7 +1047,7 @@ template&lt;class TT , class... Args&gt; </div>
 <p>Create a shared intrusive pointer. </p>
 <p>Note: unlike <a class="elRef" href="http://en.cppreference.com/w/cpp/memory/shared_ptr.html">std::shared_ptr</a>, where there is an advantage of allocating the pointer and control block together, there is no benefit for intrusive pointers. </p>
 
-<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00467">467</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00448">448</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
 
 </div>
 </div>
@@ -1076,7 +1076,7 @@ template&lt;class T &gt; </div>
 
 <p>pointer to the type with an intrusive count </p>
 
-<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00231">231</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="IntrusivePointer_8h_source.html#l00212">212</a> of file <a class="el" href="IntrusivePointer_8h_source.html">IntrusivePointer.h</a>.</p>
 
 </div>
 </div>

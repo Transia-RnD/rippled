@@ -75,6 +75,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pri-attribs">Private Attributes</a> &#124;
 <a href="classripple_1_1NodeStore_1_1NuDBFactory-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">ripple::NodeStore::NuDBFactory Class Reference</div></div>
 </div><!--header-->
@@ -94,18 +95,18 @@ Collaboration diagram for ripple::NodeStore::NuDBFactory:</div>
 <div class="dyncontent">
 <div class="center"><img src="classripple_1_1NodeStore_1_1NuDBFactory__coll__graph.png" border="0" usemap="#aripple_1_1NodeStore_1_1NuDBFactory_coll__map" alt="Collaboration graph"/></div>
 <map name="aripple_1_1NodeStore_1_1NuDBFactory_coll__map" id="aripple_1_1NodeStore_1_1NuDBFactory_coll__map">
-<area shape="rect" title=" " alt="" coords="5,93,148,133"/>
+<area shape="rect" title=" " alt="" coords="88,108,231,148"/>
 <area shape="rect" href="classripple_1_1NodeStore_1_1Factory.html" title="Base class for backend factories." alt="" coords="5,5,148,45"/>
-<area shape="poly" title=" " alt="" coords="79,59,79,93,74,93,74,59"/>
+<area shape="poly" title=" " alt="" coords="103,54,146,106,142,110,99,58"/>
+<area shape="rect" href="classripple_1_1NodeStore_1_1Manager.html" title="Singleton for managing NodeStore factories and back ends." alt="" coords="172,5,315,45"/>
+<area shape="poly" title=" " alt="" coords="221,58,177,110,173,106,217,54"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ae58d42a9fdd839a64936d84187817578" id="r_ae58d42a9fdd839a64936d84187817578"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1NodeStore_1_1NuDBFactory.html#ae58d42a9fdd839a64936d84187817578">NuDBFactory</a> ()</td></tr>
-<tr class="separator:ae58d42a9fdd839a64936d84187817578"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a64293852b986c017062e4e0fb36808d6" id="r_a64293852b986c017062e4e0fb36808d6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1NodeStore_1_1NuDBFactory.html#a64293852b986c017062e4e0fb36808d6">~NuDBFactory</a> () override</td></tr>
-<tr class="separator:a64293852b986c017062e4e0fb36808d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa63f711acd819e0719e45341bbcf963f" id="r_aa63f711acd819e0719e45341bbcf963f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1NodeStore_1_1NuDBFactory.html#aa63f711acd819e0719e45341bbcf963f">NuDBFactory</a> (<a class="el" href="classripple_1_1NodeStore_1_1Manager.html">Manager</a> &amp;manager)</td></tr>
+<tr class="separator:aa63f711acd819e0719e45341bbcf963f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acacec80114639c2972dd5431df852d15" id="r_acacec80114639c2972dd5431df852d15"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/string/basic_string.html">std::string</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1NodeStore_1_1NuDBFactory.html#acacec80114639c2972dd5431df852d15">getName</a> () const override</td></tr>
 <tr class="memdesc:acacec80114639c2972dd5431df852d15"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve the name of this factory.  <br /></td></tr>
 <tr class="separator:acacec80114639c2972dd5431df852d15"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -115,32 +116,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a0f37ad0f3ae7d6c4e857d94b812e5e95" id="r_a0f37ad0f3ae7d6c4e857d94b812e5e95"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/memory/unique_ptr.html">std::unique_ptr</a>&lt; <a class="el" href="classripple_1_1NodeStore_1_1Backend.html">Backend</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1NodeStore_1_1NuDBFactory.html#a0f37ad0f3ae7d6c4e857d94b812e5e95">createInstance</a> (size_t keyBytes, <a class="el" href="classripple_1_1Section.html">Section</a> const &amp;keyValues, <a class="elRef" href="http://en.cppreference.com/w/cpp/types/size_t.html">std::size_t</a> <a class="el" href="namespaceripple.html#a1b38e742ac7fe4c3a80a397e06b83dcbaa62741f39e8a8d667ccccd0642c08746">burstSize</a>, <a class="el" href="classripple_1_1NodeStore_1_1Scheduler.html">Scheduler</a> &amp;scheduler, nudb::context &amp;context, <a class="el" href="classbeast_1_1Journal.html">beast::Journal</a> journal) override</td></tr>
 <tr class="memdesc:a0f37ad0f3ae7d6c4e857d94b812e5e95"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an instance of this factory's backend.  <br /></td></tr>
 <tr class="separator:a0f37ad0f3ae7d6c4e857d94b812e5e95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
+Private Attributes</h2></td></tr>
+<tr class="memitem:a1b3e6c98fa8265e434b47062b78504eb" id="r_a1b3e6c98fa8265e434b47062b78504eb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classripple_1_1NodeStore_1_1Manager.html">Manager</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1NodeStore_1_1NuDBFactory.html#a1b3e6c98fa8265e434b47062b78504eb">manager_</a></td></tr>
+<tr class="separator:a1b3e6c98fa8265e434b47062b78504eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00366">366</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00408">408</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ae58d42a9fdd839a64936d84187817578" name="ae58d42a9fdd839a64936d84187817578"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae58d42a9fdd839a64936d84187817578">&#9670;&#160;</a></span>NuDBFactory()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">ripple::NodeStore::NuDBFactory::NuDBFactory </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00369">369</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
-
-</div>
-</div>
-<a id="a64293852b986c017062e4e0fb36808d6" name="a64293852b986c017062e4e0fb36808d6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a64293852b986c017062e4e0fb36808d6">&#9670;&#160;</a></span>~NuDBFactory()</h2>
+<a id="aa63f711acd819e0719e45341bbcf963f" name="aa63f711acd819e0719e45341bbcf963f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa63f711acd819e0719e45341bbcf963f">&#9670;&#160;</a></span>NuDBFactory()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -149,20 +136,21 @@ Public Member Functions</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">ripple::NodeStore::NuDBFactory::~NuDBFactory </td>
+          <td class="memname">ripple::NodeStore::NuDBFactory::NuDBFactory </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1NodeStore_1_1Manager.html">Manager</a> &amp;&#160;</td>
+          <td class="paramname"><em>manager</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">override</span></span>  </td>
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00374">374</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00414">414</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -194,7 +182,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Factory.html#a31f0b64f00ea5caba4a992494382e827">ripple::NodeStore::Factory</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00380">380</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00420">420</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -264,7 +252,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Implements <a class="el" href="classripple_1_1NodeStore_1_1Factory.html#ab09ead0fbc88a5b1624cfefc6c9e4f7c">ripple::NodeStore::Factory</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00386">386</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00426">426</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
 
 </div>
 </div>
@@ -341,7 +329,32 @@ Public Member Functions</h2></td></tr>
 
 <p>Reimplemented from <a class="el" href="classripple_1_1NodeStore_1_1Factory.html#a881d753bb4f6017085271c3e16db2714">ripple::NodeStore::Factory</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00398">398</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00438">438</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Data Documentation</h2>
+<a id="a1b3e6c98fa8265e434b47062b78504eb" name="a1b3e6c98fa8265e434b47062b78504eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b3e6c98fa8265e434b47062b78504eb">&#9670;&#160;</a></span>manager_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classripple_1_1NodeStore_1_1Manager.html">Manager</a>&amp; ripple::NodeStore::NuDBFactory::manager_</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="NuDBFactory_8cpp_source.html#l00411">411</a> of file <a class="el" href="NuDBFactory_8cpp_source.html">NuDBFactory.cpp</a>.</p>
 
 </div>
 </div>

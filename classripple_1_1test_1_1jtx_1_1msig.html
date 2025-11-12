@@ -76,6 +76,7 @@ $(function() {
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="classripple_1_1test_1_1jtx_1_1msig-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">ripple::test::jtx::msig Class Reference</div></div>
 </div><!--header-->
@@ -90,52 +91,76 @@ Collaboration diagram for ripple::test::jtx::msig:</div>
 <div class="dyncontent">
 <div class="center"><img src="classripple_1_1test_1_1jtx_1_1msig__coll__graph.png" border="0" usemap="#aripple_1_1test_1_1jtx_1_1msig_coll__map" alt="Collaboration graph"/></div>
 <map name="aripple_1_1test_1_1jtx_1_1msig_coll__map" id="aripple_1_1test_1_1jtx_1_1msig_coll__map">
-<area shape="rect" title="Set a multisignature on a JTx." alt="" coords="1661,189,1819,214"/>
-<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/container/vector.html" title=" " alt="" coords="1419,181,1561,221"/>
-<area shape="poly" title=" " alt="" coords="1575,199,1661,199,1661,204,1575,204"/>
-<area shape="rect" href="structripple_1_1test_1_1jtx_1_1Reg.html" title=" " alt="" coords="1113,189,1263,214"/>
-<area shape="poly" title=" " alt="" coords="1277,199,1418,199,1418,204,1277,204"/>
-<area shape="rect" href="classripple_1_1test_1_1jtx_1_1Account.html" title="Immutable cryptographic account descriptor." alt="" coords="815,129,941,169"/>
-<area shape="poly" title=" " alt="" coords="924,174,952,187,982,197,1048,206,1113,206,1113,212,1048,212,981,203,950,192,921,179"/>
-<area shape="poly" title=" " alt="" coords="853,113,862,106,878,103,892,105,901,111,905,120,904,129,898,129,900,120,897,114,890,110,878,108,864,110,857,117"/>
-<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/container/unordered_map.html" title=" " alt="" coords="1071,61,1305,131"/>
-<area shape="poly" title=" " alt="" coords="954,128,981,123,1070,108,1071,113,982,128,955,133"/>
-<area shape="poly" title=" " alt="" coords="1074,137,1047,143,993,149,941,152,941,147,993,144,1046,137,1073,132"/>
-<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/utility/pair.html" title=" " alt="" coords="799,19,957,59"/>
-<area shape="poly" title=" " alt="" coords="972,53,1071,72,1070,77,971,58"/>
-<area shape="rect" title=" " alt="" coords="571,18,609,43"/>
-<area shape="poly" title=" " alt="" coords="623,29,798,34,798,39,623,34"/>
-<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/string/basic_string.html" title=" " alt="" coords="547,137,633,162"/>
-<area shape="poly" title=" " alt="" coords="647,147,815,147,815,152,647,152"/>
-<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/string/basic_string.html" title=" " alt="" coords="236,156,375,196"/>
-<area shape="poly" title=" " alt="" coords="388,166,546,151,547,156,389,171"/>
-<area shape="rect" href="classripple_1_1PublicKey.html" title="A public key." alt="" coords="525,186,655,211"/>
-<area shape="poly" title=" " alt="" coords="668,184,774,167,815,159,816,164,775,172,669,190"/>
-<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/types/size_t.html" title=" " alt="" coords="261,90,349,115"/>
-<area shape="poly" title=" " alt="" coords="349,118,414,144,487,171,532,183,531,188,486,176,412,149,347,123"/>
-<area shape="rect" href="classripple_1_1base__uint.html" title=" " alt="" coords="487,68,693,108"/>
-<area shape="poly" title=" " alt="" coords="363,97,486,91,486,96,363,102"/>
-<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/types/integer.html" title=" " alt="" coords="258,231,353,257"/>
-<area shape="poly" title=" " alt="" coords="366,232,524,206,525,212,367,237"/>
-<area shape="rect" href="classripple_1_1SecretKey.html" title="A secret key." alt="" coords="524,238,656,263"/>
-<area shape="poly" title=" " alt="" coords="367,248,413,252,524,252,524,257,413,257,366,254"/>
-<area shape="poly" title=" " alt="" coords="654,232,693,221,734,211,774,198,839,167,841,172,776,202,735,216,694,227,655,237"/>
-<area shape="poly" title=" " alt="" coords="707,101,775,115,818,127,817,132,774,120,706,106"/>
-<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/container/array.html" title=" " alt="" coords="221,7,389,47"/>
-<area shape="poly" title=" " alt="" coords="403,45,497,65,496,71,402,50"/>
-<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/types/integer.html" title=" " alt="" coords="5,14,108,39"/>
-<area shape="poly" title=" " alt="" coords="122,24,221,24,221,29,122,29"/>
+<area shape="rect" title="Set a multisignature on a JTx." alt="" coords="1743,231,1900,257"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/container/vector.html" title=" " alt="" coords="1500,277,1643,317"/>
+<area shape="poly" title=" " alt="" coords="1656,277,1760,254,1761,259,1657,282"/>
+<area shape="rect" href="structripple_1_1test_1_1jtx_1_1Reg.html" title=" " alt="" coords="1194,371,1345,397"/>
+<area shape="poly" title=" " alt="" coords="1327,365,1500,315,1501,320,1329,370"/>
+<area shape="rect" href="classripple_1_1test_1_1jtx_1_1Account.html" title="Immutable cryptographic account descriptor." alt="" coords="830,321,955,361"/>
+<area shape="poly" title=" " alt="" coords="933,367,963,384,997,397,1054,407,1113,407,1168,402,1215,394,1216,399,1169,407,1113,413,1054,412,995,403,961,389,930,371"/>
+<area shape="poly" title=" " alt="" coords="867,305,876,298,893,295,907,297,917,303,921,312,920,321,914,321,916,312,913,306,905,302,893,300,878,303,870,309"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/container/unordered_map.html" title=" " alt="" coords="1152,261,1387,331"/>
+<area shape="poly" title=" " alt="" coords="968,327,996,323,1151,305,1152,310,996,328,969,332"/>
+<area shape="poly" title=" " alt="" coords="1158,337,1128,343,1038,350,955,349,956,343,1038,345,1128,337,1157,331"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/utility/pair.html" title=" " alt="" coords="813,219,972,259"/>
+<area shape="poly" title=" " alt="" coords="987,250,1152,276,1151,281,986,255"/>
+<area shape="rect" title=" " alt="" coords="571,226,609,251"/>
+<area shape="poly" title=" " alt="" coords="623,236,813,236,813,241,623,241"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/string/basic_string.html" title=" " alt="" coords="547,42,633,67"/>
+<area shape="poly" title=" " alt="" coords="627,71,718,116,739,122,757,124,774,129,791,142,802,159,808,175,807,205,806,236,808,252,816,269,837,297,863,319,859,323,833,301,811,272,803,253,800,236,802,205,802,176,798,161,787,146,772,133,756,129,738,127,716,121,625,76"/>
+<area shape="rect" href="classripple_1_1SField.html" title="Identifies fields." alt="" coords="839,114,946,139"/>
+<area shape="poly" title=" " alt="" coords="648,57,716,66,790,81,831,96,867,112,865,116,829,101,789,87,715,71,647,62"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/container/unordered_map.html" title=" " alt="" coords="1193,9,1345,63"/>
+<area shape="poly" title=" " alt="" coords="647,44,738,33,858,22,992,15,1128,17,1194,23,1193,29,1128,23,992,21,858,27,739,38,647,49"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/string/basic_string.html" title=" " alt="" coords="236,35,375,75"/>
+<area shape="poly" title=" " alt="" coords="388,52,546,52,546,57,388,57"/>
+<area shape="rect" href="classripple_1_1PublicKey.html" title="A public key." alt="" coords="525,279,655,305"/>
+<area shape="poly" title=" " alt="" coords="670,301,790,320,830,327,829,332,789,325,669,306"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/types/size_t.html" title=" " alt="" coords="261,361,349,386"/>
+<area shape="poly" title=" " alt="" coords="363,368,412,359,461,340,473,328,485,315,523,300,525,305,488,320,477,332,464,345,414,364,364,373"/>
+<area shape="rect" href="classripple_1_1base__uint.html" title=" " alt="" coords="487,400,693,440"/>
+<area shape="poly" title=" " alt="" coords="343,390,377,405,414,416,487,423,486,429,413,421,375,410,341,395"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/types/integer.html" title=" " alt="" coords="258,290,353,315"/>
+<area shape="poly" title=" " alt="" coords="367,298,525,292,525,297,367,303"/>
+<area shape="rect" href="classripple_1_1SecretKey.html" title="A secret key." alt="" coords="524,329,656,354"/>
+<area shape="poly" title=" " alt="" coords="367,308,524,330,523,335,367,314"/>
+<area shape="poly" title=" " alt="" coords="670,339,830,339,830,344,670,344"/>
+<area shape="poly" title=" " alt="" coords="680,394,829,355,830,360,682,399"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/container/array.html" title=" " alt="" coords="221,445,389,485"/>
+<area shape="poly" title=" " alt="" coords="403,467,462,461,504,451,542,438,544,443,505,456,463,467,403,472"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/types/integer.html" title=" " alt="" coords="5,453,108,478"/>
+<area shape="poly" title=" " alt="" coords="122,463,221,463,221,468,122,468"/>
+<area shape="poly" title=" " alt="" coords="935,142,997,163,1100,184,1206,201,1415,224,1601,236,1742,241,1742,246,1601,242,1414,230,1205,206,1099,189,995,168,933,147"/>
+<area shape="rect" target="_parent" href="http://en.cppreference.com/w/cpp/container/unordered_map.html" title=" " alt="" coords="1193,111,1345,166"/>
+<area shape="poly" title=" " alt="" coords="945,141,996,152,1047,156,1099,156,1193,148,1193,153,1099,161,1047,161,996,157,943,146"/>
+<area shape="poly" title=" " alt="" coords="959,114,1040,100,1127,80,1192,61,1194,66,1129,85,1041,105,960,119"/>
+<area shape="rect" href="classJson_1_1StaticString.html" title="Lightweight wrapper to tag static string." alt="" coords="524,147,656,173"/>
+<area shape="poly" title=" " alt="" coords="670,162,729,162,789,156,825,148,858,137,860,142,827,153,790,161,729,167,670,167"/>
+<area shape="poly" title=" " alt="" coords="1179,138,946,131,946,126,1180,133"/>
+<area shape="poly" title=" " alt="" coords="1180,39,1090,47,1043,55,997,68,949,91,912,116,909,112,947,86,995,63,1041,50,1089,41,1179,33"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
+<tr class="memitem:a25b382bd17449a4cfade96ed98470256" id="r_a25b382bd17449a4cfade96ed98470256"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#a25b382bd17449a4cfade96ed98470256">msig</a> (<a class="el" href="classripple_1_1SField.html">SField</a> const *subField_, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a> &gt; signers_)</td></tr>
+<tr class="separator:a25b382bd17449a4cfade96ed98470256"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77da42d0efeda37d15fab0384f495062" id="r_a77da42d0efeda37d15fab0384f495062"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#a77da42d0efeda37d15fab0384f495062">msig</a> (<a class="el" href="classripple_1_1SField.html">SField</a> const &amp;subField_, <a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a> &gt; signers_)</td></tr>
+<tr class="separator:a77da42d0efeda37d15fab0384f495062"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e6d8d440d0defa5c1314649fc6eaefd" id="r_a9e6d8d440d0defa5c1314649fc6eaefd"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#a9e6d8d440d0defa5c1314649fc6eaefd">msig</a> (<a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a> &gt; signers_)</td></tr>
 <tr class="separator:a9e6d8d440d0defa5c1314649fc6eaefd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab771e4b0e1fc78cc70e9592b54691aaa" id="r_ab771e4b0e1fc78cc70e9592b54691aaa"><td class="memTemplParams" colspan="2">template&lt;class AccountType , class... Accounts&gt; <br />
+<tr class="memitem:a7be615e670c9f5fb592998b1ebc29837" id="r_a7be615e670c9f5fb592998b1ebc29837"><td class="memTemplParams" colspan="2">template&lt;class AccountType , class... Accounts&gt; <br />
 requires <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::convertible_to</a>&lt;AccountType, <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a>&gt;</td></tr>
-<tr class="memitem:ab771e4b0e1fc78cc70e9592b54691aaa"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#ab771e4b0e1fc78cc70e9592b54691aaa">msig</a> (AccountType &amp;&amp;a0, Accounts &amp;&amp;... aN)</td></tr>
-<tr class="separator:ab771e4b0e1fc78cc70e9592b54691aaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7be615e670c9f5fb592998b1ebc29837"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#a7be615e670c9f5fb592998b1ebc29837">msig</a> (<a class="el" href="classripple_1_1SField.html">SField</a> const *subField_, AccountType &amp;&amp;a0, Accounts &amp;&amp;... aN)</td></tr>
+<tr class="separator:a7be615e670c9f5fb592998b1ebc29837"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45ee175999804431c27fc90491ee788a" id="r_a45ee175999804431c27fc90491ee788a"><td class="memTemplParams" colspan="2">template&lt;class AccountType , class... Accounts&gt; <br />
+requires <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::convertible_to</a>&lt;AccountType, <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a>&gt;</td></tr>
+<tr class="memitem:a45ee175999804431c27fc90491ee788a"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#a45ee175999804431c27fc90491ee788a">msig</a> (<a class="el" href="classripple_1_1SField.html">SField</a> const &amp;subField_, AccountType &amp;&amp;a0, Accounts &amp;&amp;... aN)</td></tr>
+<tr class="separator:a45ee175999804431c27fc90491ee788a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a015c9deda6f58cd08a053d5cda424fad" id="r_a015c9deda6f58cd08a053d5cda424fad"><td class="memTemplParams" colspan="2">template&lt;class AccountType , class... Accounts&gt; <br />
+requires ( <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::convertible_to</a>&lt;AccountType, <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a>&gt; &amp;&amp; !<a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same_v</a>&lt;AccountType, <a class="el" href="classripple_1_1SField.html">SField</a>*&gt;)</td></tr>
+<tr class="memitem:a015c9deda6f58cd08a053d5cda424fad"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#a015c9deda6f58cd08a053d5cda424fad">msig</a> (AccountType &amp;&amp;a0, Accounts &amp;&amp;... aN)</td></tr>
+<tr class="separator:a015c9deda6f58cd08a053d5cda424fad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57e487aed9cc8d8ee19abbf7eca12a0d" id="r_a57e487aed9cc8d8ee19abbf7eca12a0d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#a57e487aed9cc8d8ee19abbf7eca12a0d">operator()</a> (<a class="el" href="classripple_1_1test_1_1jtx_1_1Env.html">Env</a> &amp;, <a class="el" href="structripple_1_1test_1_1jtx_1_1JTx.html">JTx</a> &amp;jt) const</td></tr>
 <tr class="separator:a57e487aed9cc8d8ee19abbf7eca12a0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -143,14 +168,83 @@ requires <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.h
 Public Attributes</h2></td></tr>
 <tr class="memitem:afffcff9f75ab75ca4833827e90547628" id="r_afffcff9f75ab75ca4833827e90547628"><td class="memItemLeft" align="right" valign="top"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#afffcff9f75ab75ca4833827e90547628">signers</a></td></tr>
 <tr class="separator:afffcff9f75ab75ca4833827e90547628"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b8cca0f8b921fbfc56a5b126f354dcc" id="r_a1b8cca0f8b921fbfc56a5b126f354dcc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classripple_1_1SField.html">SField</a> const  *const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#a1b8cca0f8b921fbfc56a5b126f354dcc">subField</a> = nullptr</td></tr>
+<tr class="memdesc:a1b8cca0f8b921fbfc56a5b126f354dcc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alternative transaction object field in which to place the signer list.  <br /></td></tr>
+<tr class="separator:a1b8cca0f8b921fbfc56a5b126f354dcc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-attribs" name="pub-static-attribs"></a>
+Static Public Attributes</h2></td></tr>
+<tr class="memitem:a87a93160b10f5132ac3919134caa42b8" id="r_a87a93160b10f5132ac3919134caa42b8"><td class="memItemLeft" align="right" valign="top">static constexpr <a class="el" href="classripple_1_1SField.html">SField</a> *const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classripple_1_1test_1_1jtx_1_1msig.html#a87a93160b10f5132ac3919134caa42b8">topLevel</a> = nullptr</td></tr>
+<tr class="memdesc:a87a93160b10f5132ac3919134caa42b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Used solely as a convenience placeholder for ctors that do <em>not</em> specify a subfield.  <br /></td></tr>
+<tr class="separator:a87a93160b10f5132ac3919134caa42b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Set a multisignature on a <a class="el" href="structripple_1_1test_1_1jtx_1_1JTx.html" title="Execution context for applying a JSON transaction.">JTx</a>. </p>
 
-<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00066">66</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00047">47</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a25b382bd17449a4cfade96ed98470256" name="a25b382bd17449a4cfade96ed98470256"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25b382bd17449a4cfade96ed98470256">&#9670;&#160;</a></span>msig() <span class="overload">[1/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ripple::test::jtx::msig::msig </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1SField.html">SField</a> const *&#160;</td>
+          <td class="paramname"><em>subField_</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a> &gt;&#160;</td>
+          <td class="paramname"><em>signers_</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00060">60</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
+
+</div>
+</div>
+<a id="a77da42d0efeda37d15fab0384f495062" name="a77da42d0efeda37d15fab0384f495062"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77da42d0efeda37d15fab0384f495062">&#9670;&#160;</a></span>msig() <span class="overload">[2/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ripple::test::jtx::msig::msig </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1SField.html">SField</a> const &amp;&#160;</td>
+          <td class="paramname"><em>subField_</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="elRef" href="http://en.cppreference.com/w/cpp/container/vector.html">std::vector</a>&lt; <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a> &gt;&#160;</td>
+          <td class="paramname"><em>signers_</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00066">66</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
+
+</div>
+</div>
 <a id="a9e6d8d440d0defa5c1314649fc6eaefd" name="a9e6d8d440d0defa5c1314649fc6eaefd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9e6d8d440d0defa5c1314649fc6eaefd">&#9670;&#160;</a></span>msig() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a9e6d8d440d0defa5c1314649fc6eaefd">&#9670;&#160;</a></span>msig() <span class="overload">[3/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -169,14 +263,108 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
-<a id="ab771e4b0e1fc78cc70e9592b54691aaa" name="ab771e4b0e1fc78cc70e9592b54691aaa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab771e4b0e1fc78cc70e9592b54691aaa">&#9670;&#160;</a></span>msig() <span class="overload">[2/2]</span></h2>
+<a id="a7be615e670c9f5fb592998b1ebc29837" name="a7be615e670c9f5fb592998b1ebc29837"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7be615e670c9f5fb592998b1ebc29837">&#9670;&#160;</a></span>msig() <span class="overload">[4/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;class AccountType , class... Accounts&gt; <br />
 requires <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::convertible_to</a>&lt;AccountType, <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a>&gt;</div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ripple::test::jtx::msig::msig </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1SField.html">SField</a> const *&#160;</td>
+          <td class="paramname"><em>subField_</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">AccountType &amp;&amp;&#160;</td>
+          <td class="paramname"><em>a0</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Accounts &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>aN</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00077">77</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
+
+</div>
+</div>
+<a id="a45ee175999804431c27fc90491ee788a" name="a45ee175999804431c27fc90491ee788a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a45ee175999804431c27fc90491ee788a">&#9670;&#160;</a></span>msig() <span class="overload">[5/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class AccountType , class... Accounts&gt; <br />
+requires <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::convertible_to</a>&lt;AccountType, <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a>&gt;</div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ripple::test::jtx::msig::msig </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classripple_1_1SField.html">SField</a> const &amp;&#160;</td>
+          <td class="paramname"><em>subField_</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">AccountType &amp;&amp;&#160;</td>
+          <td class="paramname"><em>a0</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Accounts &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>aN</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00088">88</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
+
+</div>
+</div>
+<a id="a015c9deda6f58cd08a053d5cda424fad" name="a015c9deda6f58cd08a053d5cda424fad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a015c9deda6f58cd08a053d5cda424fad">&#9670;&#160;</a></span>msig() <span class="overload">[6/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class AccountType , class... Accounts&gt; <br />
+requires ( <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::convertible_to</a>&lt;AccountType, <a class="el" href="structripple_1_1test_1_1jtx_1_1Reg.html">Reg</a>&gt; &amp;&amp; !<a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::is_same_v</a>&lt;AccountType, <a class="el" href="classripple_1_1SField.html">SField</a>*&gt;)</div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -206,7 +394,7 @@ requires <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.h
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00078">78</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00101">101</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
 
 </div>
 </div>
@@ -237,7 +425,7 @@ requires <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.h
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="multisign_8cpp_source.html#l00069">69</a> of file <a class="el" href="multisign_8cpp_source.html">multisign.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="multisign_8cpp_source.html#l00050">50</a> of file <a class="el" href="multisign_8cpp_source.html">multisign.cpp</a>.</p>
 
 </div>
 </div>
@@ -254,7 +442,52 @@ requires <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.h
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00069">69</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00050">50</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
+
+</div>
+</div>
+<a id="a1b8cca0f8b921fbfc56a5b126f354dcc" name="a1b8cca0f8b921fbfc56a5b126f354dcc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b8cca0f8b921fbfc56a5b126f354dcc">&#9670;&#160;</a></span>subField</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classripple_1_1SField.html">SField</a> const* const ripple::test::jtx::msig::subField = nullptr</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Alternative transaction object field in which to place the signer list. </p>
+<p>subField is only supported if an account_ is provided as well. </p>
+
+<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00055">55</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
+
+</div>
+</div>
+<a id="a87a93160b10f5132ac3919134caa42b8" name="a87a93160b10f5132ac3919134caa42b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a87a93160b10f5132ac3919134caa42b8">&#9670;&#160;</a></span>topLevel</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr <a class="el" href="classripple_1_1SField.html">SField</a>* const ripple::test::jtx::msig::topLevel = nullptr</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Used solely as a convenience placeholder for ctors that do <em>not</em> specify a subfield. </p>
+
+<p class="definition">Definition at line <a class="el" href="multisign_8h_source.html#l00058">58</a> of file <a class="el" href="multisign_8h_source.html">multisign.h</a>.</p>
 
 </div>
 </div>

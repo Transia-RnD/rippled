@@ -1,0 +1,15 @@
+<map id="ripple::ValidVault::Shares" name="ripple::ValidVault::Shares">
+<area shape="rect" id="Node000001" title=" " alt="" coords="126,416,258,456"/>
+<area shape="rect" id="Node000002" href="$classripple_1_1MPTIssue.html" title=" " alt="" coords="25,313,154,339"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,347,176,414,172,418,108,350"/>
+<area shape="rect" id="Node000003" href="$classripple_1_1base__uint.html" title=" " alt="" coords="19,211,160,251"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="92,265,92,313,87,313,87,265"/>
+<area shape="rect" id="Node000004" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/types/size_t.html" title=" " alt="" coords="5,101,93,126"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="60,138,85,210,80,211,55,140"/>
+<area shape="rect" id="Node000005" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/container/array.html" title=" " alt="" coords="117,93,285,133"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="175,145,110,212,106,209,171,141"/>
+<area shape="rect" id="Node000006" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/types/integer.html" title=" " alt="" coords="150,5,253,31"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="204,44,204,93,199,93,199,44"/>
+<area shape="rect" id="Node000007" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/types/integer.html" title=" " alt="" coords="178,313,281,339"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="223,353,201,417,196,415,218,351"/>
+</map>

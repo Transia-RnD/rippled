@@ -1,28 +1,32 @@
 <map id="ripple::test::PeerSim" name="ripple::test::PeerSim">
-<area shape="rect" id="Node000001" title=" " alt="" coords="1067,193,1221,218"/>
-<area shape="rect" id="Node000002" href="$classripple_1_1test_1_1PeerPartial.html" title="Simulate two entities &#45; peer directly connected to the server (via squelch in PeerSim) and PeerImp (v..." alt="" coords="487,135,657,161"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="671,149,807,157,958,171,1043,184,1076,190,1076,195,1042,189,957,176,807,163,671,155"/>
-<area shape="rect" id="Node000003" href="$classripple_1_1Peer.html" title="Represents a peer connection in the overlay." alt="" coords="211,161,307,186"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="320,166,486,152,487,158,320,171"/>
-<area shape="rect" id="Node000004" href="$classripple_1_1PublicKey.html" title="A public key." alt="" coords="193,91,324,117"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="338,112,487,133,486,139,338,118"/>
-<area shape="rect" id="Node000011" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/container/unordered_map.html" title=" " alt="" coords="496,57,648,111"/>
-<area shape="poly" id="edge11_Node000011_Node000004" title=" " alt="" coords="338,96,496,86,496,91,338,102"/>
-<area shape="rect" id="Node000005" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/types/size_t.html" title=" " alt="" coords="9,66,97,91"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="111,83,193,93,193,99,110,88"/>
-<area shape="rect" id="Node000006" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/types/integer.html" title=" " alt="" coords="5,115,100,141"/>
-<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="113,124,161,120,199,114,200,119,162,125,114,129"/>
-<area shape="rect" id="Node000007" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/memory/enable_shared_from_this.html" title=" " alt="" coords="783,185,957,225"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="971,203,1066,203,1066,208,971,208"/>
-<area shape="rect" id="Node000008" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/types/integer.html" title=" " alt="" coords="819,250,921,275"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="935,255,1042,237,1110,216,1112,221,1043,243,936,260"/>
-<area shape="rect" id="Node000009" href="$classripple_1_1test_1_1Overlay.html" title="Simulate server&#39;s OverlayImpl." alt="" coords="795,299,945,325"/>
-<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="958,294,1000,283,1042,268,1088,243,1125,216,1128,220,1091,247,1044,273,1002,288,960,300"/>
-<area shape="rect" id="Node000010" href="$classripple_1_1reduce__relay_1_1Squelch.html" title=" " alt="" coords="787,55,953,110"/>
-<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="967,99,1006,111,1044,127,1093,159,1131,190,1127,194,1090,163,1041,132,1004,116,966,104"/>
-<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="662,81,787,80,787,86,662,86"/>
-<area shape="rect" id="Node000012" href="$classbeast_1_1Journal.html" title="A generic endpoint for log messages." alt="" coords="517,7,627,33"/>
-<area shape="poly" id="edge12_Node000010_Node000012" title=" " alt="" coords="642,32,787,63,786,68,640,37"/>
-<area shape="rect" id="Node000013" href="$classbeast_1_1Journal_1_1Sink.html" title="Abstraction for the underlying message destination." alt="" coords="185,7,332,33"/>
-<area shape="poly" id="edge13_Node000012_Node000013" title=" " alt="" coords="346,17,516,17,516,23,346,23"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="1084,187,1239,212"/>
+<area shape="rect" id="Node000002" href="$classripple_1_1test_1_1PeerPartial.html" title="Simulate two entities &#45; peer directly connected to the server (via squelch in PeerSim) and PeerImp (v..." alt="" coords="487,20,657,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="671,24,736,24,809,28,884,38,958,55,1019,83,1074,119,1119,156,1150,185,1146,189,1115,160,1071,123,1017,87,956,61,884,43,808,33,736,29,671,29"/>
+<area shape="rect" id="Node000003" href="$classripple_1_1Peer.html" title="Represents a peer connection in the overlay." alt="" coords="211,5,307,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="320,18,487,26,486,31,320,24"/>
+<area shape="rect" id="Node000004" href="$classripple_1_1PublicKey.html" title="A public key." alt="" coords="193,69,324,95"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="337,67,490,43,491,48,338,72"/>
+<area shape="rect" id="Node000013" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/container/unordered_map.html" title=" " alt="" coords="496,71,648,125"/>
+<area shape="poly" id="edge13_Node000013_Node000004" title=" " alt="" coords="338,92,356,94,496,98,495,103,356,99,338,98"/>
+<area shape="rect" id="Node000005" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/types/size_t.html" title=" " alt="" coords="9,45,97,71"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="111,62,193,72,193,77,110,67"/>
+<area shape="rect" id="Node000006" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/types/integer.html" title=" " alt="" coords="5,95,100,120"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="113,97,193,87,194,93,114,103"/>
+<area shape="rect" id="Node000007" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/memory/enable_shared_from_this.html" title=" " alt="" coords="783,150,957,190"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="971,177,1060,186,1084,188,1083,194,1060,191,971,182"/>
+<area shape="rect" id="Node000008" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/types/integer.html" title=" " alt="" coords="819,215,921,240"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="935,224,1060,215,1099,209,1100,215,1060,221,935,229"/>
+<area shape="rect" id="Node000009" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/string/basic_string.html" title=" " alt="" coords="827,264,913,289"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="927,268,991,258,1059,242,1100,227,1135,210,1138,215,1102,232,1061,247,992,264,927,274"/>
+<area shape="rect" id="Node000010" href="/__w/rippled/rippled/.build/docs/cppreference-doxygen-web.tag.xml$cpp/string/basic_string.html" title=" " alt="" coords="503,257,641,297"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="655,274,826,274,826,279,655,279"/>
+<area shape="rect" id="Node000011" href="$classripple_1_1test_1_1Overlay.html" title="Simulate server&#39;s OverlayImpl." alt="" coords="795,313,945,339"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="958,313,1009,300,1059,281,1085,265,1110,246,1147,210,1150,214,1113,250,1088,269,1061,286,1011,305,960,318"/>
+<area shape="rect" id="Node000012" href="$classripple_1_1reduce__relay_1_1Squelch.html" title=" " alt="" coords="787,71,953,125"/>
+<area shape="poly" id="edge11_Node000001_Node000012" title=" " alt="" coords="963,127,1125,184,1123,189,961,132"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="662,95,787,95,787,101,662,101"/>
+<area shape="rect" id="Node000014" href="$classbeast_1_1Journal.html" title="A generic endpoint for log messages." alt="" coords="517,149,627,175"/>
+<area shape="poly" id="edge14_Node000012_Node000014" title=" " alt="" coords="640,145,786,113,787,118,642,150"/>
+<area shape="rect" id="Node000015" href="$classbeast_1_1Journal_1_1Sink.html" title="Abstraction for the underlying message destination." alt="" coords="185,149,332,175"/>
+<area shape="poly" id="edge15_Node000014_Node000015" title=" " alt="" coords="346,159,516,159,516,165,346,165"/>
 </map>

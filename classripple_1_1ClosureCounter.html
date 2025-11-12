@@ -164,7 +164,7 @@ class ripple::ClosureCounter&lt; Ret_t, Args_t &gt;</div><p>The role of a <code>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00054">54</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00035">35</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a1ae059e35862ae4564be04cd937b77b5" name="a1ae059e35862ae4564be04cd937b77b5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1ae059e35862ae4564be04cd937b77b5">&#9670;&#160;</a></span>ClosureCounter() <span class="overload">[1/2]</span></h2>
@@ -240,7 +240,7 @@ template&lt;typename Ret_t , typename... Args_t&gt; </div>
 
 <p>Destructor verifies all in-flight closures are complete. </p>
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00153">153</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00134">134</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>
@@ -270,7 +270,7 @@ template&lt;typename Ret_t , typename... Args_t&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00064">64</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00045">45</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>
@@ -299,7 +299,7 @@ template&lt;typename Ret_t , typename... Args_t&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00073">73</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00054">54</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>
@@ -375,7 +375,7 @@ template&lt;typename Ret_t , typename... Args_t&gt; </div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00166">166</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00147">147</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>
@@ -408,7 +408,7 @@ template&lt;class Closure &gt; </div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>If <a class="el" href="classripple_1_1ClosureCounter.html#af0786d10092850fd4a1f10d0bec927a7" title="Returns once all counted in-flight closures are destroyed.">join()</a> has been called returns <a class="elRef" href="http://en.cppreference.com/w/cpp/types/is_same.html">std::nullopt</a>. Otherwise returns a <a class="elRef" href="http://en.cppreference.com/w/cpp/utility/optional.html">std::optional</a> that wraps closure with a reference counter. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00192">192</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00173">173</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>
@@ -432,7 +432,7 @@ template&lt;typename Ret_t , typename... Args_t&gt; </div>
 <p>Current number of Closures outstanding. </p>
 <p>Only useful for testing. </p>
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00205">205</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00186">186</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>
@@ -456,7 +456,7 @@ template&lt;typename Ret_t , typename... Args_t&gt; </div>
 <p>Returns true if this has been joined. </p>
 <p>Even if true is returned, counted closures may still be in flight. However if (<a class="el" href="classripple_1_1ClosureCounter.html#a063738b31b4d437c410ea4e1c2cde160" title="Returns true if this has been joined.">joined()</a> &amp;&amp; (<a class="el" href="classripple_1_1ClosureCounter.html#aa2194cbada192730b683d89a27434fb8" title="Current number of Closures outstanding.">count()</a> == 0)) there should be no more counted closures in flight. </p>
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00217">217</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00198">198</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>
@@ -483,7 +483,7 @@ template&lt;typename Ret_t , typename... Args_t&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00057">57</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00038">38</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>
@@ -509,7 +509,7 @@ template&lt;typename Ret_t , typename... Args_t&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00058">58</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00039">39</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>
@@ -535,7 +535,7 @@ template&lt;typename Ret_t , typename... Args_t&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00059">59</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00040">40</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>
@@ -561,7 +561,7 @@ template&lt;typename Ret_t , typename... Args_t&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00060">60</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="ClosureCounter_8h_source.html#l00041">41</a> of file <a class="el" href="ClosureCounter_8h_source.html">ClosureCounter.h</a>.</p>
 
 </div>
 </div>

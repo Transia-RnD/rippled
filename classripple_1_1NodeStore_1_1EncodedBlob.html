@@ -143,7 +143,7 @@ Private Attributes</h2></td></tr>
 <dl class="section note"><dt>Note</dt><dd>This class is typically instantiated on the stack, so the size of the object does not matter as much as it normally would since the allocation is, effectively, free.</dd></dl>
 <p>We leverage that fact to preallocate enough memory to handle most payloads as part of this object, eliminating the need for dynamic allocation. As of this writing ~94% of objects require fewer than 1024 payload bytes. </p>
 
-<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00056">56</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00036">36</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a221aefffbd9a5f654812b8b3eaf2a580" name="a221aefffbd9a5f654812b8b3eaf2a580"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a221aefffbd9a5f654812b8b3eaf2a580">&#9670;&#160;</a></span>EncodedBlob()</h2>
@@ -169,7 +169,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00083">83</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00063">63</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
 
 </div>
 </div>
@@ -188,7 +188,7 @@ Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00105">105</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00085">85</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
 
 </div>
 </div>
@@ -216,7 +216,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00118">118</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00098">98</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
 
 </div>
 </div>
@@ -243,7 +243,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00124">124</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00104">104</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
 
 </div>
 </div>
@@ -270,7 +270,7 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00130">130</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00110">110</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
 
 </div>
 </div>
@@ -297,7 +297,7 @@ Private Attributes</h2></td></tr>
 
 <p>The 32-byte key of the serialized object. </p>
 
-<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00059">59</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00039">39</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
 
 </div>
 </div>
@@ -324,7 +324,7 @@ Private Attributes</h2></td></tr>
 <p>A pre-allocated buffer for the serialized object. </p>
 <p>The buffer is large enough for the 9 byte prefix and at least 1024 more bytes. The precise size is calculated automatically at compile time so as to avoid wasting space on padding bytes. </p>
 
-<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00070">70</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00050">50</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
 
 </div>
 </div>
@@ -350,7 +350,7 @@ Private Attributes</h2></td></tr>
 
 <p>The size of the serialized data. </p>
 
-<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00073">73</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00053">53</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
 
 </div>
 </div>
@@ -377,7 +377,7 @@ Private Attributes</h2></td></tr>
 <p>A pointer to the serialized data. </p>
 <p>This may point to the pre-allocated buffer (if it is sufficiently large) or to a dynamically allocated buffer. </p>
 
-<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00080">80</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="EncodedBlob_8h_source.html#l00060">60</a> of file <a class="el" href="EncodedBlob_8h_source.html">EncodedBlob.h</a>.</p>
 
 </div>
 </div>
