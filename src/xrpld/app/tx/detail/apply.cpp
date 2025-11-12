@@ -1,4 +1,6 @@
+#include <xrpld/app/main/Application.h>
 #include <xrpld/app/misc/HashRouter.h>
+#include <xrpld/app/rdb/Batch.h>
 #include <xrpld/app/tx/apply.h>
 #include <xrpld/app/tx/applySteps.h>
 
@@ -179,6 +181,9 @@ applyBatchTransactions(
                             << "]: " << tx.getTransactionID() << " "
                             << (ret.applied ? "applied" : "failure") << ": "
                             << transToken(ret.ter);
+
+            auto db = app.getBatchDB().checkoutDb();
+            addBatchTxn(*db, parentBatchId, tx.getTransactionID(), ret.ter);
 
             // If the transaction should be applied push its changes to the
             // whole-batch view.

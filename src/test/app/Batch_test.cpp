@@ -4111,6 +4111,41 @@ class Batch_test : public beast::unit_test::suite
     }
 
     void
+    testBatchDB(FeatureBitset features)
+    {
+        testcase("Batch DB");
+
+        using namespace jtx;
+        Env env(
+            *this,
+            envconfig(),
+            features);
+
+        auto alice = Account("alice");
+        auto bob = Account("bob");
+        env.fund(XRP(10000), alice, bob);
+        env.close();
+
+        auto const aliceSeq = env.seq(alice);
+        auto const batchFee = batch::calcBatchFee(env, 1, 2);
+        auto const [txIDs, batchID] = submitBatch(
+            env,
+            tesSUCCESS,
+            batch::outer(alice, aliceSeq, batchFee, tfAllOrNothing),
+            batch::inner(pay(alice, bob, XRP(10)), aliceSeq + 1),
+            batch::inner(pay(alice, bob, XRP(5)), aliceSeq + 3));
+        env.close();
+
+        {
+            Json::Value jsonTx;
+            jsonTx[jss::binary] = false;
+            jsonTx[jss::transaction] = batchID;
+            auto jrr = env.rpc("json", "tx", to_string(jsonTx))[jss::result];
+            std::cout << "RESULT: " << jrr << "\n";
+        }
+    }
+
+    void
     testWithFeats(FeatureBitset features)
     {
         testEnable(features);
@@ -4142,6 +4177,7 @@ class Batch_test : public beast::unit_test::suite
         testBatchDelegate(features);
         testValidateRPCResponse(features);
         testBatchCalculateBaseFee(features);
+        testBatchDB(features);
     }
 
 public:

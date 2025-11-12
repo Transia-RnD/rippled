@@ -27,6 +27,7 @@
 #include <xrpld/app/paths/PathRequests.h>
 #include <xrpld/app/rdb/RelationalDatabase.h>
 #include <xrpld/app/rdb/Wallet.h>
+#include <xrpld/app/rdb/Batch.h>
 #include <xrpld/app/tx/apply.h>
 #include <xrpld/core/DatabaseCon.h>
 #include <xrpld/overlay/Cluster.h>
@@ -198,6 +199,7 @@ public:
 
     std::unique_ptr<RelationalDatabase> mRelationalDatabase;
     std::unique_ptr<DatabaseCon> mWalletDB;
+    std::unique_ptr<DatabaseCon> mBatchDB;
     std::unique_ptr<Overlay> overlay_;
     std::optional<uint256> trapTxID_;
 
@@ -809,6 +811,15 @@ public:
         return *mWalletDB;
     }
 
+    DatabaseCon&
+    getBatchDB() override
+    {
+        XRPL_ASSERT(
+            mBatchDB,
+            "ripple::ApplicationImp::getBatchDB : non-null batch database");
+        return *mBatchDB;
+    }
+
     bool
     serverOkay(std::string& reason) override;
 
@@ -824,17 +835,23 @@ public:
             mWalletDB.get() == nullptr,
             "ripple::ApplicationImp::initRelationalDatabase : null wallet "
             "database");
+        XRPL_ASSERT(
+            mBatchDB.get() == nullptr,
+            "ripple::ApplicationImp::initRelationalDatabase : null batch "
+            "database");
 
         try
         {
             mRelationalDatabase =
                 RelationalDatabase::init(*this, *config_, *m_jobQueue);
 
-            // wallet database
             auto setup = setup_DatabaseCon(*config_, m_journal);
             setup.useGlobalPragma = false;
 
+            // wallet database
             mWalletDB = makeWalletDB(setup, m_journal);
+            // batch database
+            mBatchDB = makeBatchDB(setup, m_journal);
         }
         catch (std::exception const& e)
         {
