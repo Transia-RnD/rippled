@@ -1454,7 +1454,6 @@ addEmptyHolding(
 
     auto const& srcId = issuerId;
     auto const& dstId = accountID;
-    auto const high = srcId > dstId;
     auto const index = keylet::line(srcId, dstId, currency);
     auto const sleSrc = view.peek(keylet::account(srcId));
     auto const sleDst = view.peek(keylet::account(dstId));
@@ -1471,22 +1470,7 @@ addEmptyHolding(
     if (priorBalance < view.fees().accountReserve(ownerCount + 1))
         return tecNO_LINE_INSUF_RESERVE;
 
-    return trustCreate(
-        view,
-        high,
-        srcId,
-        dstId,
-        index.key,
-        sleDst,
-        /*auth=*/false,
-        /*noRipple=*/true,
-        /*freeze=*/false,
-        /*deepFreeze*/ false,
-        /*balance=*/STAmount{Issue{currency, noAccount()}},
-        /*limit=*/STAmount{Issue{currency, dstId}},
-        /*qualityIn=*/0,
-        /*qualityOut=*/0,
-        journal);
+    return tesSUCCESS;
 }
 
 [[nodiscard]] TER
@@ -3339,6 +3323,308 @@ canTransfer(
             return TER{tecNO_AUTH};
     }
     return tesSUCCESS;
+}
+
+// TER
+// requireNoRipple(
+//     ReadView const& view,
+//     Issue const& issue,
+//     AccountID const& account)
+// {
+//     if (isXRP(issue) || issue.account == account)
+//         return tesSUCCESS;
+
+//     auto const trustLine =
+//         view.read(keylet::line(account, issue.account, issue.currency));
+//     if (!trustLine)
+//         return tesSUCCESS;
+
+//     bool accountHigh = account > issue.account;
+//     auto const flagIssuerNoRipple{
+//         accountHigh ? lsfLowNoRipple : lsfHighNoRipple};
+//     uint32_t flags = trustLine->getFieldU32(sfFlags);
+//     if (flags & flagIssuerNoRipple)
+//         return tecPATH_DRY;
+
+//     return tesSUCCESS;
+// }
+
+static TER
+canTransferIOU(
+    ReadView const& view,
+    AccountID const& sender,
+    AccountID const& receiver,
+    STAmount const& amount,
+    beast::Journal j,
+    SendIssuerHandling issuerHandling,
+    SendEscrowHandling escrowHandling,
+    SendAuthHandling authHandling,
+    SendFreezeHandling freezeHandling,
+    SendTransferHandling transferHandling,
+    SendBalanceHandling balanceHandling)
+{
+    AccountID issuer = amount.getIssuer();
+    // If the issuer is the same as the sender
+    if (issuerHandling == SendIssuerHandling::ihSENDER_NOT_ALLOWED &&
+        issuer == sender)
+        return tecNO_PERMISSION;
+
+    // If the issuer is the same as the receiver
+    if (issuerHandling == SendIssuerHandling::ihRECEIVER_NOT_ALLOWED &&
+        issuer == receiver)
+        return tecNO_PERMISSION;
+
+    // If the lsfAllowTrustLineLocking is not enabled
+    auto const sleIssuer = view.read(keylet::account(issuer));
+    if (!sleIssuer)
+        return tecNO_ISSUER;
+
+    if (issuerHandling != SendIssuerHandling::ihSENDER_NOT_ALLOWED &&
+        issuerHandling != SendIssuerHandling::ihRECEIVER_NOT_ALLOWED &&
+        !sleIssuer->isFlag(lsfDefaultRipple))
+        return terNO_RIPPLE;
+
+    if (escrowHandling == SendEscrowHandling::ehCHECK &&
+        !sleIssuer->isFlag(lsfAllowTrustLineLocking))
+        return tecNO_PERMISSION;
+
+    // If the sender does not have a trustline to the issuer
+    auto const sleRippleState =
+        view.read(keylet::line(sender, issuer, amount.getCurrency()));
+
+    if (!sleRippleState)
+        return tecNO_LINE;
+
+    STAmount const balance = (*sleRippleState)[sfBalance];
+
+    // If balance is positive, issuer must have higher address than sender
+    if (balance > beast::zero && issuer < sender)
+        return tecNO_PERMISSION;  // LCOV_EXCL_LINE
+
+    // If balance is negative, issuer must have lower address than sender
+    if (balance < beast::zero && issuer > sender)
+        return tecNO_PERMISSION;  // LCOV_EXCL_LINE
+
+    // // If the account trustline has no-ripple set for the issuer
+    // if (auto const ter = requireNoRipple(ctx.view, amount.issue(), account);
+    //     ter != tesSUCCESS)
+    //     return ter;
+
+    // // If the dest trustline has no-ripple set for the issuer
+    // if (auto const ter = requireNoRipple(ctx.view, amount.issue(), dest);
+    //     ter != tesSUCCESS)
+    //     return ter;
+
+    // If the issuer has requireAuth set, check if the sender is authorized
+    if (authHandling == SendAuthHandling::ahCHECK_SENDER ||
+        authHandling == SendAuthHandling::ahBOTH)
+    {
+        if (auto const ter = requireAuth(view, amount.issue(), sender);
+            ter != tesSUCCESS)
+            return ter;
+    }
+
+    // If the issuer has requireAuth set, check if the receiver is authorized
+    if (authHandling == SendAuthHandling::ahCHECK_RECEIVER ||
+        authHandling == SendAuthHandling::ahBOTH)
+    {
+        if (auto const ter = requireAuth(view, amount.issue(), receiver);
+            ter != tesSUCCESS)
+            return ter;
+    }
+
+    // If the issuer has frozen the sender
+    if ((freezeHandling == SendFreezeHandling::fhCHECK_SENDER ||
+         freezeHandling == SendFreezeHandling::fhBOTH) &&
+        isFrozen(view, sender, amount.issue()))
+        return tecFROZEN;
+
+    // If the issuer has frozen the receiver
+    if ((freezeHandling == SendFreezeHandling::fhCHECK_RECEIVER ||
+         freezeHandling == SendFreezeHandling::fhBOTH) &&
+        isFrozen(view, receiver, amount.issue()))
+        return tecFROZEN;
+
+    if (balanceHandling == SendBalanceHandling::bhIGNORE)
+        return tesSUCCESS;
+
+    STAmount const spendableAmount = accountHolds(
+        view,
+        sender,
+        amount.get<Issue>(),
+        fhIGNORE_FREEZE,  // already checked freeze above
+        ahIGNORE_AUTH,    // already checked auth above
+        j);
+
+    // If the balance is less than or equal to 0
+    if (spendableAmount <= beast::zero)
+        return tecINSUFFICIENT_FUNDS;
+
+    // If the spendable amount is less than the amount
+    if (spendableAmount < amount)
+        return tecINSUFFICIENT_FUNDS;
+
+    // If the amount is not addable to the balance
+    if (!canAdd(spendableAmount, amount))
+        return tecPRECISION_LOSS;
+
+    return tesSUCCESS;
+}
+
+static TER
+canTransferMPT(
+    ReadView const& view,
+    AccountID const& sender,
+    AccountID const& receiver,
+    STAmount const& amount,
+    beast::Journal j,
+    SendIssuerHandling issuerHandling,
+    SendEscrowHandling escrowHandling,
+    SendAuthHandling authHandling,
+    SendFreezeHandling freezeHandling,
+    SendTransferHandling transferHandling,
+    SendBalanceHandling balanceHandling)
+{
+    AccountID issuer = amount.getIssuer();
+    // If the issuer is the same as the sender
+    if (issuerHandling == SendIssuerHandling::ihSENDER_NOT_ALLOWED &&
+        issuer == sender)
+        return tecNO_PERMISSION;
+
+    // If the issuer is the same as the receiver
+    if (issuerHandling == SendIssuerHandling::ihRECEIVER_NOT_ALLOWED &&
+        issuer == receiver)
+        return tecNO_PERMISSION;
+
+    // If the mpt does not exist
+    auto const issuanceKey =
+        keylet::mptIssuance(amount.get<MPTIssue>().getMptID());
+    auto const sleIssuance = view.read(issuanceKey);
+    if (!sleIssuance)
+        return tecOBJECT_NOT_FOUND;
+
+    // If the lsfMPTCanEscrow is not enabled
+    if (escrowHandling == SendEscrowHandling::ehCHECK &&
+        !sleIssuance->isFlag(lsfMPTCanEscrow))
+        return tecNO_PERMISSION;
+
+    // If the issuer is not the same as the issuer of the mpt
+    if (sleIssuance->getAccountID(sfIssuer) != issuer)
+        return tecNO_PERMISSION;  // LCOV_EXCL_LINE
+
+    // If the sender does not have the mpt
+    if (!view.exists(keylet::mptoken(issuanceKey.key, sender)))
+        return tecOBJECT_NOT_FOUND;
+
+    auto const& mptIssue = amount.get<MPTIssue>();
+
+    // If the issuer has requireAuth set, check if the sender is authorized
+    if (authHandling == SendAuthHandling::ahCHECK_SENDER ||
+        authHandling == SendAuthHandling::ahBOTH)
+    {
+        if (auto const ter =
+                requireAuth(view, mptIssue, sender, AuthType::WeakAuth);
+            ter != tesSUCCESS)
+            return ter;
+    }
+
+    // If the issuer has requireAuth set, check if the receiver is authorized
+    if (authHandling == SendAuthHandling::ahCHECK_RECEIVER ||
+        authHandling == SendAuthHandling::ahBOTH)
+    {
+        if (auto const ter =
+                requireAuth(view, mptIssue, receiver, AuthType::WeakAuth);
+            ter != tesSUCCESS)
+            return ter;
+    }
+
+    // If the issuer has frozen the sender, return tecLOCKED
+    if ((freezeHandling == SendFreezeHandling::fhCHECK_SENDER ||
+         freezeHandling == SendFreezeHandling::fhBOTH) &&
+        isFrozen(view, sender, mptIssue))
+        return tecLOCKED;
+
+    // If the issuer has frozen the receiver, return tecLOCKED
+    if ((freezeHandling == SendFreezeHandling::fhCHECK_RECEIVER ||
+         freezeHandling == SendFreezeHandling::fhBOTH) &&
+        isFrozen(view, receiver, mptIssue))
+        return tecLOCKED;
+
+    // If the mpt cannot be transferred, return tecNO_AUTH
+    if (transferHandling == SendTransferHandling::thCHECK)
+    {
+        if (auto const ter = canTransfer(view, mptIssue, sender, receiver);
+            ter != tesSUCCESS)
+            return ter;
+    }
+
+    if (balanceHandling == SendBalanceHandling::bhIGNORE)
+        return tesSUCCESS;
+
+    STAmount const spendableAmount = accountHolds(
+        view,
+        sender,
+        amount.get<MPTIssue>(),
+        fhIGNORE_FREEZE,  // already checked freeze above
+        ahIGNORE_AUTH,    // already checked auth above
+        j);
+
+    // If the balance is less than or equal to 0, return tecINSUFFICIENT_FUNDS
+    if (spendableAmount <= beast::zero)
+        return tecINSUFFICIENT_FUNDS;
+
+    // If the spendable amount is less than the amount, return
+    // tecINSUFFICIENT_FUNDS
+    if (spendableAmount < amount)
+        return tecINSUFFICIENT_FUNDS;
+
+    return tesSUCCESS;
+}
+
+TER
+canTransferFT(
+    ReadView const& view,
+    AccountID const& sender,
+    AccountID const& receiver,
+    STAmount const& amount,
+    beast::Journal j,
+    SendIssuerHandling issuerHandling = SendIssuerHandling::ihIGNORE,
+    SendEscrowHandling escrowHandling = SendEscrowHandling::ehIGNORE,
+    SendAuthHandling authHandling = SendAuthHandling::ahBOTH,
+    SendFreezeHandling freezeHandling = SendFreezeHandling::fhBOTH,
+    SendTransferHandling transferHandling = SendTransferHandling::thIGNORE,
+    SendBalanceHandling balanceHandling = SendBalanceHandling::bhCHECK)
+{
+    return std::visit(
+        [&]<ValidIssueType TIss>(TIss const& issue) -> TER {
+            if constexpr (std::is_same_v<TIss, Issue>)
+                return canTransferIOU(
+                    view,
+                    sender,
+                    receiver,
+                    amount,
+                    j,
+                    issuerHandling,
+                    escrowHandling,
+                    authHandling,
+                    freezeHandling,
+                    transferHandling,
+                    balanceHandling);
+            else
+                return canTransferMPT(
+                    view,
+                    sender,
+                    receiver,
+                    amount,
+                    j,
+                    issuerHandling,
+                    escrowHandling,
+                    authHandling,
+                    freezeHandling,
+                    transferHandling,
+                    balanceHandling);
+        },
+        amount.asset().value());
 }
 
 [[nodiscard]] TER

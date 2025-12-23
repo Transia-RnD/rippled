@@ -1,10 +1,7 @@
+#include <xrpld/app/misc/DeleteUtils.h>
 #include <xrpld/app/tx/detail/DID.h>
 #include <xrpld/app/tx/detail/DelegateSet.h>
 #include <xrpld/app/tx/detail/DeleteAccount.h>
-#include <xrpld/app/tx/detail/DeleteOracle.h>
-#include <xrpld/app/tx/detail/DepositPreauth.h>
-#include <xrpld/app/tx/detail/NFTokenUtils.h>
-#include <xrpld/app/tx/detail/SetSignerList.h>
 
 #include <xrpl/basics/Log.h>
 #include <xrpl/basics/mulDiv.h>
@@ -49,161 +46,6 @@ DeleteAccount::calculateBaseFee(ReadView const& view, STTx const& tx)
     // The fee required for AccountDelete is one owner reserve.
     return calculateOwnerReserveFee(view, tx);
 }
-
-namespace {
-// Define a function pointer type that can be used to delete ledger node types.
-using DeleterFuncPtr = TER (*)(
-    Application& app,
-    ApplyView& view,
-    AccountID const& account,
-    uint256 const& delIndex,
-    std::shared_ptr<SLE> const& sleDel,
-    beast::Journal j);
-
-// Local function definitions that provides signature compatibility.
-TER
-offerDelete(
-    Application& app,
-    ApplyView& view,
-    AccountID const& account,
-    uint256 const& delIndex,
-    std::shared_ptr<SLE> const& sleDel,
-    beast::Journal j)
-{
-    return offerDelete(view, sleDel, j);
-}
-
-TER
-removeSignersFromLedger(
-    Application& app,
-    ApplyView& view,
-    AccountID const& account,
-    uint256 const& delIndex,
-    std::shared_ptr<SLE> const& sleDel,
-    beast::Journal j)
-{
-    return SetSignerList::removeFromLedger(app, view, account, j);
-}
-
-TER
-removeTicketFromLedger(
-    Application&,
-    ApplyView& view,
-    AccountID const& account,
-    uint256 const& delIndex,
-    std::shared_ptr<SLE> const&,
-    beast::Journal j)
-{
-    return Transactor::ticketDelete(view, account, delIndex, j);
-}
-
-TER
-removeDepositPreauthFromLedger(
-    Application&,
-    ApplyView& view,
-    AccountID const&,
-    uint256 const& delIndex,
-    std::shared_ptr<SLE> const&,
-    beast::Journal j)
-{
-    return DepositPreauth::removeFromLedger(view, delIndex, j);
-}
-
-TER
-removeNFTokenOfferFromLedger(
-    Application& app,
-    ApplyView& view,
-    AccountID const& account,
-    uint256 const& delIndex,
-    std::shared_ptr<SLE> const& sleDel,
-    beast::Journal)
-{
-    if (!nft::deleteTokenOffer(view, sleDel))
-        return tefBAD_LEDGER;  // LCOV_EXCL_LINE
-
-    return tesSUCCESS;
-}
-
-TER
-removeDIDFromLedger(
-    Application& app,
-    ApplyView& view,
-    AccountID const& account,
-    uint256 const& delIndex,
-    std::shared_ptr<SLE> const& sleDel,
-    beast::Journal j)
-{
-    return DIDDelete::deleteSLE(view, sleDel, account, j);
-}
-
-TER
-removeOracleFromLedger(
-    Application&,
-    ApplyView& view,
-    AccountID const& account,
-    uint256 const&,
-    std::shared_ptr<SLE> const& sleDel,
-    beast::Journal j)
-{
-    return DeleteOracle::deleteOracle(view, sleDel, account, j);
-}
-
-TER
-removeCredentialFromLedger(
-    Application&,
-    ApplyView& view,
-    AccountID const&,
-    uint256 const&,
-    std::shared_ptr<SLE> const& sleDel,
-    beast::Journal j)
-{
-    return credentials::deleteSLE(view, sleDel, j);
-}
-
-TER
-removeDelegateFromLedger(
-    Application& app,
-    ApplyView& view,
-    AccountID const& account,
-    uint256 const& delIndex,
-    std::shared_ptr<SLE> const& sleDel,
-    beast::Journal j)
-{
-    return DelegateSet::deleteDelegate(view, sleDel, account, j);
-}
-
-// Return nullptr if the LedgerEntryType represents an obligation that can't
-// be deleted.  Otherwise return the pointer to the function that can delete
-// the non-obligation
-DeleterFuncPtr
-nonObligationDeleter(LedgerEntryType t)
-{
-    switch (t)
-    {
-        case ltOFFER:
-            return offerDelete;
-        case ltSIGNER_LIST:
-            return removeSignersFromLedger;
-        case ltTICKET:
-            return removeTicketFromLedger;
-        case ltDEPOSIT_PREAUTH:
-            return removeDepositPreauthFromLedger;
-        case ltNFTOKEN_OFFER:
-            return removeNFTokenOfferFromLedger;
-        case ltDID:
-            return removeDIDFromLedger;
-        case ltORACLE:
-            return removeOracleFromLedger;
-        case ltCREDENTIAL:
-            return removeCredentialFromLedger;
-        case ltDELEGATE:
-            return removeDelegateFromLedger;
-        default:
-            return nullptr;
-    }
-}
-
-}  // namespace
 
 TER
 DeleteAccount::preclaim(PreclaimContext const& ctx)
@@ -330,6 +172,9 @@ DeleteAccount::preclaim(PreclaimContext const& ctx)
     } while (cdirNext(
         ctx.view, ownerDirKeylet.key, sleDirNode, uDirEntry, dirEntry));
 
+    if (auto const res = deletePreclaim(ctx, 255, account, dst);
+        !isTesSuccess(res))
+        return res;
     return tesSUCCESS;
 }
 

@@ -6,6 +6,7 @@
 
 #include <xrpl/beast/utility/Journal.h>
 #include <xrpl/beast/utility/WrappedSink.h>
+#include <xrpl/protocol/Emitable.h>
 #include <xrpl/protocol/Permissions.h>
 #include <xrpl/protocol/XRPAmount.h>
 
@@ -312,6 +313,9 @@ protected:
 private:
     std::pair<TER, XRPAmount>
     reset(XRPAmount fee);
+
+    std::pair<TER, XRPAmount>
+    checkInvariants(TER result, XRPAmount fee);
 
     TER
     consumeSeqProxy(SLE::pointer const& sleAccount);

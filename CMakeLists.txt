@@ -114,6 +114,7 @@ find_package(date REQUIRED)
 find_package(ed25519 REQUIRED)
 find_package(nudb REQUIRED)
 find_package(secp256k1 REQUIRED)
+find_package(wasmi REQUIRED)
 find_package(xxHash REQUIRED)
 
 target_link_libraries(xrpl_libs INTERFACE

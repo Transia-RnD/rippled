@@ -149,6 +149,10 @@ doSubscribe(RPC::JsonContext& context)
             {
                 context.netOps.subConsensus(ispSub);
             }
+            else if (streamName == "contract_events")
+            {
+                context.netOps.subContractEvent(ispSub);
+            }
             else
             {
                 return rpcError(rpcSTREAM_MALFORMED);

@@ -1,6 +1,7 @@
 #ifndef XRPL_PROTOCOL_PERMISSION_H_INCLUDED
 #define XRPL_PROTOCOL_PERMISSION_H_INCLUDED
 
+#include <xrpl/protocol/Emitable.h>
 #include <xrpl/protocol/Rules.h>
 #include <xrpl/protocol/TER.h>
 #include <xrpl/protocol/TxFormats.h>

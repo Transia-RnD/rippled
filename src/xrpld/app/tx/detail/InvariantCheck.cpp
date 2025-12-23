@@ -84,9 +84,10 @@ operator|(Privilege lhs, Privilege rhs)
 #pragma push_macro("TRANSACTION")
 #undef TRANSACTION
 
-#define TRANSACTION(tag, value, name, delegatable, amendment, privileges, ...) \
-    case tag: {                                                                \
-        return (privileges) & priv;                                            \
+#define TRANSACTION(                                                     \
+    tag, value, name, delegatable, amendment, privileges, emitable, ...) \
+    case tag: {                                                          \
+        return (privileges) & priv;                                      \
     }
 
 bool
@@ -1782,7 +1783,8 @@ ValidPseudoAccounts::visitEntry(
                     errors_.emplace_back(error.str());
                 }
             }
-            if (before && before->at(sfSequence) != after->at(sfSequence))
+            if (before && before->at(sfSequence) != after->at(sfSequence) &&
+                !after->isFieldPresent(sfContractID))
             {
                 errors_.emplace_back("pseudo-account sequence changed");
             }

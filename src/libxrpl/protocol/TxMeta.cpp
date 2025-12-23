@@ -207,8 +207,14 @@ TxMeta::getAsObject() const
     if (deliveredAmount_.has_value())
         metaData.setFieldAmount(sfDeliveredAmount, *deliveredAmount_);
 
-    if (parentBatchID_.has_value())
-        metaData.setFieldH256(sfParentBatchID, *parentBatchID_);
+    if (parentBatchId_.has_value())
+        metaData.setFieldH256(sfParentBatchID, *parentBatchId_);
+
+    if (gasUsed_.has_value())
+        metaData.setFieldU32(sfGasUsed, *gasUsed_);
+
+    if (wasmReturnCode_.has_value())
+        metaData.setFieldI32(sfWasmReturnCode, *wasmReturnCode_);
 
     return metaData;
 }

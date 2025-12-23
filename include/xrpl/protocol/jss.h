@@ -191,6 +191,7 @@ JSS(command);                 // in: RPCHandler
 JSS(complete);                // out: NetworkOPs, InboundLedger
 JSS(complete_ledgers);        // out: NetworkOPs, PeerImp
 JSS(consensus);               // out: NetworkOPs, LedgerConsensus
+JSS(contract_account);        // out: ContractInfo
 JSS(converge_time);           // out: NetworkOPs
 JSS(converge_time_s);         // out: NetworkOPs
 JSS(cookie);                  // out: NetworkOPs
@@ -255,6 +256,9 @@ JSS(expected_date_UTC);       // out: any (warnings)
 JSS(expected_ledger_size);    // out: TxQ
 JSS(expiration);              // out: AccountOffers, AccountChannels,
                               //      ValidatorList, amm_info
+JSS(extension_compute);       // out: NetworkOps
+JSS(extension_size);          // out: NetworkOps
+JSS(gas_price);               // out: NetworkOps
 JSS(fail_hard);               // in: Sign, Submit
 JSS(failed);                  // out: InboundLedger
 JSS(feature);                 // in: Feature
@@ -275,6 +279,8 @@ JSS(flags);                   // out: AccountOffers,
 JSS(forward);                 // in: AccountTx
 JSS(freeze);                  // out: AccountLines
 JSS(freeze_peer);             // out: AccountLines
+JSS(function);                // in: ContractInfo
+JSS(functions);               // out: ContractInfo
 JSS(deep_freeze);                  // out: AccountLines
 JSS(deep_freeze_peer);             // out: AccountLines
 JSS(frozen_balances);         // out: GatewayBalances
@@ -565,6 +571,7 @@ JSS(size);                    // out: get_aggregate_price
 JSS(snapshot);                // in: Subscribe
 JSS(source_account);          // in: PathRequest, RipplePathFind
 JSS(source_amount);           // in: PathRequest, RipplePathFind
+JSS(source_code_uri);         // out: ContractInfo
 JSS(source_currencies);       // in: PathRequest, RipplePathFind
 JSS(source_tag);              // out: AccountChannels
 JSS(stand_alone);             // out: NetworkOPs
@@ -662,6 +669,7 @@ JSS(url_password);            // in: Subscribe
 JSS(url_username);            // in: Subscribe
 JSS(urlgravatar);             //
 JSS(username);                // in: Subscribe
+JSS(user_data);               // out: ContractInfo
 JSS(validated);               // out: NetworkOPs, RPCHelpers, AccountTx*
                               //      Tx
 JSS(validator_list_expires);  // out: NetworkOps, ValidatorList
@@ -709,11 +717,11 @@ JSS(write_load);              // out: GetCounts
 #pragma push_macro("LEDGER_ENTRY_DUPLICATE")
 #undef LEDGER_ENTRY_DUPLICATE
 
-#define LEDGER_ENTRY(tag, value, name, rpcName, ...) \
-    JSS(name);                                       \
+#define LEDGER_ENTRY(tag, value, name, rpcName, fields) \
+    JSS(name);                                          \
     JSS(rpcName);
 
-#define LEDGER_ENTRY_DUPLICATE(tag, value, name, rpcName, ...) JSS(rpcName);
+#define LEDGER_ENTRY_DUPLICATE(tag, value, name, rpcName, fields) JSS(rpcName);
 
 #include <xrpl/protocol/detail/ledger_entries.macro>
 
