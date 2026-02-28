@@ -1,22 +1,3 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
 #include <xrpl/basics/Blob.h>
 #include <xrpl/basics/StringUtilities.h>
 #include <xrpl/beast/core/LexicalCast.h>
@@ -36,7 +17,7 @@
 #include <string>
 #include <string_view>
 
-namespace ripple {
+namespace xrpl {
 
 std::string
 sqlBlobLiteral(Blob const& blob)
@@ -89,13 +70,13 @@ parseUrl(parsedURL& pUrl, std::string const& strUrl)
     boost::algorithm::to_lower(pUrl.scheme);
     pUrl.username = smMatch[2];
     pUrl.password = smMatch[3];
-    const std::string domain = smMatch[4];
+    std::string const domain = smMatch[4];
     // We need to use Endpoint to parse the domain to
     // strip surrounding brackets from IPv6 addresses,
     // e.g. [::1] => ::1.
-    const auto result = beast::IP::Endpoint::from_string_checked(domain);
+    auto const result = beast::IP::Endpoint::from_string_checked(domain);
     pUrl.domain = result ? result->address().to_string() : domain;
-    const std::string port = smMatch[5];
+    std::string const port = smMatch[5];
     if (!port.empty())
     {
         pUrl.port = beast::lexicalCast<std::uint16_t>(port);
@@ -155,4 +136,4 @@ isProperlyFormedTomlDomain(std::string_view domain)
     return boost::regex_match(domain.begin(), domain.end(), re);
 }
 
-}  // namespace ripple
+}  // namespace xrpl

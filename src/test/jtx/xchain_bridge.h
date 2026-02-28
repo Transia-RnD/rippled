@@ -1,24 +1,4 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_TEST_JTX_XCHAINBRIDGE_H_INCLUDED
-#define RIPPLE_TEST_JTX_XCHAINBRIDGE_H_INCLUDED
+#pragma once
 
 #include <test/jtx/Account.h>
 #include <test/jtx/amount.h>
@@ -28,7 +8,7 @@
 #include <xrpl/protocol/SField.h>
 #include <xrpl/protocol/XChainAttestations.h>
 
-namespace ripple {
+namespace xrpl {
 namespace test {
 namespace jtx {
 
@@ -196,12 +176,12 @@ struct XChainBridgeObjects
     STAmount const split_reward_quorum;    // 250,000 drops
     STAmount const split_reward_everyone;  // 200,000 drops
 
-    const STAmount tiny_reward;            // 37 drops
-    const STAmount tiny_reward_split;      // 9 drops
-    const STAmount tiny_reward_remainder;  // 1 drops
+    STAmount const tiny_reward;            // 37 drops
+    STAmount const tiny_reward_split;      // 9 drops
+    STAmount const tiny_reward_remainder;  // 1 drops
 
-    const STAmount one_xrp;
-    const STAmount xrp_dust;
+    STAmount const one_xrp;
+    STAmount const xrp_dust;
 
     static constexpr int drop_per_xrp = 1000000;
 
@@ -247,15 +227,10 @@ struct XChainBridgeObjects
         std::optional<STAmount> const& minAccountCreate = std::nullopt)
     {
         return bridge_create(
-            acc,
-            bridge == Json::nullValue ? jvb : bridge,
-            _reward,
-            minAccountCreate);
+            acc, bridge == Json::nullValue ? jvb : bridge, _reward, minAccountCreate);
     }
 };
 
 }  // namespace jtx
 }  // namespace test
-}  // namespace ripple
-
-#endif
+}  // namespace xrpl

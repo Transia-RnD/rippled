@@ -1,22 +1,3 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
 #include <xrpl/beast/utility/instrumentation.h>
 #include <xrpl/json/json_forwards.h>
 #include <xrpl/json/json_value.h>
@@ -40,7 +21,7 @@ isControlCharacter(char ch)
 }
 
 static bool
-containsControlCharacter(const char* str)
+containsControlCharacter(char const* str)
 {
     while (*str)
     {
@@ -98,11 +79,10 @@ valueToString(double value)
     // of precision requested below.
     char buffer[32];
     // Print into the buffer. We need not request the alternative representation
-    // that always has a decimal point because JSON doesn't distingish the
+    // that always has a decimal point because JSON doesn't distinguish the
     // concepts of reals and integers.
-#if defined(_MSC_VER) && \
-    defined(__STDC_SECURE_LIB__)  // Use secure version with visual studio 2005
-                                  // to avoid warning.
+#if defined(_MSC_VER) && defined(__STDC_SECURE_LIB__)  // Use secure version with visual studio 2005
+                                                       // to avoid warning.
     sprintf_s(buffer, sizeof(buffer), "%.16g", value);
 #else
     snprintf(buffer, sizeof(buffer), "%.16g", value);
@@ -117,22 +97,21 @@ valueToString(bool value)
 }
 
 std::string
-valueToQuotedString(const char* value)
+valueToQuotedString(char const* value)
 {
     // Not sure how to handle unicode...
-    if (strpbrk(value, "\"\\\b\f\n\r\t") == nullptr &&
-        !containsControlCharacter(value))
+    if (strpbrk(value, "\"\\\b\f\n\r\t") == nullptr && !containsControlCharacter(value))
         return std::string("\"") + value + "\"";
 
     // We have to walk value and escape any special characters.
     // Appending to std::string is not efficient, but this should be rare.
     // (Note: forward slashes are *not* rare, but I am not escaping them.)
-    unsigned maxsize = strlen(value) * 2 + 3;  // allescaped+quotes+NULL
+    unsigned maxsize = strlen(value) * 2 + 3;  // all-escaped+quotes+NULL
     std::string result;
     result.reserve(maxsize);  // to avoid lots of mallocs
     result += "\"";
 
-    for (const char* c = value; *c != 0; ++c)
+    for (char const* c = value; *c != 0; ++c)
     {
         switch (*c)
         {
@@ -175,8 +154,7 @@ valueToQuotedString(const char* value)
                 if (isControlCharacter(*c))
                 {
                     std::ostringstream oss;
-                    oss << "\\u" << std::hex << std::uppercase
-                        << std::setfill('0') << std::setw(4)
+                    oss << "\\u" << std::hex << std::uppercase << std::setfill('0') << std::setw(4)
                         << static_cast<int>(*c);
                     result += oss.str();
                 }
@@ -197,7 +175,7 @@ valueToQuotedString(const char* value)
 // //////////////////////////////////////////////////////////////////
 
 std::string
-FastWriter::write(const Value& root)
+FastWriter::write(Value const& root)
 {
     document_ = "";
     writeValue(root);
@@ -205,7 +183,7 @@ FastWriter::write(const Value& root)
 }
 
 void
-FastWriter::writeValue(const Value& value)
+FastWriter::writeValue(Value const& value)
 {
     switch (value.type())
     {
@@ -253,9 +231,7 @@ FastWriter::writeValue(const Value& value)
             Value::Members members(value.getMemberNames());
             document_ += "{";
 
-            for (Value::Members::iterator it = members.begin();
-                 it != members.end();
-                 ++it)
+            for (Value::Members::iterator it = members.begin(); it != members.end(); ++it)
             {
                 std::string const& name = *it;
 
@@ -281,7 +257,7 @@ StyledWriter::StyledWriter() : rightMargin_(74), indentSize_(3)
 }
 
 std::string
-StyledWriter::write(const Value& root)
+StyledWriter::write(Value const& root)
 {
     document_ = "";
     addChildValues_ = false;
@@ -292,7 +268,7 @@ StyledWriter::write(const Value& root)
 }
 
 void
-StyledWriter::writeValue(const Value& value)
+StyledWriter::writeValue(Value const& value)
 {
     switch (value.type())
     {
@@ -338,7 +314,7 @@ StyledWriter::writeValue(const Value& value)
                 while (true)
                 {
                     std::string const& name = *it;
-                    const Value& childValue = value[name];
+                    Value const& childValue = value[name];
                     writeWithIndent(valueToQuotedString(name.c_str()));
                     document_ += " : ";
                     writeValue(childValue);
@@ -358,7 +334,7 @@ StyledWriter::writeValue(const Value& value)
 }
 
 void
-StyledWriter::writeArrayValue(const Value& value)
+StyledWriter::writeArrayValue(Value const& value)
 {
     unsigned size = value.size();
 
@@ -366,7 +342,7 @@ StyledWriter::writeArrayValue(const Value& value)
         pushValue("[]");
     else
     {
-        bool isArrayMultiLine = isMultineArray(value);
+        bool isArrayMultiLine = isMultilineArray(value);
 
         if (isArrayMultiLine)
         {
@@ -377,7 +353,7 @@ StyledWriter::writeArrayValue(const Value& value)
 
             while (true)
             {
-                const Value& childValue = value[index];
+                Value const& childValue = value[index];
 
                 if (hasChildValue)
                     writeWithIndent(childValues_[index]);
@@ -417,7 +393,7 @@ StyledWriter::writeArrayValue(const Value& value)
 }
 
 bool
-StyledWriter::isMultineArray(const Value& value)
+StyledWriter::isMultilineArray(Value const& value)
 {
     int size = value.size();
     bool isMultiLine = size * 3 >= rightMargin_;
@@ -425,10 +401,9 @@ StyledWriter::isMultineArray(const Value& value)
 
     for (int index = 0; index < size && !isMultiLine; ++index)
     {
-        const Value& childValue = value[index];
+        Value const& childValue = value[index];
         isMultiLine = isMultiLine ||
-            ((childValue.isArray() || childValue.isObject()) &&
-             childValue.size() > 0);
+            ((childValue.isArray() || childValue.isObject()) && childValue.size() > 0);
     }
 
     if (!isMultiLine)  // check if line length > max line length
@@ -507,7 +482,7 @@ StyledStreamWriter::StyledStreamWriter(std::string indentation)
 }
 
 void
-StyledStreamWriter::write(std::ostream& out, const Value& root)
+StyledStreamWriter::write(std::ostream& out, Value const& root)
 {
     document_ = &out;
     addChildValues_ = false;
@@ -518,7 +493,7 @@ StyledStreamWriter::write(std::ostream& out, const Value& root)
 }
 
 void
-StyledStreamWriter::writeValue(const Value& value)
+StyledStreamWriter::writeValue(Value const& value)
 {
     switch (value.type())
     {
@@ -564,7 +539,7 @@ StyledStreamWriter::writeValue(const Value& value)
                 while (true)
                 {
                     std::string const& name = *it;
-                    const Value& childValue = value[name];
+                    Value const& childValue = value[name];
                     writeWithIndent(valueToQuotedString(name.c_str()));
                     *document_ << " : ";
                     writeValue(childValue);
@@ -584,7 +559,7 @@ StyledStreamWriter::writeValue(const Value& value)
 }
 
 void
-StyledStreamWriter::writeArrayValue(const Value& value)
+StyledStreamWriter::writeArrayValue(Value const& value)
 {
     unsigned size = value.size();
 
@@ -592,7 +567,7 @@ StyledStreamWriter::writeArrayValue(const Value& value)
         pushValue("[]");
     else
     {
-        bool isArrayMultiLine = isMultineArray(value);
+        bool isArrayMultiLine = isMultilineArray(value);
 
         if (isArrayMultiLine)
         {
@@ -603,7 +578,7 @@ StyledStreamWriter::writeArrayValue(const Value& value)
 
             while (true)
             {
-                const Value& childValue = value[index];
+                Value const& childValue = value[index];
 
                 if (hasChildValue)
                     writeWithIndent(childValues_[index]);
@@ -643,7 +618,7 @@ StyledStreamWriter::writeArrayValue(const Value& value)
 }
 
 bool
-StyledStreamWriter::isMultineArray(const Value& value)
+StyledStreamWriter::isMultilineArray(Value const& value)
 {
     int size = value.size();
     bool isMultiLine = size * 3 >= rightMargin_;
@@ -651,10 +626,9 @@ StyledStreamWriter::isMultineArray(const Value& value)
 
     for (int index = 0; index < size && !isMultiLine; ++index)
     {
-        const Value& childValue = value[index];
+        Value const& childValue = value[index];
         isMultiLine = isMultiLine ||
-            ((childValue.isArray() || childValue.isObject()) &&
-             childValue.size() > 0);
+            ((childValue.isArray() || childValue.isObject()) && childValue.size() > 0);
     }
 
     if (!isMultiLine)  // check if line length > max line length
@@ -726,7 +700,7 @@ StyledStreamWriter::unindent()
 }
 
 std::ostream&
-operator<<(std::ostream& sout, const Value& root)
+operator<<(std::ostream& sout, Value const& root)
 {
     Json::StyledStreamWriter writer;
     writer.write(sout, root);

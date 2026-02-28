@@ -1,7 +1,7 @@
 #
 # Default validators.txt
 #
-# This file is located in the same folder as your rippled.cfg file
+# This file is located in the same folder as your xrpld.cfg file
 # and defines which validators your server trusts not to collude.
 #
 # This file is UTF-8 with DOS, UNIX, or Mac style line endings.
@@ -26,7 +26,7 @@
 #
 #   Examples:
 #    https://vl.ripple.com
-#    https://vl.xrplf.org
+#    https://unl.xrplf.org
 #    http://127.0.0.1:8000
 #    file:///etc/opt/ripple/vl.txt
 #

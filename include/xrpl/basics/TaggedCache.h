@@ -1,24 +1,4 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_BASICS_TAGGEDCACHE_H_INCLUDED
-#define RIPPLE_BASICS_TAGGEDCACHE_H_INCLUDED
+#pragma once
 
 #include <xrpl/basics/IntrusivePointer.h>
 #include <xrpl/basics/Log.h>
@@ -35,7 +15,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace ripple {
+namespace xrpl {
 
 /** Map/cache combination.
     This class implements a cache and a map. The cache keeps objects alive
@@ -75,8 +55,7 @@ public:
         clock_type::duration expiration,
         clock_type& clock,
         beast::Journal journal,
-        beast::insight::Collector::ptr const& collector =
-            beast::insight::NullCollector::New());
+        beast::insight::Collector::ptr const& collector = beast::insight::NullCollector::New());
 
 public:
     /** Return the clock associated with the cache. */
@@ -115,7 +94,7 @@ public:
     sweep();
 
     bool
-    del(const key_type& key, bool valid);
+    del(key_type const& key, bool valid);
 
 public:
     /** Replace aliased objects with originals.
@@ -133,21 +112,16 @@ public:
     */
     template <class R>
     bool
-    canonicalize(
-        const key_type& key,
-        SharedPointerType& data,
-        R&& replaceCallback);
+    canonicalize(key_type const& key, SharedPointerType& data, R&& replaceCallback);
 
     bool
-    canonicalize_replace_cache(
-        const key_type& key,
-        SharedPointerType const& data);
+    canonicalize_replace_cache(key_type const& key, SharedPointerType const& data);
 
     bool
-    canonicalize_replace_client(const key_type& key, SharedPointerType& data);
+    canonicalize_replace_client(key_type const& key, SharedPointerType& data);
 
     SharedPointerType
-    fetch(const key_type& key);
+    fetch(key_type const& key);
 
     /** Insert the element into the container.
         If the key already exists, nothing happens.
@@ -155,8 +129,7 @@ public:
     */
     template <class ReturnType = bool>
     auto
-    insert(key_type const& key, T const& value)
-        -> std::enable_if_t<!IsKeyCache, ReturnType>;
+    insert(key_type const& key, T const& value) -> std::enable_if_t<!IsKeyCache, ReturnType>;
 
     template <class ReturnType = bool>
     auto
@@ -168,7 +141,7 @@ public:
     //             simply return an iterator.
     //
     bool
-    retrieve(const key_type& key, T& data);
+    retrieve(key_type const& key, T& data);
 
     mutex_type&
     peekMutex();
@@ -245,9 +218,7 @@ private:
         shared_weak_combo_pointer_type ptr;
         clock_type::time_point last_access;
 
-        ValueEntry(
-            clock_type::time_point const& last_access_,
-            shared_pointer_type const& ptr_)
+        ValueEntry(clock_type::time_point const& last_access_, shared_pointer_type const& ptr_)
             : ptr(ptr_), last_access(last_access_)
         {
         }
@@ -281,18 +252,13 @@ private:
         }
     };
 
-    typedef
-        typename std::conditional<IsKeyCache, KeyOnlyEntry, ValueEntry>::type
-            Entry;
+    typedef typename std::conditional<IsKeyCache, KeyOnlyEntry, ValueEntry>::type Entry;
 
-    using KeyOnlyCacheType =
-        hardened_partitioned_hash_map<key_type, KeyOnlyEntry, Hash, KeyEqual>;
+    using KeyOnlyCacheType = hardened_partitioned_hash_map<key_type, KeyOnlyEntry, Hash, KeyEqual>;
 
-    using KeyValueCacheType =
-        hardened_partitioned_hash_map<key_type, ValueEntry, Hash, KeyEqual>;
+    using KeyValueCacheType = hardened_partitioned_hash_map<key_type, ValueEntry, Hash, KeyEqual>;
 
-    using cache_type =
-        hardened_partitioned_hash_map<key_type, Entry, Hash, KeyEqual>;
+    using cache_type = hardened_partitioned_hash_map<key_type, Entry, Hash, KeyEqual>;
 
     [[nodiscard]] std::thread
     sweepHelper(
@@ -322,10 +288,10 @@ private:
     std::string m_name;
 
     // Desired number of cache entries (0 = ignore)
-    const int m_target_size;
+    int const m_target_size;
 
     // Desired maximum cache age
-    const clock_type::duration m_target_age;
+    clock_type::duration const m_target_age;
 
     // Number of items cached
     int m_cache_count;
@@ -334,6 +300,4 @@ private:
     std::uint64_t m_misses;
 };
 
-}  // namespace ripple
-
-#endif
+}  // namespace xrpl

@@ -1,42 +1,30 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2023 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#include <xrpl/basics/Number.h>
-#include <xrpl/beast/utility/instrumentation.h>
-#include <xrpl/protocol/SField.h>
-#include <xrpl/protocol/STBase.h>
 #include <xrpl/protocol/STNumber.h>
+// Do not remove. Keep STNumber.h first
+#include <xrpl/basics/Number.h>
+#include <xrpl/beast/core/LexicalCast.h>
+#include <xrpl/beast/utility/instrumentation.h>
+#include <xrpl/protocol/Rules.h>
+#include <xrpl/protocol/SField.h>
+#include <xrpl/protocol/STAmount.h>
+#include <xrpl/protocol/STBase.h>
+#include <xrpl/protocol/STIssue.h>
 #include <xrpl/protocol/Serializer.h>
+
+#include <boost/lexical_cast.hpp>
+#include <boost/regex.hpp>
 
 #include <cstddef>
 #include <ostream>
 #include <string>
 #include <utility>
 
-namespace ripple {
+namespace xrpl {
 
-STNumber::STNumber(SField const& field, Number const& value)
-    : STBase(field), value_(value)
+STNumber::STNumber(SField const& field, Number const& value) : STTakesAsset(field), value_(value)
 {
 }
 
-STNumber::STNumber(SerialIter& sit, SField const& field) : STBase(field)
+STNumber::STNumber(SerialIter& sit, SField const& field) : STTakesAsset(field)
 {
     // We must call these methods in separate statements
     // to guarantee their order of execution.
@@ -58,15 +46,63 @@ STNumber::getText() const
 }
 
 void
+STNumber::associateAsset(Asset const& a)
+{
+    STTakesAsset::associateAsset(a);
+
+    XRPL_ASSERT_PARTS(
+        getFName().shouldMeta(SField::sMD_NeedsAsset),
+        "STNumber::associateAsset",
+        "field needs asset");
+
+    roundToAsset(a, value_);
+}
+
+void
 STNumber::add(Serializer& s) const
 {
-    XRPL_ASSERT(
-        getFName().isBinary(), "ripple::STNumber::add : field is binary");
-    XRPL_ASSERT(
-        getFName().fieldType == getSType(),
-        "ripple::STNumber::add : field type match");
-    s.add64(value_.mantissa());
-    s.add32(value_.exponent());
+    XRPL_ASSERT(getFName().isBinary(), "xrpl::STNumber::add : field is binary");
+    XRPL_ASSERT(getFName().fieldType == getSType(), "xrpl::STNumber::add : field type match");
+
+    auto value = value_;
+    auto const mantissa = value.mantissa();
+    auto const exponent = value.exponent();
+
+    SField const& field = getFName();
+    if (field.shouldMeta(SField::sMD_NeedsAsset))
+    {
+        // asset is defined in the STTakesAsset base class
+        if (asset_)
+        {
+            // The number should be rounded to the asset's precision, but round
+            // it here if it has an asset assigned.
+            roundToAsset(*asset_, value);
+            XRPL_ASSERT_PARTS(value_ == value, "xrpl::STNumber::add", "value is already rounded");
+        }
+        else
+        {
+#if !NDEBUG
+            // There are circumstances where an already-rounded Number is
+            // serialized without being touched by a transactor, and thus
+            // without an asset. We can't know if it's rounded, because it could
+            // represent _anything_, particularly when serializing user-provided
+            // Json. Regardless, the only time we should be serializing an
+            // STNumber is when the scale is large.
+            XRPL_ASSERT_PARTS(
+                Number::getMantissaScale() == MantissaRange::large,
+                "xrpl::STNumber::add",
+                "STNumber only used with large mantissa scale");
+#endif
+        }
+    }
+
+    XRPL_ASSERT_PARTS(
+        mantissa <= std::numeric_limits<std::int64_t>::max() &&
+            mantissa >= std::numeric_limits<std::int64_t>::min(),
+        "xrpl::STNumber::add",
+        "mantissa in valid range");
+    s.add64(mantissa);
+    s.add32(exponent);
 }
 
 Number const&
@@ -97,8 +133,7 @@ bool
 STNumber::isEquivalent(STBase const& t) const
 {
     XRPL_ASSERT(
-        t.getSType() == this->getSType(),
-        "ripple::STNumber::isEquivalent : field type match");
+        t.getSType() == this->getSType(), "xrpl::STNumber::isEquivalent : field type match");
     STNumber const& v = dynamic_cast<STNumber const&>(t);
     return value_ == v;
 }
@@ -115,4 +150,103 @@ operator<<(std::ostream& out, STNumber const& rhs)
     return out << rhs.getText();
 }
 
-}  // namespace ripple
+NumberParts
+partsFromString(std::string const& number)
+{
+    static boost::regex const reNumber(
+        "^"                       // the beginning of the string
+        "([-+]?)"                 // (optional) + or - character
+        "(0|[1-9][0-9]*)"         // a number (no leading zeroes, unless 0)
+        "(\\.([0-9]+))?"          // (optional) period followed by any number
+        "([eE]([+-]?)([0-9]+))?"  // (optional) E, optional + or -, any number
+        "$",
+        boost::regex_constants::optimize);
+
+    boost::smatch match;
+
+    if (!boost::regex_match(number, match, reNumber))
+        Throw<std::runtime_error>("'" + number + "' is not a number");
+
+    // Match fields:
+    //   0 = whole input
+    //   1 = sign
+    //   2 = integer portion
+    //   3 = whole fraction (with '.')
+    //   4 = fraction (without '.')
+    //   5 = whole exponent (with 'e')
+    //   6 = exponent sign
+    //   7 = exponent number
+
+    bool negative = (match[1].matched && (match[1] == "-"));
+
+    std::uint64_t mantissa;
+    int exponent;
+
+    if (!match[4].matched)  // integer only
+    {
+        mantissa = boost::lexical_cast<std::uint64_t>(std::string(match[2]));
+        exponent = 0;
+    }
+    else
+    {
+        // integer and fraction
+        mantissa = boost::lexical_cast<std::uint64_t>(match[2] + match[4]);
+        exponent = -(match[4].length());
+    }
+
+    if (match[5].matched)
+    {
+        // we have an exponent
+        if (match[6].matched && (match[6] == "-"))
+            exponent -= boost::lexical_cast<int>(std::string(match[7]));
+        else
+            exponent += boost::lexical_cast<int>(std::string(match[7]));
+    }
+
+    return {mantissa, exponent, negative};
+}
+
+STNumber
+numberFromJson(SField const& field, Json::Value const& value)
+{
+    NumberParts parts;
+
+    if (value.isInt())
+    {
+        if (value.asInt() >= 0)
+        {
+            parts.mantissa = value.asInt();
+        }
+        else
+        {
+            parts.mantissa = value.asAbsUInt();
+            parts.negative = true;
+        }
+    }
+    else if (value.isUInt())
+    {
+        parts.mantissa = value.asUInt();
+    }
+    else if (value.isString())
+    {
+        parts = partsFromString(value.asString());
+
+        XRPL_ASSERT_PARTS(
+            !getCurrentTransactionRules(), "xrpld::numberFromJson", "Not in a Transactor context");
+
+        // Number mantissas are much bigger than the allowable parsed values, so
+        // it can't be out of range.
+        static_assert(
+            std::numeric_limits<std::uint64_t>::max() >=
+            std::numeric_limits<decltype(parts.mantissa)>::max());
+    }
+    else
+    {
+        Throw<std::runtime_error>("not a number");
+    }
+
+    return STNumber{
+        field, Number{parts.negative, parts.mantissa, parts.exponent, Number::normalized{}}};
+}
+
+}  // namespace xrpl

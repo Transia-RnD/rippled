@@ -1,30 +1,10 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_PROTOCOL_TXFLAGS_H_INCLUDED
-#define RIPPLE_PROTOCOL_TXFLAGS_H_INCLUDED
+#pragma once
 
 #include <xrpl/protocol/LedgerFormats.h>
 
 #include <cstdint>
 
-namespace ripple {
+namespace xrpl {
 
 /** Transaction flags.
 
@@ -58,7 +38,8 @@ namespace ripple {
 // clang-format off
 // Universal Transaction flags:
 constexpr std::uint32_t tfFullyCanonicalSig                = 0x80000000;
-constexpr std::uint32_t tfUniversal                        = tfFullyCanonicalSig;
+constexpr std::uint32_t tfInnerBatchTxn                    = 0x40000000;
+constexpr std::uint32_t tfUniversal                        = tfFullyCanonicalSig | tfInnerBatchTxn;
 constexpr std::uint32_t tfUniversalMask                    = ~tfUniversal;
 
 // AccountSet flags:
@@ -91,14 +72,16 @@ constexpr std::uint32_t asfDisallowIncomingCheck           = 13;
 constexpr std::uint32_t asfDisallowIncomingPayChan         = 14;
 constexpr std::uint32_t asfDisallowIncomingTrustline       = 15;
 constexpr std::uint32_t asfAllowTrustLineClawback          = 16;
+constexpr std::uint32_t asfAllowTrustLineLocking           = 17;
 
 // OfferCreate flags:
 constexpr std::uint32_t tfPassive                          = 0x00010000;
 constexpr std::uint32_t tfImmediateOrCancel                = 0x00020000;
 constexpr std::uint32_t tfFillOrKill                       = 0x00040000;
 constexpr std::uint32_t tfSell                             = 0x00080000;
+constexpr std::uint32_t tfHybrid                           = 0x00100000;
 constexpr std::uint32_t tfOfferCreateMask =
-    ~(tfUniversal | tfPassive | tfImmediateOrCancel | tfFillOrKill | tfSell);
+    ~(tfUniversal | tfPassive | tfImmediateOrCancel | tfFillOrKill | tfSell | tfHybrid);
 
 // Payment flags:
 constexpr std::uint32_t tfNoRippleDirect                   = 0x00010000;
@@ -119,10 +102,13 @@ constexpr std::uint32_t tfClearDeepFreeze                  = 0x00800000;
 constexpr std::uint32_t tfTrustSetMask =
     ~(tfUniversal | tfSetfAuth | tfSetNoRipple | tfClearNoRipple | tfSetFreeze |
       tfClearFreeze | tfSetDeepFreeze | tfClearDeepFreeze);
+constexpr std::uint32_t tfTrustSetPermissionMask = ~(tfUniversal | tfSetfAuth | tfSetFreeze | tfClearFreeze);
 
 // EnableAmendment flags:
 constexpr std::uint32_t tfGotMajority                      = 0x00010000;
 constexpr std::uint32_t tfLostMajority                     = 0x00020000;
+constexpr std::uint32_t tfChangeMask =
+    ~( tfUniversal | tfGotMajority | tfLostMajority);
 
 // PaymentChannelClaim flags:
 constexpr std::uint32_t tfRenew                            = 0x00010000;
@@ -137,7 +123,8 @@ constexpr std::uint32_t const tfTransferable               = 0x00000008;
 constexpr std::uint32_t const tfMutable                    = 0x00000010;
 
 // MPTokenIssuanceCreate flags:
-// NOTE - there is intentionally no flag here for lsfMPTLocked, which this transaction cannot mutate. 
+// Note: tf/lsfMPTLocked is intentionally omitted, since this transaction
+// is not allowed to modify it.
 constexpr std::uint32_t const tfMPTCanLock                 = lsfMPTCanLock;
 constexpr std::uint32_t const tfMPTRequireAuth             = lsfMPTRequireAuth;
 constexpr std::uint32_t const tfMPTCanEscrow               = lsfMPTCanEscrow;
@@ -147,6 +134,20 @@ constexpr std::uint32_t const tfMPTCanClawback             = lsfMPTCanClawback;
 constexpr std::uint32_t const tfMPTokenIssuanceCreateMask  =
   ~(tfUniversal | tfMPTCanLock | tfMPTRequireAuth | tfMPTCanEscrow | tfMPTCanTrade | tfMPTCanTransfer | tfMPTCanClawback);
 
+// MPTokenIssuanceCreate MutableFlags:
+// Indicating specific fields or flags may be changed after issuance.
+constexpr std::uint32_t const tmfMPTCanMutateCanLock = lsmfMPTCanMutateCanLock;
+constexpr std::uint32_t const tmfMPTCanMutateRequireAuth = lsmfMPTCanMutateRequireAuth;
+constexpr std::uint32_t const tmfMPTCanMutateCanEscrow = lsmfMPTCanMutateCanEscrow;
+constexpr std::uint32_t const tmfMPTCanMutateCanTrade = lsmfMPTCanMutateCanTrade;
+constexpr std::uint32_t const tmfMPTCanMutateCanTransfer = lsmfMPTCanMutateCanTransfer;
+constexpr std::uint32_t const tmfMPTCanMutateCanClawback = lsmfMPTCanMutateCanClawback;
+constexpr std::uint32_t const tmfMPTCanMutateMetadata = lsmfMPTCanMutateMetadata;
+constexpr std::uint32_t const tmfMPTCanMutateTransferFee = lsmfMPTCanMutateTransferFee;
+constexpr std::uint32_t const tmfMPTokenIssuanceCreateMutableMask =
+  ~(tmfMPTCanMutateCanLock | tmfMPTCanMutateRequireAuth | tmfMPTCanMutateCanEscrow | tmfMPTCanMutateCanTrade
+    | tmfMPTCanMutateCanTransfer | tmfMPTCanMutateCanClawback | tmfMPTCanMutateMetadata | tmfMPTCanMutateTransferFee);
+
 // MPTokenAuthorize flags:
 constexpr std::uint32_t const tfMPTUnauthorize             = 0x00000001;
 constexpr std::uint32_t const tfMPTokenAuthorizeMask  = ~(tfUniversal | tfMPTUnauthorize);
@@ -155,6 +156,26 @@ constexpr std::uint32_t const tfMPTokenAuthorizeMask  = ~(tfUniversal | tfMPTUna
 constexpr std::uint32_t const tfMPTLock                   = 0x00000001;
 constexpr std::uint32_t const tfMPTUnlock                 = 0x00000002;
 constexpr std::uint32_t const tfMPTokenIssuanceSetMask  = ~(tfUniversal | tfMPTLock | tfMPTUnlock);
+constexpr std::uint32_t const tfMPTokenIssuanceSetPermissionMask = ~(tfUniversal | tfMPTLock | tfMPTUnlock);
+
+// MPTokenIssuanceSet MutableFlags:
+// Set or Clear flags.
+constexpr std::uint32_t const tmfMPTSetCanLock             = 0x00000001;
+constexpr std::uint32_t const tmfMPTClearCanLock           = 0x00000002;
+constexpr std::uint32_t const tmfMPTSetRequireAuth         = 0x00000004;
+constexpr std::uint32_t const tmfMPTClearRequireAuth       = 0x00000008;
+constexpr std::uint32_t const tmfMPTSetCanEscrow           = 0x00000010;
+constexpr std::uint32_t const tmfMPTClearCanEscrow         = 0x00000020;
+constexpr std::uint32_t const tmfMPTSetCanTrade            = 0x00000040;
+constexpr std::uint32_t const tmfMPTClearCanTrade          = 0x00000080;
+constexpr std::uint32_t const tmfMPTSetCanTransfer         = 0x00000100;
+constexpr std::uint32_t const tmfMPTClearCanTransfer       = 0x00000200;
+constexpr std::uint32_t const tmfMPTSetCanClawback         = 0x00000400;
+constexpr std::uint32_t const tmfMPTClearCanClawback       = 0x00000800;
+constexpr std::uint32_t const tmfMPTokenIssuanceSetMutableMask = ~(tmfMPTSetCanLock | tmfMPTClearCanLock |
+    tmfMPTSetRequireAuth | tmfMPTClearRequireAuth | tmfMPTSetCanEscrow | tmfMPTClearCanEscrow |
+    tmfMPTSetCanTrade | tmfMPTClearCanTrade | tmfMPTSetCanTransfer | tmfMPTClearCanTransfer |
+    tmfMPTSetCanClawback | tmfMPTClearCanClawback);
 
 // MPTokenIssuanceDestroy flags:
 constexpr std::uint32_t const tfMPTokenIssuanceDestroyMask  = ~tfUniversal;
@@ -225,6 +246,51 @@ constexpr std::uint32_t tfAMMClawbackMask = ~(tfUniversal | tfClawTwoAssets);
 constexpr std::uint32_t tfClearAccountCreateAmount     = 0x00010000;
 constexpr std::uint32_t tfBridgeModifyMask = ~(tfUniversal | tfClearAccountCreateAmount);
 
+// VaultCreate flags:
+constexpr std::uint32_t const tfVaultPrivate               = 0x00010000;
+static_assert(tfVaultPrivate == lsfVaultPrivate);
+constexpr std::uint32_t const tfVaultShareNonTransferable  = 0x00020000;
+constexpr std::uint32_t const tfVaultCreateMask = ~(tfUniversal | tfVaultPrivate | tfVaultShareNonTransferable);
+
+// Batch Flags:
+constexpr std::uint32_t tfAllOrNothing                 = 0x00010000;
+constexpr std::uint32_t tfOnlyOne                      = 0x00020000;
+constexpr std::uint32_t tfUntilFailure                 = 0x00040000;
+constexpr std::uint32_t tfIndependent                  = 0x00080000;
+/**
+ * @note If nested Batch transactions are supported in the future, the tfInnerBatchTxn flag
+ *  will need to be removed from this mask to allow Batch transaction to be inside
+ *  the sfRawTransactions array.
+ */
+constexpr std::uint32_t const tfBatchMask =
+    ~(tfUniversal | tfAllOrNothing | tfOnlyOne | tfUntilFailure | tfIndependent) | tfInnerBatchTxn;
+
+// LoanSet and LoanPay flags:
+// LoanSet: True, indicates the loan supports overpayments
+// LoanPay: True, indicates any excess in this payment can be used
+// as an overpayment. False, no overpayments will be taken.
+constexpr std::uint32_t const tfLoanOverpayment = 0x00010000;
+// LoanPay exclusive flags:
+// tfLoanFullPayment: True, indicates that the payment is an early
+// full payment. It must pay the entire loan including close
+// interest and fees, or it will fail. False: Not a full payment.
+constexpr std::uint32_t const tfLoanFullPayment = 0x00020000;
+// tfLoanLatePayment: True, indicates that the payment is late,
+// and includes late interest and fees. If the loan is not late,
+// it will fail. False: not a late payment. If the current payment
+// is overdue, the transaction will fail.
+constexpr std::uint32_t const tfLoanLatePayment = 0x00040000;
+constexpr std::uint32_t const tfLoanSetMask = ~(tfUniversal |
+    tfLoanOverpayment);
+constexpr std::uint32_t const tfLoanPayMask = ~(tfUniversal |
+    tfLoanOverpayment | tfLoanFullPayment | tfLoanLatePayment);
+
+// LoanManage flags:
+constexpr std::uint32_t const tfLoanDefault = 0x00010000;
+constexpr std::uint32_t const tfLoanImpair = 0x00020000;
+constexpr std::uint32_t const tfLoanUnimpair = 0x00040000;
+constexpr std::uint32_t const tfLoanManageMask = ~(tfUniversal | tfLoanDefault | tfLoanImpair | tfLoanUnimpair);
+
 // OptionCreate flags:
 constexpr std::uint32_t tfPut     = 0x00010000;
 constexpr std::uint32_t tfMarket  = 0x00020000;
@@ -239,6 +305,4 @@ constexpr std::uint32_t tfOptionSettleMask = ~(tfUniversal | tfExpire | tfClose 
 
 // clang-format on
 
-}  // namespace ripple
-
-#endif
+}  // namespace xrpl

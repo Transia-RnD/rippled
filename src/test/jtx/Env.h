@@ -1,24 +1,4 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_TEST_JTX_ENV_H_INCLUDED
-#define RIPPLE_TEST_JTX_ENV_H_INCLUDED
+#pragma once
 
 #include <test/jtx/AbstractClient.h>
 #include <test/jtx/Account.h>
@@ -28,6 +8,7 @@
 #include <test/jtx/envconfig.h>
 #include <test/jtx/require.h>
 #include <test/jtx/tags.h>
+#include <test/jtx/vault.h>
 #include <test/unit_test/SuiteJournal.h>
 
 #include <xrpld/app/ledger/Ledger.h>
@@ -35,13 +16,13 @@
 #include <xrpld/app/main/Application.h>
 #include <xrpld/app/paths/Pathfinder.h>
 #include <xrpld/core/Config.h>
-#include <xrpld/rpc/detail/RPCHelpers.h>
 
 #include <xrpl/basics/Log.h>
 #include <xrpl/basics/chrono.h>
 #include <xrpl/beast/utility/Journal.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/json/to_string.h>
+#include <xrpl/protocol/ApiVersion.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
 #include <xrpl/protocol/Issue.h>
@@ -50,6 +31,7 @@
 #include <xrpl/protocol/STTx.h>
 
 #include <functional>
+#include <source_location>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -57,9 +39,31 @@
 #include <utility>
 #include <vector>
 
-namespace ripple {
+namespace xrpl {
 namespace test {
 namespace jtx {
+
+/** Wrapper that captures std::source_location when implicitly constructed.
+    This solves the problem of combining std::source_location with variadic
+    templates. The std::source_location default argument is evaluated at the
+    call site when the wrapper is constructed via implicit conversion.
+
+    This is a template struct that holds the value directly, allowing implicit
+    conversion without template argument deduction issues via CTAD.
+*/
+template <class T>
+struct WithSourceLocation
+{
+    T value;
+    std::source_location loc;
+
+    // Non-explicit constructor allows implicit conversion.
+    // The default argument for loc is evaluated at the call site.
+    WithSourceLocation(T v, std::source_location l = std::source_location::current())
+        : value(std::move(v)), loc(l)
+    {
+    }
+};
 
 /** Designate accounts as no-ripple in Env::fund */
 template <class... Args>
@@ -70,10 +74,10 @@ noripple(Account const& account, Args const&... args)
 }
 
 inline FeatureBitset
-supported_amendments()
+testable_amendments()
 {
-    static const FeatureBitset ids = [] {
-        auto const& sa = ripple::detail::supportedAmendments();
+    static FeatureBitset const ids = [] {
+        auto const& sa = allAmendments();
         std::vector<uint256> feats;
         feats.reserve(sa.size());
         for (auto const& [s, vote] : sa)
@@ -82,8 +86,7 @@ supported_amendments()
             if (auto const f = getRegisteredFeature(s))
                 feats.push_back(*f);
             else
-                Throw<std::runtime_error>(
-                    "Unknown feature: " + s + "  in supportedAmendments.");
+                Throw<std::runtime_error>("Unknown feature: " + s + "  in allAmendments.");
         }
         return FeatureBitset(feats);
     }();
@@ -105,9 +108,7 @@ public:
     ~SuiteLogs() override = default;
 
     std::unique_ptr<beast::Journal::Sink>
-    makeSink(
-        std::string const& partition,
-        beast::severities::Severity threshold) override
+    makeSink(std::string const& partition, beast::severities::Severity threshold) override
     {
         return std::make_unique<SuiteJournalSink>(partition, threshold, suite_);
     }
@@ -191,10 +192,9 @@ public:
     {
         memoize(Account::master);
         Pathfinder::initPathTable();
-        foreachFeature(
-            features, [&appFeats = app().config().features](uint256 const& f) {
-                appFeats.insert(f);
-            });
+        foreachFeature(features, [&appFeats = app().config().features](uint256 const& f) {
+            appFeats.insert(f);
+        });
     }
 
     /**
@@ -233,11 +233,7 @@ public:
         std::unique_ptr<Config> config,
         std::unique_ptr<Logs> logs = nullptr,
         beast::severities::Severity thresh = beast::severities::kError)
-        : Env(suite_,
-              std::move(config),
-              supported_amendments(),
-              std::move(logs),
-              thresh)
+        : Env(suite_, std::move(config), testable_amendments(), std::move(logs), thresh)
     {
     }
 
@@ -250,7 +246,9 @@ public:
      *
      * @param suite_ the current unit_test::suite
      */
-    Env(beast::unit_test::suite& suite_) : Env(suite_, envconfig())
+    Env(beast::unit_test::suite& suite_,
+        beast::severities::Severity thresh = beast::severities::kError)
+        : Env(suite_, envconfig(), nullptr, thresh)
     {
     }
 
@@ -469,7 +467,19 @@ public:
     */
     // VFALCO NOTE This should return a unit-less amount
     PrettyAmount
+    balance(Account const& account, Asset const& asset) const;
+
+    PrettyAmount
     balance(Account const& account, Issue const& issue) const;
+
+    PrettyAmount
+    balance(Account const& account, MPTIssue const& mptIssue) const;
+
+    /** Returns the IOU limit on an account.
+        Returns 0 if the trust line does not exist.
+    */
+    PrettyAmount
+    limit(Account const& account, Issue const& issue) const;
 
     /** Return the number of objects owned by an account.
      * Returns 0 if the account does not exist.
@@ -545,13 +555,16 @@ public:
         This calls postconditions.
     */
     virtual void
-    submit(JTx const& jt);
+    submit(JTx const& jt, std::source_location const& loc = std::source_location::current());
 
     /** Use the submit RPC command with a provided JTx object.
         This calls postconditions.
     */
     void
-    sign_and_submit(JTx const& jt, Json::Value params = Json::nullValue);
+    sign_and_submit(
+        JTx const& jt,
+        Json::Value params = Json::nullValue,
+        std::source_location const& loc = std::source_location::current());
 
     /** Check expected postconditions
         of JTx submission.
@@ -560,23 +573,39 @@ public:
     postconditions(
         JTx const& jt,
         ParsedResult const& parsed,
-        Json::Value const& jr = Json::Value());
+        Json::Value const& jr = Json::Value(),
+        std::source_location const& loc = std::source_location::current());
 
     /** Apply funclets and submit. */
     /** @{ */
-    template <class JsonValue, class... FN>
+    template <class... FN>
     Env&
-    apply(JsonValue&& jv, FN const&... fN)
+    apply(WithSourceLocation<Json::Value> jv, FN const&... fN)
     {
-        submit(jt(std::forward<JsonValue>(jv), fN...));
+        submit(jt(std::move(jv.value), fN...), jv.loc);
         return *this;
     }
 
-    template <class JsonValue, class... FN>
+    template <class... FN>
     Env&
-    operator()(JsonValue&& jv, FN const&... fN)
+    apply(WithSourceLocation<JTx> jv, FN const&... fN)
     {
-        return apply(std::forward<JsonValue>(jv), fN...);
+        submit(jt(std::move(jv.value), fN...), jv.loc);
+        return *this;
+    }
+
+    template <class... FN>
+    Env&
+    operator()(WithSourceLocation<Json::Value> jv, FN const&... fN)
+    {
+        return apply(std::move(jv), fN...);
+    }
+
+    template <class... FN>
+    Env&
+    operator()(WithSourceLocation<JTx> jv, FN const&... fN)
+    {
+        return apply(std::move(jv), fN...);
     }
     /** @} */
 
@@ -588,13 +617,16 @@ public:
     }
 
     /** Return metadata for the last JTx.
-
-        Effects:
-
-            The open ledger is closed as if by a call
-            to close(). The metadata for the last
-            transaction ID, if any, is returned.
-    */
+     *
+     *  NOTE: this has a side effect of closing the open ledger.
+     *  The ledger will only be closed if it includes transactions.
+     *
+     *  Effects:
+     *
+     *      The open ledger is closed as if by a call
+     *      to close(). The metadata for the last
+     *      transaction ID, if any, is returned.
+     */
     std::shared_ptr<STObject const>
     meta();
 
@@ -617,6 +649,12 @@ public:
 
     void
     disableFeature(uint256 const feature);
+
+    bool
+    enabled(uint256 feature) const
+    {
+        return current()->rules().enabled(feature);
+    }
 
 private:
     void
@@ -695,11 +733,7 @@ public:
 
     template <class... Accounts>
     void
-    trust(
-        STAmount const& amount,
-        Account const& to0,
-        Account const& to1,
-        Accounts const&... toN)
+    trust(STAmount const& amount, Account const& to0, Account const& to1, Accounts const&... toN)
     {
         trust(amount, to0);
         trust(amount, to1, toN...);
@@ -772,10 +806,7 @@ Env::rpc(
     std::string const& cmd,
     Args&&... args)
 {
-    return do_rpc(
-        apiVersion,
-        std::vector<std::string>{cmd, std::forward<Args>(args)...},
-        headers);
+    return do_rpc(apiVersion, std::vector<std::string>{cmd, std::forward<Args>(args)...}, headers);
 }
 
 template <class... Args>
@@ -806,14 +837,9 @@ template <class... Args>
 Json::Value
 Env::rpc(std::string const& cmd, Args&&... args)
 {
-    return rpc(
-        std::unordered_map<std::string, std::string>(),
-        cmd,
-        std::forward<Args>(args)...);
+    return rpc(std::unordered_map<std::string, std::string>(), cmd, std::forward<Args>(args)...);
 }
 
 }  // namespace jtx
 }  // namespace test
-}  // namespace ripple
-
-#endif
+}  // namespace xrpl

@@ -1,0 +1,186 @@
+#include <xrpl/beast/utility/instrumentation.h>
+#include <xrpl/protocol/Feature.h>
+#include <xrpl/protocol/Permissions.h>
+#include <xrpl/protocol/jss.h>
+
+namespace xrpl {
+
+Permission::Permission()
+{
+    txFeatureMap_ = {
+#pragma push_macro("TRANSACTION")
+#undef TRANSACTION
+
+#define TRANSACTION(tag, value, name, delegable, amendment, ...) {value, amendment},
+
+#include <xrpl/protocol/detail/transactions.macro>
+
+#undef TRANSACTION
+#pragma pop_macro("TRANSACTION")
+    };
+
+    delegableTx_ = {
+#pragma push_macro("TRANSACTION")
+#undef TRANSACTION
+
+#define TRANSACTION(tag, value, name, delegable, ...) {value, delegable},
+
+#include <xrpl/protocol/detail/transactions.macro>
+
+#undef TRANSACTION
+#pragma pop_macro("TRANSACTION")
+    };
+
+    granularPermissionMap_ = {
+#pragma push_macro("PERMISSION")
+#undef PERMISSION
+
+#define PERMISSION(type, txType, value) {#type, type},
+
+#include <xrpl/protocol/detail/permissions.macro>
+
+#undef PERMISSION
+#pragma pop_macro("PERMISSION")
+    };
+
+    granularNameMap_ = {
+#pragma push_macro("PERMISSION")
+#undef PERMISSION
+
+#define PERMISSION(type, txType, value) {type, #type},
+
+#include <xrpl/protocol/detail/permissions.macro>
+
+#undef PERMISSION
+#pragma pop_macro("PERMISSION")
+    };
+
+    granularTxTypeMap_ = {
+#pragma push_macro("PERMISSION")
+#undef PERMISSION
+
+#define PERMISSION(type, txType, value) {type, txType},
+
+#include <xrpl/protocol/detail/permissions.macro>
+
+#undef PERMISSION
+#pragma pop_macro("PERMISSION")
+    };
+
+    for ([[maybe_unused]] auto const& permission : granularPermissionMap_)
+        XRPL_ASSERT(
+            permission.second > UINT16_MAX,
+            "xrpl::Permission::granularPermissionMap_ : granular permission "
+            "value must not exceed the maximum uint16_t value.");
+}
+
+Permission const&
+Permission::getInstance()
+{
+    static Permission const instance;
+    return instance;
+}
+
+std::optional<std::string>
+Permission::getPermissionName(std::uint32_t const value) const
+{
+    auto const permissionValue = static_cast<GranularPermissionType>(value);
+    if (auto const granular = getGranularName(permissionValue))
+        return *granular;
+
+    // not a granular permission, check if it maps to a transaction type
+    auto const txType = permissionToTxType(value);
+    if (auto const* item = TxFormats::getInstance().findByType(txType); item != nullptr)
+        return item->getName();
+
+    return std::nullopt;
+}
+
+std::optional<std::uint32_t>
+Permission::getGranularValue(std::string const& name) const
+{
+    auto const it = granularPermissionMap_.find(name);
+    if (it != granularPermissionMap_.end())
+        return static_cast<uint32_t>(it->second);
+
+    return std::nullopt;
+}
+
+std::optional<std::string>
+Permission::getGranularName(GranularPermissionType const& value) const
+{
+    auto const it = granularNameMap_.find(value);
+    if (it != granularNameMap_.end())
+        return it->second;
+
+    return std::nullopt;
+}
+
+std::optional<TxType>
+Permission::getGranularTxType(GranularPermissionType const& gpType) const
+{
+    auto const it = granularTxTypeMap_.find(gpType);
+    if (it != granularTxTypeMap_.end())
+        return it->second;
+
+    return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<uint256 const>> const
+Permission::getTxFeature(TxType txType) const
+{
+    auto const txFeaturesIt = txFeatureMap_.find(txType);
+    XRPL_ASSERT(
+        txFeaturesIt != txFeatureMap_.end(),
+        "xrpl::Permissions::getTxFeature : tx exists in txFeatureMap_");
+
+    if (txFeaturesIt->second == uint256{})
+        return std::nullopt;
+    return txFeaturesIt->second;
+}
+
+bool
+Permission::isDelegable(std::uint32_t const& permissionValue, Rules const& rules) const
+{
+    auto const granularPermission =
+        getGranularName(static_cast<GranularPermissionType>(permissionValue));
+    if (granularPermission)
+        // granular permissions are always allowed to be delegated
+        return true;
+
+    auto const txType = permissionToTxType(permissionValue);
+    auto const it = delegableTx_.find(txType);
+
+    if (it == delegableTx_.end())
+        return false;
+
+    auto const txFeaturesIt = txFeatureMap_.find(txType);
+    XRPL_ASSERT(
+        txFeaturesIt != txFeatureMap_.end(),
+        "xrpl::Permissions::isDelegable : tx exists in txFeatureMap_");
+
+    // Delegation is only allowed if the required amendment for the transaction
+    // is enabled. For transactions that do not require an amendment, delegation
+    // is always allowed.
+    if (txFeaturesIt->second != uint256{} && !rules.enabled(txFeaturesIt->second))
+        return false;
+
+    if (it->second == Delegation::notDelegable)
+        return false;
+
+    return true;
+}
+
+uint32_t
+Permission::txToPermissionType(TxType const& type) const
+{
+    return static_cast<uint32_t>(type) + 1;
+}
+
+TxType
+Permission::permissionToTxType(uint32_t const& value) const
+{
+    return static_cast<TxType>(value - 1);
+}
+
+}  // namespace xrpl

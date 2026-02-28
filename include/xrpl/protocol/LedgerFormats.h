@@ -1,28 +1,8 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_PROTOCOL_LEDGERFORMATS_H_INCLUDED
-#define RIPPLE_PROTOCOL_LEDGERFORMATS_H_INCLUDED
+#pragma once
 
 #include <xrpl/protocol/KnownFormats.h>
 
-namespace ripple {
+namespace xrpl {
 
 /** Identifiers for on-ledger objects.
 
@@ -56,7 +36,7 @@ enum LedgerEntryType : std::uint16_t
 #pragma push_macro("LEDGER_ENTRY")
 #undef LEDGER_ENTRY
 
-#define LEDGER_ENTRY(tag, value, name, rpcName, fields) tag = value,
+#define LEDGER_ENTRY(tag, value, ...) tag = value,
 
 #include <xrpl/protocol/detail/ledger_entries.macro>
 
@@ -132,7 +112,7 @@ enum LedgerSpecificFlags {
     lsfNoFreeze = 0x00200000,       // True, cannot freeze ripple states
     lsfGlobalFreeze = 0x00400000,   // True, all assets frozen
     lsfDefaultRipple =
-        0x00800000,               // True, trust lines allow rippling by default
+        0x00800000,               // True, incoming trust lines allow rippling by default
     lsfDepositAuth = 0x01000000,  // True, all deposits require authorization
 /*  // reserved for Hooks amendment
     lsfTshCollect = 0x02000000,     // True, allow TSH collect-calls to acc hooks
@@ -145,13 +125,15 @@ enum LedgerSpecificFlags {
         0x10000000,               // True, reject new paychans
     lsfDisallowIncomingTrustline =
         0x20000000,               // True, reject new trustlines (only if no issued assets)
-    // 0x40000000 is available
+    lsfAllowTrustLineLocking =
+        0x40000000,               // True, enable trustline locking
     lsfAllowTrustLineClawback =
         0x80000000,               // True, enable clawback
 
     // ltOFFER
     lsfPassive = 0x00010000,
     lsfSell = 0x00020000,  // True, offer was placed as a sell.
+    lsfHybrid = 0x00040000,  // True, offer is hybrid.
 
     // ltRIPPLE_STATE
     lsfLowReserve = 0x00010000,  // True, if entry counts toward reserve.
@@ -186,11 +168,28 @@ enum LedgerSpecificFlags {
     lsfMPTCanTransfer = 0x00000020,
     lsfMPTCanClawback = 0x00000040,
 
+    lsmfMPTCanMutateCanLock = 0x00000002,
+    lsmfMPTCanMutateRequireAuth = 0x00000004,
+    lsmfMPTCanMutateCanEscrow = 0x00000008,
+    lsmfMPTCanMutateCanTrade = 0x00000010,
+    lsmfMPTCanMutateCanTransfer = 0x00000020,
+    lsmfMPTCanMutateCanClawback = 0x00000040,
+    lsmfMPTCanMutateMetadata = 0x00010000,
+    lsmfMPTCanMutateTransferFee = 0x00020000,
+
     // ltMPTOKEN
     lsfMPTAuthorized = 0x00000002,
 
     // ltCREDENTIAL
     lsfAccepted = 0x00010000,
+
+    // ltVAULT
+    lsfVaultPrivate = 0x00010000,
+
+    // ltLOAN
+    lsfLoanDefault = 0x00010000,
+    lsfLoanImpaired = 0x00020000,
+    lsfLoanOverpayment = 0x00040000, // True, loan allows overpayments
 };
 
 //------------------------------------------------------------------------------
@@ -210,6 +209,4 @@ public:
     getInstance();
 };
 
-}  // namespace ripple
-
-#endif
+}  // namespace xrpl

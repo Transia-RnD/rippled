@@ -1,0 +1,49 @@
+#if !defined(PERMISSION)
+#error "undefined macro: PERMISSION"
+#endif
+
+/**
+ * PERMISSION(name, type, txType, value)
+ *
+ * This macro defines a permission:
+ * name: the name of the permission.
+ * type: the GranularPermissionType enum.
+ * txType: the corresponding TxType for this permission.
+ * value: the uint32 numeric value for the enum type.
+ */
+
+/** This permission grants the delegated account the ability to authorize a trustline. */
+PERMISSION(TrustlineAuthorize, ttTRUST_SET, 65537)
+
+/** This permission grants the delegated account the ability to freeze a trustline. */
+PERMISSION(TrustlineFreeze, ttTRUST_SET, 65538)
+
+/** This permission grants the delegated account the ability to unfreeze a trustline. */
+PERMISSION(TrustlineUnfreeze, ttTRUST_SET, 65539)
+
+/** This permission grants the delegated account the ability to set Domain. */
+PERMISSION(AccountDomainSet, ttACCOUNT_SET, 65540)
+
+/** This permission grants the delegated account the ability to set EmailHashSet. */
+PERMISSION(AccountEmailHashSet, ttACCOUNT_SET, 65541)
+
+/** This permission grants the delegated account the ability to set MessageKey. */
+PERMISSION(AccountMessageKeySet, ttACCOUNT_SET, 65542)
+
+/** This permission grants the delegated account the ability to set TransferRate. */
+PERMISSION(AccountTransferRateSet, ttACCOUNT_SET, 65543)
+
+/** This permission grants the delegated account the ability to set TickSize. */
+PERMISSION(AccountTickSizeSet, ttACCOUNT_SET, 65544)
+
+/** This permission grants the delegated account the ability to mint payment, which means sending a payment for a currency where the sending account is the issuer. */
+PERMISSION(PaymentMint, ttPAYMENT, 65545)
+
+/** This permission grants the delegated account the ability to burn payment, which means sending a payment for a currency where the destination account is the issuer */
+PERMISSION(PaymentBurn, ttPAYMENT, 65546)
+
+/** This permission grants the delegated account the ability to lock MPToken. */
+PERMISSION(MPTokenIssuanceLock, ttMPTOKEN_ISSUANCE_SET, 65547)
+
+/** This permission grants the delegated account the ability to unlock MPToken. */
+PERMISSION(MPTokenIssuanceUnlock, ttMPTOKEN_ISSUANCE_SET, 65548)

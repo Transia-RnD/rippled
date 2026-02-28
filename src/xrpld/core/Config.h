@@ -1,30 +1,12 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_CORE_CONFIG_H_INCLUDED
-#define RIPPLE_CORE_CONFIG_H_INCLUDED
+#pragma once
 
 #include <xrpl/basics/BasicConfig.h>
 #include <xrpl/basics/base_uint.h>
 #include <xrpl/beast/net/IPEndpoint.h>
 #include <xrpl/beast/utility/Journal.h>
+#include <xrpl/core/StartUpType.h>
 #include <xrpl/protocol/SystemParameters.h>  // VFALCO Breaks levelization
+#include <xrpl/rdb/DatabaseCon.h>
 
 #include <boost/filesystem.hpp>  // VFALCO FIX: This include should not be here
 
@@ -35,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-namespace ripple {
+namespace xrpl {
 
 class Rules;
 
@@ -87,6 +69,7 @@ class Config : public BasicConfig
 public:
     // Settings related to the configuration file location and directories
     static char const* const configFileName;
+    static char const* const configLegacyName;
     static char const* const databaseDirName;
     static char const* const validatorsFileName;
 
@@ -143,8 +126,7 @@ public:
     // Entries from [ips_fixed] config stanza
     std::vector<std::string> IPS_FIXED;
 
-    enum StartUpType { FRESH, NORMAL, LOAD, LOAD_FILE, REPLAY, NETWORK };
-    StartUpType START_UP = NORMAL;
+    StartUpType START_UP = StartUpType::NORMAL;
 
     bool START_VALID = false;
 
@@ -155,7 +137,7 @@ public:
     // Network parameters
     uint32_t NETWORK_ID = 0;
 
-    // DEPRECATED - Fee units for a reference transction.
+    // DEPRECATED - Fee units for a reference transaction.
     // Only provided for backwards compatibility in a couple of places
     static constexpr std::uint32_t FEE_UNITS_DEPRECATED = 10;
 
@@ -198,8 +180,7 @@ public:
     int PATH_SEARCH_MAX = 3;
 
     // Validation
-    std::optional<std::size_t>
-        VALIDATION_QUORUM;  // validations to consider ledger authoritative
+    std::optional<std::size_t> VALIDATION_QUORUM;  // validations to consider ledger authoritative
 
     FeeSetup FEES;
 
@@ -242,19 +223,18 @@ public:
     // size, but we allow admins to explicitly set it in the config.
     std::optional<int> SWEEP_INTERVAL;
 
-    // Reduce-relay - these parameters are experimental.
-    // Enable reduce-relay features
-    // Validation/proposal reduce-relay feature
-    bool VP_REDUCE_RELAY_ENABLE = false;
-    // Send squelch message to peers. Generally this config should
-    // have the same value as VP_REDUCE_RELAY_ENABLE. It can be
-    // used for testing the feature's function without
-    // affecting the message relaying. To use it for testing,
-    // set it to false and set VP_REDUCE_RELAY_ENABLE to true.
-    // Squelch messages will not be sent to the peers in this case.
-    // Set log level to debug so that the feature function can be
-    // analyzed.
-    bool VP_REDUCE_RELAY_SQUELCH = false;
+    // Reduce-relay - Experimental parameters to control p2p routing algorithms
+
+    // Enable base squelching of duplicate validation/proposal messages
+    bool VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE = false;
+
+    /////////////////////  !!TEMPORARY CODE BLOCK!! ////////////////////////
+    // Temporary squelching config for the peers selected as a source of  //
+    // validator messages. The config must be removed once squelching is  //
+    // made the default routing algorithm                                 //
+    std::size_t VP_REDUCE_RELAY_SQUELCH_MAX_SELECTED_PEERS = 5;
+    /////////////////    END OF TEMPORARY CODE BLOCK    /////////////////////
+
     // Transaction reduce-relay feature
     bool TX_REDUCE_RELAY_ENABLE = false;
     // If tx reduce-relay feature is disabled
@@ -295,8 +275,7 @@ public:
     // testing sidechains). With this variable the user is able to force rippled
     // to consider the ledger range to be present. It should be used for testing
     // only.
-    std::optional<std::pair<std::uint32_t, std::uint32_t>>
-        FORCED_LEDGER_RANGE_PRESENT;
+    std::optional<std::pair<std::uint32_t, std::uint32_t>> FORCED_LEDGER_RANGE_PRESENT;
 
     std::optional<std::size_t> VALIDATOR_LIST_THRESHOLD;
 
@@ -306,11 +285,7 @@ public:
     /* Be very careful to make sure these bool params
         are in the right order. */
     void
-    setup(
-        std::string const& strConf,
-        bool bQuiet,
-        bool bSilent,
-        bool bStandalone);
+    setup(std::string const& strConf, bool bQuiet, bool bSilent, bool bStandalone);
 
     void
     setupControl(bool bQuiet, bool bSilent, bool bStandalone);
@@ -369,8 +344,7 @@ public:
               defaults in the code for every case.
     */
     int
-    getValueFor(SizedItem item, std::optional<std::size_t> node = std::nullopt)
-        const;
+    getValueFor(SizedItem item, std::optional<std::size_t> node = std::nullopt) const;
 
     beast::Journal
     journal() const
@@ -382,6 +356,7 @@ public:
 FeeSetup
 setup_FeeVote(Section const& section);
 
-}  // namespace ripple
+DatabaseCon::Setup
+setup_DatabaseCon(Config const& c, std::optional<beast::Journal> j = std::nullopt);
 
-#endif
+}  // namespace xrpl

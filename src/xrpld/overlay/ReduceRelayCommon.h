@@ -1,28 +1,8 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright 2020 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_OVERLAY_REDUCERELAYCOMMON_H_INCLUDED
-#define RIPPLE_OVERLAY_REDUCERELAYCOMMON_H_INCLUDED
+#pragma once
 
 #include <chrono>
 
-namespace ripple {
+namespace xrpl {
 
 // Blog post explaining the rationale behind reduction of flooding gossip
 // protocol:
@@ -45,8 +25,8 @@ static constexpr auto IDLED = std::chrono::seconds{8};
 // of messages from the validator. We add peers who reach
 // MIN_MESSAGE_THRESHOLD to considered pool once MAX_SELECTED_PEERS
 // reach MAX_MESSAGE_THRESHOLD.
-static constexpr uint16_t MIN_MESSAGE_THRESHOLD = 9;
-static constexpr uint16_t MAX_MESSAGE_THRESHOLD = 10;
+static constexpr uint16_t MIN_MESSAGE_THRESHOLD = 19;
+static constexpr uint16_t MAX_MESSAGE_THRESHOLD = 20;
 // Max selected peers to choose as the source of messages from validator
 static constexpr uint16_t MAX_SELECTED_PEERS = 5;
 // Wait before reduce-relay feature is enabled on boot up to let
@@ -60,6 +40,4 @@ static constexpr std::size_t MAX_TX_QUEUE_SIZE = 10000;
 
 }  // namespace reduce_relay
 
-}  // namespace ripple
-
-#endif  // RIPPLED_REDUCERELAYCOMMON_H_INCLUDED
+}  // namespace xrpl

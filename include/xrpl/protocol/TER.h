@@ -1,24 +1,4 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012 - 2019 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_PROTOCOL_TER_H_INCLUDED
-#define RIPPLE_PROTOCOL_TER_H_INCLUDED
+#pragma once
 
 #include <xrpl/basics/safe_cast.h>
 #include <xrpl/json/json_value.h>
@@ -28,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 
-namespace ripple {
+namespace xrpl {
 
 // See https://xrpl.org/transaction-results.html
 //
@@ -139,8 +119,8 @@ enum TEMcodes : TERUnderlyingType {
 
     temARRAY_EMPTY,
     temARRAY_TOO_LARGE,
-
     temBAD_TRANSFER_FEE,
+    temINVALID_INNER_BATCH,
 };
 
 //------------------------------------------------------------------------------
@@ -212,19 +192,22 @@ enum TERcodes : TERUnderlyingType {
     // - Hold
     // - Makes hole in sequence which jams transactions.
     terRETRY = -99,
-    terFUNDS_SPENT,  // DEPRECATED.
-    terINSUF_FEE_B,  // Can't pay fee, therefore don't burden network.
-    terNO_ACCOUNT,   // Can't pay fee, therefore don't burden network.
-    terNO_AUTH,      // Not authorized to hold IOUs.
-    terNO_LINE,      // Internal flag.
-    terOWNERS,       // Can't succeed with non-zero owner count.
-    terPRE_SEQ,      // Can't pay fee, no point in forwarding, so don't
-                     // burden network.
-    terLAST,         // DEPRECATED.
-    terNO_RIPPLE,    // Rippling not allowed
-    terQUEUED,       // Transaction is being held in TxQ until fee drops
-    terPRE_TICKET,   // Ticket is not yet in ledger but might be on its way
-    terNO_AMM,       // AMM doesn't exist for the asset pair
+    terFUNDS_SPENT,             // DEPRECATED.
+    terINSUF_FEE_B,             // Can't pay fee, therefore don't burden network.
+    terNO_ACCOUNT,              // Can't pay fee, therefore don't burden network.
+    terNO_AUTH,                 // Not authorized to hold IOUs.
+    terNO_LINE,                 // Internal flag.
+    terOWNERS,                  // Can't succeed with non-zero owner count.
+    terPRE_SEQ,                 // Can't pay fee, no point in forwarding, so don't
+                                // burden network.
+    terLAST,                    // DEPRECATED.
+    terNO_RIPPLE,               // Rippling not allowed
+    terQUEUED,                  // Transaction is being held in TxQ until fee drops
+    terPRE_TICKET,              // Ticket is not yet in ledger but might be on its way
+    terNO_AMM,                  // AMM doesn't exist for the asset pair
+    terADDRESS_COLLISION,       // Failed to allocate AccountID when trying to
+                                // create a pseudo-account
+    terNO_DELEGATE_PERMISSION,  // Delegate does not have permission
 };
 
 //------------------------------------------------------------------------------
@@ -265,6 +248,17 @@ enum TECcodes : TERUnderlyingType {
     // Otherwise, treated as terRETRY.
     //
     // DO NOT CHANGE THESE NUMBERS: They appear in ledger meta data.
+    //
+    // Note:
+    //   tecNO_ENTRY is often used interchangeably with tecOBJECT_NOT_FOUND.
+    //   While there does not seem to be a clear rule which to use when, the
+    //   following guidance will help to keep errors consistent with the
+    //   majority of (but not all) transaction types:
+    // - tecNO_ENTRY : cannot find the primary ledger object on which the
+    //   transaction is being attempted
+    // - tecOBJECT_NOT_FOUND : cannot find the additional object(s) needed to
+    //   complete the transaction
+
     tecCLAIM = 100,
     tecPATH_PARTIAL = 101,
     tecUNFUNDED_ADD = 102,  // Unused legacy code
@@ -344,6 +338,14 @@ enum TECcodes : TERUnderlyingType {
     tecARRAY_TOO_LARGE = 191,
     tecLOCKED = 192,
     tecBAD_CREDENTIALS = 193,
+    tecWRONG_ASSET = 194,
+    tecLIMIT_EXCEEDED = 195,
+    tecPSEUDO_ACCOUNT = 196,
+    tecPRECISION_LOSS = 197,
+    // DEPRECATED: This error code tecNO_DELEGATE_PERMISSION is reserved for
+    // backward compatibility with historical data on non-prod networks, can be
+    // reclaimed after those networks reset.
+    tecNO_DELEGATE_PERMISSION = 198,
 };
 
 //------------------------------------------------------------------------------
@@ -416,8 +418,7 @@ public:
     // Trait tells enable_if which types are allowed for construction.
     template <
         typename T,
-        typename = std::enable_if_t<
-            Trait<std::remove_cv_t<std::remove_reference_t<T>>>::value>>
+        typename = std::enable_if_t<Trait<std::remove_cv_t<std::remove_reference_t<T>>>::value>>
     constexpr TERSubset(T rhs) : code_(TERtoInt(rhs))
     {
     }
@@ -485,66 +486,60 @@ public:
 // Only enabled if both arguments return int if TERtiInt is called with them.
 template <typename L, typename R>
 constexpr auto
-operator==(L const& lhs, R const& rhs)
-    -> std::enable_if_t<
-        std::is_same<decltype(TERtoInt(lhs)), int>::value &&
-            std::is_same<decltype(TERtoInt(rhs)), int>::value,
-        bool>
+operator==(L const& lhs, R const& rhs) -> std::enable_if_t<
+    std::is_same<decltype(TERtoInt(lhs)), int>::value &&
+        std::is_same<decltype(TERtoInt(rhs)), int>::value,
+    bool>
 {
     return TERtoInt(lhs) == TERtoInt(rhs);
 }
 
 template <typename L, typename R>
 constexpr auto
-operator!=(L const& lhs, R const& rhs)
-    -> std::enable_if_t<
-        std::is_same<decltype(TERtoInt(lhs)), int>::value &&
-            std::is_same<decltype(TERtoInt(rhs)), int>::value,
-        bool>
+operator!=(L const& lhs, R const& rhs) -> std::enable_if_t<
+    std::is_same<decltype(TERtoInt(lhs)), int>::value &&
+        std::is_same<decltype(TERtoInt(rhs)), int>::value,
+    bool>
 {
     return TERtoInt(lhs) != TERtoInt(rhs);
 }
 
 template <typename L, typename R>
 constexpr auto
-operator<(L const& lhs, R const& rhs)
-    -> std::enable_if_t<
-        std::is_same<decltype(TERtoInt(lhs)), int>::value &&
-            std::is_same<decltype(TERtoInt(rhs)), int>::value,
-        bool>
+operator<(L const& lhs, R const& rhs) -> std::enable_if_t<
+    std::is_same<decltype(TERtoInt(lhs)), int>::value &&
+        std::is_same<decltype(TERtoInt(rhs)), int>::value,
+    bool>
 {
     return TERtoInt(lhs) < TERtoInt(rhs);
 }
 
 template <typename L, typename R>
 constexpr auto
-operator<=(L const& lhs, R const& rhs)
-    -> std::enable_if_t<
-        std::is_same<decltype(TERtoInt(lhs)), int>::value &&
-            std::is_same<decltype(TERtoInt(rhs)), int>::value,
-        bool>
+operator<=(L const& lhs, R const& rhs) -> std::enable_if_t<
+    std::is_same<decltype(TERtoInt(lhs)), int>::value &&
+        std::is_same<decltype(TERtoInt(rhs)), int>::value,
+    bool>
 {
     return TERtoInt(lhs) <= TERtoInt(rhs);
 }
 
 template <typename L, typename R>
 constexpr auto
-operator>(L const& lhs, R const& rhs)
-    -> std::enable_if_t<
-        std::is_same<decltype(TERtoInt(lhs)), int>::value &&
-            std::is_same<decltype(TERtoInt(rhs)), int>::value,
-        bool>
+operator>(L const& lhs, R const& rhs) -> std::enable_if_t<
+    std::is_same<decltype(TERtoInt(lhs)), int>::value &&
+        std::is_same<decltype(TERtoInt(rhs)), int>::value,
+    bool>
 {
     return TERtoInt(lhs) > TERtoInt(rhs);
 }
 
 template <typename L, typename R>
 constexpr auto
-operator>=(L const& lhs, R const& rhs)
-    -> std::enable_if_t<
-        std::is_same<decltype(TERtoInt(lhs)), int>::value &&
-            std::is_same<decltype(TERtoInt(rhs)), int>::value,
-        bool>
+operator>=(L const& lhs, R const& rhs) -> std::enable_if_t<
+    std::is_same<decltype(TERtoInt(lhs)), int>::value &&
+        std::is_same<decltype(TERtoInt(rhs)), int>::value,
+    bool>
 {
     return TERtoInt(lhs) >= TERtoInt(rhs);
 }
@@ -629,44 +624,43 @@ using TER = TERSubset<CanCvtToTER>;
 //------------------------------------------------------------------------------
 
 inline bool
-isTelLocal(TER x)
+isTelLocal(TER x) noexcept
 {
-    return ((x) >= telLOCAL_ERROR && (x) < temMALFORMED);
+    return (x >= telLOCAL_ERROR && x < temMALFORMED);
 }
 
 inline bool
-isTemMalformed(TER x)
+isTemMalformed(TER x) noexcept
 {
-    return ((x) >= temMALFORMED && (x) < tefFAILURE);
+    return (x >= temMALFORMED && x < tefFAILURE);
 }
 
 inline bool
-isTefFailure(TER x)
+isTefFailure(TER x) noexcept
 {
-    return ((x) >= tefFAILURE && (x) < terRETRY);
+    return (x >= tefFAILURE && x < terRETRY);
 }
 
 inline bool
-isTerRetry(TER x)
+isTerRetry(TER x) noexcept
 {
-    return ((x) >= terRETRY && (x) < tesSUCCESS);
+    return (x >= terRETRY && x < tesSUCCESS);
 }
 
 inline bool
-isTesSuccess(TER x)
+isTesSuccess(TER x) noexcept
 {
-    return ((x) == tesSUCCESS);
+    // Makes use of TERSubset::operator bool()
+    return !(x);
 }
 
 inline bool
-isTecClaim(TER x)
+isTecClaim(TER x) noexcept
 {
     return ((x) >= tecCLAIM);
 }
 
-std::unordered_map<
-    TERUnderlyingType,
-    std::pair<char const* const, char const* const>> const&
+std::unordered_map<TERUnderlyingType, std::pair<char const* const, char const* const>> const&
 transResults();
 
 bool
@@ -681,6 +675,4 @@ transHuman(TER code);
 std::optional<TER>
 transCode(std::string const& token);
 
-}  // namespace ripple
-
-#endif
+}  // namespace xrpl

@@ -1,22 +1,3 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
 #include <xrpl/protocol/TER.h>
 
 #include <boost/range/adaptor/transformed.hpp>
@@ -27,11 +8,9 @@
 #include <unordered_map>
 #include <utility>
 
-namespace ripple {
+namespace xrpl {
 
-std::unordered_map<
-    TERUnderlyingType,
-    std::pair<char const* const, char const* const>> const&
+std::unordered_map<TERUnderlyingType, std::pair<char const* const, char const* const>> const&
 transResults()
 {
     // clang-format off
@@ -123,6 +102,10 @@ transResults()
         MAKE_ERROR(tecARRAY_TOO_LARGE,               "Array is too large."),
         MAKE_ERROR(tecLOCKED,                        "Fund is locked."),
         MAKE_ERROR(tecBAD_CREDENTIALS,               "Bad credentials."),
+        MAKE_ERROR(tecWRONG_ASSET,                   "Wrong asset given."),
+        MAKE_ERROR(tecLIMIT_EXCEEDED,                "Limit exceeded."),
+        MAKE_ERROR(tecPSEUDO_ACCOUNT,                "This operation is not allowed against a pseudo-account."),
+        MAKE_ERROR(tecPRECISION_LOSS,                "The amounts used by the transaction cannot interact."),
 
         MAKE_ERROR(tefALREADY,                     "The exact transaction was already in this ledger."),
         MAKE_ERROR(tefBAD_ADD_AUTH,                "Not authorized to add account."),
@@ -214,6 +197,7 @@ transResults()
         MAKE_ERROR(temARRAY_EMPTY,               "Malformed: Array is empty."),
         MAKE_ERROR(temARRAY_TOO_LARGE,           "Malformed: Array is too large."),
         MAKE_ERROR(temBAD_TRANSFER_FEE,          "Malformed: Transfer fee is outside valid range."),
+        MAKE_ERROR(temINVALID_INNER_BATCH,       "Malformed: Invalid inner batch transaction."),
 
         MAKE_ERROR(terRETRY,                  "Retry transaction."),
         MAKE_ERROR(terFUNDS_SPENT,            "DEPRECATED."),
@@ -228,6 +212,8 @@ transResults()
         MAKE_ERROR(terQUEUED,                 "Held until escalated fee drops."),
         MAKE_ERROR(terPRE_TICKET,             "Ticket is not yet in ledger."),
         MAKE_ERROR(terNO_AMM,                 "AMM doesn't exist for the asset pair."),
+        MAKE_ERROR(terADDRESS_COLLISION,      "Failed to allocate an unique account address."),
+        MAKE_ERROR(terNO_DELEGATE_PERMISSION, "Delegated account lacks permission to perform this transaction."),
 
         MAKE_ERROR(tesSUCCESS,                "The transaction was applied. Only final in a validated ledger."),
     };
@@ -277,9 +263,8 @@ transCode(std::string const& token)
     static auto const results = [] {
         auto& byTer = transResults();
         auto range = boost::make_iterator_range(byTer.begin(), byTer.end());
-        auto tRange = boost::adaptors::transform(range, [](auto const& r) {
-            return std::make_pair(r.second.first, r.first);
-        });
+        auto tRange = boost::adaptors::transform(
+            range, [](auto const& r) { return std::make_pair(r.second.first, r.first); });
         std::unordered_map<std::string, TERUnderlyingType> const byToken(
             tRange.begin(), tRange.end());
         return byToken;
@@ -293,4 +278,4 @@ transCode(std::string const& token)
     return TER::fromInt(r->second);
 }
 
-}  // namespace ripple
+}  // namespace xrpl

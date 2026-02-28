@@ -1,29 +1,12 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
 #include <test/jtx/paths.h>
 
 #include <xrpld/app/paths/Pathfinder.h>
 
 #include <xrpl/protocol/jss.h>
 
-namespace ripple {
+#include <optional>
+
+namespace xrpl {
 namespace test {
 namespace jtx {
 
@@ -34,15 +17,27 @@ paths::operator()(Env& env, JTx& jt) const
     auto const from = env.lookup(jv[jss::Account].asString());
     auto const to = env.lookup(jv[jss::Destination].asString());
     auto const amount = amountFromJson(sfAmount, jv[jss::Amount]);
+
+    std::optional<uint256> domain;
+    if (jv.isMember(sfDomainID.jsonName))
+    {
+        if (!jv[sfDomainID.jsonName].isString())
+            return;
+        uint256 num;
+        auto const s = jv[sfDomainID.jsonName].asString();
+        if (num.parseHex(s))
+            domain = num;
+    }
+
     Pathfinder pf(
-        std::make_shared<RippleLineCache>(
-            env.current(), env.app().journal("RippleLineCache")),
+        std::make_shared<RippleLineCache>(env.current(), env.app().journal("RippleLineCache")),
         from,
         to,
         in_.currency,
         in_.account,
         amount,
         std::nullopt,
+        domain,
         env.app());
     if (!pf.findPaths(depth_))
         return;
@@ -102,4 +97,4 @@ path::operator()(Env& env, JTx& jt) const
 
 }  // namespace jtx
 }  // namespace test
-}  // namespace ripple
+}  // namespace xrpl

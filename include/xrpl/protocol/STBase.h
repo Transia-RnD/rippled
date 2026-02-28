@@ -1,37 +1,16 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_PROTOCOL_STBASE_H_INCLUDED
-#define RIPPLE_PROTOCOL_STBASE_H_INCLUDED
+#pragma once
 
 #include <xrpl/basics/contract.h>
 #include <xrpl/protocol/SField.h>
 #include <xrpl/protocol/Serializer.h>
 
-#include <memory>
 #include <ostream>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
 
-namespace ripple {
+namespace xrpl {
 
 /// Note, should be treated as flags that can be | and &
 struct JsonOptions
@@ -92,6 +71,16 @@ struct JsonOptions
     }
 };
 
+template <typename T>
+    requires requires(T const& t) {
+        { t.getJson(JsonOptions::none) } -> std::convertible_to<Json::Value>;
+    }
+Json::Value
+to_json(T const& t)
+{
+    return t.getJson(JsonOptions::none);
+}
+
 namespace detail {
 class STVar;
 }
@@ -129,16 +118,16 @@ class STBase
 public:
     virtual ~STBase() = default;
     STBase();
-    STBase(const STBase&) = default;
+    STBase(STBase const&) = default;
     STBase&
-    operator=(const STBase& t);
+    operator=(STBase const& t);
 
     explicit STBase(SField const& n);
 
     bool
-    operator==(const STBase& t) const;
+    operator==(STBase const& t) const;
     bool
-    operator!=(const STBase& t) const;
+    operator!=(STBase const& t) const;
 
     template <class D>
     D&
@@ -157,7 +146,7 @@ public:
     virtual std::string
     getText() const;
 
-    virtual Json::Value getJson(JsonOptions /*options*/) const;
+    virtual Json::Value getJson(JsonOptions = JsonOptions::none) const;
 
     virtual void
     add(Serializer& s) const;
@@ -197,7 +186,7 @@ private:
 //------------------------------------------------------------------------------
 
 std::ostream&
-operator<<(std::ostream& out, const STBase& t);
+operator<<(std::ostream& out, STBase const& t);
 
 template <class D>
 D&
@@ -229,6 +218,4 @@ STBase::emplace(std::size_t n, void* buf, T&& val)
     return new (buf) U(std::forward<T>(val));
 }
 
-}  // namespace ripple
-
-#endif
+}  // namespace xrpl

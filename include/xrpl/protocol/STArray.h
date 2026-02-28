@@ -1,29 +1,9 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_PROTOCOL_STARRAY_H_INCLUDED
-#define RIPPLE_PROTOCOL_STARRAY_H_INCLUDED
+#pragma once
 
 #include <xrpl/basics/CountedObject.h>
 #include <xrpl/protocol/STObject.h>
 
-namespace ripple {
+namespace xrpl {
 
 class STArray final : public STBase, public CountedObject<STArray>
 {
@@ -43,16 +23,14 @@ public:
 
     template <
         class Iter,
-        class = std::enable_if_t<std::is_convertible_v<
-            typename std::iterator_traits<Iter>::reference,
-            STObject>>>
+        class = std::enable_if_t<
+            std::is_convertible_v<typename std::iterator_traits<Iter>::reference, STObject>>>
     explicit STArray(Iter first, Iter last);
 
     template <
         class Iter,
-        class = std::enable_if_t<std::is_convertible_v<
-            typename std::iterator_traits<Iter>::reference,
-            STObject>>>
+        class = std::enable_if_t<
+            std::is_convertible_v<typename std::iterator_traits<Iter>::reference, STObject>>>
     STArray(SField const& f, Iter first, Iter last);
 
     STArray&
@@ -128,13 +106,13 @@ public:
     add(Serializer& s) const override;
 
     void
-    sort(bool (*compare)(const STObject& o1, const STObject& o2));
+    sort(bool (*compare)(STObject const& o1, STObject const& o2));
 
     bool
-    operator==(const STArray& s) const;
+    operator==(STArray const& s) const;
 
     bool
-    operator!=(const STArray& s) const;
+    operator!=(STArray const& s) const;
 
     iterator
     erase(iterator pos);
@@ -152,7 +130,7 @@ public:
     getSType() const override;
 
     bool
-    isEquivalent(const STBase& t) const override;
+    isEquivalent(STBase const& t) const override;
 
     bool
     isDefault() const override;
@@ -172,8 +150,7 @@ STArray::STArray(Iter first, Iter last) : v_(first, last)
 }
 
 template <class Iter, class>
-STArray::STArray(SField const& f, Iter first, Iter last)
-    : STBase(f), v_(first, last)
+STArray::STArray(SField const& f, Iter first, Iter last) : STBase(f), v_(first, last)
 {
 }
 
@@ -275,13 +252,13 @@ STArray::swap(STArray& a) noexcept
 }
 
 inline bool
-STArray::operator==(const STArray& s) const
+STArray::operator==(STArray const& s) const
 {
     return v_ == s.v_;
 }
 
 inline bool
-STArray::operator!=(const STArray& s) const
+STArray::operator!=(STArray const& s) const
 {
     return v_ != s.v_;
 }
@@ -310,6 +287,4 @@ STArray::erase(const_iterator first, const_iterator last)
     return v_.erase(first, last);
 }
 
-}  // namespace ripple
-
-#endif
+}  // namespace xrpl

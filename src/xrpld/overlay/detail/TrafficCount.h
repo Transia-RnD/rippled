@@ -1,24 +1,4 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_OVERLAY_TRAFFIC_H_INCLUDED
-#define RIPPLE_OVERLAY_TRAFFIC_H_INCLUDED
+#pragma once
 
 #include <xrpl/beast/utility/instrumentation.h>
 #include <xrpl/protocol/messages.h>
@@ -26,7 +6,7 @@
 #include <atomic>
 #include <cstdint>
 
-namespace ripple {
+namespace xrpl {
 
 /**
     TrafficCount is used to count ingress and egress wire bytes and number of
@@ -61,8 +41,7 @@ public:
         std::atomic<std::uint64_t> messagesIn{0};
         std::atomic<std::uint64_t> messagesOut{0};
 
-        TrafficStats(TrafficCount::category cat)
-            : name(TrafficCount::to_string(cat))
+        TrafficStats(TrafficCount::category cat) : name(TrafficCount::to_string(cat))
         {
         }
 
@@ -109,6 +88,8 @@ public:
 
         squelch,
         squelch_suppressed,  // egress traffic amount suppressed by squelching
+        squelch_ignored,     // the traffic amount that came from peers ignoring
+                             // squelch messages
 
         // TMHaveSet message:
         get_set,    // transaction sets we try to get
@@ -212,8 +193,7 @@ public:
     addCount(category cat, bool inbound, int bytes)
     {
         XRPL_ASSERT(
-            cat <= category::unknown,
-            "ripple::TrafficCount::addCount : valid category input");
+            cat <= category::unknown, "xrpl::TrafficCount::addCount : valid category input");
 
         auto it = counts_.find(cat);
 
@@ -246,7 +226,7 @@ public:
     static std::string
     to_string(category cat)
     {
-        static const std::unordered_map<category, std::string> category_map = {
+        static std::unordered_map<category, std::string> const category_map = {
             {base, "overhead"},
             {cluster, "overhead_cluster"},
             {overlay, "overhead_overlay"},
@@ -262,6 +242,7 @@ public:
             {validatorlist, "validator_lists"},
             {squelch, "squelch"},
             {squelch_suppressed, "squelch_suppressed"},
+            {squelch_ignored, "squelch_ignored"},
             {get_set, "set_get"},
             {share_set, "set_share"},
             {ld_tsc_get, "ledger_data_Transaction_Set_candidate_get"},
@@ -326,6 +307,7 @@ protected:
         {validatorlist, {validatorlist}},
         {squelch, {squelch}},
         {squelch_suppressed, {squelch_suppressed}},
+        {squelch_ignored, {squelch_ignored}},
         {get_set, {get_set}},
         {share_set, {share_set}},
         {ld_tsc_get, {ld_tsc_get}},
@@ -370,5 +352,4 @@ protected:
     };
 };
 
-}  // namespace ripple
-#endif
+}  // namespace xrpl

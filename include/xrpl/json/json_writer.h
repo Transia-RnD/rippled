@@ -1,24 +1,4 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_JSON_JSON_WRITER_H_INCLUDED
-#define RIPPLE_JSON_JSON_WRITER_H_INCLUDED
+#pragma once
 
 #include <xrpl/json/json_forwards.h>
 #include <xrpl/json/json_value.h>
@@ -39,14 +19,14 @@ public:
     {
     }
     virtual std::string
-    write(const Value& root) = 0;
+    write(Value const& root) = 0;
 };
 
 /** \brief Outputs a Value in <a HREF="http://www.json.org">JSON</a> format
  * without formatting (not human friendly).
  *
  * The JSON document is written in a single line. It is not intended for 'human'
- * consumption, but may be useful to support feature such as RPC where bandwith
+ * consumption, but may be useful to support feature such as RPC where bandwidth
  * is limited. \sa Reader, Value
  */
 
@@ -60,11 +40,11 @@ public:
 
 public:  // overridden from Writer
     std::string
-    write(const Value& root) override;
+    write(Value const& root) override;
 
 private:
     void
-    writeValue(const Value& value);
+    writeValue(Value const& value);
 
     std::string document_;
 };
@@ -101,15 +81,15 @@ public:  // overridden from Writer
      * JSON document that represents the root value.
      */
     std::string
-    write(const Value& root) override;
+    write(Value const& root) override;
 
 private:
     void
-    writeValue(const Value& value);
+    writeValue(Value const& value);
     void
-    writeArrayValue(const Value& value);
+    writeArrayValue(Value const& value);
     bool
-    isMultineArray(const Value& value);
+    isMultilineArray(Value const& value);
     void
     pushValue(std::string const& value);
     void
@@ -168,15 +148,15 @@ public:
      * return a value.
      */
     void
-    write(std::ostream& out, const Value& root);
+    write(std::ostream& out, Value const& root);
 
 private:
     void
-    writeValue(const Value& value);
+    writeValue(Value const& value);
     void
-    writeArrayValue(const Value& value);
+    writeArrayValue(Value const& value);
     bool
-    isMultineArray(const Value& value);
+    isMultilineArray(Value const& value);
     void
     pushValue(std::string const& value);
     void
@@ -207,12 +187,12 @@ valueToString(double value);
 std::string
 valueToString(bool value);
 std::string
-valueToQuotedString(const char* value);
+valueToQuotedString(char const* value);
 
 /// \brief Output using the StyledStreamWriter.
 /// \see Json::operator>>()
 std::ostream&
-operator<<(std::ostream&, const Value& root);
+operator<<(std::ostream&, Value const& root);
 
 //------------------------------------------------------------------------------
 
@@ -335,14 +315,10 @@ public:
     operator<<(std::ostream& o, Compact const& cJv)
     {
         detail::write_value(
-            [&o](void const* data, std::size_t n) {
-                o.write(static_cast<char const*>(data), n);
-            },
+            [&o](void const* data, std::size_t n) { o.write(static_cast<char const*>(data), n); },
             cJv.jv_);
         return o;
     }
 };
 
 }  // namespace Json
-
-#endif  // JSON_WRITER_H_INCLUDED

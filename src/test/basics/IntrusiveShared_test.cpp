@@ -9,6 +9,7 @@
 #include <atomic>
 #include <barrier>
 #include <chrono>
+#include <condition_variable>
 #include <latch>
 #include <optional>
 #include <random>
@@ -16,8 +17,57 @@
 #include <thread>
 #include <variant>
 
-namespace ripple {
+namespace xrpl {
 namespace tests {
+
+/**
+Experimentally, we discovered that using std::barrier performs extremely
+poorly (~1 hour vs ~1 minute to run the test suite) in certain macOS
+environments. To unblock our macOS CI pipeline, we replaced std::barrier with a
+custom mutex-based barrier (Barrier) that significantly improves performance
+without compromising correctness. For future reference, if we ever consider
+reintroducing std::barrier, the following configuration is known to exhibit the
+problem:
+
+    Model Name: Mac mini
+    Model Identifier: Mac14,3
+    Model Number: Z16K000R4LL/A
+    Chip: Apple M2
+    Total Number of Cores: 8 (4 performance and 4 efficiency)
+    Memory: 24 GB
+    System Firmware Version: 11881.41.5
+    OS Loader Version: 11881.1.1
+    Apple clang version 16.0.0 (clang-1600.0.26.3)
+    Target: arm64-apple-darwin24.0.0
+    Thread model: posix
+
+ */
+struct Barrier
+{
+    std::mutex mtx;
+    std::condition_variable cv;
+    int count;
+    int const initial;
+
+    Barrier(int n) : count(n), initial(n)
+    {
+    }
+
+    void
+    arrive_and_wait()
+    {
+        std::unique_lock lock(mtx);
+        if (--count == 0)
+        {
+            count = initial;
+            cv.notify_all();
+        }
+        else
+        {
+            cv.wait(lock, [&] { return count == initial; });
+        }
+    }
+};
 
 namespace {
 enum class TrackedState : std::uint8_t {
@@ -46,13 +96,11 @@ public:
     {
         for (int i = 0; i < maxStates; ++i)
         {
-            state[i].store(
-                TrackedState::uninitialized, std::memory_order_release);
+            state[i].store(TrackedState::uninitialized, std::memory_order_release);
         }
         nextId.store(0, std::memory_order_release);
         if (resetCallback)
-            TIBase::tracingCallback_ = [](TrackedState,
-                                          std::optional<TrackedState>) {};
+            TIBase::tracingCallback_ = [](TrackedState, std::optional<TrackedState>) {};
     }
 
     struct ResetStatesGuard
@@ -79,8 +127,7 @@ public:
         using enum TrackedState;
 
         assert(state.size() > id_);
-        tracingCallback_(
-            state[id_].load(std::memory_order_relaxed), deletedStarted);
+        tracingCallback_(state[id_].load(std::memory_order_relaxed), deletedStarted);
 
         assert(state.size() > id_);
         // Use relaxed memory order to try to avoid atomic operations from
@@ -102,9 +149,7 @@ public:
         using enum TrackedState;
 
         assert(state.size() > id_);
-        tracingCallback_(
-            state[id_].load(std::memory_order_relaxed),
-            partiallyDeletedStarted);
+        tracingCallback_(state[id_].load(std::memory_order_relaxed), partiallyDeletedStarted);
 
         assert(state.size() > id_);
         state[id_].store(partiallyDeletedStarted, std::memory_order_relaxed);
@@ -117,8 +162,7 @@ public:
         tracingCallback_(partiallyDeleted, std::nullopt);
     }
 
-    static std::function<void(TrackedState, std::optional<TrackedState>)>
-        tracingCallback_;
+    static std::function<void(TrackedState, std::optional<TrackedState>)> tracingCallback_;
 
     int id_;
 
@@ -133,8 +177,8 @@ private:
 std::array<std::atomic<TrackedState>, TIBase::maxStates> TIBase::state;
 std::atomic<int> TIBase::nextId{0};
 
-std::function<void(TrackedState, std::optional<TrackedState>)>
-    TIBase::tracingCallback_ = [](TrackedState, std::optional<TrackedState>) {};
+std::function<void(TrackedState, std::optional<TrackedState>)> TIBase::tracingCallback_ =
+    [](TrackedState, std::optional<TrackedState>) {};
 
 }  // namespace
 
@@ -337,16 +381,15 @@ public:
         bool destructorRan = false;
         bool partialDeleteRan = false;
         std::latch partialDeleteStartedSyncPoint{2};
-        strong->tracingCallback_ = [&](TrackedState cur,
-                                       std::optional<TrackedState> next) {
+        strong->tracingCallback_ = [&](TrackedState cur, std::optional<TrackedState> next) {
             using enum TrackedState;
             if (next == deletedStarted)
             {
                 // strong goes out of scope while weak is still in scope
                 // This checks that partialDelete has run to completion
-                // before the desturctor is called. A sleep is inserted
+                // before the destructor is called. A sleep is inserted
                 // inside the partial delete to make sure the destructor is
-                // given an opportunity to run durring partial delete.
+                // given an opportunity to run during partial delete.
                 BEAST_EXPECT(cur == partiallyDeleted);
             }
             if (next == partiallyDeletedStarted)
@@ -405,8 +448,7 @@ public:
         bool destructorRan = false;
         bool partialDeleteRan = false;
         std::latch weakResetSyncPoint{2};
-        strong->tracingCallback_ = [&](TrackedState cur,
-                                       std::optional<TrackedState> next) {
+        strong->tracingCallback_ = [&](TrackedState cur, std::optional<TrackedState> next) {
             using enum TrackedState;
             if (next == partiallyDeleted)
             {
@@ -458,8 +500,7 @@ public:
         auto setPartialDeleteRan = [&]() -> void {
             destructionState.fetch_or(2, std::memory_order_acq_rel);
         };
-        auto tracingCallback = [&](TrackedState cur,
-                                   std::optional<TrackedState> next) {
+        auto tracingCallback = [&](TrackedState cur, std::optional<TrackedState> next) {
             using enum TrackedState;
             auto [destructorRan, partialDeleteRan] = getDestructorState();
             if (next == partiallyDeleted)
@@ -473,13 +514,9 @@ public:
                 setDestructorRan();
             }
         };
-        auto createVecOfPointers = [&](auto const& toClone,
-                                       std::default_random_engine& eng)
-            -> std::vector<
-                std::variant<SharedIntrusive<TIBase>, WeakIntrusive<TIBase>>> {
-            std::vector<
-                std::variant<SharedIntrusive<TIBase>, WeakIntrusive<TIBase>>>
-                result;
+        auto createVecOfPointers = [&](auto const& toClone, std::default_random_engine& eng)
+            -> std::vector<std::variant<SharedIntrusive<TIBase>, WeakIntrusive<TIBase>>> {
+            std::vector<std::variant<SharedIntrusive<TIBase>, WeakIntrusive<TIBase>>> result;
             std::uniform_int_distribution<> toCreateDist(4, 64);
             std::uniform_int_distribution<> isStrongDist(0, 1);
             auto numToCreate = toCreateDist(eng);
@@ -500,9 +537,9 @@ public:
         constexpr int loopIters = 2 * 1024;
         constexpr int numThreads = 16;
         std::vector<SharedIntrusive<TIBase>> toClone;
-        std::barrier loopStartSyncPoint{numThreads};
-        std::barrier postCreateToCloneSyncPoint{numThreads};
-        std::barrier postCreateVecOfPointersSyncPoint{numThreads};
+        Barrier loopStartSyncPoint{numThreads};
+        Barrier postCreateToCloneSyncPoint{numThreads};
+        Barrier postCreateVecOfPointersSyncPoint{numThreads};
         auto engines = [&]() -> std::vector<std::default_random_engine> {
             std::random_device rd;
             std::vector<std::default_random_engine> result;
@@ -531,8 +568,7 @@ public:
                     // clear the temporary variables.
 
                     rsg.emplace(false);
-                    auto [destructorRan, partialDeleteRan] =
-                        getDestructorState();
+                    auto [destructorRan, partialDeleteRan] = getDestructorState();
                     BEAST_EXPECT(!i || destructorRan);
                     destructionState.store(0, std::memory_order_release);
 
@@ -546,8 +582,7 @@ public:
                 // ------ Sync Point ------
                 postCreateToCloneSyncPoint.arrive_and_wait();
 
-                auto v =
-                    createVecOfPointers(toClone[threadId], engines[threadId]);
+                auto v = createVecOfPointers(toClone[threadId], engines[threadId]);
                 toClone[threadId].reset();
 
                 // ------ Sync Point ------
@@ -598,8 +633,7 @@ public:
         auto setPartialDeleteRan = [&]() -> void {
             destructionState.fetch_or(2, std::memory_order_acq_rel);
         };
-        auto tracingCallback = [&](TrackedState cur,
-                                   std::optional<TrackedState> next) {
+        auto tracingCallback = [&](TrackedState cur, std::optional<TrackedState> next) {
             using enum TrackedState;
             auto [destructorRan, partialDeleteRan] = getDestructorState();
             if (next == partiallyDeleted)
@@ -613,9 +647,9 @@ public:
                 setDestructorRan();
             }
         };
-        auto createVecOfPointers = [&](auto const& toClone,
-                                       std::default_random_engine& eng)
-            -> std::vector<SharedWeakUnion<TIBase>> {
+        auto createVecOfPointers =
+            [&](auto const& toClone,
+                std::default_random_engine& eng) -> std::vector<SharedWeakUnion<TIBase>> {
             std::vector<SharedWeakUnion<TIBase>> result;
             std::uniform_int_distribution<> toCreateDist(4, 64);
             auto numToCreate = toCreateDist(eng);
@@ -628,10 +662,10 @@ public:
         constexpr int flipPointersLoopIters = 256;
         constexpr int numThreads = 16;
         std::vector<SharedIntrusive<TIBase>> toClone;
-        std::barrier loopStartSyncPoint{numThreads};
-        std::barrier postCreateToCloneSyncPoint{numThreads};
-        std::barrier postCreateVecOfPointersSyncPoint{numThreads};
-        std::barrier postFlipPointersLoopSyncPoint{numThreads};
+        Barrier loopStartSyncPoint{numThreads};
+        Barrier postCreateToCloneSyncPoint{numThreads};
+        Barrier postCreateVecOfPointersSyncPoint{numThreads};
+        Barrier postFlipPointersLoopSyncPoint{numThreads};
         auto engines = [&]() -> std::vector<std::default_random_engine> {
             std::random_device rd;
             std::vector<std::default_random_engine> result;
@@ -660,8 +694,7 @@ public:
                     // thread will also check that the destructor ran and
                     // clear the temporary variables.
                     rsg.emplace(false);
-                    auto [destructorRan, partialDeleteRan] =
-                        getDestructorState();
+                    auto [destructorRan, partialDeleteRan] = getDestructorState();
                     BEAST_EXPECT(!i || destructorRan);
                     destructionState.store(0, std::memory_order_release);
 
@@ -675,8 +708,7 @@ public:
                 // ------ Sync Point ------
                 postCreateToCloneSyncPoint.arrive_and_wait();
 
-                auto v =
-                    createVecOfPointers(toClone[threadId], engines[threadId]);
+                auto v = createVecOfPointers(toClone[threadId], engines[threadId]);
                 toClone[threadId].reset();
 
                 // ------ Sync Point ------
@@ -741,8 +773,7 @@ public:
         auto setPartialDeleteRan = [&]() -> void {
             destructionState.fetch_or(2, std::memory_order_acq_rel);
         };
-        auto tracingCallback = [&](TrackedState cur,
-                                   std::optional<TrackedState> next) {
+        auto tracingCallback = [&](TrackedState cur, std::optional<TrackedState> next) {
             using enum TrackedState;
             auto [destructorRan, partialDeleteRan] = getDestructorState();
             if (next == partiallyDeleted)
@@ -761,9 +792,9 @@ public:
         constexpr int lockWeakLoopIters = 256;
         constexpr int numThreads = 16;
         std::vector<SharedIntrusive<TIBase>> toLock;
-        std::barrier loopStartSyncPoint{numThreads};
-        std::barrier postCreateToLockSyncPoint{numThreads};
-        std::barrier postLockWeakLoopSyncPoint{numThreads};
+        Barrier loopStartSyncPoint{numThreads};
+        Barrier postCreateToLockSyncPoint{numThreads};
+        Barrier postLockWeakLoopSyncPoint{numThreads};
 
         // lockAndDestroy creates weak pointers from the strong pointer
         // and runs a loop that locks the weak pointer. At the end of the loop
@@ -783,8 +814,7 @@ public:
                     // thread will also check that the destructor ran and
                     // clear the temporary variables.
                     rsg.emplace(false);
-                    auto [destructorRan, partialDeleteRan] =
-                        getDestructorState();
+                    auto [destructorRan, partialDeleteRan] = getDestructorState();
                     BEAST_EXPECT(!i || destructorRan);
                     destructionState.store(0, std::memory_order_release);
 
@@ -837,6 +867,6 @@ public:
     }
 };  // namespace tests
 
-BEAST_DEFINE_TESTSUITE(IntrusiveShared, ripple_basics, ripple);
+BEAST_DEFINE_TESTSUITE(IntrusiveShared, basics, xrpl);
 }  // namespace tests
-}  // namespace ripple
+}  // namespace xrpl

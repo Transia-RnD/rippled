@@ -1,28 +1,10 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
+#pragma once
 
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
-#ifndef RIPPLE_JSON_JSON_VALUE_H_INCLUDED
-#define RIPPLE_JSON_JSON_VALUE_H_INCLUDED
-
+#include <xrpl/basics/Number.h>
 #include <xrpl/json/json_forwards.h>
 
 #include <cstring>
+#include <limits>
 #include <map>
 #include <string>
 #include <vector>
@@ -61,24 +43,24 @@ enum ValueType {
 class StaticString
 {
 public:
-    constexpr explicit StaticString(const char* czstring) : str_(czstring)
+    constexpr explicit StaticString(char const* czString) : str_(czString)
     {
     }
 
     constexpr
-    operator const char*() const
+    operator char const*() const
     {
         return str_;
     }
 
-    constexpr const char*
+    constexpr char const*
     c_str() const
     {
         return str_;
     }
 
 private:
-    const char* str_;
+    char const* str_;
 };
 
 inline bool
@@ -156,39 +138,35 @@ public:
     using Int = Json::Int;
     using ArrayIndex = UInt;
 
-    static const Value null;
-    static const Int minInt;
-    static const Int maxInt;
-    static const UInt maxUInt;
+    static Value const null;
+    static constexpr Int minInt = std::numeric_limits<Int>::min();
+    static constexpr Int maxInt = std::numeric_limits<Int>::max();
+    static constexpr UInt maxUInt = std::numeric_limits<UInt>::max();
 
 private:
     class CZString
     {
     public:
-        enum DuplicationPolicy {
-            noDuplication = 0,
-            duplicate,
-            duplicateOnCopy
-        };
+        enum DuplicationPolicy { noDuplication = 0, duplicate, duplicateOnCopy };
         CZString(int index);
-        CZString(const char* cstr, DuplicationPolicy allocate);
-        CZString(const CZString& other);
+        CZString(char const* cstr, DuplicationPolicy allocate);
+        CZString(CZString const& other);
         ~CZString();
         CZString&
-        operator=(const CZString& other) = delete;
+        operator=(CZString const& other) = delete;
         bool
-        operator<(const CZString& other) const;
+        operator<(CZString const& other) const;
         bool
-        operator==(const CZString& other) const;
+        operator==(CZString const& other) const;
         int
         index() const;
-        const char*
+        char const*
         c_str() const;
         bool
         isStaticString() const;
 
     private:
-        const char* cstr_;
+        char const* cstr_;
         int index_;
     };
 
@@ -215,7 +193,8 @@ public:
     Value(Int value);
     Value(UInt value);
     Value(double value);
-    Value(const char* value);
+    Value(char const* value);
+    Value(xrpl::Number const& value);
     /** \brief Constructs a value from a static string.
 
      * Like other value string constructor but do not duplicate the string for
@@ -227,10 +206,10 @@ public:
      * Json::Value aValue( StaticString("some text") );
      * \endcode
      */
-    Value(const StaticString& value);
+    Value(StaticString const& value);
     Value(std::string const& value);
     Value(bool value);
-    Value(const Value& other);
+    Value(Value const& other);
     ~Value();
 
     Value&
@@ -247,7 +226,7 @@ public:
     ValueType
     type() const;
 
-    const char*
+    char const*
     asCString() const;
     /** Returns the unquoted string value. */
     std::string
@@ -260,6 +239,10 @@ public:
     asDouble() const;
     bool
     asBool() const;
+
+    /** Correct absolute value from int or unsigned int */
+    UInt
+    asAbsUInt() const;
 
     // TODO: What is the "empty()" method this docstring mentions?
     /** isNull() tests to see if this field is null.  Don't use this method to
@@ -317,12 +300,12 @@ public:
     /// Access an array element (zero based index )
     /// (You may need to say 'value[0u]' to get your compiler to distinguish
     ///  this from the operator[] which takes a string.)
-    const Value&
+    Value const&
     operator[](UInt index) const;
     /// If the array contains at least index+1 elements, returns the element
     /// value, otherwise returns defaultValue.
     Value
-    get(UInt index, const Value& defaultValue) const;
+    get(UInt index, Value const& defaultValue) const;
     /// Return true if index < size().
     bool
     isValidIndex(UInt index) const;
@@ -330,25 +313,25 @@ public:
     ///
     /// Equivalent to jsonvalue[jsonvalue.size()] = value;
     Value&
-    append(const Value& value);
+    append(Value const& value);
     Value&
     append(Value&& value);
 
     /// Access an object value by name, create a null member if it does not
     /// exist.
     Value&
-    operator[](const char* key);
+    operator[](char const* key);
     /// Access an object value by name, returns null if there is no member with
     /// that name.
-    const Value&
-    operator[](const char* key) const;
+    Value const&
+    operator[](char const* key) const;
     /// Access an object value by name, create a null member if it does not
     /// exist.
     Value&
     operator[](std::string const& key);
     /// Access an object value by name, returns null if there is no member with
     /// that name.
-    const Value&
+    Value const&
     operator[](std::string const& key) const;
     /** \brief Access an object value by name, create a null member if it does
      not exist.
@@ -364,14 +347,16 @@ public:
      * \endcode
      */
     Value&
-    operator[](const StaticString& key);
+    operator[](StaticString const& key);
+    Value const&
+    operator[](StaticString const& key) const;
 
     /// Return the member named key if it exist, defaultValue otherwise.
     Value
-    get(const char* key, const Value& defaultValue) const;
+    get(char const* key, Value const& defaultValue) const;
     /// Return the member named key if it exist, defaultValue otherwise.
     Value
-    get(std::string const& key, const Value& defaultValue) const;
+    get(std::string const& key, Value const& defaultValue) const;
 
     /// \brief Remove and return the named member.
     ///
@@ -380,17 +365,20 @@ public:
     /// \pre type() is objectValue or nullValue
     /// \post type() is unchanged
     Value
-    removeMember(const char* key);
+    removeMember(char const* key);
     /// Same as removeMember(const char*)
     Value
     removeMember(std::string const& key);
 
     /// Return true if the object has a member named key.
     bool
-    isMember(const char* key) const;
+    isMember(char const* key) const;
     /// Return true if the object has a member named key.
     bool
     isMember(std::string const& key) const;
+    /// Return true if the object has a member named key.
+    bool
+    isMember(StaticString const& key) const;
 
     /// \brief Return a list of the member names.
     ///
@@ -414,13 +402,13 @@ public:
     end();
 
     friend bool
-    operator==(const Value&, const Value&);
+    operator==(Value const&, Value const&);
     friend bool
-    operator<(const Value&, const Value&);
+    operator<(Value const&, Value const&);
 
 private:
     Value&
-    resolveReference(const char* key, bool isStatic);
+    resolveReference(char const* key, bool isStatic);
 
 private:
     union ValueHolder
@@ -436,32 +424,38 @@ private:
     int allocated_ : 1;  // Notes: if declared as bool, bitfield is useless.
 };
 
+inline Value
+to_json(xrpl::Number const& number)
+{
+    return to_string(number);
+}
+
 bool
-operator==(const Value&, const Value&);
+operator==(Value const&, Value const&);
 
 inline bool
-operator!=(const Value& x, const Value& y)
+operator!=(Value const& x, Value const& y)
 {
     return !(x == y);
 }
 
 bool
-operator<(const Value&, const Value&);
+operator<(Value const&, Value const&);
 
 inline bool
-operator<=(const Value& x, const Value& y)
+operator<=(Value const& x, Value const& y)
 {
     return !(y < x);
 }
 
 inline bool
-operator>(const Value& x, const Value& y)
+operator>(Value const& x, Value const& y)
 {
     return y < x;
 }
 
 inline bool
-operator>=(const Value& x, const Value& y)
+operator>=(Value const& x, Value const& y)
 {
     return !(x < y);
 }
@@ -482,11 +476,11 @@ public:
     virtual ~ValueAllocator() = default;
 
     virtual char*
-    makeMemberName(const char* memberName) = 0;
+    makeMemberName(char const* memberName) = 0;
     virtual void
     releaseMemberName(char* memberName) = 0;
     virtual char*
-    duplicateStringValue(const char* value, unsigned int length = unknown) = 0;
+    duplicateStringValue(char const* value, unsigned int length = unknown) = 0;
     virtual void
     releaseStringValue(char* value) = 0;
 };
@@ -503,16 +497,16 @@ public:
 
     ValueIteratorBase();
 
-    explicit ValueIteratorBase(const Value::ObjectValues::iterator& current);
+    explicit ValueIteratorBase(Value::ObjectValues::iterator const& current);
 
     bool
-    operator==(const SelfType& other) const
+    operator==(SelfType const& other) const
     {
         return isEqual(other);
     }
 
     bool
-    operator!=(const SelfType& other) const
+    operator!=(SelfType const& other) const
     {
         return !isEqual(other);
     }
@@ -528,7 +522,7 @@ public:
 
     /// Return the member name of the referenced Value. "" if it is not an
     /// objectValue.
-    const char*
+    char const*
     memberName() const;
 
 protected:
@@ -542,13 +536,13 @@ protected:
     decrement();
 
     difference_type
-    computeDistance(const SelfType& other) const;
+    computeDistance(SelfType const& other) const;
 
     bool
-    isEqual(const SelfType& other) const;
+    isEqual(SelfType const& other) const;
 
     void
-    copy(const SelfType& other);
+    copy(SelfType const& other);
 
 private:
     Value::ObjectValues::iterator current_;
@@ -566,8 +560,8 @@ class ValueConstIterator : public ValueIteratorBase
 public:
     using size_t = unsigned int;
     using difference_type = int;
-    using reference = const Value&;
-    using pointer = const Value*;
+    using reference = Value const&;
+    using pointer = Value const*;
     using SelfType = ValueConstIterator;
 
     ValueConstIterator() = default;
@@ -575,11 +569,11 @@ public:
 private:
     /*! \internal Use by Value to create an iterator.
      */
-    explicit ValueConstIterator(const Value::ObjectValues::iterator& current);
+    explicit ValueConstIterator(Value::ObjectValues::iterator const& current);
 
 public:
     SelfType&
-    operator=(const ValueIteratorBase& other);
+    operator=(ValueIteratorBase const& other);
 
     SelfType
     operator++(int)
@@ -632,17 +626,17 @@ public:
     using SelfType = ValueIterator;
 
     ValueIterator() = default;
-    ValueIterator(const ValueConstIterator& other);
-    ValueIterator(const ValueIterator& other);
+    ValueIterator(ValueConstIterator const& other);
+    ValueIterator(ValueIterator const& other);
 
 private:
     /*! \internal Use by Value to create an iterator.
      */
-    explicit ValueIterator(const Value::ObjectValues::iterator& current);
+    explicit ValueIterator(Value::ObjectValues::iterator const& current);
 
 public:
     SelfType&
-    operator=(const SelfType& other);
+    operator=(SelfType const& other);
 
     SelfType
     operator++(int)
@@ -682,5 +676,3 @@ public:
 };
 
 }  // namespace Json
-
-#endif  // CPPTL_JSON_H_INCLUDED
