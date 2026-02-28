@@ -1063,7 +1063,7 @@ TRANSACTION(ttLOAN_PAY, 84, LoanPay,
 TRANSACTION(ttOPTION_PAIR_CREATE, 64, OptionPairCreate,
     Delegation::delegable,
     featureOptions,
-    noPriv,
+    createPseudoAcct,
     ({
     {sfAsset, soeREQUIRED},
     {sfAsset2, soeREQUIRED},

@@ -40,6 +40,9 @@ public:
     void
     addOrderBook(Book const& book) override;
 
+    void
+    addOptionOrderBook(Option const& option) override;
+
     std::vector<Book>
     getBooksByTakerPays(Issue const& issue, std::optional<Domain> const& domain = std::nullopt)
         override;
@@ -75,6 +78,9 @@ private:
     hardened_hash_map<Issue, hardened_hash_set<Issue>> allBooks_;
 
     hardened_hash_map<std::pair<Issue, Domain>, hardened_hash_set<Issue>> domainBooks_;
+
+    // does an option order book exist
+    hash_set<Issue> optionBooks_;
 
     // does an order book to XRP exist
     hash_set<Issue> xrpBooks_;

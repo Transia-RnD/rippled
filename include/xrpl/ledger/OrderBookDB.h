@@ -6,6 +6,7 @@
 #include <xrpl/protocol/Book.h>
 #include <xrpl/protocol/Issue.h>
 #include <xrpl/protocol/MultiApiJson.h>
+#include <xrpl/protocol/Option.h>
 #include <xrpl/protocol/UintTypes.h>
 
 #include <memory>
@@ -46,6 +47,13 @@ public:
     */
     virtual void
     addOrderBook(Book const& book) = 0;
+
+    /** Add an option order book to track.
+
+        @param option The option to add
+    */
+    virtual void
+    addOptionOrderBook(Option const& option) = 0;
 
     /** Get all order books that want a specific issue.
 

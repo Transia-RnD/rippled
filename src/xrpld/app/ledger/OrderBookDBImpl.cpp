@@ -180,7 +180,7 @@ OrderBookDBImpl::addOrderBook(Book const& book)
 }
 
 void
-OrderBookDB::addOptionOrderBook(Option const& option)
+OrderBookDBImpl::addOptionOrderBook(Option const& option)
 {
     std::lock_guard sl(mLock);
 
