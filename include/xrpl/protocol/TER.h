@@ -45,7 +45,8 @@ enum TELcodes : TERUnderlyingType {
     telWRONG_NETWORK,
     telREQUIRES_NETWORK_ID,
     telNETWORK_ID_MAKES_TX_NON_CANONICAL,
-    telENV_RPC_FAILED
+    telENV_RPC_FAILED,
+    telIMPORT_VL_KEY_NOT_RECOGNISED
 };
 
 //------------------------------------------------------------------------------
@@ -165,6 +166,8 @@ enum TEFcodes : TERUnderlyingType {
     tefNO_TICKET,
     tefNFTOKEN_IS_NOT_TRANSFERABLE,
     tefINVALID_LEDGER_FIX_TYPE,
+    tefPAST_IMPORT_SEQ,
+    tefPAST_IMPORT_VL_SEQ,
 };
 
 //------------------------------------------------------------------------------
@@ -346,6 +349,7 @@ enum TECcodes : TERUnderlyingType {
     // backward compatibility with historical data on non-prod networks, can be
     // reclaimed after those networks reset.
     tecNO_DELEGATE_PERMISSION = 198,
+    tecCANT_LIQUIDATE = 199,
 };
 
 //------------------------------------------------------------------------------

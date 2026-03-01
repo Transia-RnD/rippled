@@ -5,12 +5,15 @@
 #include <xrpl/beast/net/IPEndpoint.h>
 #include <xrpl/beast/utility/Journal.h>
 #include <xrpl/core/StartUpType.h>
+#include <xrpl/protocol/AccountID.h>
+#include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/SystemParameters.h>  // VFALCO Breaks levelization
 #include <xrpl/rdb/DatabaseCon.h>
 
 #include <boost/filesystem.hpp>  // VFALCO FIX: This include should not be here
 
 #include <cstdint>
+#include <map>
 #include <optional>
 #include <string>
 #include <unordered_set>
@@ -255,6 +258,13 @@ public:
     std::optional<beast::IP::Endpoint> rpc_ip;
 
     std::unordered_set<uint256, beast::uhash<>> features;
+
+    // Import VL keys: hex string -> PublicKey (for cross-chain import validation)
+    std::map<std::string, PublicKey> IMPORT_VL_KEYS;
+
+    // Import vault address: the multisig vault on XRPL mainnet that holds
+    // locked XRP for the lock-and-mint cross-chain model
+    std::optional<AccountID> IMPORT_VAULT_ADDRESS;
 
     std::string SERVER_DOMAIN;
 

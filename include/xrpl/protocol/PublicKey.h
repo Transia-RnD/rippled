@@ -25,10 +25,11 @@ namespace xrpl {
     information needed to determine the cryptosystem
     parameters used is stored inside the key.
 
-    As of this writing two systems are supported:
+    As of this writing three systems are supported:
 
         secp256k1
         ed25519
+        p256
 
     secp256k1 public keys consist of a 33 byte
     compressed public key, with the lead byte equal
@@ -37,14 +38,17 @@ namespace xrpl {
     The ed25519 public keys consist of a 1 byte
     prefix constant 0xED, followed by 32 bytes of
     public key data.
+
+    P256 public keys consist of a 1 byte prefix
+    constant 0xF6, followed by 32 bytes of X
+    coordinate and 32 bytes of Y coordinate (65
+    bytes total, uncompressed).
 */
 class PublicKey
 {
 protected:
-    // All the constructed public keys are valid, non-empty and contain 33
-    // bytes of data.
-    static constexpr std::size_t size_ = 33;
-    std::uint8_t buf_[size_];  // should be large enough
+    std::uint8_t buf_[65];  // large enough for P256 uncompressed keys
+    std::size_t size_ = 0;
 
 public:
     using const_iterator = std::uint8_t const*;
@@ -119,7 +123,8 @@ operator<<(std::ostream& os, PublicKey const& pk);
 inline bool
 operator==(PublicKey const& lhs, PublicKey const& rhs)
 {
-    return std::memcmp(lhs.data(), rhs.data(), rhs.size()) == 0;
+    return lhs.size() == rhs.size() &&
+        std::memcmp(lhs.data(), rhs.data(), rhs.size()) == 0;
 }
 
 inline bool

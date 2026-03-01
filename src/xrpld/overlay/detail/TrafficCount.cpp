@@ -16,6 +16,7 @@ std::unordered_map<protocol::MessageType, TrafficCount::category> const type_loo
     {protocol::mtPROOF_PATH_RESPONSE, TrafficCount::category::proof_path_response},
     {protocol::mtREPLAY_DELTA_REQ, TrafficCount::category::replay_delta_request},
     {protocol::mtREPLAY_DELTA_RESPONSE, TrafficCount::category::replay_delta_response},
+    {protocol::mtEXPORT_SIGNATURE, TrafficCount::category::export_signature},
     {protocol::mtHAVE_TRANSACTIONS, TrafficCount::category::have_transactions},
     {protocol::mtTRANSACTIONS, TrafficCount::category::requested_transactions},
     {protocol::mtSQUELCH, TrafficCount::category::squelch},

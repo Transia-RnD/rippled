@@ -1,4 +1,5 @@
 #include <xrpl/basics/Blob.h>
+#include <xrpl/basics/Buffer.h>
 #include <xrpl/basics/Expected.h>
 #include <xrpl/basics/Log.h>
 #include <xrpl/basics/Slice.h>
@@ -13,6 +14,7 @@
 #include <xrpl/protocol/AccountID.h>
 #include <xrpl/protocol/Batch.h>
 #include <xrpl/protocol/HashPrefix.h>
+#include <xrpl/protocol/KeyType.h>
 #include <xrpl/protocol/MPTIssue.h>
 #include <xrpl/protocol/Protocol.h>
 #include <xrpl/protocol/PublicKey.h>
@@ -32,6 +34,7 @@
 #include <xrpl/protocol/Sign.h>
 #include <xrpl/protocol/TxFlags.h>
 #include <xrpl/protocol/TxFormats.h>
+#include <xrpl/protocol/digest.h>
 #include <xrpl/protocol/jss.h>
 
 #include <boost/container/flat_set.hpp>
@@ -387,10 +390,46 @@ singleSignHelper(STObject const& sigObject, Slice const& data)
     try
     {
         auto const spk = sigObject.getFieldVL(sfSigningPubKey);
-        if (publicKeyType(makeSlice(spk)))
+        auto const keyType = publicKeyType(makeSlice(spk));
+        if (keyType)
         {
-            Blob const signature = sigObject.getFieldVL(sfTxnSignature);
-            validSig = verify(PublicKey(makeSlice(spk)), data, makeSlice(signature));
+            if (*keyType == KeyType::p256 &&
+                sigObject.isFieldPresent(sfPasskeySignature))
+            {
+                // WebAuthn/Passkey P256 verification
+                // Signing data = authenticatorData || SHA256(clientDataJSON)
+                auto const& passKeySig = static_cast<STObject const&>(
+                    sigObject.peekAtField(sfPasskeySignature));
+                auto const authenticatorData =
+                    passKeySig.getFieldVL(sfAuthenticatorData);
+                auto const clientDataJSON =
+                    passKeySig.getFieldVL(sfClientDataJSON);
+                auto const clientDataHash =
+                    sha256(makeSlice(clientDataJSON));
+
+                Blob signingData(
+                    authenticatorData.begin(), authenticatorData.end());
+                signingData.insert(
+                    signingData.end(),
+                    clientDataHash.data(),
+                    clientDataHash.data() + clientDataHash.size());
+
+                Blob const signature =
+                    passKeySig.getFieldVL(sfSignature);
+                validSig = verify(
+                    PublicKey(makeSlice(spk)),
+                    makeSlice(signingData),
+                    makeSlice(signature));
+            }
+            else
+            {
+                Blob const signature =
+                    sigObject.getFieldVL(sfTxnSignature);
+                validSig = verify(
+                    PublicKey(makeSlice(spk)),
+                    data,
+                    makeSlice(signature));
+            }
         }
     }
     catch (std::exception const&)

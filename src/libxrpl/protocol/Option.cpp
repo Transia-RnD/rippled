@@ -17,7 +17,7 @@
 
 #include <xrpl/protocol/Option.h>
 
-namespace ripple {
+namespace xrpl {
 
 std::string
 to_string(Option const& option)
@@ -34,4 +34,4 @@ operator<<(std::ostream& os, Option const& x)
     return os;
 }
 
-}  // namespace ripple
+}  // namespace xrpl

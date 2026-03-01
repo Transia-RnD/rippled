@@ -925,7 +925,19 @@ TRANSACTION(ttBATCH, 71, Batch,
     {sfBatchSigners, soeOPTIONAL},
 }))
 
-/** Reserve 72-73 for future Vault-related transactions */
+/** This transaction registers passkeys for WebAuthn/FIDO2 authentication. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Passkey/SetPasskeyList.h>
+#endif
+TRANSACTION(ttPASSKEY_LIST_SET, 72, PasskeyListSet,
+    Delegation::delegable,
+    featurePasskey,
+    noPriv,
+    ({
+    {sfPasskeys, soeREQUIRED},
+}))
+
+/** Reserve 73 for future Vault-related transactions */
 
 /** This transaction creates and updates a Loan Broker */
 #if TRANSACTION_INCLUDE
@@ -1060,17 +1072,21 @@ TRANSACTION(ttLOAN_PAY, 84, LoanPay,
 
 
 /** This transaction type creates an OptionPair */
-TRANSACTION(ttOPTION_PAIR_CREATE, 64, OptionPairCreate,
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/OptionPairCreate.h>
+#endif
+TRANSACTION(ttOPTION_PAIR_CREATE, 85, OptionPairCreate,
     Delegation::delegable,
     featureOptions,
     createPseudoAcct,
     ({
     {sfAsset, soeREQUIRED},
     {sfAsset2, soeREQUIRED},
+    {sfTradingFeeBps, soeOPTIONAL},
 }))
 
 // /** This transaction type creates an OptionPair */
-// TRANSACTION(ttOPTION_PAIR_DELETE, 65, OptionPairDelete,
+// TRANSACTION(ttOPTION_PAIR_DELETE, 86, OptionPairDelete,
 //     Delegation::delegable,
 //     featureOptions,
 //     noPriv,
@@ -1079,7 +1095,10 @@ TRANSACTION(ttOPTION_PAIR_CREATE, 64, OptionPairCreate,
 // }))
 
 /** This transaction type creates an OptionOffer */
-TRANSACTION(ttOPTION_CREATE, 66, OptionCreate,
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/OptionCreate.h>
+#endif
+TRANSACTION(ttOPTION_CREATE, 87, OptionCreate,
     Delegation::delegable,
     featureOptions,
     noPriv,
@@ -1089,16 +1108,167 @@ TRANSACTION(ttOPTION_CREATE, 66, OptionCreate,
     {sfExpiration, soeREQUIRED},
     {sfPremium, soeREQUIRED},
     {sfQuantity, soeREQUIRED},
+    {sfMarginAccountID, soeREQUIRED},
+    {sfLeverage, soeREQUIRED},
 }))
 
 /** This transaction type exercises an OptionOffer */
-TRANSACTION(ttOPTION_SETTLE, 67, OptionSettle,
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/OptionSettle.h>
+#endif
+TRANSACTION(ttOPTION_SETTLE, 88, OptionSettle,
     Delegation::delegable,
     featureOptions,
     noPriv,
     ({
     {sfOptionID, soeREQUIRED},
     {sfOptionOfferID, soeREQUIRED},
+}))
+
+/** This transaction type creates/updates leverage tiers for an asset pair */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/LeverageTierSet.h>
+#endif
+TRANSACTION(ttLEVERAGE_TIER_SET, 89, LeverageTierSet,
+    Delegation::delegable,
+    featureOptions,
+    noPriv,
+    ({
+    {sfAsset, soeREQUIRED},
+    {sfAsset2, soeREQUIRED},
+    {sfMaxLeverage, soeREQUIRED},
+    {sfInitialMarginBps, soeREQUIRED},
+    {sfMaintenanceMarginBps, soeREQUIRED},
+    {sfLiquidationBonusBps, soeREQUIRED},
+    {sfLeverageTiers, soeOPTIONAL},
+}))
+
+/** This transaction type creates or modifies a margin account */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/MarginAccountSet.h>
+#endif
+TRANSACTION(ttMARGIN_ACCOUNT_SET, 90, MarginAccountSet,
+    Delegation::delegable,
+    featureOptions,
+    noPriv,
+    ({
+    {sfCollateralAsset, soeREQUIRED},
+    {sfMarginMode, soeREQUIRED},
+}))
+
+/** This transaction deposits collateral into a margin account */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/MarginDeposit.h>
+#endif
+TRANSACTION(ttMARGIN_DEPOSIT, 91, MarginDeposit,
+    Delegation::delegable,
+    featureOptions,
+    noPriv,
+    ({
+    {sfMarginAccountID, soeREQUIRED},
+    {sfAmount, soeREQUIRED, soeMPTSupported},
+}))
+
+/** This transaction withdraws collateral from a margin account */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/MarginWithdraw.h>
+#endif
+TRANSACTION(ttMARGIN_WITHDRAW, 92, MarginWithdraw,
+    Delegation::delegable,
+    featureOptions,
+    noPriv,
+    ({
+    {sfMarginAccountID, soeREQUIRED},
+    {sfAmount, soeREQUIRED, soeMPTSupported},
+}))
+
+/** This transaction liquidates an underwater margin position */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/OptionLiquidate.h>
+#endif
+TRANSACTION(ttOPTION_LIQUIDATE, 93, OptionLiquidate,
+    Delegation::delegable,
+    featureOptions,
+    noPriv,
+    ({
+    {sfMarginPositionID, soeREQUIRED},
+}))
+
+/** This transaction creates an insurance vault for an option pair */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/InsuranceVaultCreate.h>
+#endif
+TRANSACTION(ttINSURANCE_VAULT_CREATE, 94, InsuranceVaultCreate,
+    Delegation::delegable,
+    featureOptions,
+    createPseudoAcct | createMPTIssuance,
+    ({
+    {sfAsset, soeREQUIRED},
+    {sfAsset2, soeREQUIRED},
+}))
+
+/** This transaction deposits into the insurance vault */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/InsuranceDeposit.h>
+#endif
+TRANSACTION(ttINSURANCE_DEPOSIT, 95, InsuranceDeposit,
+    Delegation::delegable,
+    featureOptions,
+    mayAuthorizeMPT,
+    ({
+    {sfInsuranceVaultID, soeREQUIRED},
+    {sfAmount, soeREQUIRED, soeMPTSupported},
+}))
+
+/** This transaction withdraws from the insurance vault */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/InsuranceWithdraw.h>
+#endif
+TRANSACTION(ttINSURANCE_WITHDRAW, 96, InsuranceWithdraw,
+    Delegation::delegable,
+    featureOptions,
+    mayDeleteMPT | mayAuthorizeMPT,
+    ({
+    {sfInsuranceVaultID, soeREQUIRED},
+    {sfAmount, soeREQUIRED, soeMPTSupported},
+}))
+
+/** This transaction collects funding rate payments on margin positions */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Option/FundingRateCollect.h>
+#endif
+TRANSACTION(ttFUNDING_RATE_COLLECT, 97, FundingRateCollect,
+    Delegation::delegable,
+    featureOptions,
+    noPriv,
+    ({
+    {sfMarginPositionID, soeREQUIRED},
+}))
+
+/** This transaction imports value from XRPL mainnet via XPop proof. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Import/Import.h>
+#endif
+TRANSACTION(ttIMPORT, 98, Import,
+    Delegation::notDelegable,
+    featureImportExport,
+    createAcct | mintXRP,
+    ({
+    {sfBlob, soeREQUIRED},
+}))
+
+/** This transaction exports value to XRPL mainnet (burns XRP on sidechain). */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/Import/Export.h>
+#endif
+TRANSACTION(ttEXPORT, 99, Export,
+    Delegation::notDelegable,
+    featureImportExport,
+    burnExtraXRP,
+    ({
+    {sfDestination, soeREQUIRED},
+    {sfAmount, soeREQUIRED},
+    {sfDestinationTag, soeOPTIONAL},
 }))
 
 /** This system-generated transaction type is used to update the status of the various amendments.

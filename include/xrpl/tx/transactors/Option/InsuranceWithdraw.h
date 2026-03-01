@@ -1,7 +1,9 @@
+#pragma once
+
 //------------------------------------------------------------------------------
 /*
     This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2023 Ripple Labs Inc.
+    Copyright (c) 2025 Ripple Labs Inc.
 
     Permission to use, copy, modify, and/or distribute this software for any
     purpose  with  or without fee is hereby granted, provided that the above
@@ -17,36 +19,30 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_TX_OPTIONPAIRCREATE_H_INCLUDED
-#define RIPPLE_TX_OPTIONPAIRCREATE_H_INCLUDED
+#include <xrpl/tx/Transactor.h>
 
-#include <xrpld/app/tx/detail/Transactor.h>
+#include <xrpl/basics/Log.h>
+#include <xrpl/protocol/TxFlags.h>
 
-namespace ripple {
+namespace xrpl {
 
-class OptionPairCreate : public Transactor
+class InsuranceWithdraw : public Transactor
 {
 public:
     static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-    explicit OptionPairCreate(ApplyContext& ctx) : Transactor(ctx)
+    explicit InsuranceWithdraw(ApplyContext& ctx) : Transactor(ctx)
     {
     }
 
     static NotTEC
     preflight(PreflightContext const& ctx);
 
-    static XRPAmount
-    calculateBaseFee(ReadView const& view, STTx const& tx);
-
     static TER
     preclaim(PreclaimContext const& ctx);
 
-    /** Attempt to create the AMM instance. */
     TER
     doApply() override;
 };
 
-}  // namespace ripple
-
-#endif  // RIPPLE_TX_OPTIONPAIRCREATE_H_INCLUDED
+}  // namespace xrpl

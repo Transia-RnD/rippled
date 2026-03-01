@@ -225,4 +225,15 @@ sha512Half_s(Args const&... args)
     return static_cast<typename sha512_half_hasher_s::result_type>(h);
 }
 
+/** Returns the SHA-256 of a series of objects. */
+template <class... Args>
+sha256_hasher::result_type
+sha256(Args const&... args)
+{
+    sha256_hasher h;
+    using beast::hash_append;
+    hash_append(h, args...);
+    return static_cast<typename sha256_hasher::result_type>(h);
+}
+
 }  // namespace xrpl

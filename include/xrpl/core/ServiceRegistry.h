@@ -4,8 +4,11 @@
 #include <xrpl/basics/SHAMapHash.h>
 #include <xrpl/basics/TaggedCache.h>
 #include <xrpl/ledger/CachedSLEs.h>
+#include <xrpl/protocol/AccountID.h>
 
 #include <boost/asio.hpp>
+
+#include <optional>
 
 namespace xrpl {
 
@@ -29,6 +32,7 @@ class AmendmentTable;
 class Cluster;
 class CollectorManager;
 class DatabaseCon;
+class ExportSignatureCollector;
 class Family;
 class HashRouter;
 class InboundLedgers;
@@ -224,6 +228,19 @@ public:
     /** Retrieve the "wallet database" */
     virtual DatabaseCon&
     getWalletDB() = 0;
+
+    // Import VL key validation
+    /** Check if a given public key string is a recognised import VL key. */
+    virtual bool
+    isImportVLKeyRecognized(std::string const& strPk) const = 0;
+
+    /** Get the configured import vault address (for lock-and-mint). */
+    virtual std::optional<AccountID> const&
+    getImportVaultAddress() const = 0;
+
+    /** Get the export signature collector (for validator-signed exports). */
+    virtual ExportSignatureCollector&
+    getExportSignatureCollector() = 0;
 
     // Temporary: Get the underlying Application for functions that haven't
     // been migrated yet. This should be removed once all code is migrated.

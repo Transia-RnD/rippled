@@ -1,3 +1,5 @@
+#pragma once
+
 //------------------------------------------------------------------------------
 /*
     This file is part of rippled: https://github.com/ripple/rippled
@@ -17,24 +19,31 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_TX_OPTIONCREATE_H_INCLUDED
-#define RIPPLE_TX_OPTIONCREATE_H_INCLUDED
 
-#include <xrpld/app/tx/detail/Transactor.h>
+#include <xrpl/tx/Transactor.h>
 
 #include <xrpl/basics/Log.h>
 #include <xrpl/protocol/TxFlags.h>
 #include <xrpl/protocol/UintTypes.h>
 
-namespace ripple {
+namespace xrpl {
 
 class OptionCreate : public Transactor
 {
+    // Set during doApply() when margin mode creates a position
+    uint256 marginPositionID_{};
+
 public:
     static constexpr ConsequencesFactoryType ConsequencesFactory{Blocker};
 
     explicit OptionCreate(ApplyContext& ctx) : Transactor(ctx)
     {
+    }
+
+    static std::uint32_t
+    getFlagsMask(PreflightContext const& ctx)
+    {
+        return tfOptionCreateMask;
     }
 
     static NotTEC
@@ -47,6 +56,5 @@ public:
     doApply() override;
 };
 
-}  // namespace ripple
+}  // namespace xrpl
 
-#endif

@@ -102,9 +102,9 @@ template <ValidIssueType TIss>
 TIss const&
 STIssue::get() const
 {
-    if (!holds<TIss>(asset_))
+    if (!holds<TIss>())
         Throw<std::runtime_error>("Asset doesn't hold the requested issue");
-    return std::get<TIss>(asset_);
+    return asset_.get<TIss>();
 }
 
 inline STIssue::value_type const&

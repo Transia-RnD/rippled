@@ -1095,6 +1095,14 @@ OverlayImpl::broadcast(protocol::TMValidation& m)
     for_each([sm](std::shared_ptr<PeerImp>&& p) { p->send(sm); });
 }
 
+void
+OverlayImpl::broadcast(protocol::TMExportSignature& m)
+{
+    auto const sm =
+        std::make_shared<Message>(m, protocol::mtEXPORT_SIGNATURE);
+    for_each([sm](std::shared_ptr<PeerImp>&& p) { p->send(sm); });
+}
+
 std::set<Peer::id_t>
 OverlayImpl::relay(protocol::TMValidation& m, uint256 const& uid, PublicKey const& validator)
 {

@@ -345,6 +345,22 @@ parseDID(
 }
 
 static Expected<uint256, Json::Value>
+parsePasskeyList(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    auto const account = LedgerEntryHelpers::parse<AccountID>(params);
+    if (!account)
+    {
+        return LedgerEntryHelpers::invalidFieldError(
+            "malformedAddress", fieldName, "AccountID");
+    }
+
+    return keylet::passkeyList(*account).key;
+}
+
+static Expected<uint256, Json::Value>
 parseDirectoryNode(
     Json::Value const& params,
     Json::StaticString const fieldName,
@@ -797,6 +813,164 @@ parseXChainOwnedCreateAccountClaimID(
     Keylet keylet = keylet::xChainCreateAccountClaimID(*bridge_spec, *seq);
     return keylet.key;
 }
+
+static Expected<uint256, Json::Value>
+parseOptionPair(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+        return parseObjectID(params, fieldName);
+
+    if (auto const value = LedgerEntryHelpers::hasRequired(params, {jss::asset, jss::asset2});
+        !value)
+        return Unexpected(value.error());
+
+    auto const asset = LedgerEntryHelpers::requiredIssue(params, jss::asset, "malformedRequest");
+    if (!asset)
+        return Unexpected(asset.error());
+
+    auto const asset2 = LedgerEntryHelpers::requiredIssue(params, jss::asset2, "malformedRequest");
+    if (!asset2)
+        return Unexpected(asset2.error());
+
+    return keylet::optionPair(*asset, *asset2).key;
+}
+
+static Expected<uint256, Json::Value>
+parseOption(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    return parseObjectID(params, fieldName);
+}
+
+static Expected<uint256, Json::Value>
+parseOptionOffer(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+        return parseObjectID(params, fieldName);
+
+    auto const id = LedgerEntryHelpers::requiredAccountID(params, jss::account, "malformedAddress");
+    if (!id)
+        return Unexpected(id.error());
+
+    auto const seq = LedgerEntryHelpers::requiredUInt32(params, jss::seq, "malformedRequest");
+    if (!seq)
+        return Unexpected(seq.error());
+
+    return keylet::optionOffer(*id, *seq).key;
+}
+
+static Expected<uint256, Json::Value>
+parseLeverageTier(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+        return parseObjectID(params, fieldName);
+
+    if (auto const value =
+            LedgerEntryHelpers::hasRequired(params, {jss::asset, jss::asset2});
+        !value)
+        return Unexpected(value.error());
+
+    auto const asset =
+        LedgerEntryHelpers::requiredIssue(params, jss::asset, "malformedRequest");
+    if (!asset)
+        return Unexpected(asset.error());
+
+    auto const asset2 =
+        LedgerEntryHelpers::requiredIssue(params, jss::asset2, "malformedRequest");
+    if (!asset2)
+        return Unexpected(asset2.error());
+
+    return keylet::leverageTier(*asset, *asset2).key;
+}
+
+static Expected<uint256, Json::Value>
+parseMarginAccount(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    return parseObjectID(params, fieldName);
+}
+
+static Expected<uint256, Json::Value>
+parseInsuranceVault(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+        return parseObjectID(params, fieldName);
+
+    if (auto const value =
+            LedgerEntryHelpers::hasRequired(params, {jss::asset, jss::asset2});
+        !value)
+        return Unexpected(value.error());
+
+    auto const asset =
+        LedgerEntryHelpers::requiredIssue(params, jss::asset, "malformedRequest");
+    if (!asset)
+        return Unexpected(asset.error());
+
+    auto const asset2 =
+        LedgerEntryHelpers::requiredIssue(params, jss::asset2, "malformedRequest");
+    if (!asset2)
+        return Unexpected(asset2.error());
+
+    return keylet::insuranceVault(*asset, *asset2).key;
+}
+
+static Expected<uint256, Json::Value>
+parseMarginPosition(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    return parseObjectID(params, fieldName);
+}
+
+static Expected<uint256, Json::Value>
+parseImportVLSeq(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    return parseObjectID(params, fieldName);
+}
+
+static Expected<uint256, Json::Value>
+parseExportRecord(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+        return parseObjectID(params, fieldName);
+
+    auto const id = LedgerEntryHelpers::requiredAccountID(
+        params, jss::account, "malformedAddress");
+    if (!id)
+        return Unexpected(id.error());
+
+    auto const seq = LedgerEntryHelpers::requiredUInt32(
+        params, jss::export_sequence, "malformedRequest");
+    if (!seq)
+        return Unexpected(seq.error());
+
+    return keylet::exportRecord(*id, *seq).key;
+}
+
+auto const parseExportVaultState = fixed(keylet::exportVaultState());
 
 struct LedgerEntry
 {

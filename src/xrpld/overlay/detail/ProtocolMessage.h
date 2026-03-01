@@ -84,6 +84,8 @@ protocolMessageName(int type)
             return "replay_delta_request";
         case protocol::mtREPLAY_DELTA_RESPONSE:
             return "replay_delta_response";
+        case protocol::mtEXPORT_SIGNATURE:
+            return "export_signature";
         default:
             break;
     }
@@ -416,6 +418,9 @@ invokeProtocolMessage(Buffers const& buffers, Handler& handler, std::size_t& hin
             break;
         case protocol::mtREPLAY_DELTA_RESPONSE:
             success = detail::invoke<protocol::TMReplayDeltaResponse>(*header, buffers, handler);
+            break;
+        case protocol::mtEXPORT_SIGNATURE:
+            success = detail::invoke<protocol::TMExportSignature>(*header, buffers, handler);
             break;
         default:
             handler.onMessageUnknown(header->message_type);

@@ -17,18 +17,20 @@
 */
 //==============================================================================
 
-#include <xrpld/app/tx/detail/OptionUtils.h>
-#include <xrpld/ledger/Dir.h>
-#include <xrpld/ledger/View.h>
+#include <xrpl/tx/transactors/Option/OptionUtils.h>
+#include <xrpl/tx/transactors/Option/MarginUtils.h>
+#include <xrpl/ledger/Dir.h>
+#include <xrpl/ledger/View.h>
 
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/STArray.h>
+#include <xrpl/protocol/STNumber.h>
 #include <xrpl/protocol/TxFlags.h>
 
 #include <functional>
 #include <memory>
 
-namespace ripple {
+namespace xrpl {
 
 namespace option {
 
@@ -229,8 +231,6 @@ matchOptions(
  * @param openInterest Available quantity not yet matched
  * @param premium The premium (price) for the option
  * @param isSell Whether this is a sell offer
- * @param lockedAmount Amount of the asset to lock as collateral (for sell
- * offers)
  * @param issue The underlying asset (currency and issuer)
  * @param strikePrice The strike price as an STAmount
  * @param strike The strike price as an integer
@@ -250,7 +250,6 @@ createOffer(
     std::uint32_t openInterest,
     STAmount const& premium,
     bool isSell,
-    STAmount const& lockedAmount,
     Issue const& issue,
     STAmount strikePrice,
     std::int64_t strike,
@@ -265,8 +264,7 @@ createOffer(
                     << ", expiration=" << expiration
                     << ", quantity=" << quantity
                     << ", openInterest=" << openInterest
-                    << ", premium=" << premium << ", isSell=" << isSell
-                    << ", lockedAmount=" << lockedAmount;
+                    << ", premium=" << premium << ", isSell=" << isSell;
 
     // Verify the account exists
     auto sleSrcAcc = sb.peek(keylet::account(account));
@@ -312,8 +310,6 @@ createOffer(
     optionOffer->setFieldU32(
         sfOpenInterest, openInterest);                // Available quantity
     optionOffer->setFieldAmount(sfPremium, premium);  // Premium (price)
-    optionOffer->setFieldAmount(
-        sfAmount, STAmount(0));  // Default locked amount to 0
 
     // Get or create sealed options array
     STArray sealedOptionsArray = optionOffer->isFieldPresent(sfSealedOptions)
@@ -341,10 +337,6 @@ createOffer(
 
     // Update the offer with sealed options
     optionOffer->setFieldArray(sfSealedOptions, std::move(sealedOptionsArray));
-
-    // For sell offers, set the amount of assets locked as collateral
-    if (isSell)
-        optionOffer->setFieldAmount(sfAmount, lockedAmount);
 
     // Create option structure for the order book
     Option const option{issue, static_cast<uint64_t>(strike), expiration};
@@ -379,166 +371,6 @@ createOffer(
 
     // Insert the new offer into the ledger
     sb.insert(optionOffer);
-    return tesSUCCESS;
-}
-
-/**
- * @brief Locks tokens as collateral for selling an option.
- *
- * When creating a sell option, this function locks the necessary assets as
- * collateral, either XRP or issued tokens. The locked amount is subtracted from
- * the account's available balance and effectively held in escrow until the
- * option expires or is exercised.
- *
- * @param sb Sandbox ledger view
- * @param pseudoAccount OptionPair account (where tokens are locked)
- * @param sourceBalance Current XRP balance of the account
- * @param account Account whose tokens will be locked
- * @param amount Amount to lock as collateral
- * @param j Journal for logging
- * @return TER Transaction result code
- */
-TER
-lockTokens(
-    Sandbox& sb,
-    AccountID const& pseudoAccount,
-    XRPAmount const& sourceBalance,
-    AccountID const& account,
-    STAmount const& amount,
-    beast::Journal j)
-{
-    // Get the account SLE
-    auto sleSrcAcc = sb.peek(keylet::account(account));
-    if (!sleSrcAcc)
-        return terNO_ACCOUNT;  // Account not found
-
-    // Handle XRP locking
-    if (isXRP(amount))
-    {
-        // Log the operation
-        JLOG(j.trace()) << "OptionUtils: XRP lock: " << amount.getCurrency()
-                        << ": " << pseudoAccount << ": " << amount;
-
-        // Check if account has sufficient XRP balance
-        if (sourceBalance < amount.xrp())
-            return tecUNFUNDED_PAYMENT;
-
-        // Block to limit scope of temporary variables
-        {
-            // Create temporary balance variable
-            STAmount bal = sourceBalance;
-
-            // Subtract the locked amount
-            bal -= amount.xrp();
-
-            // Safety check for underflow or overflow
-            if (bal < beast::zero || bal > sourceBalance)
-                return tecINTERNAL;
-
-            // Update the account balance
-            sleSrcAcc->setFieldAmount(sfBalance, bal);
-        }
-    }
-    // Handle IOU (issued currency) locking
-    else
-    {
-        // Log the operation
-        JLOG(j.trace()) << "OptionUtils: IOU lock: " << amount.getCurrency()
-                        << ": " << pseudoAccount << ": " << amount;
-
-        // Check how much of this currency the account can spend
-        STAmount spendableAmount{accountHolds(
-            sb,
-            account,
-            amount.getCurrency(),
-            amount.getIssuer(),
-            fhZERO_IF_FROZEN,  // Return zero if the account is frozen
-            j)};
-
-        // Check if account has sufficient balance of this currency
-        if (spendableAmount < amount)
-            return tecINSUFFICIENT_FUNDS;
-
-        // Use accountSend to create the proper trust line entry
-        // This adjusts the balance on the trust line between account and issuer
-        auto const ter = accountSend(sb, account, pseudoAccount, amount, j);
-
-        // If accountSend failed, return the error
-        if (ter != tesSUCCESS)
-        {
-            JLOG(j.trace()) << "OptionUtils: accountSend failed: " << ter;
-            return ter;  // LCOV_EXCL_LINE
-        }
-    }
-
-    return tesSUCCESS;
-}
-
-/**
- * @brief Unlocks tokens that were previously locked as collateral.
- *
- * When an option is closed, exercised, or expires, this function releases
- * the locked collateral back to the specified account. It handles both XRP
- * and issued currencies differently.
- *
- * @param sb Sandbox ledger view
- * @param pseudoAccount Account sending the unlocked tokens
- * @param receiver Account receiving the unlocked tokens
- * @param sleReceiver SLE of the receiving account (already loaded)
- * @param amount Amount to unlock
- * @param j Journal for logging
- * @return TER Transaction result code
- */
-TER
-unlockTokens(
-    Sandbox& sb,
-    AccountID const& pseudoAccount,
-    AccountID const& receiver,
-    std::shared_ptr<SLE> const& sleReceiver,
-    STAmount const& amount,
-    beast::Journal j)
-{
-    // Handle XRP unlocking
-    if (isXRP(amount))
-    {
-        // Log the operation
-        JLOG(j.trace()) << "OptionSettle: XRP unlock: " << amount;
-
-        // Get current balance
-        STAmount balance = sleReceiver->getFieldAmount(sfBalance);
-
-        // Create temporary balance variable
-        STAmount bal = balance;
-
-        // Add the unlocked amount
-        bal += amount.xrp();
-
-        // Safety check for underflow or overflow
-        if (bal < beast::zero || bal < balance)
-            return tecINTERNAL;
-
-        // Update the account balance
-        sleReceiver->setFieldAmount(sfBalance, bal);
-    }
-    // Handle IOU (issued currency) unlocking
-    else
-    {
-        // Log the operation
-        JLOG(j.trace()) << "OptionSettle: IOU unlock: " << amount;
-
-        // Use accountSend to adjust the trust line
-        // Note: For unlocking, the issuer is the pseudo account and the
-        // receiver is the destination
-        auto const ter = accountSend(sb, pseudoAccount, receiver, amount, j);
-
-        // If accountSend failed, return the error
-        if (ter != tesSUCCESS)
-        {
-            JLOG(j.trace()) << "OptionSettle: accountSend failed: " << ter;
-            return ter;  // LCOV_EXCL_LINE
-        }
-    }
-
     return tesSUCCESS;
 }
 
@@ -665,31 +497,47 @@ closeOffer(
         return tecNO_PERMISSION;
     }
 
-    // For sellers, unlock collateral or assets
-    if (isSell)
+    // Release margin if a margin position is linked
+    if (sleOffer->isFieldPresent(sfMarginPositionID))
     {
-        // Get the locked amount
-        STAmount lockedAmount = sleOffer->getFieldAmount(sfAmount);
-
-        // Only proceed if there's actually something locked
-        if (lockedAmount.mantissa() > 0)
+        uint256 const positionID = sleOffer->getFieldH256(sfMarginPositionID);
+        auto slePosition = sb.peek(Keylet{ltMARGIN_POSITION, positionID});
+        if (slePosition)
         {
-            // Get account SLE for the owner
-            auto sleSeller = sb.peek(keylet::account(account));
-            if (!sleSeller)
-                return terNO_ACCOUNT;
+            // Release allocated margin back to margin account
+            uint256 const marginAccountID =
+                slePosition->getFieldH256(sfMarginAccountID);
+            auto sleMarginAcct =
+                sb.peek(Keylet{ltMARGIN_ACCOUNT, marginAccountID});
+            if (sleMarginAcct)
+            {
+                Number allocatedMargin =
+                    slePosition->at(~sfAllocatedMargin).value_or(Number(0));
+                Number collateralBalance =
+                    sleMarginAcct->at(~sfCollateralBalance).value_or(Number(0));
+                collateralBalance = collateralBalance + allocatedMargin;
+                sleMarginAcct->at(sfCollateralBalance) =
+                    STNumber{sfCollateralBalance, collateralBalance};
+                sb.update(sleMarginAcct);
+            }
 
-            // Unlock the collateral or assets
-            auto ter = unlockTokens(
-                sb, pseudoAccount, account, sleSeller, lockedAmount, j);
-            if (ter != tesSUCCESS)
-                return ter;
+            // Remove position from owner directory and delete
+            auto const posAccount = slePosition->getAccountID(sfAccount);
+            if (slePosition->isFieldPresent(sfOwnerNode))
+            {
+                sb.dirRemove(
+                    keylet::ownerDir(posAccount),
+                    slePosition->getFieldU64(sfOwnerNode),
+                    slePosition->key(),
+                    true);
+            }
+            adjustOwnerCount(
+                sb, sb.peek(keylet::account(posAccount)), -1, j);
+            sb.erase(slePosition);
 
-            // Update the seller's account in the ledger
-            sb.update(sleSeller);
             JLOG(j.trace())
-                << "OptionUtils: Unlocked " << lockedAmount << " for sell "
-                << (isPut ? "put" : "call") << " option.";
+                << "OptionUtils: Released margin and deleted position "
+                << to_string(positionID);
         }
     }
 
@@ -1088,20 +936,19 @@ closeOffer(
 }
 
 /**
- * @brief Exercises an option contract.
+ * @brief Exercises an option contract via cash settlement.
  *
- * This function executes the option by transferring assets between buyer and
- * seller according to the option terms. It processes each sealed option in the
- * array, unlocks the appropriate assets from the buyer, transfers them to the
- * option writer, and updates or removes the option from the ledger.
+ * Calculates settlement based on mark price vs strike price.
+ * For calls: settlement = max(0, (markPrice - strikePrice) * quantity)
+ * For puts:  settlement = max(0, (strikePrice - markPrice) * quantity)
+ * Settlement is transferred between buyer and seller margin positions.
  *
  * @param sb Sandbox ledger view
- * @param pseudoAccount OptionPair account (where tokens are locked)
  * @param isPut Whether this is a put option
  * @param strikePrice The strike price of the option
  * @param buyer Account exercising the option
- * @param sleBuyer SLE of the buyer's account (already loaded)
- * @param issue The underlying asset
+ * @param issue The underlying (base) asset
+ * @param quoteIssue The quote (settlement) asset
  * @param sealedOptions Array of sealed options to exercise
  * @param j Journal for logging
  * @return TER Transaction result code
@@ -1109,85 +956,153 @@ closeOffer(
 TER
 exerciseOffer(
     Sandbox& sb,
-    AccountID const& pseudoAccount,
     bool isPut,
     STAmount const& strikePrice,
     AccountID const& buyer,
-    std::shared_ptr<SLE> const& sleBuyer,
     Issue const& issue,
+    Issue const& quoteIssue,
     STArray const& sealedOptions,
     beast::Journal j)
 {
+    // Get mark price from oracle
+    Number const markPrice =
+        margin::getMarkPrice(sb, issue, quoteIssue);
+    if (markPrice == Number(0))
+    {
+        JLOG(j.warn()) << "OptionUtils: Cannot get mark price for exercise.";
+        return tecFAILED_PROCESSING;
+    }
+
+    Number const strike = Number(strikePrice);
+
     // Process each sealed option in the array
     for (const auto& sealedOption : sealedOptions)
     {
-        // Get the option writer account
-        AccountID const owner = sealedOption.getAccountID(sfOwner);
+        // Get the counterparty (seller) account
+        AccountID const seller = sealedOption.getAccountID(sfOwner);
 
         // Get the option offer ID
         uint256 const offerID = sealedOption.getFieldH256(sfOptionOfferID);
 
-        // Load the option offer
+        // Load the counterparty's option offer
         auto sleSealedOffer = sb.peek(keylet::optionOffer(offerID));
         if (!sleSealedOffer)
-            return tecNO_TARGET;  // Option offer not found
+            return tecNO_TARGET;
 
         // Get the quantity being exercised
         std::uint32_t const quantity = sealedOption.getFieldU32(sfQuantity);
 
-        // Calculate the quantity as an STAmount
-        STAmount const quantityShares = STAmount(issue, quantity);
-
-        // Calculate the total value based on strike price
-        STAmount const totalValue = mulRound(
-            strikePrice,
-            STAmount(strikePrice.issue(), quantity),
-            strikePrice.issue(),
-            false);
-
-        // Determine which assets to unlock and transfer based on option type
-        // For put options:
-        //   - Buyer pays the strike price (totalValue) to seller
-        //   - Buyer delivers the underlying asset (quantityShares) to seller
-        // For call options:
-        //   - Buyer pays the strike price (totalValue) to seller
-        //   - Seller delivers the underlying asset (quantityShares) to buyer
-        STAmount const unlockAmount = isPut ? totalValue : quantityShares;
-        STAmount const transferAmount = isPut ? quantityShares : totalValue;
-
-        // Unlock the appropriate assets from the buyer
-        auto const ter = option::unlockTokens(
-            sb, pseudoAccount, buyer, sleBuyer, unlockAmount, j);
-        if (ter != tesSUCCESS)
-            return ter;
-
-        // Transfer the appropriate assets from buyer to option writer
-        auto const ter2 =
-            option::transferTokens(sb, buyer, owner, transferAmount, j);
-        if (ter2 != tesSUCCESS)
-            return ter2;
-
-        // If this is a partial exercise (not all of the offer quantity)
-        if (quantity != sleSealedOffer->getFieldU32(sfQuantity))
+        // Calculate cash settlement
+        // For calls: buyer profits when price rises above strike
+        // For puts:  buyer profits when price falls below strike
+        Number settlement(0);
+        if (isPut)
         {
-            // Update the locked amount in the offer
-            sleSealedOffer->setFieldAmount(
-                sfAmount,
-                sleSealedOffer->getFieldAmount(sfAmount) - unlockAmount);
-
-            // Update the offer in the ledger
-            sb.update(sleSealedOffer);
+            if (strike > markPrice)
+                settlement = (strike - markPrice) * Number(quantity);
         }
         else
         {
-            // This is a full exercise, so delete the offer
-            if (auto ter = option::deleteOffer(sb, sleSealedOffer, j);
-                ter != tesSUCCESS)
+            if (markPrice > strike)
+                settlement = (markPrice - strike) * Number(quantity);
+        }
+
+        JLOG(j.trace()) << "OptionUtils: Exercise settlement=" << settlement
+                        << " markPrice=" << markPrice
+                        << " strikePrice=" << strike
+                        << " quantity=" << quantity;
+
+        // Transfer settlement via margin positions
+        if (settlement > Number(0))
+        {
+            // Find seller's margin position (linked to their offer)
+            if (sleSealedOffer->isFieldPresent(sfMarginPositionID))
             {
-                JLOG(j.trace())
-                    << "OptionUtils: Failed to delete offer after exercise.";
-                return ter;
+                uint256 const sellerPosID =
+                    sleSealedOffer->getFieldH256(sfMarginPositionID);
+                auto sleSellerPos =
+                    sb.peek(Keylet{ltMARGIN_POSITION, sellerPosID});
+                if (sleSellerPos)
+                {
+                    // Deduct settlement from seller's margin
+                    uint256 const sellerMarginAcctID =
+                        sleSellerPos->getFieldH256(sfMarginAccountID);
+                    auto sleSellerMargin =
+                        sb.peek(Keylet{ltMARGIN_ACCOUNT, sellerMarginAcctID});
+                    if (sleSellerMargin)
+                    {
+                        Number sellerBalance =
+                            sleSellerMargin->at(~sfCollateralBalance)
+                                .value_or(Number(0));
+                        // Also return allocated margin before deducting
+                        Number allocatedMargin =
+                            sleSellerPos->at(~sfAllocatedMargin)
+                                .value_or(Number(0));
+                        sellerBalance =
+                            sellerBalance + allocatedMargin - settlement;
+                        // Clamp to zero (insurance fund covers deficit)
+                        if (sellerBalance < Number(0))
+                            sellerBalance = Number(0);
+                        sleSellerMargin->at(sfCollateralBalance) =
+                            STNumber{sfCollateralBalance, sellerBalance};
+                        sb.update(sleSellerMargin);
+                    }
+
+                    // Delete seller's margin position
+                    auto const posAccount =
+                        sleSellerPos->getAccountID(sfAccount);
+                    if (sleSellerPos->isFieldPresent(sfOwnerNode))
+                    {
+                        sb.dirRemove(
+                            keylet::ownerDir(posAccount),
+                            sleSellerPos->getFieldU64(sfOwnerNode),
+                            sleSellerPos->key(),
+                            true);
+                    }
+                    adjustOwnerCount(
+                        sb, sb.peek(keylet::account(posAccount)), -1, j);
+                    sb.erase(sleSellerPos);
+                }
             }
+
+            // Credit settlement to buyer's margin account
+            // Find buyer's margin account (look up from buyer's offers or
+            // use the OptionPair to find it)
+            auto const sleBuyerAcct = sb.read(keylet::account(buyer));
+            if (sleBuyerAcct)
+            {
+                // Transfer settlement as direct token transfer to buyer
+                STAmount settlementAmount(quoteIssue,
+                    static_cast<std::int64_t>(settlement), 0);
+                if (isXRP(quoteIssue))
+                {
+                    auto sleBuyerPeek = sb.peek(keylet::account(buyer));
+                    if (sleBuyerPeek)
+                    {
+                        STAmount balance =
+                            sleBuyerPeek->getFieldAmount(sfBalance);
+                        balance += settlementAmount.xrp();
+                        sleBuyerPeek->setFieldAmount(sfBalance, balance);
+                        sb.update(sleBuyerPeek);
+                    }
+                }
+                else
+                {
+                    auto const ter = accountSend(
+                        sb, seller, buyer, settlementAmount, j);
+                    if (!isTesSuccess(ter))
+                        return ter;
+                }
+            }
+        }
+
+        // Delete the counterparty's offer
+        if (auto ter3 = option::deleteOffer(sb, sleSealedOffer, j);
+            ter3 != tesSUCCESS)
+        {
+            JLOG(j.trace())
+                << "OptionUtils: Failed to delete offer after exercise.";
+            return ter3;
         }
     }
     return tesSUCCESS;
@@ -1223,73 +1138,50 @@ expireOffer(ApplyView& view, std::shared_ptr<SLE> const& sle, beast::Journal j)
     if (!slePair)
         return tecINTERNAL;  // LCOV_EXCL_LINE
 
-    // Get the pseudo account for the owner
-    AccountID const pseudoAccount = slePair->getAccountID(sfAccount);
-
-    // Get the option flags
-    auto const optionFlags = sle->getFlags();
-
-    // Check if this is a sell offer
-    bool const isSell = optionFlags & tfSell;
-
     // Get the option ID
     uint256 const offerID = sle->key();
 
-    // For sellers, unlock and return any locked collateral or assets
-    if (isSell)
+    // Release margin if a margin position is linked
+    if (sle->isFieldPresent(sfMarginPositionID))
     {
-        // Get the locked amount
-        STAmount lockedAmount = sle->getFieldAmount(sfAmount);
-
-        // Only proceed if there's actually something locked
-        if (lockedAmount.mantissa() > 0)
+        uint256 const positionID = sle->getFieldH256(sfMarginPositionID);
+        auto slePosition = view.peek(Keylet{ltMARGIN_POSITION, positionID});
+        if (slePosition)
         {
-            // Get account SLE for the owner
-            auto sleSeller = view.peek(keylet::account(account));
-            if (!sleSeller)
-                return terNO_ACCOUNT;
-
-            // Handle XRP unlocking
-            if (isXRP(lockedAmount))
+            // Release allocated margin back to margin account
+            uint256 const marginAccountID =
+                slePosition->getFieldH256(sfMarginAccountID);
+            auto sleMarginAcct =
+                view.peek(Keylet{ltMARGIN_ACCOUNT, marginAccountID});
+            if (sleMarginAcct)
             {
-                JLOG(j.trace()) << "OptionSettle: XRP unlock: " << lockedAmount;
-
-                // Get current balance
-                STAmount balance = sleSeller->getFieldAmount(sfBalance);
-
-                // Add the unlocked amount
-                STAmount bal = balance;
-                bal += lockedAmount.xrp();
-
-                // Safety check for underflow or overflow
-                if (bal < beast::zero || bal < balance)
-                    return tecINTERNAL;
-
-                // Update the account balance
-                sleSeller->setFieldAmount(sfBalance, bal);
-            }
-            // Handle IOU unlocking
-            else
-            {
-                JLOG(j.trace()) << "OptionSettle: IOU unlock: " << lockedAmount;
-
-                // Use accountSend to adjust the trust line
-                auto const ter =
-                    accountSend(view, pseudoAccount, account, lockedAmount, j);
-
-                // If accountSend failed, return the error
-                if (ter != tesSUCCESS)
-                {
-                    JLOG(j.trace())
-                        << "OptionSettle: Failed to unlock IOU: " << ter;
-                    return ter;  // LCOV_EXCL_LINE
-                }
+                Number allocatedMargin =
+                    slePosition->at(~sfAllocatedMargin).value_or(Number(0));
+                Number collateralBalance =
+                    sleMarginAcct->at(~sfCollateralBalance).value_or(Number(0));
+                collateralBalance = collateralBalance + allocatedMargin;
+                sleMarginAcct->at(sfCollateralBalance) =
+                    STNumber{sfCollateralBalance, collateralBalance};
+                view.update(sleMarginAcct);
             }
 
-            // Update the seller's account in the ledger
-            view.update(sleSeller);
-            JLOG(j.trace()) << "OptionUtils: Unlocked and returned "
-                            << lockedAmount << " for expired sell option.";
+            // Remove position from owner directory and delete
+            auto const posAccount = slePosition->getAccountID(sfAccount);
+            if (slePosition->isFieldPresent(sfOwnerNode))
+            {
+                view.dirRemove(
+                    keylet::ownerDir(posAccount),
+                    slePosition->getFieldU64(sfOwnerNode),
+                    slePosition->key(),
+                    true);
+            }
+            adjustOwnerCount(
+                view, view.peek(keylet::account(posAccount)), -1, j);
+            view.erase(slePosition);
+
+            JLOG(j.trace())
+                << "OptionUtils: Released margin for expired option "
+                << to_string(positionID);
         }
     }
 
@@ -1422,4 +1314,4 @@ deleteOffer(ApplyView& view, std::shared_ptr<SLE> const& sle, beast::Journal j)
 }
 
 }  // namespace option
-}  // namespace ripple
+}  // namespace xrpl

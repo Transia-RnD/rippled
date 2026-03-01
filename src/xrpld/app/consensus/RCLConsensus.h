@@ -382,6 +382,31 @@ class RCLConsensus
         */
         void
         validate(RCLCxLedger const& ledger, RCLTxSet const& txns, bool proposing);
+
+        /** Sign new ExportRecords and broadcast signatures via overlay.
+            Called after validation when featureImportExport is enabled.
+        */
+        void
+        signExportRecords(
+            RCLCxLedger const& ledger,
+            RCLTxSet const& txns,
+            ValidatorKeys::Keys const& keys);
+
+        /** Check if the UNL has changed and sign a SignerListSet if needed.
+            Called at flag ledgers when featureImportExport is enabled.
+        */
+        void
+        checkSignerListRotation(
+            RCLCxLedger const& ledger,
+            ValidatorKeys::Keys const& keys);
+
+        /** Check if the mainnet vault ticket pool needs replenishment.
+            Called at flag ledgers when featureImportExport is enabled.
+        */
+        void
+        checkTicketReplenishment(
+            RCLCxLedger const& ledger,
+            ValidatorKeys::Keys const& keys);
     };
 
 public:

@@ -208,6 +208,9 @@ public:
     void
     broadcast(protocol::TMValidation& m) override;
 
+    void
+    broadcast(protocol::TMExportSignature& m) override;
+
     std::set<Peer::id_t>
     relay(protocol::TMProposeSet& m, uint256 const& uid, PublicKey const& validator) override;
 

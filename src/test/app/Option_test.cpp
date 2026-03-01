@@ -19,14 +19,14 @@
 
 #include <test/jtx.h>
 
-#include <xrpld/ledger/Dir.h>
+#include <xrpl/ledger/Dir.h>
 
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
 #include <xrpl/protocol/TxFlags.h>
 #include <xrpl/protocol/jss.h>
 
-namespace ripple {
+namespace xrpl {
 namespace test {
 
 struct Option_test : public beast::unit_test::suite
@@ -38,7 +38,7 @@ struct Option_test : public beast::unit_test::suite
         uint256 const& tid)
     {
         auto const sle = view.read({ltOPTION_OFFER, tid});
-        ripple::Dir const ownerDir(view, keylet::ownerDir(acct.id()));
+        Dir const ownerDir(view, keylet::ownerDir(acct.id()));
         return std::find(ownerDir.begin(), ownerDir.end(), sle) !=
             ownerDir.end();
     }
@@ -46,7 +46,7 @@ struct Option_test : public beast::unit_test::suite
     static std::size_t
     ownerDirCount(ReadView const& view, jtx::Account const& acct)
     {
-        ripple::Dir const ownerDir(view, keylet::ownerDir(acct.id()));
+        Dir const ownerDir(view, keylet::ownerDir(acct.id()));
         return std::distance(ownerDir.begin(), ownerDir.end());
     };
 
@@ -85,7 +85,6 @@ struct Option_test : public beast::unit_test::suite
         uint256 const& offerId,
         std::uint32_t const& quantity,
         STAmount const& premium,
-        STAmount const& lockedAmount,
         std::uint32_t const& openInterest,
         std::vector<SealedOption> const& sealedOptions_)
     {
@@ -94,8 +93,10 @@ struct Option_test : public beast::unit_test::suite
         auto const k = keylet::unchecked(offerId);
         auto const sle = view.read(k);
         if (!sle)
+        {
             fail("Option offer not found in ledger"s, __FILE__, line);
-        return;
+            return;
+        }
 
         if ((*sle)[sfQuantity] != quantity)
             fail(
@@ -110,26 +111,7 @@ struct Option_test : public beast::unit_test::suite
                     premium.getFullText(),
                 __FILE__,
                 line);
-        if (lockedAmount && !sle->isFieldPresent(sfAmount) &&
-            (*sle)[sfAmount] != lockedAmount)
-            fail(
-                "Locked amount field not present, but expected: "s +
-                    lockedAmount.getFullText(),
-                __FILE__,
-                line);
-        else if (
-            !lockedAmount && sle->isFieldPresent(sfAmount) &&
-            (*sle)[sfAmount] != STAmount(0))
-            fail(
-                "Locked amount field present, but expected to be absent",
-                __FILE__,
-                line);
-        else if ((*sle)[sfAmount] && (*sle)[sfAmount] != lockedAmount)
-            fail(
-                "Locked amount mismatch: "s + (*sle)[sfAmount].getFullText() +
-                    "/" + lockedAmount.getFullText(),
-                __FILE__,
-                line);
+
         if (openInterest && !(*sle)[sfOpenInterest])
             fail(
                 "Open interest field not present, but expected: "s +
@@ -239,16 +221,83 @@ struct Option_test : public beast::unit_test::suite
         }
     }
 
-    static STAmount
-    lockedValue(
-        jtx::Env const& env,
+    // Margin helpers for cash-settled model
+    Json::Value
+    leverageTierSet(
         jtx::Account const& account,
-        std::uint32_t const& seq)
+        STIssue const& asset,
+        STIssue const& asset2,
+        std::uint32_t maxLeverage,
+        std::uint32_t initialMarginBps,
+        std::uint32_t maintenanceMarginBps,
+        std::uint32_t liquidationBonusBps)
     {
-        auto const sle = env.le(keylet::optionOffer(account, seq));
-        if (sle->isFieldPresent(sfAmount))
-            return (*sle)[sfAmount];
-        return STAmount(0);
+        Json::Value jv;
+        jv[jss::TransactionType] = jss::LeverageTierSet;
+        jv[jss::Account] = account.human();
+        jv[sfAsset.jsonName] = asset.getJson(JsonOptions::none);
+        jv[sfAsset2.jsonName] = asset2.getJson(JsonOptions::none);
+        jv[sfMaxLeverage.jsonName] = maxLeverage;
+        jv[sfInitialMarginBps.jsonName] = initialMarginBps;
+        jv[sfMaintenanceMarginBps.jsonName] = maintenanceMarginBps;
+        jv[sfLiquidationBonusBps.jsonName] = liquidationBonusBps;
+        return jv;
+    }
+
+    Json::Value
+    marginAccountSet(
+        jtx::Account const& account,
+        STIssue const& collateralAsset,
+        std::uint32_t marginMode)
+    {
+        Json::Value jv;
+        jv[jss::TransactionType] = jss::MarginAccountSet;
+        jv[jss::Account] = account.human();
+        jv[sfCollateralAsset.jsonName] =
+            collateralAsset.getJson(JsonOptions::none);
+        jv[sfMarginMode.jsonName] = marginMode;
+        return jv;
+    }
+
+    Json::Value
+    marginDeposit(
+        jtx::Account const& account,
+        uint256 const& marginAccountID,
+        STAmount const& amount)
+    {
+        Json::Value jv;
+        jv[jss::TransactionType] = jss::MarginDeposit;
+        jv[jss::Account] = account.human();
+        jv[sfMarginAccountID.jsonName] = to_string(marginAccountID);
+        jv[sfAmount.jsonName] = amount.getJson(JsonOptions::none);
+        return jv;
+    }
+
+    // Set up margin infrastructure for an account: margin account + deposit
+    uint256
+    setupMargin(
+        jtx::Env& env,
+        jtx::Account const& account,
+        Issue const& collateralIssue,
+        STAmount const& deposit)
+    {
+        using namespace test::jtx;
+        env(marginAccountSet(
+                account,
+                STIssue(sfCollateralAsset, collateralIssue),
+                0),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const marginAcctKeylet =
+            keylet::marginAccount(account.id(), collateralIssue);
+        auto const marginAcctID = marginAcctKeylet.key;
+
+        env(marginDeposit(account, marginAcctID, deposit),
+            ter(tesSUCCESS));
+        env.close();
+
+        return marginAcctID;
     }
 
     Json::Value
@@ -273,7 +322,9 @@ struct Option_test : public beast::unit_test::suite
         STAmount const& strikePrice,
         STIssue const& asset,
         uint32_t const& quantity,
-        STAmount const& premium)
+        STAmount const& premium,
+        uint256 const& marginAccountID,
+        std::uint32_t leverage = 5)
     {
         using namespace jtx;
         Json::Value jv;
@@ -284,6 +335,8 @@ struct Option_test : public beast::unit_test::suite
         jv[sfExpiration.jsonName] = expiration.time_since_epoch().count();
         jv[sfPremium.jsonName] = premium.getJson(JsonOptions::none);
         jv[sfQuantity.jsonName] = quantity;
+        jv[sfMarginAccountID.jsonName] = to_string(marginAccountID);
+        jv[sfLeverage.jsonName] = leverage;
         return jv;
     }
 
@@ -378,13 +431,16 @@ struct Option_test : public beast::unit_test::suite
         NetClock::time_point const& expiration,
         STAmount const& strikePrice,
         STAmount const& premium,
-        std::uint32_t flags)
+        std::uint32_t flags,
+        uint256 const& marginAccountID,
+        std::uint32_t leverage = 5)
     {
         using namespace test::jtx;
         auto const issue = STIssue(sfAsset, AST.issue());
         auto const offerId = getOfferIndex(account.id(), seq);
         env(optionCreate(
-                account, expiration, strikePrice, issue, quantity, premium),
+                account, expiration, strikePrice, issue, quantity, premium,
+                marginAccountID, leverage),
             txflags(flags),
             ter(tesSUCCESS));
         env.close();
@@ -434,6 +490,25 @@ struct Option_test : public beast::unit_test::suite
                 txResult);
             env.close();
 
+            // Margin setup (leverage tier + margin account + deposit)
+            if (withOptions)
+            {
+                env(leverageTierSet(
+                        gw,
+                        STIssue(sfAsset, GME.issue()),
+                        STIssue(sfAsset2, USD.issue()),
+                        5, 20000, 10000, 500),
+                    ter(tesSUCCESS));
+                env.close();
+            }
+
+            uint256 writerMarginAcctID{};
+            if (withOptions)
+            {
+                writerMarginAcctID =
+                    setupMargin(env, writer, USD.issue(), USD(5000));
+            }
+
             // OPTION LIST
             auto const expiration = env.now() + 80s;
             auto const strikePrice = USD(20);
@@ -450,7 +525,9 @@ struct Option_test : public beast::unit_test::suite
                     strikePrice,
                     STIssue(sfAsset, GME.issue()),
                     quantity,
-                    premium),
+                    premium,
+                    writerMarginAcctID,
+                    5),
                 txResult);
             env.close();
 
@@ -519,6 +596,18 @@ struct Option_test : public beast::unit_test::suite
                 getOptionIndex(gme.id(), GME.currency, strike, expiration)};
             initPair(env, gme, GME.issue(), USD.issue());
 
+            // Add leverage tier
+            env(leverageTierSet(
+                    gw,
+                    STIssue(sfAsset, GME.issue()),
+                    STIssue(sfAsset2, USD.issue()),
+                    5, 20000, 10000, 500),
+                ter(tesSUCCESS));
+            env.close();
+
+            auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+            auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+
             // create buy offer
             uint256 const buyId = createOffer(
                 env,
@@ -529,7 +618,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                0);
+                0,
+                buyerMarginAcctID);
 
             // create sell offer
             createOffer(
@@ -541,7 +631,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                tfSell);
+                tfSell,
+                writerMarginAcctID);
 
             // expire sell offer
             env(optionSettle(buyer, optionId, buyId),
@@ -587,15 +678,26 @@ struct Option_test : public beast::unit_test::suite
             env(pay(gme, writer, GME(10000)));
             env.close();
 
-            auto const preBuyerXrp = env.balance(buyer);
-            auto const preBuyerGme = env.balance(buyer, GME);
-            auto const preBuyerUsd = env.balance(buyer, USD);
-
             auto const expiration = env.now() + 1s;
             auto const strikePrice = USD(20);
             auto const premium = USD(0.5);
             auto const quantity = 1000;
             initPair(env, gme, GME.issue(), USD.issue());
+
+            // Add leverage tier
+            env(leverageTierSet(
+                    gw,
+                    STIssue(sfAsset, GME.issue()),
+                    STIssue(sfAsset2, USD.issue()),
+                    5, 20000, 10000, 500),
+                ter(tesSUCCESS));
+            env.close();
+
+            auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+
+            auto const preBuyerXrp = env.balance(buyer);
+            auto const preBuyerGme = env.balance(buyer, GME);
+            auto const preBuyerUsd = env.balance(buyer, USD);
 
             uint256 const buyId = createOffer(
                 env,
@@ -606,7 +708,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                tfMarket);
+                tfMarket,
+                buyerMarginAcctID);
 
             // validate buy offer
             validateOffer(
@@ -615,7 +718,6 @@ struct Option_test : public beast::unit_test::suite
                 buyId,
                 quantity,
                 premium,
-                GME(0).value(),
                 1000,
                 {});
 
@@ -651,18 +753,30 @@ struct Option_test : public beast::unit_test::suite
             env(pay(gme, writer, GME(10000)));
             env.close();
 
+            auto const expiration = env.now() + 1s;
+            auto const strikePrice = USD(20);
+            auto const premium = USD(0.5);
+            auto const quantity = 1000;
+            initPair(env, gme, GME.issue(), USD.issue());
+
+            // Add leverage tier
+            env(leverageTierSet(
+                    gw,
+                    STIssue(sfAsset, GME.issue()),
+                    STIssue(sfAsset2, USD.issue()),
+                    5, 20000, 10000, 500),
+                ter(tesSUCCESS));
+            env.close();
+
+            auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+            auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+
             auto const preWriterXrp = env.balance(writer);
             auto const preWriterGme = env.balance(writer, GME);
             auto const preWriterUsd = env.balance(writer, USD);
             auto const preBuyerXrp = env.balance(buyer);
             auto const preBuyerGme = env.balance(buyer, GME);
             auto const preBuyerUsd = env.balance(buyer, USD);
-
-            auto const expiration = env.now() + 1s;
-            auto const strikePrice = USD(20);
-            auto const premium = USD(0.5);
-            auto const quantity = 1000;
-            initPair(env, gme, GME.issue(), USD.issue());
 
             // create sell offer
             uint256 const sellId = createOffer(
@@ -674,7 +788,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                tfSell);
+                tfSell,
+                writerMarginAcctID);
 
             // validate sell offer
             validateOffer(
@@ -683,13 +798,12 @@ struct Option_test : public beast::unit_test::suite
                 sellId,
                 quantity,
                 premium,
-                GME(1000).value(),
                 1000,
                 {});
 
             // check balances
             BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(1000));
+            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
             BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
             BEAST_EXPECT(env.balance(buyer) == preBuyerXrp);
             BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -708,7 +822,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                0);
+                0,
+                buyerMarginAcctID);
 
             // validate buy offer
             validateOffer(
@@ -717,7 +832,6 @@ struct Option_test : public beast::unit_test::suite
                 buyId,
                 quantity,
                 premium,
-                GME(0).value(),
                 0,
                 {{sellId, writer.id(), quantity}});
 
@@ -728,13 +842,12 @@ struct Option_test : public beast::unit_test::suite
                 sellId,
                 quantity,
                 premium,
-                GME(1000).value(),
                 0,
                 {{buyId, buyer.id(), quantity}});
 
             // check balances
             BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(1000));
+            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
             BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(500));
             BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
             BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -768,17 +881,29 @@ struct Option_test : public beast::unit_test::suite
             env(pay(gme, writer, GME(10000)));
             env.close();
 
+            auto const expiration = env.now() + 1s;
+            auto const strikePrice = USD(20);
+            auto const premium = USD(0.5);
+            initPair(env, gme, GME.issue(), USD.issue());
+
+            // Add leverage tier
+            env(leverageTierSet(
+                    gw,
+                    STIssue(sfAsset, GME.issue()),
+                    STIssue(sfAsset2, USD.issue()),
+                    5, 20000, 10000, 500),
+                ter(tesSUCCESS));
+            env.close();
+
+            auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+            auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+
             auto const preWriterXrp = env.balance(writer);
             auto const preWriterGme = env.balance(writer, GME);
             auto const preWriterUsd = env.balance(writer, USD);
             auto const preBuyerXrp = env.balance(buyer);
             auto const preBuyerGme = env.balance(buyer, GME);
             auto const preBuyerUsd = env.balance(buyer, USD);
-
-            auto const expiration = env.now() + 1s;
-            auto const strikePrice = USD(20);
-            auto const premium = USD(0.5);
-            initPair(env, gme, GME.issue(), USD.issue());
 
             // create sell offer
             uint256 const sellId = createOffer(
@@ -790,7 +915,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                tfSell);
+                tfSell,
+                writerMarginAcctID);
 
             // validate sell offer
             validateOffer(
@@ -799,13 +925,12 @@ struct Option_test : public beast::unit_test::suite
                 sellId,
                 1000,
                 premium,
-                GME(1000).value(),
                 1000,
                 {});
 
             // check balances
             BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(1000));
+            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
             BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
             BEAST_EXPECT(env.balance(buyer) == preBuyerXrp);
             BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -824,7 +949,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                0);
+                0,
+                buyerMarginAcctID);
 
             // validate buy offer
             validateOffer(
@@ -833,7 +959,6 @@ struct Option_test : public beast::unit_test::suite
                 buyId,
                 500,
                 premium,
-                GME(0).value(),
                 0,
                 {{sellId, writer.id(), 500}});
 
@@ -844,13 +969,12 @@ struct Option_test : public beast::unit_test::suite
                 sellId,
                 1000,
                 premium,
-                GME(1000).value(),
                 500,
                 {{buyId, buyer.id(), 500}});
 
             // check balances
             BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(1000));
+            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
             BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(250));
             BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
             BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -892,15 +1016,26 @@ struct Option_test : public beast::unit_test::suite
             env(pay(gme, writer, GME(10000)));
             env.close();
 
-            auto const preWriterXrp = env.balance(writer);
-            auto const preWriterGme = env.balance(writer, GME);
-            auto const preWriterUsd = env.balance(writer, USD);
-
             auto const expiration = env.now() + 1s;
             auto const strikePrice = USD(20);
             auto const premium = USD(0.5);
             auto const quantity = 1000;
             initPair(env, gme, GME.issue(), USD.issue());
+
+            // Add leverage tier
+            env(leverageTierSet(
+                    gw,
+                    STIssue(sfAsset, GME.issue()),
+                    STIssue(sfAsset2, USD.issue()),
+                    5, 20000, 10000, 500),
+                ter(tesSUCCESS));
+            env.close();
+
+            auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+
+            auto const preWriterXrp = env.balance(writer);
+            auto const preWriterGme = env.balance(writer, GME);
+            auto const preWriterUsd = env.balance(writer, USD);
 
             uint256 const sellId = createOffer(
                 env,
@@ -911,7 +1046,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                tfSell | tfMarket);
+                tfSell | tfMarket,
+                writerMarginAcctID);
 
             // validate sell offer
             validateOffer(
@@ -920,13 +1056,12 @@ struct Option_test : public beast::unit_test::suite
                 sellId,
                 quantity,
                 premium,
-                GME(1000).value(),
                 1000,
                 {});
 
             // check balances
             BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(1000));
+            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
             BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
 
             // check metadata
@@ -956,18 +1091,30 @@ struct Option_test : public beast::unit_test::suite
             env(pay(gme, writer, GME(10000)));
             env.close();
 
+            auto const expiration = env.now() + 1s;
+            auto const strikePrice = USD(20);
+            auto const premium = USD(0.5);
+            auto const quantity = 1000;
+            initPair(env, gme, GME.issue(), USD.issue());
+
+            // Add leverage tier
+            env(leverageTierSet(
+                    gw,
+                    STIssue(sfAsset, GME.issue()),
+                    STIssue(sfAsset2, USD.issue()),
+                    5, 20000, 10000, 500),
+                ter(tesSUCCESS));
+            env.close();
+
+            auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+            auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+
             auto const preWriterXrp = env.balance(writer);
             auto const preWriterGme = env.balance(writer, GME);
             auto const preWriterUsd = env.balance(writer, USD);
             auto const preBuyerXrp = env.balance(buyer);
             auto const preBuyerGme = env.balance(buyer, GME);
             auto const preBuyerUsd = env.balance(buyer, USD);
-
-            auto const expiration = env.now() + 1s;
-            auto const strikePrice = USD(20);
-            auto const premium = USD(0.5);
-            auto const quantity = 1000;
-            initPair(env, gme, GME.issue(), USD.issue());
 
             // create buy offer
             uint256 const buyId = createOffer(
@@ -979,7 +1126,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                tfMarket);
+                tfMarket,
+                buyerMarginAcctID);
 
             // validate sell offer
             validateOffer(
@@ -988,7 +1136,6 @@ struct Option_test : public beast::unit_test::suite
                 buyId,
                 quantity,
                 premium,
-                USD(0).value(),
                 1000,
                 {});
 
@@ -1013,7 +1160,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                tfSell | tfMarket);
+                tfSell | tfMarket,
+                writerMarginAcctID);
 
             // validate sell offer
             validateOffer(
@@ -1022,7 +1170,6 @@ struct Option_test : public beast::unit_test::suite
                 sellId,
                 quantity,
                 premium,
-                GME(1000).value(),
                 0,
                 {{buyId, buyer.id(), quantity}});
 
@@ -1033,13 +1180,12 @@ struct Option_test : public beast::unit_test::suite
                 buyId,
                 quantity,
                 premium,
-                USD(0).value(),
                 0,
                 {{sellId, writer.id(), quantity}});
 
             // check balances
             BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(1000));
+            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
             BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(500));
             BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
             BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -1073,17 +1219,29 @@ struct Option_test : public beast::unit_test::suite
             env(pay(gme, writer, GME(10000)));
             env.close();
 
+            auto const expiration = env.now() + 1s;
+            auto const strikePrice = USD(20);
+            auto const premium = USD(0.5);
+            initPair(env, gme, GME.issue(), USD.issue());
+
+            // Add leverage tier
+            env(leverageTierSet(
+                    gw,
+                    STIssue(sfAsset, GME.issue()),
+                    STIssue(sfAsset2, USD.issue()),
+                    5, 20000, 10000, 500),
+                ter(tesSUCCESS));
+            env.close();
+
+            auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+            auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+
             auto const preWriterXrp = env.balance(writer);
             auto const preWriterGme = env.balance(writer, GME);
             auto const preWriterUsd = env.balance(writer, USD);
             auto const preBuyerXrp = env.balance(buyer);
             auto const preBuyerGme = env.balance(buyer, GME);
             auto const preBuyerUsd = env.balance(buyer, USD);
-
-            auto const expiration = env.now() + 1s;
-            auto const strikePrice = USD(20);
-            auto const premium = USD(0.5);
-            initPair(env, gme, GME.issue(), USD.issue());
 
             // create buy offer
             uint256 const buyId = createOffer(
@@ -1095,7 +1253,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                tfMarket);
+                tfMarket,
+                buyerMarginAcctID);
 
             // validate sell offer
             validateOffer(
@@ -1104,7 +1263,6 @@ struct Option_test : public beast::unit_test::suite
                 buyId,
                 1000,
                 premium,
-                USD(0).value(),
                 1000,
                 {});
 
@@ -1129,7 +1287,8 @@ struct Option_test : public beast::unit_test::suite
                 expiration,
                 strikePrice.value(),
                 premium.value(),
-                tfSell | tfMarket);
+                tfSell | tfMarket,
+                writerMarginAcctID);
 
             // validate sell offer
             validateOffer(
@@ -1138,7 +1297,6 @@ struct Option_test : public beast::unit_test::suite
                 sellId,
                 500,
                 premium,
-                GME(500).value(),
                 0,
                 {{buyId, buyer.id(), 500}});
 
@@ -1149,13 +1307,12 @@ struct Option_test : public beast::unit_test::suite
                 buyId,
                 1000,
                 premium,
-                USD(0).value(),
                 500,
                 {{sellId, writer.id(), 500}});
 
             // check balances
             BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(500));
+            BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
             BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(250));
             BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
             BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -1198,6 +1355,27 @@ struct Option_test : public beast::unit_test::suite
         env(pay(gme, counter, GME(10'000)));
         env.close();
 
+        auto const expiration = env.now() + 80s;
+        auto const strikePrice = USD(20);
+        std::int64_t const strike =
+            static_cast<std::int64_t>(Number(strikePrice.value()));
+        uint256 const optionId{
+            getOptionIndex(gme.id(), GME.currency, strike, expiration)};
+        initPair(env, gme, GME.issue(), USD.issue());
+
+        // Add leverage tier
+        env(leverageTierSet(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue()),
+                5, 20000, 10000, 500),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+        auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+        auto const counterMarginAcctID = setupMargin(env, counter, USD.issue(), USD(50000));
+
         auto const preWriterXrp = env.balance(writer);
         auto const preWriterGme = env.balance(writer, GME);
         auto const preWriterUsd = env.balance(writer, USD);
@@ -1207,14 +1385,6 @@ struct Option_test : public beast::unit_test::suite
         auto const preCounterXrp = env.balance(counter);
         auto const preCounterGme = env.balance(counter, GME);
         auto const preCounterUsd = env.balance(counter, USD);
-
-        auto const expiration = env.now() + 80s;
-        auto const strikePrice = USD(20);
-        std::int64_t const strike =
-            static_cast<std::int64_t>(Number(strikePrice.value()));
-        uint256 const optionId{
-            getOptionIndex(gme.id(), GME.currency, strike, expiration)};
-        initPair(env, gme, GME.issue(), USD.issue());
 
         auto const premium = USD(0.5);
 
@@ -1228,7 +1398,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfSell | tfMarket);
+            tfSell | tfMarket,
+            writerMarginAcctID);
 
         // validate sell offer
         validateOffer(
@@ -1237,13 +1408,12 @@ struct Option_test : public beast::unit_test::suite
             sellId,
             1000,
             premium,
-            GME(1000).value(),
             1000,
             {});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(1000));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -1265,7 +1435,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfMarket);
+            tfMarket,
+            buyerMarginAcctID);
 
         // validate buy offer
         validateOffer(
@@ -1274,7 +1445,6 @@ struct Option_test : public beast::unit_test::suite
             buyId,
             500,
             premium,
-            GME(0).value(),
             0,
             {{sellId, writer.id(), 500}});
 
@@ -1285,13 +1455,12 @@ struct Option_test : public beast::unit_test::suite
             sellId,
             1000,
             premium,
-            GME(1000).value(),
             500,
             {{buyId, buyer.id(), 500}});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(1000));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(250));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -1314,7 +1483,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             USD(0.2).value(),
-            tfMarket);
+            tfMarket,
+            counterMarginAcctID);
 
         // validate counter offer
         validateOffer(
@@ -1323,13 +1493,12 @@ struct Option_test : public beast::unit_test::suite
             counterId,
             1000,
             USD(0.2),
-            GME(0).value(),
             500,
             {{sellId, writer.id(), 500}});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(1000));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(
             env.balance(writer, USD) == preWriterUsd + USD(250) + USD(250));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
@@ -1357,7 +1526,6 @@ struct Option_test : public beast::unit_test::suite
             counterId,
             1000,
             USD(0.2),
-            GME(0).value(),
             0,
             {{sellId, writer.id(), 500}, {sellId, writer.id(), 500}});
 
@@ -1368,13 +1536,12 @@ struct Option_test : public beast::unit_test::suite
             sellId,
             1000,
             premium,
-            GME(1000).value(),
             0,
             {{counterId, counter.id(), 500}, {counterId, counter.id(), 500}});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(1000));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(
             env.balance(writer, USD) == preWriterUsd + USD(250) + USD(250));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - (feeDrops * 2));
@@ -1423,6 +1590,27 @@ struct Option_test : public beast::unit_test::suite
         env(pay(gme, counter, GME(10'000)));
         env.close();
 
+        auto const expiration = env.now() + 80s;
+        auto const strikePrice = USD(20);
+        std::int64_t const strike =
+            static_cast<std::int64_t>(Number(strikePrice.value()));
+        uint256 const optionId{
+            getOptionIndex(gme.id(), GME.currency, strike, expiration)};
+        initPair(env, gme, GME.issue(), USD.issue());
+
+        // Add leverage tier
+        env(leverageTierSet(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue()),
+                5, 20000, 10000, 500),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+        auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+        auto const counterMarginAcctID = setupMargin(env, counter, USD.issue(), USD(50000));
+
         auto const preWriterXrp = env.balance(writer);
         auto const preWriterGme = env.balance(writer, GME);
         auto const preWriterUsd = env.balance(writer, USD);
@@ -1432,14 +1620,6 @@ struct Option_test : public beast::unit_test::suite
         auto const preCounterXrp = env.balance(counter);
         auto const preCounterGme = env.balance(counter, GME);
         auto const preCounterUsd = env.balance(counter, USD);
-
-        auto const expiration = env.now() + 80s;
-        auto const strikePrice = USD(20);
-        std::int64_t const strike =
-            static_cast<std::int64_t>(Number(strikePrice.value()));
-        uint256 const optionId{
-            getOptionIndex(gme.id(), GME.currency, strike, expiration)};
-        initPair(env, gme, GME.issue(), USD.issue());
 
         auto const premium = USD(0.5);
 
@@ -1453,7 +1633,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfSell | tfMarket | tfPut);
+            tfSell | tfMarket | tfPut,
+            writerMarginAcctID);
 
         // validate sell offer
         validateOffer(
@@ -1462,15 +1643,13 @@ struct Option_test : public beast::unit_test::suite
             sellId,
             1000,
             premium,
-            USD(20'000).value(),
             1000,
             {});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
         BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
-        BEAST_EXPECT(
-            env.balance(writer, USD) == preWriterUsd - USD(strike * 1000));
+        BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(env.balance(buyer, USD) == preBuyerUsd);
@@ -1491,7 +1670,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfMarket | tfPut);
+            tfMarket | tfPut,
+            buyerMarginAcctID);
 
         // validate buy offer
         validateOffer(
@@ -1500,7 +1680,6 @@ struct Option_test : public beast::unit_test::suite
             buyId,
             500,
             premium,
-            GME(0).value(),
             0,
             {{sellId, writer.id(), 500}});
 
@@ -1511,16 +1690,13 @@ struct Option_test : public beast::unit_test::suite
             sellId,
             1000,
             premium,
-            USD(20'000).value(),
             500,
             {{buyId, buyer.id(), 500}});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
         BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
-        BEAST_EXPECT(
-            env.balance(writer, USD) ==
-            preWriterUsd - USD(strike * 1000) + USD(250));
+        BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(250));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(env.balance(buyer, USD) == preBuyerUsd - USD(250));
@@ -1542,7 +1718,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             USD(5.2).value(),
-            tfMarket | tfPut);
+            tfMarket | tfPut,
+            counterMarginAcctID);
 
         // validate counter offer
         validateOffer(
@@ -1551,7 +1728,6 @@ struct Option_test : public beast::unit_test::suite
             counterId,
             1000,
             USD(5.2),
-            GME(0).value(),
             500,
             {{sellId, writer.id(), 500}});
 
@@ -1559,8 +1735,7 @@ struct Option_test : public beast::unit_test::suite
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
         BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(
-            env.balance(writer, USD) ==
-            preWriterUsd - USD(strike * 1000) + USD(250) + USD(250));
+            env.balance(writer, USD) == preWriterUsd + USD(250) + USD(250));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(env.balance(buyer, USD) == preBuyerUsd - USD(250));
@@ -1586,7 +1761,6 @@ struct Option_test : public beast::unit_test::suite
             counterId,
             1000,
             USD(5.2),
-            GME(0).value(),
             0,
             {{sellId, writer.id(), 500}, {sellId, writer.id(), 500}});
 
@@ -1597,7 +1771,6 @@ struct Option_test : public beast::unit_test::suite
             sellId,
             1000,
             premium,
-            USD(20'000).value(),
             0,
             {{counterId, counter.id(), 500}, {counterId, counter.id(), 500}});
 
@@ -1605,8 +1778,7 @@ struct Option_test : public beast::unit_test::suite
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
         BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(
-            env.balance(writer, USD) ==
-            preWriterUsd - USD(strike * 1000) + USD(250) + USD(250));
+            env.balance(writer, USD) == preWriterUsd + USD(250) + USD(250));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - (feeDrops * 2));
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(
@@ -1653,6 +1825,27 @@ struct Option_test : public beast::unit_test::suite
         env(pay(gme, counter, GME(10'000)));
         env.close();
 
+        auto const expiration = env.now() + 80s;
+        auto const strikePrice = USD(20);
+        std::int64_t const strike =
+            static_cast<std::int64_t>(Number(strikePrice.value()));
+        uint256 const optionId{
+            getOptionIndex(gme.id(), GME.currency, strike, expiration)};
+        initPair(env, gme, GME.issue(), USD.issue());
+
+        // Add leverage tier
+        env(leverageTierSet(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue()),
+                5, 20000, 10000, 500),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+        auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+        auto const counterMarginAcctID = setupMargin(env, counter, USD.issue(), USD(50000));
+
         auto const preWriterXrp = env.balance(writer);
         auto const preWriterGme = env.balance(writer, GME);
         auto const preWriterUsd = env.balance(writer, USD);
@@ -1662,14 +1855,6 @@ struct Option_test : public beast::unit_test::suite
         auto const preCounterXrp = env.balance(counter);
         auto const preCounterGme = env.balance(counter, GME);
         auto const preCounterUsd = env.balance(counter, USD);
-
-        auto const expiration = env.now() + 80s;
-        auto const strikePrice = USD(20);
-        std::int64_t const strike =
-            static_cast<std::int64_t>(Number(strikePrice.value()));
-        uint256 const optionId{
-            getOptionIndex(gme.id(), GME.currency, strike, expiration)};
-        initPair(env, gme, GME.issue(), USD.issue());
 
         auto const premium = USD(0.5);
 
@@ -1683,7 +1868,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfSell | tfMarket);
+            tfSell | tfMarket,
+            writerMarginAcctID);
 
         // validate sell offer
         validateOffer(
@@ -1692,13 +1878,12 @@ struct Option_test : public beast::unit_test::suite
             sellId,
             500,
             premium,
-            GME(500).value(),
             500,
             {});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(500));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -1720,7 +1905,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfMarket);
+            tfMarket,
+            buyerMarginAcctID);
 
         // validate buy offer
         validateOffer(
@@ -1729,7 +1915,6 @@ struct Option_test : public beast::unit_test::suite
             buyId,
             1000,
             premium,
-            GME(0).value(),
             500,
             {{sellId, writer.id(), 500}});
 
@@ -1740,13 +1925,12 @@ struct Option_test : public beast::unit_test::suite
             sellId,
             500,
             premium,
-            GME(500).value(),
             0,
             {{buyId, buyer.id(), 500}});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(500));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(250));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -1769,7 +1953,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             USD(0.2).value(),
-            tfSell | tfMarket);
+            tfSell | tfMarket,
+            counterMarginAcctID);
 
         // validate counter offer
         validateOffer(
@@ -1778,20 +1963,19 @@ struct Option_test : public beast::unit_test::suite
             counterId,
             1000,
             USD(0.2),
-            GME(1000).value(),
             500,
             {{buyId, buyer.id(), 500}});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(500));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(250));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(
             env.balance(buyer, USD) == preBuyerUsd - USD(250) - USD(250));
         BEAST_EXPECT(env.balance(counter) == preCounterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(counter, GME) == preCounterGme - GME(1000));
+        BEAST_EXPECT(env.balance(counter, GME) == preCounterGme);
         BEAST_EXPECT(env.balance(counter, USD) == preCounterUsd + USD(250));
 
         // check meta data
@@ -1812,7 +1996,6 @@ struct Option_test : public beast::unit_test::suite
             counterId,
             1000,
             USD(0.2),
-            GME(1000).value(),
             0,
             {{buyId, buyer.id(), 500}, {buyId, buyer.id(), 500}});
 
@@ -1823,7 +2006,6 @@ struct Option_test : public beast::unit_test::suite
             buyId,
             1000,
             premium,
-            GME(0).value(),
             0,
             {{counterId, counter.id(), 500}, {counterId, counter.id(), 500}});
 
@@ -1836,7 +2018,7 @@ struct Option_test : public beast::unit_test::suite
         BEAST_EXPECT(
             env.balance(buyer, USD) == preBuyerUsd - USD(250) - USD(250));
         BEAST_EXPECT(env.balance(counter) == preCounterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(counter, GME) == preCounterGme - GME(1000));
+        BEAST_EXPECT(env.balance(counter, GME) == preCounterGme);
         BEAST_EXPECT(env.balance(counter, USD) == preCounterUsd + USD(250));
 
         // check meta data
@@ -1876,6 +2058,27 @@ struct Option_test : public beast::unit_test::suite
         env(pay(gme, counter, GME(10'000)));
         env.close();
 
+        auto const expiration = env.now() + 80s;
+        auto const strikePrice = USD(20);
+        std::int64_t const strike =
+            static_cast<std::int64_t>(Number(strikePrice.value()));
+        uint256 const optionId{
+            getOptionIndex(gme.id(), GME.currency, strike, expiration)};
+        initPair(env, gme, GME.issue(), USD.issue());
+
+        // Add leverage tier
+        env(leverageTierSet(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue()),
+                5, 20000, 10000, 500),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+        auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+        auto const counterMarginAcctID = setupMargin(env, counter, USD.issue(), USD(50000));
+
         auto const preWriterXrp = env.balance(writer);
         auto const preWriterGme = env.balance(writer, GME);
         auto const preWriterUsd = env.balance(writer, USD);
@@ -1885,14 +2088,6 @@ struct Option_test : public beast::unit_test::suite
         auto const preCounterXrp = env.balance(counter);
         auto const preCounterGme = env.balance(counter, GME);
         auto const preCounterUsd = env.balance(counter, USD);
-
-        auto const expiration = env.now() + 80s;
-        auto const strikePrice = USD(20);
-        std::int64_t const strike =
-            static_cast<std::int64_t>(Number(strikePrice.value()));
-        uint256 const optionId{
-            getOptionIndex(gme.id(), GME.currency, strike, expiration)};
-        initPair(env, gme, GME.issue(), USD.issue());
 
         auto const premium = USD(0.5);
 
@@ -1906,7 +2101,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfSell | tfMarket | tfPut);
+            tfSell | tfMarket | tfPut,
+            writerMarginAcctID);
 
         // validate sell offer
         validateOffer(
@@ -1915,14 +2111,13 @@ struct Option_test : public beast::unit_test::suite
             sellId,
             500,
             premium,
-            USD(10'000).value(),
             500,
             {});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
         BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
-        BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd - USD(10'000));
+        BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(env.balance(buyer, USD) == preBuyerUsd);
@@ -1943,7 +2138,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfMarket | tfPut);
+            tfMarket | tfPut,
+            buyerMarginAcctID);
 
         // validate buy offer
         validateOffer(
@@ -1952,7 +2148,6 @@ struct Option_test : public beast::unit_test::suite
             buyId,
             1000,
             premium,
-            GME(0).value(),
             500,
             {{sellId, writer.id(), 500}});
 
@@ -1963,15 +2158,13 @@ struct Option_test : public beast::unit_test::suite
             sellId,
             500,
             premium,
-            USD(10'000).value(),
             0,
             {{buyId, buyer.id(), 500}});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
         BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
-        BEAST_EXPECT(
-            env.balance(writer, USD) == preWriterUsd - USD(10'000) + USD(250));
+        BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(250));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(env.balance(buyer, USD) == preBuyerUsd - USD(250));
@@ -1993,7 +2186,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             USD(0.2).value(),
-            tfSell | tfMarket | tfPut);
+            tfSell | tfMarket | tfPut,
+            counterMarginAcctID);
 
         // validate counter offer
         validateOffer(
@@ -2002,24 +2196,20 @@ struct Option_test : public beast::unit_test::suite
             counterId,
             1000,
             USD(0.2),
-            USD(20'000).value(),
             500,
             {{buyId, buyer.id(), 500}});
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
         BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
-        BEAST_EXPECT(
-            env.balance(writer, USD) == preWriterUsd - USD(10'000) + USD(250));
+        BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(250));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(
             env.balance(buyer, USD) == preBuyerUsd - USD(250) - USD(250));
         BEAST_EXPECT(env.balance(counter) == preCounterXrp - feeDrops);
         BEAST_EXPECT(env.balance(counter, GME) == preCounterGme);
-        BEAST_EXPECT(
-            env.balance(counter, USD) ==
-            preCounterUsd - USD(20'000) + USD(250));
+        BEAST_EXPECT(env.balance(counter, USD) == preCounterUsd + USD(250));
 
         // check meta data
         BEAST_EXPECT(inOwnerDir(*env.current(), writer, sellId));
@@ -2039,7 +2229,6 @@ struct Option_test : public beast::unit_test::suite
             counterId,
             1000,
             USD(0.2),
-            USD(20'000).value(),
             0,
             {{buyId, buyer.id(), 500}, {buyId, buyer.id(), 500}});
 
@@ -2050,7 +2239,6 @@ struct Option_test : public beast::unit_test::suite
             buyId,
             1000,
             premium,
-            GME(0).value(),
             0,
             {{counterId, counter.id(), 500}, {counterId, counter.id(), 500}});
 
@@ -2064,9 +2252,7 @@ struct Option_test : public beast::unit_test::suite
             env.balance(buyer, USD) == preBuyerUsd - USD(250) - USD(250));
         BEAST_EXPECT(env.balance(counter) == preCounterXrp - feeDrops);
         BEAST_EXPECT(env.balance(counter, GME) == preCounterGme);
-        BEAST_EXPECT(
-            env.balance(counter, USD) ==
-            preCounterUsd - USD(20'000) + USD(250));
+        BEAST_EXPECT(env.balance(counter, USD) == preCounterUsd + USD(250));
 
         // check meta data
         BEAST_EXPECT(!inOwnerDir(*env.current(), writer, sellId));
@@ -2102,13 +2288,6 @@ struct Option_test : public beast::unit_test::suite
         env(pay(gme, writer, GME(10'000)));
         env.close();
 
-        auto const preWriterXrp = env.balance(writer);
-        auto const preWriterGme = env.balance(writer, GME);
-        auto const preWriterUsd = env.balance(writer, USD);
-        auto const preBuyerXrp = env.balance(buyer);
-        auto const preBuyerGme = env.balance(buyer, GME);
-        auto const preBuyerUsd = env.balance(buyer, USD);
-
         auto const expiration = env.now() + 80s;
         auto const strikePrice = USD(20);
         std::int64_t const strike =
@@ -2116,6 +2295,25 @@ struct Option_test : public beast::unit_test::suite
         uint256 const optionId{
             getOptionIndex(gme.id(), GME.currency, strike, expiration)};
         initPair(env, gme, GME.issue(), USD.issue());
+
+        // Add leverage tier
+        env(leverageTierSet(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue()),
+                5, 20000, 10000, 500),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+        auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+
+        auto const preWriterXrp = env.balance(writer);
+        auto const preWriterGme = env.balance(writer, GME);
+        auto const preWriterUsd = env.balance(writer, USD);
+        auto const preBuyerXrp = env.balance(buyer);
+        auto const preBuyerGme = env.balance(buyer, GME);
+        auto const preBuyerUsd = env.balance(buyer, USD);
 
         auto const premium = USD(0.5);
         auto const quantity = 1000;
@@ -2130,11 +2328,12 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfSell);
+            tfSell,
+            writerMarginAcctID);
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(quantity));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -2153,11 +2352,12 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            0);
+            0,
+            buyerMarginAcctID);
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(quantity));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(500));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
@@ -2175,11 +2375,11 @@ struct Option_test : public beast::unit_test::suite
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(quantity));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(
             env.balance(writer, USD) == preWriterUsd + USD(500) + USD(20'000));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - (feeDrops * 2));
-        BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme + GME(quantity));
+        BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(
             env.balance(buyer, USD) == preBuyerUsd - USD(500) - USD(20'000));
 
@@ -2216,13 +2416,6 @@ struct Option_test : public beast::unit_test::suite
         env(pay(gme, buyer, GME(10'000)));
         env.close();
 
-        auto const preWriterXrp = env.balance(writer);
-        auto const preWriterGme = env.balance(writer, GME);
-        auto const preWriterUsd = env.balance(writer, USD);
-        auto const preBuyerXrp = env.balance(buyer);
-        auto const preBuyerGme = env.balance(buyer, GME);
-        auto const preBuyerUsd = env.balance(buyer, USD);
-
         auto const expiration = env.now() + 80s;
         auto const strikePrice = USD(20);
         std::int64_t const strike =
@@ -2230,6 +2423,25 @@ struct Option_test : public beast::unit_test::suite
         uint256 const optionId{
             getOptionIndex(gme.id(), GME.currency, strike, expiration)};
         initPair(env, gme, GME.issue(), USD.issue());
+
+        // Add leverage tier
+        env(leverageTierSet(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue()),
+                5, 20000, 10000, 500),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+        auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+
+        auto const preWriterXrp = env.balance(writer);
+        auto const preWriterGme = env.balance(writer, GME);
+        auto const preWriterUsd = env.balance(writer, USD);
+        auto const preBuyerXrp = env.balance(buyer);
+        auto const preBuyerGme = env.balance(buyer, GME);
+        auto const preBuyerUsd = env.balance(buyer, USD);
 
         auto const premium = USD(0.5);
         auto const quantity = 1000;
@@ -2244,13 +2456,13 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfSell | tfPut);
+            tfSell | tfPut,
+            writerMarginAcctID);
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
         BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
-        BEAST_EXPECT(
-            env.balance(writer, USD) == preWriterUsd - USD(strike * quantity));
+        BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(env.balance(buyer, USD) == preBuyerUsd);
@@ -2268,14 +2480,13 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfPut);
+            tfPut,
+            buyerMarginAcctID);
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
         BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
-        BEAST_EXPECT(
-            env.balance(writer, USD) ==
-            preWriterUsd - USD(strike * quantity) + USD(500));
+        BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(500));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
         BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(env.balance(buyer, USD) == preBuyerUsd - USD(500));
@@ -2291,12 +2502,10 @@ struct Option_test : public beast::unit_test::suite
         env.close();
 
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme + GME(quantity));
-        BEAST_EXPECT(
-            env.balance(writer, USD) ==
-            preWriterUsd - USD(strike * quantity) + USD(500));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
+        BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd + USD(500));
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - (feeDrops * 2));
-        BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme - GME(quantity));
+        BEAST_EXPECT(env.balance(buyer, GME) == preBuyerGme);
         BEAST_EXPECT(
             env.balance(buyer, USD) == preBuyerUsd - USD(500) + USD(20'000));
 
@@ -2327,10 +2536,6 @@ struct Option_test : public beast::unit_test::suite
         env(pay(gw, buyer, USD(100'000)));
         env.close();
 
-        auto const preBuyerXrp = env.balance(buyer);
-        auto const preBuyerGme = env.balance(buyer, GME);
-        auto const preBuyerUsd = env.balance(buyer, USD);
-
         auto const expiration = env.now() + 10s;
         auto const strikePrice = USD(20);
         std::int64_t const strike =
@@ -2338,6 +2543,21 @@ struct Option_test : public beast::unit_test::suite
         uint256 const optionId{
             getOptionIndex(gme.id(), GME.currency, strike, expiration)};
         initPair(env, gme, GME.issue(), USD.issue());
+
+        // Add leverage tier
+        env(leverageTierSet(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue()),
+                5, 20000, 10000, 500),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+
+        auto const preBuyerXrp = env.balance(buyer);
+        auto const preBuyerGme = env.balance(buyer, GME);
+        auto const preBuyerUsd = env.balance(buyer, USD);
 
         auto const premium = USD(0.5);
         auto const quantity = 1000;
@@ -2352,7 +2572,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            0);
+            0,
+            buyerMarginAcctID);
 
         // check balances
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
@@ -2401,10 +2622,6 @@ struct Option_test : public beast::unit_test::suite
         env(pay(gw, buyer, USD(100'000)));
         env.close();
 
-        auto const preBuyerXrp = env.balance(buyer);
-        auto const preBuyerGme = env.balance(buyer, GME);
-        auto const preBuyerUsd = env.balance(buyer, USD);
-
         auto const expiration = env.now() + 10s;
         auto const strikePrice = USD(20);
         std::int64_t const strike =
@@ -2412,6 +2629,21 @@ struct Option_test : public beast::unit_test::suite
         uint256 const optionId{
             getOptionIndex(gme.id(), GME.currency, strike, expiration)};
         initPair(env, gme, GME.issue(), USD.issue());
+
+        // Add leverage tier
+        env(leverageTierSet(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue()),
+                5, 20000, 10000, 500),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const buyerMarginAcctID = setupMargin(env, buyer, USD.issue(), USD(50000));
+
+        auto const preBuyerXrp = env.balance(buyer);
+        auto const preBuyerGme = env.balance(buyer, GME);
+        auto const preBuyerUsd = env.balance(buyer, USD);
 
         auto const premium = USD(0.5);
         auto const quantity = 1000;
@@ -2426,7 +2658,8 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfPut);
+            tfPut,
+            buyerMarginAcctID);
 
         // check balances
         BEAST_EXPECT(env.balance(buyer) == preBuyerXrp - feeDrops);
@@ -2491,6 +2724,17 @@ struct Option_test : public beast::unit_test::suite
             getOptionIndex(gme.id(), GME.currency, strike, expiration)};
         initPair(env, gme, GME.issue(), USD.issue());
 
+        // Add leverage tier
+        env(leverageTierSet(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue()),
+                5, 20000, 10000, 500),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+
         auto const premium = USD(0.5);
         auto const quantity = 1000;
 
@@ -2504,11 +2748,12 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfSell);
+            tfSell,
+            writerMarginAcctID);
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
-        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme - GME(quantity));
+        BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
         BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
 
         // check meta data
@@ -2565,6 +2810,17 @@ struct Option_test : public beast::unit_test::suite
             getOptionIndex(gme.id(), GME.currency, strike, expiration)};
         initPair(env, gme, GME.issue(), USD.issue());
 
+        // Add leverage tier
+        env(leverageTierSet(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue()),
+                5, 20000, 10000, 500),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const writerMarginAcctID = setupMargin(env, writer, USD.issue(), USD(50000));
+
         auto const premium = USD(0.5);
         auto const quantity = 1000;
 
@@ -2578,13 +2834,13 @@ struct Option_test : public beast::unit_test::suite
             expiration,
             strikePrice.value(),
             premium.value(),
-            tfSell | tfPut);
+            tfSell | tfPut,
+            writerMarginAcctID);
 
         // check balances
         BEAST_EXPECT(env.balance(writer) == preWriterXrp - feeDrops);
         BEAST_EXPECT(env.balance(writer, GME) == preWriterGme);
-        BEAST_EXPECT(
-            env.balance(writer, USD) == preWriterUsd - USD(strike * quantity));
+        BEAST_EXPECT(env.balance(writer, USD) == preWriterUsd);
 
         // check meta data
         BEAST_EXPECT(inOwnerDir(*env.current(), writer, sellId));
@@ -2611,7 +2867,7 @@ public:
     run() override
     {
         using namespace test::jtx;
-        auto const sa = supported_amendments();
+        auto const sa = testable_amendments();
         testEnabled(sa);
         testSettleInvalid(sa);
         testCreateBuyValid(sa);
@@ -2632,4 +2888,4 @@ public:
 BEAST_DEFINE_TESTSUITE(Option, app, ripple);
 
 }  // namespace test
-}  // namespace ripple
+}  // namespace xrpl

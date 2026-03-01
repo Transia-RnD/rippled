@@ -44,6 +44,8 @@ enum Privilege {
     mayDeleteMPT = 0x0400,        // The transaction MAY delete an MPT object. May not create.
     mustModifyVault = 0x0800,     // The transaction must modify, delete or create, a vault
     mayModifyVault = 0x1000,      // The transaction MAY modify, delete or create, a vault
+    mintXRP = 0x2000,             // The transaction can increase XRP supply (Import)
+    burnExtraXRP = 0x4000,        // The transaction can destroy XRP beyond the fee (Export)
 };
 
 constexpr Privilege

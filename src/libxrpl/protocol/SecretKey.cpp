@@ -18,6 +18,11 @@
 
 #include <ed25519.h>
 
+#include <openssl/bn.h>
+#include <openssl/ec.h>
+#include <openssl/ecdsa.h>
+#include <openssl/obj_mac.h>
+
 #include <algorithm>
 #include <array>
 #include <cstdint>
@@ -260,6 +265,46 @@ sign(PublicKey const& pk, SecretKey const& sk, Slice const& m)
 
             return Buffer{sig, len};
         }
+        case KeyType::p256: {
+            // P256 uses SHA-256 for hashing
+            sha256_hasher h;
+            h(m.data(), m.size());
+            auto const hash = sha256_hasher::result_type(h);
+
+            EC_KEY* key = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+            if (!key)
+                LogicError("sign: EC_KEY_new_by_curve_name failed");
+
+            BIGNUM* priv = BN_bin2bn(
+                reinterpret_cast<unsigned char const*>(sk.data()), 32, nullptr);
+            if (!priv || EC_KEY_set_private_key(key, priv) != 1)
+            {
+                BN_free(priv);
+                EC_KEY_free(key);
+                LogicError("sign: P256 set private key failed");
+            }
+
+            ECDSA_SIG* ecSig = ECDSA_do_sign(hash.data(), static_cast<int>(hash.size()), key);
+            BN_free(priv);
+
+            if (!ecSig)
+            {
+                EC_KEY_free(key);
+                LogicError("sign: ECDSA_do_sign failed");
+            }
+
+            unsigned char* derSig = nullptr;
+            int derLen = i2d_ECDSA_SIG(ecSig, &derSig);
+            ECDSA_SIG_free(ecSig);
+            EC_KEY_free(key);
+
+            if (derLen <= 0 || !derSig)
+                LogicError("sign: i2d_ECDSA_SIG failed");
+
+            Buffer result{derSig, static_cast<std::size_t>(derLen)};
+            OPENSSL_free(derSig);
+            return result;
+        }
         default:
             LogicError("sign: invalid type");
     }
@@ -287,6 +332,14 @@ generateSecretKey(KeyType type, Seed const& seed)
     }
 
     if (type == KeyType::secp256k1)
+    {
+        auto key = detail::deriveDeterministicRootKey(seed);
+        SecretKey sk{Slice{key.data(), key.size()}};
+        secure_erase(key.data(), key.size());
+        return sk;
+    }
+
+    if (type == KeyType::p256)
     {
         auto key = detail::deriveDeterministicRootKey(seed);
         SecretKey sk{Slice{key.data(), key.size()}};
@@ -324,6 +377,42 @@ derivePublicKey(KeyType type, SecretKey const& sk)
             ed25519_publickey(sk.data(), &buf[1]);
             return PublicKey(Slice{buf, sizeof(buf)});
         }
+        case KeyType::p256: {
+            EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+            if (!group)
+                LogicError("derivePublicKey: EC_GROUP_new_by_curve_name failed");
+
+            BIGNUM* priv = BN_bin2bn(
+                reinterpret_cast<unsigned char const*>(sk.data()), 32, nullptr);
+            EC_POINT* pub = EC_POINT_new(group);
+
+            if (!priv || !pub ||
+                EC_POINT_mul(group, pub, priv, nullptr, nullptr, nullptr) != 1)
+            {
+                BN_free(priv);
+                EC_POINT_free(pub);
+                EC_GROUP_free(group);
+                LogicError("derivePublicKey: P256 point multiplication failed");
+            }
+
+            BIGNUM* x = BN_new();
+            BIGNUM* y = BN_new();
+            EC_POINT_get_affine_coordinates_GFp(group, pub, x, y, nullptr);
+
+            // Pack as [0xF6 | x(32) | y(32)] = 65 bytes
+            unsigned char pubkey[65];
+            pubkey[0] = 0xF6;
+            BN_bn2binpad(x, pubkey + 1, 32);
+            BN_bn2binpad(y, pubkey + 33, 32);
+
+            BN_free(x);
+            BN_free(y);
+            BN_free(priv);
+            EC_POINT_free(pub);
+            EC_GROUP_free(group);
+
+            return PublicKey(Slice{pubkey, sizeof(pubkey)});
+        }
         default:
             LogicError("derivePublicKey: bad key type");
     };
@@ -337,6 +426,10 @@ generateKeyPair(KeyType type, Seed const& seed)
         case KeyType::secp256k1: {
             detail::Generator g(seed);
             return g(0);
+        }
+        case KeyType::p256: {
+            auto const sk = generateSecretKey(type, seed);
+            return {derivePublicKey(type, sk), sk};
         }
         default:
         case KeyType::ed25519: {

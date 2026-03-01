@@ -1,4 +1,5 @@
 #include <xrpld/app/consensus/RCLValidations.h>
+#include <xrpld/app/misc/ExportSignatureCollector.h>
 #include <xrpld/app/ledger/InboundLedgers.h>
 #include <xrpld/app/ledger/InboundTransactions.h>
 #include <xrpld/app/ledger/LedgerMaster.h>
@@ -8,6 +9,8 @@
 #include <xrpld/overlay/Cluster.h>
 #include <xrpld/overlay/detail/PeerImp.h>
 #include <xrpld/overlay/detail/Tuning.h>
+
+#include <xrpl/protocol/Feature.h>
 
 #include <xrpl/basics/UptimeClock.h>
 #include <xrpl/basics/base64.h>
@@ -1567,6 +1570,56 @@ PeerImp::onMessage(std::shared_ptr<protocol::TMReplayDeltaResponse> const& m)
     {
         fee_.update(Resource::feeInvalidData, "replay_delta_response");
     }
+}
+
+void
+PeerImp::onMessage(std::shared_ptr<protocol::TMExportSignature> const& m)
+{
+    // Validate message size
+    if (m->validatorkey().size() != 33 || m->signature().empty() ||
+        m->exportaccount().size() != 20)
+    {
+        JLOG(p_journal_.warn()) << "ExportSignature: Invalid message size";
+        fee_.update(Resource::feeMalformedRequest, "export_signature");
+        return;
+    }
+
+    // Check that the amendment is enabled
+    if (!app_.getLedgerMaster().getValidatedRules().enabled(featureImportExport))
+        return;
+
+    // Extract validator public key and check trust
+    PublicKey const validatorKey(makeSlice(m->validatorkey()));
+    if (!app_.validators().trusted(validatorKey))
+    {
+        JLOG(p_journal_.trace()) << "ExportSignature: Untrusted validator";
+        fee_.update(Resource::feeUselessData, "export_signature untrusted");
+        return;
+    }
+
+    // Use HashRouter for deduplication
+    auto const suppKey = sha512Half(
+        makeSlice(m->exportaccount()),
+        m->exportsequence(),
+        makeSlice(m->validatorkey()));
+
+    if (!app_.getHashRouter().addSuppressionPeer(suppKey, id_))
+    {
+        JLOG(p_journal_.trace()) << "ExportSignature: Duplicate";
+        return;
+    }
+
+    // Forward to ExportSignatureCollector for signature collection
+    app_.getExportSignatureCollector().onExportSignature(m);
+
+    // Relay to other peers
+    auto const sm = std::make_shared<Message>(
+        *m, protocol::mtEXPORT_SIGNATURE);
+    overlay_.for_each(
+        [&](std::shared_ptr<PeerImp>&& p) {
+            if (p->id() != id_)
+                p->send(sm);
+        });
 }
 
 void

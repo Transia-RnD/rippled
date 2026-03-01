@@ -41,6 +41,10 @@ doConsensusInfo(RPC::JsonContext&);
 Json::Value
 doDepositAuthorized(RPC::JsonContext&);
 Json::Value
+doExportPayment(RPC::JsonContext&);
+Json::Value
+doExportStatus(RPC::JsonContext&);
+Json::Value
 doFeature(RPC::JsonContext&);
 Json::Value
 doFee(RPC::JsonContext&);
@@ -52,6 +56,8 @@ Json::Value
 doGetCounts(RPC::JsonContext&);
 Json::Value
 doGetAggregatePrice(RPC::JsonContext&);
+Json::Value
+doGetMarginStatus(RPC::JsonContext&);
 Json::Value
 doLedgerAccept(RPC::JsonContext&);
 Json::Value

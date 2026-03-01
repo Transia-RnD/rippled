@@ -16,6 +16,9 @@
 #include <xrpl/tx/apply.h>
 #include <xrpl/tx/transactors/Delegate/DelegateUtils.h>
 #include <xrpl/tx/transactors/NFT/NFTokenUtils.h>
+#include <xrpl/tx/transactors/Option/OptionUtils.h>
+
+#include <algorithm>
 
 namespace xrpl {
 
@@ -771,6 +774,30 @@ Transactor::checkSingleSign(
         return tefMASTER_DISABLED;
     }
 
+    // Check passkey authentication if featurePasskey is enabled.
+    if (view.rules().enabled(featurePasskey))
+    {
+        auto const slePasskeyList =
+            view.read(keylet::passkeyList(idAccount));
+        if (slePasskeyList)
+        {
+            auto const& passkeys =
+                slePasskeyList->getFieldArray(sfPasskeys);
+            auto const hasMatchingPasskey = std::any_of(
+                passkeys.begin(),
+                passkeys.end(),
+                [&idSigner](STObject const& passkey) {
+                    if (!passkey.isFieldPresent(sfPublicKey))
+                        return false;
+                    auto const pk = passkey.getFieldVL(sfPublicKey);
+                    return calcAccountID(
+                               PublicKey(makeSlice(pk))) == idSigner;
+                });
+            if (hasMatchingPasskey)
+                return tesSUCCESS;
+        }
+    }
+
     // Signed with any other key.
     return tefBAD_AUTH;
 }
@@ -1241,7 +1268,7 @@ Transactor::operator()()
 
         if (result == tecEXPIRED)
             removeExpiredOptionOffers(
-                view(), expiredOptionOffers, ctx_.app.journal("View"));
+                view(), expiredOptionOffers, ctx_.registry.journal("View"));
 
         applied = isTecClaim(result);
     }

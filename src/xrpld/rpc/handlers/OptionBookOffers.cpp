@@ -18,10 +18,11 @@
 //==============================================================================
 
 #include <xrpld/app/main/Application.h>
-#include <xrpld/app/misc/NetworkOPs.h>
-#include <xrpld/ledger/ReadView.h>
+#include <xrpl/server/NetworkOPs.h>
+#include <xrpl/ledger/ReadView.h>
 #include <xrpld/rpc/Context.h>
 #include <xrpld/rpc/detail/RPCHelpers.h>
+#include <xrpld/rpc/detail/RPCLedgerHelpers.h>
 
 #include <xrpl/protocol/ErrorCodes.h>
 #include <xrpl/protocol/RPCErr.h>
@@ -29,7 +30,7 @@
 #include <xrpl/protocol/jss.h>
 #include <xrpl/resource/Fees.h>
 
-namespace ripple {
+namespace xrpl {
 
 Json::Value
 doOptionBookOffers(RPC::JsonContext& context)
@@ -150,4 +151,4 @@ doOptionBookOffers(RPC::JsonContext& context)
     return jvResult;
 }
 
-}  // namespace ripple
+}  // namespace xrpl

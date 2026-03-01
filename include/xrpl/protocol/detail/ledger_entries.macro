@@ -151,6 +151,8 @@ LEDGER_ENTRY(ltACCOUNT_ROOT, 0x0061, AccountRoot, account, ({
     {sfVaultID,              soeOPTIONAL}, // pseudo-account designator
     {sfLoanBrokerID,         soeOPTIONAL}, // pseudo-account designator
     {sfOptionPairID,         soeOPTIONAL}, // pseudo-account designator
+    {sfImportSequence,       soeOPTIONAL}, // Import replay protection
+    {sfExportSequence,       soeOPTIONAL}, // Export sequence counter
 }))
 
 /** A ledger object which contains a list of object identifiers.
@@ -459,14 +461,163 @@ LEDGER_ENTRY(ltPERMISSIONED_DOMAIN, 0x0082, PermissionedDomain, permissioned_dom
     {sfPreviousTxnLgrSeq,   soeREQUIRED},
 }))
 
+/** A ledger object representing permissions an account has delegated to another account.
+    \sa keylet::delegate
+ */
+LEDGER_ENTRY(ltDELEGATE, 0x0083, Delegate, delegate, ({
+    {sfAccount,              soeREQUIRED},
+    {sfAuthorize,            soeREQUIRED},
+    {sfPermissions,          soeREQUIRED},
+    {sfOwnerNode,            soeREQUIRED},
+    {sfPreviousTxnID,        soeREQUIRED},
+    {sfPreviousTxnLgrSeq,    soeREQUIRED},
+}))
+
+/** A ledger object representing a single asset vault.
+    \sa keylet::vault
+ */
+LEDGER_ENTRY(ltVAULT, 0x0084, Vault, vault, ({
+    {sfPreviousTxnID,        soeREQUIRED},
+    {sfPreviousTxnLgrSeq,    soeREQUIRED},
+    {sfSequence,             soeREQUIRED},
+    {sfOwnerNode,            soeREQUIRED},
+    {sfOwner,                soeREQUIRED},
+    {sfAccount,              soeREQUIRED},
+    {sfData,                 soeOPTIONAL},
+    {sfAsset,                soeREQUIRED},
+    {sfAssetsTotal,          soeDEFAULT},
+    {sfAssetsAvailable,      soeDEFAULT},
+    {sfAssetsMaximum,        soeDEFAULT},
+    {sfLossUnrealized,       soeDEFAULT},
+    {sfShareMPTID,           soeREQUIRED},
+    {sfWithdrawalPolicy,     soeREQUIRED},
+    {sfScale,                soeDEFAULT},
+    // no SharesTotal ever (use MPTIssuance.sfOutstandingAmount)
+    // no PermissionedDomainID ever (use MPTIssuance.sfDomainID)
+}))
+
+/** Reserve 0x0084-0x0087 for future Vault-related objects. */
+
+/** A ledger object representing a loan broker
+
+    \sa keylet::loanbroker
+ */
+LEDGER_ENTRY(ltLOAN_BROKER, 0x0088, LoanBroker, loan_broker, ({
+    {sfPreviousTxnID,        soeREQUIRED},
+    {sfPreviousTxnLgrSeq,    soeREQUIRED},
+    {sfSequence,             soeREQUIRED},
+    {sfOwnerNode,            soeREQUIRED},
+    {sfVaultNode,            soeREQUIRED},
+    {sfVaultID,              soeREQUIRED},
+    {sfAccount,              soeREQUIRED},
+    {sfOwner,                soeREQUIRED},
+    {sfLoanSequence,         soeREQUIRED},
+    {sfData,                 soeDEFAULT},
+    {sfManagementFeeRate,    soeDEFAULT},
+    {sfOwnerCount,           soeDEFAULT},
+    {sfDebtTotal,            soeDEFAULT},
+    {sfDebtMaximum,          soeDEFAULT},
+    {sfCoverAvailable,       soeDEFAULT},
+    {sfCoverRateMinimum,     soeDEFAULT},
+    {sfCoverRateLiquidation, soeDEFAULT},
+}))
+
+/** A ledger object representing a loan between a Borrower and a Loan Broker
+
+    \sa keylet::loan
+ */
+LEDGER_ENTRY(ltLOAN, 0x0089, Loan, loan, ({
+    {sfPreviousTxnID,        soeREQUIRED},
+    {sfPreviousTxnLgrSeq,    soeREQUIRED},
+    {sfOwnerNode,            soeREQUIRED},
+    {sfLoanBrokerNode,       soeREQUIRED},
+    {sfLoanBrokerID,         soeREQUIRED},
+    {sfLoanSequence,         soeREQUIRED},
+    {sfBorrower,             soeREQUIRED},
+    {sfLoanOriginationFee,   soeDEFAULT},
+    {sfLoanServiceFee,       soeDEFAULT},
+    {sfLatePaymentFee,       soeDEFAULT},
+    {sfClosePaymentFee,      soeDEFAULT},
+    {sfOverpaymentFee,       soeDEFAULT},
+    {sfInterestRate,         soeDEFAULT},
+    {sfLateInterestRate,     soeDEFAULT},
+    {sfCloseInterestRate,    soeDEFAULT},
+    {sfOverpaymentInterestRate, soeDEFAULT},
+    {sfStartDate,            soeREQUIRED},
+    {sfPaymentInterval,      soeREQUIRED},
+    {sfGracePeriod,          soeDEFAULT},
+    {sfPreviousPaymentDueDate, soeDEFAULT},
+    {sfNextPaymentDueDate,   soeDEFAULT},
+    // The loan object tracks these values:
+    //
+    // - PaymentRemaining: The number of payments left in the loan. When it
+    //   reaches 0, the loan is paid off, and all other relevant values
+    //   must also be 0.
+    //
+    // - PeriodicPayment: The fixed, unrounded amount to be paid each
+    //   interval. Stored with as much precision as possible.
+    //   Payment transactions must round this value *UP*.
+    //
+    // - TotalValueOutstanding: The rounded total amount owed by the
+    //   borrower to the lender / vault.
+    //
+    // - PrincipalOutstanding: The rounded portion of the
+    //   TotalValueOutstanding that is from the principal borrowed.
+    //
+    // - ManagementFeeOutstanding: The rounded portion of the
+    //   TotalValueOutstanding that represents management fees
+    //   specifically owed to the broker based on the initial
+    //   loan parameters.
+    //
+    // There are additional values that can be computed from these:
+    //
+    // - InterestOutstanding = TotalValueOutstanding - PrincipalOutstanding
+    //   The total amount of interest still pending on the loan,
+    //   independent of management fees.
+    //
+    // - InterestOwedToVault = InterestOutstanding - ManagementFeeOutstanding
+    //   The amount of the total interest that is owed to the vault, and
+    //   will be sent to it as part of a payment.
+    //
+    // - TrueTotalLoanValue = PaymentRemaining * PeriodicPayment
+    //   The unrounded true total value of the loan.
+    //
+    // - TrueTotalPrincipalOutstanding can be computed using the algorithm
+    //   in the ripple::detail::loanPrincipalFromPeriodicPayment function.
+    //
+    // - TrueTotalInterestOutstanding = TrueTotalLoanValue -
+    //      TrueTotalPrincipalOutstanding
+    //   The unrounded true total interest remaining.
+    //
+    // - TrueTotalManagementFeeOutstanding = TrueTotalInterestOutstanding *
+    //      LoanBroker.ManagementFeeRate
+    //   The unrounded true total fee still owed to the broker.
+    //
+    // Note the the "True" values may differ significantly from the tracked
+    // rounded values.
+    {sfPaymentRemaining,         soeDEFAULT},
+    {sfPeriodicPayment,          soeREQUIRED},
+    {sfPrincipalOutstanding,     soeDEFAULT},
+    {sfTotalValueOutstanding,    soeDEFAULT},
+    {sfManagementFeeOutstanding, soeDEFAULT},
+    // Based on the computed total value at creation, used for
+    // rounding calculated values so they are all on a
+    // consistent scale - that is, they all have the same
+    // number of digits after the decimal point (excluding
+    // trailing zeros).
+    {sfLoanScale,                soeDEFAULT},
+}))
+
 /** The ledger object which tracks the OptionPair.
 
    \sa keylet::amm
 */
-LEDGER_ENTRY(ltOPTION_PAIR, 0x0083, OptionPair, option_pair, ({
+LEDGER_ENTRY(ltOPTION_PAIR, 0x008A, OptionPair, option_pair, ({
     {sfAccount,              soeREQUIRED},
     {sfAsset,                soeREQUIRED},
     {sfAsset2,               soeREQUIRED},
+    {sfTradingFeeBps,        soeDEFAULT},
+    {sfAccumulatedFees,      soeDEFAULT},
     {sfOwnerNode,            soeREQUIRED},
     {sfPreviousTxnID,        soeOPTIONAL},
     {sfPreviousTxnLgrSeq,    soeOPTIONAL},
@@ -475,7 +626,7 @@ LEDGER_ENTRY(ltOPTION_PAIR, 0x0083, OptionPair, option_pair, ({
 /** A ledger object which tracks the Options
     \sa keylet::option
  */
-LEDGER_ENTRY(ltOPTION, 0x0084, Option, option, ({
+LEDGER_ENTRY(ltOPTION, 0x008B, Option, option, ({
     {sfOwnerNode,            soeREQUIRED},
     {sfStrikePrice,          soeREQUIRED},
     {sfAsset,                soeREQUIRED},
@@ -487,7 +638,7 @@ LEDGER_ENTRY(ltOPTION, 0x0084, Option, option, ({
 /** A ledger object which tracks the OptionOffers
     \sa keylet::option_offer
  */
-LEDGER_ENTRY(ltOPTION_OFFER, 0x0085, OptionOffer, option_offer, ({
+LEDGER_ENTRY(ltOPTION_OFFER, 0x008C, OptionOffer, option_offer, ({
     {sfOwner,                soeREQUIRED},
     {sfOwnerNode,            soeREQUIRED},
     {sfStrikePrice,          soeREQUIRED},
@@ -495,58 +646,130 @@ LEDGER_ENTRY(ltOPTION_OFFER, 0x0085, OptionOffer, option_offer, ({
     {sfExpiration,           soeREQUIRED},
     {sfPremium,              soeREQUIRED},
     {sfQuantity,             soeREQUIRED},
-    {sfAmount,               soeOPTIONAL},
     {sfOpenInterest,         soeOPTIONAL},
     {sfSealedOptions,        soeOPTIONAL},
+    {sfMarginPositionID,     soeOPTIONAL},
     {sfBookDirectory,        soeREQUIRED},
     {sfBookNode,             soeREQUIRED},
     {sfPreviousTxnID,        soeREQUIRED},
     {sfPreviousTxnLgrSeq,    soeREQUIRED}
 }))
 
-/** The ledger object which tracks the OptionPair.
-
-   \sa keylet::amm
-*/
-LEDGER_ENTRY(ltOPTION_PAIR, 0x0083, OptionPair, option_pair, ({
-    {sfAccount,              soeREQUIRED},
-    {sfAsset,                soeREQUIRED},
-    {sfAsset2,               soeREQUIRED},
-    {sfOwnerNode,            soeREQUIRED},
-    {sfPreviousTxnID,        soeOPTIONAL},
-    {sfPreviousTxnLgrSeq,    soeOPTIONAL},
+/** A ledger object defining leverage tiers for an asset pair.
+    \sa keylet::leverageTier
+ */
+LEDGER_ENTRY(ltLEVERAGE_TIER, 0x008D, LeverageTier, leverage_tier, ({
+    {sfOwner,                    soeREQUIRED},
+    {sfAsset,                    soeREQUIRED},
+    {sfAsset2,                   soeREQUIRED},
+    {sfMaxLeverage,              soeREQUIRED},
+    {sfInitialMarginBps,         soeREQUIRED},
+    {sfMaintenanceMarginBps,     soeREQUIRED},
+    {sfLiquidationBonusBps,      soeREQUIRED},
+    {sfLeverageTiers,            soeOPTIONAL},
+    {sfOwnerNode,                soeREQUIRED},
+    {sfPreviousTxnID,            soeREQUIRED},
+    {sfPreviousTxnLgrSeq,        soeREQUIRED},
 }))
 
-/** A ledger object which tracks the Options
-    \sa keylet::option
+/** A ledger object representing a user's margin account.
+    \sa keylet::marginAccount
  */
-LEDGER_ENTRY(ltOPTION, 0x0084, Option, option, ({
-    {sfOwnerNode,            soeREQUIRED},
-    {sfStrikePrice,          soeREQUIRED},
-    {sfAsset,                soeREQUIRED},
-    {sfExpiration,           soeREQUIRED},
+LEDGER_ENTRY(ltMARGIN_ACCOUNT, 0x008E, MarginAccount, margin_account, ({
+    {sfAccount,                  soeREQUIRED},
+    {sfCollateralAsset,          soeREQUIRED},
+    {sfCollateralBalance,        soeDEFAULT},
+    {sfMarginMode,               soeREQUIRED},
+    {sfOwnerNode,                soeREQUIRED},
+    {sfPreviousTxnID,            soeREQUIRED},
+    {sfPreviousTxnLgrSeq,        soeREQUIRED},
+}))
+
+/** A ledger object representing the insurance backstop vault.
+    \sa keylet::insuranceVault
+ */
+LEDGER_ENTRY(ltINSURANCE_VAULT, 0x008F, InsuranceVault, insurance_vault, ({
+    {sfAccount,                  soeREQUIRED},
+    {sfAsset,                    soeREQUIRED},
+    {sfAsset2,                   soeREQUIRED},
+    {sfInsuranceBalance,         soeDEFAULT},
+    {sfShareMPTID,               soeREQUIRED},
+    {sfOwnerNode,                soeREQUIRED},
+    {sfPreviousTxnID,            soeREQUIRED},
+    {sfPreviousTxnLgrSeq,        soeREQUIRED},
+}))
+
+/** A ledger object representing a single leveraged margin position.
+    \sa keylet::marginPosition
+ */
+LEDGER_ENTRY(ltMARGIN_POSITION, 0x0090, MarginPosition, margin_position, ({
+    {sfAccount,                  soeREQUIRED},
+    {sfMarginAccountID,          soeREQUIRED},
+    {sfOptionPairID,             soeREQUIRED},
+    {sfAsset,                    soeREQUIRED},
+    {sfEntryPrice,               soeREQUIRED},
+    {sfPositionSize,             soeREQUIRED},
+    {sfPositionSide,             soeREQUIRED},
+    {sfLeverage,                 soeREQUIRED},
+    {sfAllocatedMargin,          soeDEFAULT},
+    {sfNotionalValue,            soeDEFAULT},
+    {sfLiquidationPrice,         soeDEFAULT},
+    {sfLastFundingTime,          soeDEFAULT},
+    {sfLastFundingPayment,       soeDEFAULT},
+    {sfOptionOfferID,            soeOPTIONAL},
+    {sfMarginAccountNode,        soeREQUIRED},
+    {sfOwnerNode,                soeREQUIRED},
+    {sfPreviousTxnID,            soeREQUIRED},
+    {sfPreviousTxnLgrSeq,        soeREQUIRED},
+}))
+
+/** A ledger object tracking Import VL sequence for replay protection.
+    \sa keylet::importVLSeq
+ */
+LEDGER_ENTRY(ltIMPORT_VL_SEQ, 0x0091, ImportVLSeq, import_vlseq, ({
+    {sfPublicKey,                soeREQUIRED},
+    {sfImportSequence,           soeREQUIRED},
+    {sfPreviousTxnID,            soeREQUIRED},
+    {sfPreviousTxnLgrSeq,        soeREQUIRED},
+}))
+
+/** A ledger object recording an Export for validator signing.
+    \sa keylet::exportRecord
+ */
+LEDGER_ENTRY(ltEXPORT_RECORD, 0x0092, ExportRecord, export_record, ({
+    {sfAccount,                  soeREQUIRED},
+    {sfDestination,              soeREQUIRED},
+    {sfAmount,                   soeREQUIRED},
+    {sfExportSequence,           soeREQUIRED},
+    {sfTicketSequence,           soeOPTIONAL},
+    {sfDestinationTag,           soeOPTIONAL},
+    {sfOwnerNode,                soeREQUIRED},
+    {sfPreviousTxnID,            soeREQUIRED},
+    {sfPreviousTxnLgrSeq,        soeREQUIRED},
+}))
+
+/** A singleton tracking mainnet vault state for validator-signed exports.
+    \sa keylet::exportVaultState
+ */
+LEDGER_ENTRY(ltEXPORT_VAULT_STATE, 0x0093, ExportVaultState, export_vault_state, ({
+    {sfNextTicketSeq,            soeREQUIRED},
+    {sfMaxTicketSeq,             soeREQUIRED},
+    {sfSignerListHash,           soeOPTIONAL},
+    {sfExportQuorum,             soeREQUIRED},
+    {sfSignerCount,              soeREQUIRED},
+    {sfPreviousTxnID,            soeREQUIRED},
+    {sfPreviousTxnLgrSeq,        soeREQUIRED},
+}))
+
+/** A ledger object which stores an account's registered passkeys.
+    \sa keylet::passkeyList
+ */
+LEDGER_ENTRY(ltPASSKEY_LIST, 0x0094, PasskeyList, passkey_list, ({
     {sfPreviousTxnID,        soeREQUIRED},
-    {sfPreviousTxnLgrSeq,    soeREQUIRED}
-}))
-
-/** A ledger object which tracks the OptionOffers
-    \sa keylet::option_offer
- */
-LEDGER_ENTRY(ltOPTION_OFFER, 0x0085, OptionOffer, option_offer, ({
+    {sfPreviousTxnLgrSeq,    soeREQUIRED},
+    {sfOwnerNode,            soeREQUIRED},
     {sfOwner,                soeREQUIRED},
-    {sfOwnerNode,            soeREQUIRED},
-    {sfStrikePrice,          soeREQUIRED},
-    {sfAsset,                soeREQUIRED},
-    {sfExpiration,           soeREQUIRED},
-    {sfPremium,              soeREQUIRED},
-    {sfQuantity,             soeREQUIRED},
-    {sfAmount,               soeOPTIONAL},
-    {sfOpenInterest,         soeOPTIONAL},
-    {sfSealedOptions,        soeOPTIONAL},
-    {sfBookDirectory,        soeREQUIRED},
-    {sfBookNode,             soeREQUIRED},
-    {sfPreviousTxnID,        soeREQUIRED},
-    {sfPreviousTxnLgrSeq,    soeREQUIRED}
+    {sfPasskeys,             soeREQUIRED},
 }))
 
 #undef EXPAND

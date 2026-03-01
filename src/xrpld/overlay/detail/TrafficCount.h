@@ -166,6 +166,9 @@ public:
         replay_delta_request,
         replay_delta_response,
 
+        // TMExportSignature
+        export_signature,
+
         // TMHaveTransactions
         have_transactions,
 
@@ -280,6 +283,7 @@ public:
             {proof_path_response, "proof_path_response"},
             {replay_delta_request, "replay_delta_request"},
             {replay_delta_response, "replay_delta_response"},
+            {export_signature, "export_signature"},
             {have_transactions, "have_transactions"},
             {requested_transactions, "requested_transactions"},
             {total, "total"}};
@@ -345,6 +349,7 @@ protected:
         {proof_path_response, {proof_path_response}},
         {replay_delta_request, {replay_delta_request}},
         {replay_delta_response, {replay_delta_response}},
+        {export_signature, {export_signature}},
         {have_transactions, {have_transactions}},
         {requested_transactions, {requested_transactions}},
         {total, {total}},

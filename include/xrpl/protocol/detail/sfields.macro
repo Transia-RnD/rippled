@@ -116,6 +116,23 @@ TYPED_SFIELD(sfCloseInterestRate,        UINT32,    67) // 1/10 basis points (bi
 TYPED_SFIELD(sfOverpaymentInterestRate,  UINT32,    68) // 1/10 basis points (bips)
 TYPED_SFIELD(sfOpenInterest,             UINT32,    69)
 TYPED_SFIELD(sfQuantity,                 UINT32,    70)
+TYPED_SFIELD(sfMaxLeverage,              UINT32,    71)
+TYPED_SFIELD(sfInitialMarginBps,         UINT32,    72) // 1/10 basis points (bips)
+TYPED_SFIELD(sfMaintenanceMarginBps,     UINT32,    73) // 1/10 basis points (bips)
+TYPED_SFIELD(sfLiquidationBonusBps,      UINT32,    74) // 1/10 basis points (bips)
+TYPED_SFIELD(sfMarginMode,              UINT32,    75) // 0=isolated, 1=cross
+TYPED_SFIELD(sfLeverage,                UINT32,    76) // position leverage
+TYPED_SFIELD(sfPositionSide,            UINT32,    77) // 0=long, 1=short
+TYPED_SFIELD(sfTradingFeeBps,           UINT32,    78) // 1/10 basis points (bips)
+TYPED_SFIELD(sfFundingRateBps,          UINT32,    79) // 1/10 basis points (bips)
+TYPED_SFIELD(sfLastFundingTime,         UINT32,    80) // last funding collection timestamp
+TYPED_SFIELD(sfImportSequence,          UINT32,    81) // Import replay protection counter
+TYPED_SFIELD(sfExportSequence,          UINT32,    82) // per-account export counter
+TYPED_SFIELD(sfNextTicketSeq,           UINT32,    83) // next mainnet ticket for export
+TYPED_SFIELD(sfMaxTicketSeq,            UINT32,    84) // highest allocated mainnet ticket
+TYPED_SFIELD(sfExportQuorum,            UINT32,    85) // required validator signatures for export
+TYPED_SFIELD(sfSignerCount,             UINT32,    86) // number of vault signers
+TYPED_SFIELD(sfPasskeySignCount,        UINT32,    87) // passkey sign counter
 
 // 64-bit integers (common)
 TYPED_SFIELD(sfIndexNext,                UINT64,     1)
@@ -150,6 +167,8 @@ TYPED_SFIELD(sfLockedAmount,             UINT64,    29, SField::sMD_BaseTen|SFie
 TYPED_SFIELD(sfVaultNode,                UINT64,    30)
 TYPED_SFIELD(sfLoanBrokerNode,           UINT64,    31)
 TYPED_SFIELD(sfStrike,                   UINT64,    32)
+TYPED_SFIELD(sfInsuranceVaultNode,       UINT64,    33)
+TYPED_SFIELD(sfMarginAccountNode,        UINT64,    34)
 
 // 128-bit
 TYPED_SFIELD(sfEmailHash,                UINT128,    1)
@@ -207,9 +226,16 @@ TYPED_SFIELD(sfParentBatchID,            UINT256,   36)
 TYPED_SFIELD(sfLoanBrokerID,             UINT256,   37,
     SField::sMD_PseudoAccount | SField::sMD_Default)
 TYPED_SFIELD(sfLoanID,                   UINT256,   38)
-TYPED_SFIELD(sfOptionPairID,             UINT256,   39)
+TYPED_SFIELD(sfOptionPairID,             UINT256,   39,
+    SField::sMD_PseudoAccount | SField::sMD_Default)
 TYPED_SFIELD(sfOptionID,                 UINT256,   40)
 TYPED_SFIELD(sfOptionOfferID,            UINT256,   41)
+TYPED_SFIELD(sfLeverageTierID,           UINT256,   42)
+TYPED_SFIELD(sfMarginAccountID,          UINT256,   43)
+TYPED_SFIELD(sfInsuranceVaultID,         UINT256,   44,
+    SField::sMD_PseudoAccount | SField::sMD_Default)
+TYPED_SFIELD(sfMarginPositionID,         UINT256,   45)
+TYPED_SFIELD(sfSignerListHash,          UINT256,   46) // hash of vault signer list for rotation detection
 
 // number (common)
 TYPED_SFIELD(sfNumber,                   NUMBER,     1)
@@ -229,6 +255,16 @@ TYPED_SFIELD(sfPrincipalRequested,       NUMBER,     14)
 TYPED_SFIELD(sfTotalValueOutstanding,    NUMBER,     15, SField::sMD_NeedsAsset | SField::sMD_Default)
 TYPED_SFIELD(sfPeriodicPayment,          NUMBER,     16)
 TYPED_SFIELD(sfManagementFeeOutstanding, NUMBER,     17, SField::sMD_NeedsAsset | SField::sMD_Default)
+TYPED_SFIELD(sfCollateralBalance,        NUMBER,     18, SField::sMD_NeedsAsset | SField::sMD_Default)
+TYPED_SFIELD(sfEntryPrice,               NUMBER,     19)
+TYPED_SFIELD(sfMarkPrice,                NUMBER,     20)
+TYPED_SFIELD(sfPositionSize,             NUMBER,     21)
+TYPED_SFIELD(sfAllocatedMargin,          NUMBER,     22, SField::sMD_NeedsAsset | SField::sMD_Default)
+TYPED_SFIELD(sfInsuranceBalance,         NUMBER,     23, SField::sMD_NeedsAsset | SField::sMD_Default)
+TYPED_SFIELD(sfNotionalValue,            NUMBER,     24, SField::sMD_NeedsAsset | SField::sMD_Default)
+TYPED_SFIELD(sfLiquidationPrice,         NUMBER,     25)
+TYPED_SFIELD(sfAccumulatedFees,          NUMBER,     26, SField::sMD_NeedsAsset | SField::sMD_Default)
+TYPED_SFIELD(sfLastFundingPayment,       NUMBER,     27)
 
 // int32
 TYPED_SFIELD(sfLoanScale,                INT32,      1)
@@ -306,6 +342,10 @@ TYPED_SFIELD(sfAssetClass,               VL,        28)
 TYPED_SFIELD(sfProvider,                 VL,        29)
 TYPED_SFIELD(sfMPTokenMetadata,          VL,        30)
 TYPED_SFIELD(sfCredentialType,           VL,        31)
+TYPED_SFIELD(sfBlob,                    VL,        32) // XPop proof data for Import
+TYPED_SFIELD(sfPasskeyID,              VL,        33) // WebAuthn credential ID
+TYPED_SFIELD(sfAuthenticatorData,      VL,        34) // WebAuthn authenticator data
+TYPED_SFIELD(sfClientDataJSON,         VL,        35) // WebAuthn client data JSON
 
 // account (common)
 TYPED_SFIELD(sfAccount,                  ACCOUNT,    1)
@@ -352,6 +392,7 @@ TYPED_SFIELD(sfLockingChainIssue,        ISSUE,      1)
 TYPED_SFIELD(sfIssuingChainIssue,        ISSUE,      2)
 TYPED_SFIELD(sfAsset,                    ISSUE,      3)
 TYPED_SFIELD(sfAsset2,                   ISSUE,      4)
+TYPED_SFIELD(sfCollateralAsset,          ISSUE,      5)
 
 // bridge
 TYPED_SFIELD(sfXChainBridge,             XCHAIN_BRIDGE, 1)
@@ -397,6 +438,9 @@ UNTYPED_SFIELD(sfBatchSigner,            OBJECT,    35)
 UNTYPED_SFIELD(sfBook,                   OBJECT,    36)
 UNTYPED_SFIELD(sfCounterpartySignature,  OBJECT,    37, SField::sMD_Default, SField::notSigning)
 UNTYPED_SFIELD(sfSealedOption,           OBJECT,    38)
+UNTYPED_SFIELD(sfLeverageTier,           OBJECT,    39)
+UNTYPED_SFIELD(sfPasskeySignature,      OBJECT,    40, SField::sMD_Default, SField::notSigning)
+UNTYPED_SFIELD(sfPasskey,               OBJECT,    41)
 
 // array of objects (common)
 // ARRAY/1 is reserved for end of array
@@ -432,5 +476,7 @@ UNTYPED_SFIELD(sfPermissions,            ARRAY,     29)
 UNTYPED_SFIELD(sfRawTransactions,        ARRAY,     30)
 UNTYPED_SFIELD(sfBatchSigners,           ARRAY,     31, SField::sMD_Default, SField::notSigning)
 UNTYPED_SFIELD(sfSealedOptions,          ARRAY,     32)
+UNTYPED_SFIELD(sfLeverageTiers,          ARRAY,     33)
+UNTYPED_SFIELD(sfPasskeys,              ARRAY,     34)
 
 // clang-format on

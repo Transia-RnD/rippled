@@ -83,6 +83,14 @@ enum class LedgerNameSpace : std::uint16_t {
     OPTION = 'X',
     OPTION_DIR = 'Y',
     OPTION_OFFER = 'y',
+    LEVERAGE_TIER = 'W',
+    MARGIN_ACCOUNT = 'M',
+    INSURANCE_VAULT = 'J',
+    MARGIN_POSITION = 'j',
+    IMPORT_VL_SEQ = 'F',
+    EXPORT_RECORD = 'b',
+    EXPORT_VAULT_STATE = 'G',
+    PASSKEY_LIST = 'k',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
@@ -623,6 +631,94 @@ Keylet
 optionOffer(AccountID const& id, std::uint32_t seq) noexcept
 {
     return {ltOPTION_OFFER, indexHash(LedgerNameSpace::OPTION_OFFER, id, seq)};
+}
+
+Keylet
+leverageTier(Asset const& issue1, Asset const& issue2) noexcept
+{
+    auto const& [minI, maxI] =
+        std::minmax(issue1.get<Issue>(), issue2.get<Issue>());
+    return {
+        ltLEVERAGE_TIER,
+        indexHash(
+            LedgerNameSpace::LEVERAGE_TIER,
+            minI.account,
+            minI.currency,
+            maxI.account,
+            maxI.currency)};
+}
+
+Keylet
+marginAccount(AccountID const& account, Asset const& collateralAsset) noexcept
+{
+    auto const& issue = collateralAsset.get<Issue>();
+    return {
+        ltMARGIN_ACCOUNT,
+        indexHash(
+            LedgerNameSpace::MARGIN_ACCOUNT,
+            account,
+            issue.account,
+            issue.currency)};
+}
+
+Keylet
+insuranceVault(Asset const& issue1, Asset const& issue2) noexcept
+{
+    auto const& [minI, maxI] =
+        std::minmax(issue1.get<Issue>(), issue2.get<Issue>());
+    return {
+        ltINSURANCE_VAULT,
+        indexHash(
+            LedgerNameSpace::INSURANCE_VAULT,
+            minI.account,
+            minI.currency,
+            maxI.account,
+            maxI.currency)};
+}
+
+Keylet
+marginPosition(AccountID const& account, std::uint32_t seq) noexcept
+{
+    return {
+        ltMARGIN_POSITION,
+        indexHash(LedgerNameSpace::MARGIN_POSITION, account, seq)};
+}
+
+Keylet
+importVLSeq(PublicKey const& key) noexcept
+{
+    return {
+        ltIMPORT_VL_SEQ,
+        indexHash(LedgerNameSpace::IMPORT_VL_SEQ, key)};
+}
+
+Keylet
+exportRecord(AccountID const& account, std::uint32_t seq) noexcept
+{
+    return {
+        ltEXPORT_RECORD,
+        indexHash(LedgerNameSpace::EXPORT_RECORD, account, seq)};
+}
+
+Keylet const&
+exportVaultState() noexcept
+{
+    static Keylet const ret{
+        ltEXPORT_VAULT_STATE,
+        indexHash(LedgerNameSpace::EXPORT_VAULT_STATE)};
+    return ret;
+}
+
+static Keylet
+passkeyList(AccountID const& account, std::uint32_t page) noexcept
+{
+    return {ltPASSKEY_LIST, indexHash(LedgerNameSpace::PASSKEY_LIST, account, page)};
+}
+
+Keylet
+passkeyList(AccountID const& account) noexcept
+{
+    return passkeyList(account, 0);
 }
 
 }  // namespace keylet

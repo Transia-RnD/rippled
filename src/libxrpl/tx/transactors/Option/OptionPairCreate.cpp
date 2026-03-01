@@ -17,30 +17,21 @@
 */
 //==============================================================================
 
-#include <xrpld/app/ledger/OrderBookDB.h>
-#include <xrpld/app/misc/AMMHelpers.h>
-#include <xrpld/app/misc/AMMUtils.h>
-#include <xrpld/app/tx/detail/OptionPairCreate.h>
-#include <xrpld/ledger/Sandbox.h>
-#include <xrpld/ledger/View.h>
+#include <xrpl/ledger/OrderBookDB.h>
+#include <xrpl/tx/transactors/AMM/AMMHelpers.h>
+#include <xrpl/tx/transactors/Option/OptionPairCreate.h>
+#include <xrpl/ledger/Sandbox.h>
+#include <xrpl/ledger/View.h>
 
-#include <xrpl/protocol/AMMCore.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/STIssue.h>
 #include <xrpl/protocol/TxFlags.h>
 
-namespace ripple {
+namespace xrpl {
 
 NotTEC
 OptionPairCreate::preflight(PreflightContext const& ctx)
 {
-    // Check if the Options feature is enabled
-    if (!ctx.rules.enabled(featureOptions))
-        return temDISABLED;
-
-    if (auto const ret = preflight1(ctx); !isTesSuccess(ret))
-        return ret;
-
     if (ctx.tx.getFlags() & tfUniversalMask)
     {
         JLOG(ctx.j.debug()) << "OptionPairCreate: invalid flags.";
@@ -49,9 +40,6 @@ OptionPairCreate::preflight(PreflightContext const& ctx)
 
     Issue const issue = ctx.tx[sfAsset].get<Issue>();
     Issue const issue2 = ctx.tx[sfAsset2].get<Issue>();
-
-    // auto const amount = ctx.tx[sfAmount];
-    // auto const amount2 = ctx.tx[sfAmount2];
 
     if (issue == issue2)
     {
@@ -72,7 +60,7 @@ OptionPairCreate::preflight(PreflightContext const& ctx)
         return err;
     }
 
-    return preflight2(ctx);
+    return tesSUCCESS;
 }
 
 XRPAmount
@@ -153,52 +141,35 @@ applyCreate(
 
     auto const optionPairKeylet = keylet::optionPair(issue, issue2);
 
-    // Mitigate same account exists possibility
-    auto const account = [&]() -> Expected<AccountID, TER> {
-        std::uint16_t constexpr maxAccountAttempts = 256;
-        for (auto p = 0; p < maxAccountAttempts; ++p)
-        {
-            auto const account =
-                ammAccountID(p, sb.info().parentHash, optionPairKeylet.key);
-            if (!sb.read(keylet::account(account)))
-                return account;
-        }
-        return Unexpected(tecDUPLICATE);
-    }();
-
-    // account already exists (should not happen)
-    if (!account)
+    // Create pseudo-account for the OptionPair
+    auto const maybeAccount =
+        createPseudoAccount(sb, optionPairKeylet.key, sfOptionPairID);
+    if (!maybeAccount)
     {
-        JLOG(j_.error()) << "OptionPairCreate: OptionPair already exists.";
-        return account.error();
+        JLOG(j_.error()) << "OptionPairCreate: failed to create pseudo account.";
+        return maybeAccount.error();
     }
-
-    // Create OptionPair Root Account.
-    auto sleRoot = std::make_shared<SLE>(keylet::account(*account));
-    sleRoot->setAccountID(sfAccount, *account);
-    sleRoot->setFieldAmount(sfBalance, STAmount{});
-    std::uint32_t const seqno{
-        ctx_.view().rules().enabled(featureDeletableAccounts)
-            ? ctx_.view().seq()
-            : 1};
-    sleRoot->setFieldU32(sfSequence, seqno);
-    sleRoot->setFieldU32(
-        sfFlags, lsfDisableMaster | lsfDefaultRipple | lsfDepositAuth);
-    sleRoot->setFieldH256(sfOptionPairID, optionPairKeylet.key);
-    sb.insert(sleRoot);
+    auto const account = (*maybeAccount)->getAccountID(sfAccount);
 
     // Create ltOPTION_PAIR object.
     auto pairSle = std::make_shared<SLE>(optionPairKeylet);
-    pairSle->setAccountID(sfAccount, *account);
+    pairSle->setAccountID(sfAccount, account);
     auto const& [_issue1, _issue2] = std::minmax(issue, issue2);
     pairSle->setFieldIssue(sfAsset, STIssue{sfAsset, _issue1});
     pairSle->setFieldIssue(sfAsset2, STIssue{sfAsset2, _issue2});
 
-    // Add owner directory to link the root account and AMM object.
+    // Set trading fee if provided (in 1/10 basis points)
+    if (ctx_.tx.isFieldPresent(sfTradingFeeBps))
+    {
+        std::uint32_t const feeBps = ctx_.tx[sfTradingFeeBps];
+        pairSle->setFieldU32(sfTradingFeeBps, feeBps);
+    }
+
+    // Add owner directory to link the root account and OptionPair object.
     if (auto const page = sb.dirInsert(
-            keylet::ownerDir(*account),
+            keylet::ownerDir(account),
             pairSle->key(),
-            describeOwnerDir(*account)))
+            describeOwnerDir(account)))
     {
         pairSle->setFieldU64(sfOwnerNode, *page);
     }
@@ -230,4 +201,4 @@ OptionPairCreate::doApply()
     return tesSUCCESS;
 }
 
-}  // namespace ripple
+}  // namespace xrpl

@@ -1,3 +1,5 @@
+#pragma once
+
 //------------------------------------------------------------------------------
 /*
     This file is part of rippled: https://github.com/ripple/rippled
@@ -17,23 +19,19 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_TX_OPTIONSETTLE_H_INCLUDED
-#define RIPPLE_TX_OPTIONSETTLE_H_INCLUDED
-
-#include <xrpld/app/tx/detail/Transactor.h>
+#include <xrpl/tx/Transactor.h>
 
 #include <xrpl/basics/Log.h>
 #include <xrpl/protocol/TxFlags.h>
-#include <xrpl/protocol/UintTypes.h>
 
-namespace ripple {
+namespace xrpl {
 
-class OptionSettle : public Transactor
+class OptionLiquidate : public Transactor
 {
 public:
-    static constexpr ConsequencesFactoryType ConsequencesFactory{Blocker};
+    static constexpr ConsequencesFactoryType ConsequencesFactory{Normal};
 
-    explicit OptionSettle(ApplyContext& ctx) : Transactor(ctx)
+    explicit OptionLiquidate(ApplyContext& ctx) : Transactor(ctx)
     {
     }
 
@@ -47,6 +45,4 @@ public:
     doApply() override;
 };
 
-}  // namespace ripple
-
-#endif
+}  // namespace xrpl

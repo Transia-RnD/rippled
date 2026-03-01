@@ -17,10 +17,10 @@
 */
 //==============================================================================
 
-#include <xrpld/app/tx/detail/OptionSettle.h>
-#include <xrpld/app/tx/detail/OptionUtils.h>
-#include <xrpld/ledger/Sandbox.h>
-#include <xrpld/ledger/View.h>
+#include <xrpl/tx/transactors/Option/OptionSettle.h>
+#include <xrpl/tx/transactors/Option/OptionUtils.h>
+#include <xrpl/ledger/Sandbox.h>
+#include <xrpl/ledger/View.h>
 
 #include <xrpl/basics/Log.h>
 #include <xrpl/protocol/Feature.h>
@@ -28,41 +28,23 @@
 #include <xrpl/protocol/STNumber.h>
 #include <xrpl/protocol/TxFlags.h>
 
-namespace ripple {
+namespace xrpl {
 
 NotTEC
 OptionSettle::preflight(PreflightContext const& ctx)
 {
-    // First, check if the Options feature is enabled on the network
-    if (!ctx.rules.enabled(featureOptions))
-        return temDISABLED;
-
-    // Perform standard preflight checks (like fee/sequence number)
-    if (auto const ret = preflight1(ctx); !isTesSuccess(ret))
-        return ret;
-
-    // Get the transaction flags
-    std::uint32_t const flags = ctx.tx.getFlags();
-
-    // Check for any invalid flags using the mask
-    if (flags & tfOptionSettleMask)
-    {
-        JLOG(ctx.j.warn()) << "OptionSettle: Invalid flags set.";
-        return temINVALID_FLAG;
-    }
-
     // Verify that exactly one of the three action flags is set:
     // - tfExpire: Expire the option
     // - tfClose: Close the option
     // - tfExercise: Exercise the option
+    std::uint32_t const flags = ctx.tx.getFlags();
     if (std::popcount(flags & (tfExpire | tfClose | tfExercise)) != 1)
     {
         JLOG(ctx.j.trace()) << "OptionSettle: Invalid flags set.";
         return temINVALID_FLAG;
     }
 
-    // Perform additional preflight checks
-    return preflight2(ctx);
+    return tesSUCCESS;
 }
 
 TER
@@ -72,7 +54,7 @@ OptionSettle::preclaim(PreclaimContext const& ctx)
     uint256 const optionID = ctx.tx.getFieldH256(sfOptionID);
 
     // Verify the option exists in the ledger
-    if (!ctx.view.exists(ripple::keylet::unchecked(optionID)))
+    if (!ctx.view.exists(keylet::unchecked(optionID)))
         return tecNO_ENTRY;
 
     // Get the option offer ID from the transaction
@@ -84,17 +66,6 @@ OptionSettle::preclaim(PreclaimContext const& ctx)
     {
         JLOG(ctx.j.trace()) << "OptionSettle: Option offer not found.";
         return tecNO_TARGET;
-    }
-
-    // Get the transaction flags
-    auto const flags = ctx.tx.getFlags();
-
-    // For exercising options, verify that the offer is not a sell offer
-    // (only buy offers can be exercised)
-    if (!(flags & (tfClose | tfExpire)) && (sleOffer->getFlags() & tfSell))
-    {
-        JLOG(ctx.j.trace()) << "OptionSettle: Option offer is a sell offer.";
-        return tecNO_PERMISSION;
     }
 
     // Verify that the account submitting the transaction is the owner of the
@@ -222,19 +193,58 @@ OptionSettle::doApply()
     // If not closing or expiring, we're exercising the option
     JLOG(j_.trace()) << "OptionSettle: Exercise offer.";
 
-    // Call utility function to handle the option exercise
+    // Call utility function to handle cash-settled exercise
     if (auto const ter = option::exerciseOffer(
             sb,
-            pseudoAccount,
             isPut,
             strikePrice,
             account_,
-            sleAccount,
             issue,
+            strikePrice.issue(),  // quote (settlement) asset
             sealedOptions,
             j_);
         ter != tesSUCCESS)
         return ter;
+
+    // Release buyer's margin position if linked
+    if (sleOffer->isFieldPresent(sfMarginPositionID))
+    {
+        uint256 const positionID = sleOffer->getFieldH256(sfMarginPositionID);
+        auto slePosition = sb.peek(Keylet{ltMARGIN_POSITION, positionID});
+        if (slePosition)
+        {
+            // Release allocated margin back to margin account
+            uint256 const marginAccountID =
+                slePosition->getFieldH256(sfMarginAccountID);
+            auto sleMarginAcct =
+                sb.peek(Keylet{ltMARGIN_ACCOUNT, marginAccountID});
+            if (sleMarginAcct)
+            {
+                Number allocatedMargin =
+                    slePosition->at(~sfAllocatedMargin).value_or(Number(0));
+                Number collateralBalance =
+                    sleMarginAcct->at(~sfCollateralBalance).value_or(Number(0));
+                collateralBalance = collateralBalance + allocatedMargin;
+                sleMarginAcct->at(sfCollateralBalance) =
+                    STNumber{sfCollateralBalance, collateralBalance};
+                sb.update(sleMarginAcct);
+            }
+
+            // Delete the margin position
+            auto const posAccount = slePosition->getAccountID(sfAccount);
+            if (slePosition->isFieldPresent(sfOwnerNode))
+            {
+                sb.dirRemove(
+                    keylet::ownerDir(posAccount),
+                    slePosition->getFieldU64(sfOwnerNode),
+                    slePosition->key(),
+                    true);
+            }
+            adjustOwnerCount(
+                sb, sb.peek(keylet::account(posAccount)), -1, j_);
+            sb.erase(slePosition);
+        }
+    }
 
     // Delete the offer after successful exercise
     if (auto const ter = option::deleteOffer(sb, sleOffer, j_);
@@ -246,4 +256,4 @@ OptionSettle::doApply()
     return tesSUCCESS;
 }
 
-}  // namespace ripple
+}  // namespace xrpl

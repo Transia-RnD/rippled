@@ -76,5 +76,7 @@ struct ConfigSection
 #define SECTION_VALIDATOR_TOKEN "validator_token"
 #define SECTION_VETO_AMENDMENTS "veto_amendments"
 #define SECTION_WORKERS "workers"
+#define SECTION_IMPORT_VL_KEYS "import_vl_keys"
+#define SECTION_IMPORT_VAULT_ADDRESS "import_vault_address"
 
 }  // namespace xrpl

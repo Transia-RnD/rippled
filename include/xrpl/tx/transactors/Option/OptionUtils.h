@@ -1,3 +1,5 @@
+#pragma once
+
 //------------------------------------------------------------------------------
 /*
   This file is part of rippled: https://github.com/ripple/rippled
@@ -17,16 +19,14 @@
 */
 //==============================================================================
 
-#ifndef RIPPLE_TX_IMPL_DETAILS_OPTIONUTILS_H_INCLUDED
-#define RIPPLE_TX_IMPL_DETAILS_OPTIONUTILS_H_INCLUDED
 
-#include <xrpld/app/tx/detail/Transactor.h>
-#include <xrpld/ledger/ApplyView.h>
-#include <xrpld/ledger/Sandbox.h>
+#include <xrpl/tx/Transactor.h>
+#include <xrpl/ledger/ApplyView.h>
+#include <xrpl/ledger/Sandbox.h>
 
 #include <xrpl/protocol/Option.h>
 
-namespace ripple {
+namespace xrpl {
 
 namespace option {
 
@@ -101,8 +101,6 @@ matchOptions(
  * @param openInterest Available quantity not yet matched
  * @param premium The premium (price) for the option
  * @param isSell Whether this is a sell offer
- * @param quantityShares Amount of the asset to lock as collateral (for sell
- * offers)
  * @param issue The underlying asset (currency and issuer)
  * @param strikePrice The strike price as an STAmount
  * @param strike The strike price as an integer
@@ -122,60 +120,12 @@ createOffer(
     std::uint32_t openInterest,
     STAmount const& premium,
     bool isSell,
-    STAmount const& quantityShares,
     Issue const& issue,
     STAmount strikePrice,
     std::int64_t strike,
     std::uint32_t expiration,
     Keylet const& optionBookDirKeylet,
     std::vector<SealedOptionData> const& sealedOptions,
-    beast::Journal j_);
-
-/**
- * @brief Locks tokens as collateral for selling an option.
- *
- * When creating a sell option, this function locks the necessary assets as
- * collateral, either XRP or issued tokens. The locked amount is subtracted from
- * the account's available balance.
- *
- * @param sb Sandbox ledger view
- * @param pseudoAccount OptionPair account (where tokens are locked)
- * @param sourceBalance Current XRP balance of the account
- * @param account Account whose tokens will be locked
- * @param amount Amount to lock
- * @param j Journal for logging
- * @return TER Transaction result code
- */
-TER
-lockTokens(
-    Sandbox& sb,
-    AccountID const& pseudoAccount,
-    XRPAmount const& sourceBalance,
-    AccountID const& account,
-    STAmount const& amount,
-    beast::Journal j_);
-
-/**
- * @brief Unlocks tokens that were previously locked as collateral.
- *
- * When an option is closed, exercised, or expires, this function releases
- * the locked collateral back to the specified account.
- *
- * @param sb Sandbox ledger view
- * @param pseudoAccount Account sending the unlocked tokens
- * @param receiver Account receiving the unlocked tokens
- * @param sleReceiver SLE of the receiving account
- * @param quantityShares Amount to unlock
- * @param j Journal for logging
- * @return TER Transaction result code
- */
-TER
-unlockTokens(
-    Sandbox& sb,
-    AccountID const& pseudoAccount,
-    AccountID const& receiver,
-    std::shared_ptr<SLE> const& sleReceiver,
-    STAmount const& amount,
     beast::Journal j_);
 
 /**
@@ -232,18 +182,19 @@ closeOffer(
     beast::Journal j);
 
 /**
- * @brief Exercises an option contract.
+ * @brief Exercises an option contract via cash settlement.
  *
- * Executes the option by transferring assets between buyer and seller
- * according to the option terms. Updates or removes the option from the ledger.
+ * Calculates settlement based on mark price vs strike price.
+ * For calls: settlement = max(0, (markPrice - strikePrice) * quantity)
+ * For puts:  settlement = max(0, (strikePrice - markPrice) * quantity)
+ * Settlement is transferred between buyer and seller margin positions.
  *
  * @param sb Sandbox ledger view
- * @param pseudoAccount OptionPair account (where tokens are locked)
  * @param isPut Whether this is a put option
  * @param strikePrice The strike price
  * @param buyer Account exercising the option
- * @param sleBuyer SLE of the buyer's account
  * @param issue The underlying asset
+ * @param quoteIssue The quote (settlement) asset
  * @param sealedOptions Array of sealed options to exercise
  * @param j Journal for logging
  * @return TER Transaction result code
@@ -251,12 +202,11 @@ closeOffer(
 TER
 exerciseOffer(
     Sandbox& sb,
-    AccountID const& pseudoAccount,
     bool isPut,
     STAmount const& strikePrice,
     AccountID const& buyer,
-    std::shared_ptr<SLE> const& sleBuyer,
     Issue const& issue,
+    Issue const& quoteIssue,
     STArray const& sealedOptions,
     beast::Journal j_);
 
@@ -289,6 +239,5 @@ TER
 deleteOffer(ApplyView& view, std::shared_ptr<SLE> const& sle, beast::Journal j);
 
 }  // namespace option
-}  // namespace ripple
+}  // namespace xrpl
 
-#endif  // RIPPLE_TX_IMPL_DETAILS_OPTIONUTILS_H_INCLUDED

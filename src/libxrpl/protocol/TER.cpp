@@ -106,6 +106,7 @@ transResults()
         MAKE_ERROR(tecLIMIT_EXCEEDED,                "Limit exceeded."),
         MAKE_ERROR(tecPSEUDO_ACCOUNT,                "This operation is not allowed against a pseudo-account."),
         MAKE_ERROR(tecPRECISION_LOSS,                "The amounts used by the transaction cannot interact."),
+        MAKE_ERROR(tecCANT_LIQUIDATE,                "Position is healthy and cannot be liquidated."),
 
         MAKE_ERROR(tefALREADY,                     "The exact transaction was already in this ledger."),
         MAKE_ERROR(tefBAD_ADD_AUTH,                "Not authorized to add account."),
@@ -129,6 +130,8 @@ transResults()
         MAKE_ERROR(tefNO_TICKET,                   "Ticket is not in ledger."),
         MAKE_ERROR(tefNFTOKEN_IS_NOT_TRANSFERABLE, "The specified NFToken is not transferable."),
         MAKE_ERROR(tefINVALID_LEDGER_FIX_TYPE,     "The LedgerFixType field has an invalid value."),
+        MAKE_ERROR(tefPAST_IMPORT_SEQ,             "Import sequence has already been used."),
+        MAKE_ERROR(tefPAST_IMPORT_VL_SEQ,          "Import VL sequence has already been used."),
 
         MAKE_ERROR(telLOCAL_ERROR,            "Local failure."),
         MAKE_ERROR(telBAD_DOMAIN,             "Domain too long."),
@@ -147,6 +150,7 @@ transResults()
         MAKE_ERROR(telREQUIRES_NETWORK_ID,    "Transactions submitted to this node/network must include a correct NetworkID field."),
         MAKE_ERROR(telNETWORK_ID_MAKES_TX_NON_CANONICAL, "Transactions submitted to this node/network must NOT include a NetworkID field."),
         MAKE_ERROR(telENV_RPC_FAILED,         "Unit test RPC failure."),
+        MAKE_ERROR(telIMPORT_VL_KEY_NOT_RECOGNISED, "Import VL key not recognised."),
 
         MAKE_ERROR(temMALFORMED,                 "Malformed transaction."),
         MAKE_ERROR(temBAD_AMM_TOKENS,            "Malformed: Invalid LPTokens."),

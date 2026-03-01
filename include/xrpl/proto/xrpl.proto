@@ -26,6 +26,7 @@ enum MessageType {
   mtREPLAY_DELTA_RESPONSE = 60;
   mtHAVE_TRANSACTIONS = 63;
   mtTRANSACTIONS = 64;
+  mtEXPORT_SIGNATURE = 65;
 }
 
 // token, iterations, target, challenge = issue demand for proof of work
@@ -340,4 +341,14 @@ message TMReplayDeltaResponse {
 
 message TMHaveTransactions {
   repeated bytes hashes = 1;
+}
+
+// Validator export signature: a validator's multisig signature for a
+// mainnet Payment corresponding to an ExportRecord on the sidechain.
+message TMExportSignature {
+  required bytes exportAccount = 1;     // AccountID of the exporter (20 bytes)
+  required uint32 exportSequence = 2;   // ExportRecord sequence number
+  required bytes validatorKey = 3;      // Validator's public key
+  required bytes signature = 4;         // Multisig signature over mainnet Payment
+  required uint32 ledgerSequence = 5;   // Ledger containing the Export tx
 }

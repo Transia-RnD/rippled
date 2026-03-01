@@ -183,6 +183,7 @@ JSS(close_time_offset);       // out: NetworkOPs
 JSS(close_time_resolution);   // in: Application; out: LedgerToJson
 JSS(closed);                  // out: NetworkOPs, LedgerToJson,
                               //      handlers/Ledger
+JSS(collateral_balance);      // out: get_margin_status
 JSS(closed_ledger);           // out: NetworkOPs
 JSS(cluster);                 // out: PeerImp
 JSS(code);                    // out: errors
@@ -237,6 +238,8 @@ JSS(duration_us);             // out: NetworkOPs
 JSS(effective);               // out: ValidatorList
                               // in: UNL
 JSS(enabled);                 // out: AmendmentTable
+JSS(entry_price);             // out: get_margin_status
+JSS(equity);                  // out: get_margin_status
 JSS(engine_result);           // out: NetworkOPs, TransactionSign, Submit
 JSS(engine_result_code);      // out: NetworkOPs, TransactionSign, Submit
 JSS(engine_result_message);   // out: NetworkOPs, TransactionSign, Submit
@@ -252,6 +255,14 @@ JSS(expand);                  // in: handler/Ledger
 JSS(expected_date);           // out: any (warnings)
 JSS(expected_date_UTC);       // out: any (warnings)
 JSS(expected_ledger_size);    // out: TxQ
+JSS(export_sequence);         // in: LedgerEntry
+JSS(export_payment);          // out: export_payment RPC
+JSS(export_status);           // out: export_status RPC
+JSS(signatures_collected);    // out: export_status
+JSS(signatures_required);     // out: export_status
+JSS(quorum_reached);          // out: export_status
+JSS(mainnet_payment_blob);    // out: export_payment
+JSS(submit_ready);            // out: export_payment
 JSS(expiration);              // out: AccountOffers, AccountChannels,
                               //      ValidatorList, amm_info
 JSS(fail_hard);               // in: Sign, Submit
@@ -297,6 +308,7 @@ JSS(hotwallet);               // in: GatewayBalances
 JSS(id);                      // websocket.
 JSS(ident);                   // in: AccountCurrencies, AccountInfo,
                               //     OwnerInfo
+JSS(healthy);                 // out: get_margin_status
 JSS(ignore_default);          // in: AccountLines
 JSS(inLedger);                // out: tx/Transaction
 JSS(inbound);                 // out: PeerImp
@@ -356,6 +368,7 @@ JSS(ledger_min);              // in, out: AccountTx*
 JSS(ledger_time);             // out: NetworkOPs
 JSS(LEDGER_ENTRY_TYPES);      // out: RPC server_definitions
                               // matches definitions.json format
+JSS(leverage);                // out: get_margin_status
 JSS(levels);                  // LogLevels
 JSS(limit);                   // in/out: AccountTx*, AccountOffers,
                               //         AccountLines, AccountObjects
@@ -384,7 +397,11 @@ JSS(low);                     // out: BookChanges
 JSS(lowest_sequence);         // out: AccountInfo
 JSS(lowest_ticket);           // out: AccountInfo
 JSS(lp_token);                // out: amm_info
+JSS(maintenance_margin);      // out: get_margin_status
 JSS(majority);                // out: RPC feature
+// Note: margin_account is auto-generated from ledger_entries.macro
+JSS(margin_mode);             // out: get_margin_status
+JSS(mark_price);              // out: get_margin_status
 JSS(manifest);                // out: ValidatorInfo, Manifest
 JSS(marker);                  // in/out: AccountTx, AccountOffers,
                               //         AccountLines, AccountObjects,
@@ -448,6 +465,7 @@ JSS(node_writes_duration_us); // out: GetCounts
 JSS(node_write_retries);      // out: GetCounts
 JSS(node_writes_delayed);     // out::GetCounts
 JSS(nth);                     // out: RPC server_definitions
+JSS(notional);                // out: get_margin_status
 JSS(obligations);             // out: GatewayBalances
 JSS(offers);                  // out: NetworkOPs, AccountOffers, Subscribe
 JSS(offer_id);                // out: insertNFTokenOfferID
@@ -480,6 +498,9 @@ JSS(peer_disconnects_resources); // Severed peer connections because of
                               // excess resource consumption.
 JSS(port);                    // in: Connect, out: NetworkOPs
 JSS(ports);                   // out: NetworkOPs
+JSS(position_side);           // out: get_margin_status
+JSS(position_size);           // out: get_margin_status
+JSS(positions);               // out: get_margin_status
 JSS(previous);                // out: Reservations
 JSS(previous_ledger);         // out: LedgerPropose
 JSS(price);                   // out: amm_info, AuctionSlot
@@ -606,6 +627,7 @@ JSS(total);                   // out: counters
 JSS(total_bytes_recv);        // out: Peers
 JSS(total_bytes_sent);        // out: Peers
 JSS(total_coins);             // out: LedgerToJson
+JSS(total_maintenance);       // out: get_margin_status
 JSS(trading_fee);             // out: amm_info
 JSS(transTreeHash);           // out: ledger/Ledger.cpp
 JSS(transaction);             // in: Tx
@@ -655,6 +677,7 @@ JSS(type);                    // in: AccountObjects
 JSS(type_hex);                // out: STPathSet
 JSS(unl);                     // out: UnlList
 JSS(unlimited);               // out: Connection.h
+JSS(unrealized_pnl);          // out: get_margin_status
 JSS(uptime);                  // out: GetCounts
 JSS(uri);                     // out: ValidatorSites
 JSS(url);                     // in/out: Subscribe, Unsubscribe

@@ -167,6 +167,22 @@ InnerObjectFormats::InnerObjectFormats()
             {sfOptionOfferID, soeREQUIRED},
             {sfQuantity, soeREQUIRED},
         });
+
+    add(sfPasskey.jsonName,
+        sfPasskey.getCode(),
+        {
+            {sfPasskeyID, soeREQUIRED},
+            {sfPublicKey, soeREQUIRED},
+        });
+
+    add(sfPasskeySignature.jsonName,
+        sfPasskeySignature.getCode(),
+        {
+            {sfPasskeyID, soeREQUIRED},
+            {sfAuthenticatorData, soeREQUIRED},
+            {sfClientDataJSON, soeREQUIRED},
+            {sfSignature, soeREQUIRED},
+        });
 }
 
 InnerObjectFormats const&

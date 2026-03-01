@@ -372,6 +372,34 @@ optionOffer(uint256 const& key) noexcept
 Keylet
 optionQuality(Keylet const& k, std::uint64_t q) noexcept;
 
+Keylet
+leverageTier(Asset const& issue1, Asset const& issue2) noexcept;
+
+Keylet
+marginAccount(AccountID const& account, Asset const& collateralAsset) noexcept;
+
+Keylet
+insuranceVault(Asset const& issue1, Asset const& issue2) noexcept;
+
+Keylet
+marginPosition(AccountID const& account, std::uint32_t seq) noexcept;
+
+/** Import VL sequence tracking */
+Keylet
+importVLSeq(PublicKey const& key) noexcept;
+
+/** Export record */
+Keylet
+exportRecord(AccountID const& account, std::uint32_t seq) noexcept;
+
+/** Export vault state (singleton) */
+Keylet const&
+exportVaultState() noexcept;
+
+/** An account's passkey list */
+Keylet
+passkeyList(AccountID const& account) noexcept;
+
 }  // namespace keylet
 
 // Everything below is deprecated and should be removed in favor of keylets:
@@ -416,7 +444,7 @@ struct keyletDesc
 
 // This list should include all of the keylet functions that take a single
 // AccountID parameter.
-std::array<keyletDesc<AccountID const&>, 6> const directAccountKeylets{
+std::array<keyletDesc<AccountID const&>, 7> const directAccountKeylets{
     {{&keylet::account, jss::AccountRoot, false},
      {&keylet::ownerDir, jss::DirectoryNode, true},
      {&keylet::signers, jss::SignerList, true},
@@ -424,7 +452,8 @@ std::array<keyletDesc<AccountID const&>, 6> const directAccountKeylets{
      // test it anyway, since the invariant checks for it.
      {&keylet::nftpage_min, jss::NFTokenPage, true},
      {&keylet::nftpage_max, jss::NFTokenPage, true},
-     {&keylet::did, jss::DID, true}}};
+     {&keylet::did, jss::DID, true},
+     {&keylet::passkeyList, jss::PasskeyList, true}}};
 
 MPTID
 makeMptID(std::uint32_t sequence, AccountID const& account);

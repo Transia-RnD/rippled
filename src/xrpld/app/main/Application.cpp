@@ -15,6 +15,7 @@
 #include <xrpld/app/main/LoadManager.h>
 #include <xrpld/app/main/NodeIdentity.h>
 #include <xrpld/app/main/NodeStoreScheduler.h>
+#include <xrpld/app/misc/ExportSignatureCollector.h>
 #include <xrpld/app/misc/SHAMapStore.h>
 #include <xrpld/app/misc/TxQ.h>
 #include <xrpld/app/misc/ValidatorKeys.h>
@@ -198,6 +199,7 @@ public:
     std::optional<SQLiteDatabase> relationalDatabase_;
     std::unique_ptr<DatabaseCon> mWalletDB;
     std::unique_ptr<Overlay> overlay_;
+    std::unique_ptr<ExportSignatureCollector> exportSignatureCollector_;
     std::optional<uint256> trapTxID_;
 
     boost::asio::signal_set m_signals;
@@ -431,6 +433,10 @@ public:
               std::chrono::milliseconds(100),
               get_io_context())
         , grpcServer_(std::make_unique<GRPCServer>(*this))
+        , exportSignatureCollector_(
+              std::make_unique<ExportSignatureCollector>(
+                  *this,
+                  logs_->journal("ExportSignatureCollector")))
     {
         initAccountIdCache(config_->getValueFor(SizedItem::accountIdCacheSize));
 
@@ -1095,6 +1101,25 @@ private:
 
     void
     setMaxDisallowedLedger();
+
+    bool
+    isImportVLKeyRecognized(std::string const& strPk) const override
+    {
+        return config_->IMPORT_VL_KEYS.find(strPk) !=
+            config_->IMPORT_VL_KEYS.end();
+    }
+
+    std::optional<AccountID> const&
+    getImportVaultAddress() const override
+    {
+        return config_->IMPORT_VAULT_ADDRESS;
+    }
+
+    ExportSignatureCollector&
+    getExportSignatureCollector() override
+    {
+        return *exportSignatureCollector_;
+    }
 
     Application&
     app() override

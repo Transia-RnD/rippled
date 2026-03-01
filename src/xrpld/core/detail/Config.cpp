@@ -921,6 +921,51 @@ Config::loadFromString(std::string const& fileContents)
             if (valListThreshold)
                 section(SECTION_VALIDATOR_LIST_THRESHOLD).append(*valListThreshold);
 
+            // Parse [import_vl_keys] for cross-chain Import validation
+            if (auto importKeys =
+                    getIniFileSection(iniFile, SECTION_IMPORT_VL_KEYS);
+                importKeys)
+            {
+                for (std::string const& strPk : *importKeys)
+                {
+                    auto pkHex = strUnHex(strPk);
+                    if (!pkHex)
+                        Throw<std::runtime_error>(
+                            "Import VL Key '" + strPk +
+                            "' was not valid hex.");
+
+                    auto const pkType =
+                        publicKeyType(makeSlice(*pkHex));
+                    if (!pkType)
+                        Throw<std::runtime_error>(
+                            "Import VL Key '" + strPk +
+                            "' was not a valid key type.");
+                    IMPORT_VL_KEYS.emplace(
+                        strPk, PublicKey(makeSlice(*pkHex)));
+                }
+            }
+
+            // Parse [import_vault_address] for lock-and-mint cross-chain
+            if (auto vaultAddr =
+                    getIniFileSection(iniFile, SECTION_IMPORT_VAULT_ADDRESS);
+                vaultAddr)
+            {
+                if (vaultAddr->size() != 1)
+                    Throw<std::runtime_error>(
+                        "[" SECTION_IMPORT_VAULT_ADDRESS
+                        "] must contain exactly one address.");
+
+                auto const id =
+                    parseBase58<AccountID>((*vaultAddr)[0]);
+                if (!id)
+                    Throw<std::runtime_error>(
+                        "Invalid vault address in "
+                        "[" SECTION_IMPORT_VAULT_ADDRESS "]: " +
+                        (*vaultAddr)[0]);
+
+                IMPORT_VAULT_ADDRESS = *id;
+            }
+
             if (!entries && !valKeyEntries && !valListKeys)
                 Throw<std::runtime_error>(
                     "The file specified in [" SECTION_VALIDATORS_FILE

@@ -7,6 +7,7 @@
 #include <xrpld/app/ledger/LedgerMaster.h>
 #include <xrpld/app/ledger/LocalTxs.h>
 #include <xrpld/app/ledger/OpenLedger.h>
+#include <xrpld/app/misc/ExportSignatureCollector.h>
 #include <xrpld/app/misc/NegativeUNLVote.h>
 #include <xrpld/app/misc/TxQ.h>
 #include <xrpld/app/misc/ValidatorKeys.h>
@@ -22,7 +23,10 @@
 #include <xrpl/ledger/AmendmentTable.h>
 #include <xrpl/protocol/BuildInfo.h>
 #include <xrpl/protocol/Feature.h>
+#include <xrpl/protocol/Indexes.h>
+#include <xrpl/protocol/SecretKey.h>
 #include <xrpl/protocol/digest.h>
+#include <xrpl/tx/transactors/Import/ExportPaymentBuilder.h>
 #include <xrpl/server/LoadFeeTrack.h>
 #include <xrpl/server/NetworkOPs.h>
 
@@ -818,6 +822,352 @@ RCLConsensus::Adaptor::validate(RCLCxLedger const& ledger, RCLTxSet const& txns,
 
     // Publish to all our subscribers:
     app_.getOPs().pubValidation(v);
+
+    // Sign export records for validator-signed exports
+    if (ledger.ledger_->rules().enabled(featureImportExport))
+    {
+        signExportRecords(ledger, txns, keys);
+
+        // At flag ledgers, check for UNL changes that require
+        // updating the mainnet vault's SignerList, and check
+        // if tickets need replenishment
+        if (ledger.ledger_->isVotingLedger())
+        {
+            checkSignerListRotation(ledger, keys);
+            checkTicketReplenishment(ledger, keys);
+        }
+    }
+}
+
+void
+RCLConsensus::Adaptor::signExportRecords(
+    RCLCxLedger const& ledger,
+    RCLTxSet const& txns,
+    ValidatorKeys::Keys const& keys)
+{
+    auto const& l = *ledger.ledger_;
+
+    // Read VaultState for quorum and signer count
+    auto const sleVault = l.read(keylet::exportVaultState());
+    if (!sleVault)
+        return;
+
+    auto const quorum = sleVault->getFieldU32(sfExportQuorum);
+    auto const signerCount = sleVault->getFieldU32(sfSignerCount);
+
+    // Derive our signer AccountID from our signing (ephemeral) public key
+    auto const signerAccountID = calcAccountID(keys.publicKey);
+
+    // Scan the consensus transaction set for Export transactions
+    txns.map_->visitLeaves(
+        [&](boost::intrusive_ptr<SHAMapItem const> const& item) {
+            try
+            {
+                SerialIter sit(item->slice());
+                auto const stx = std::make_shared<STTx const>(sit);
+
+                if (stx->getTxnType() != ttEXPORT)
+                    return;
+
+                // Check if this transaction succeeded by reading
+                // the transaction result from the built ledger
+                auto const [tx, meta] = l.txRead(item->key());
+                if (!meta)
+                    return;
+
+                // Check the transaction result
+                auto const result =
+                    meta->getFieldU8(sfTransactionResult);
+                if (result != tesSUCCESS)
+                    return;
+
+                auto const account = (*tx)[sfAccount];
+                auto const destination = (*tx)[sfDestination];
+                auto const amount = (*tx)[sfAmount];
+
+                // Find the ExportRecord created by this transaction.
+                // The metadata contains CreatedNode entries.
+                // Look through metadata for the created ExportRecord.
+                if (!meta->isFieldPresent(sfAffectedNodes))
+                    return;
+
+                auto const& affected =
+                    meta->getFieldArray(sfAffectedNodes);
+
+                for (auto const& node : affected)
+                {
+                    if (node.getFieldU16(sfLedgerEntryType) !=
+                        ltEXPORT_RECORD)
+                        continue;
+
+                    // Check if this is a CreatedNode
+                    if (!node.isFieldPresent(sfNewFields))
+                        continue;
+
+                    auto const& newFields =
+                        node.peekAtField(sfNewFields)
+                            .downcast<STObject>();
+
+                    if (!newFields.isFieldPresent(sfTicketSequence))
+                        continue;
+
+                    auto const ticketSeq =
+                        newFields.getFieldU32(sfTicketSequence);
+                    auto const exportSeq =
+                        newFields.getFieldU32(sfExportSequence);
+
+                    // Build deterministic mainnet Payment
+                    ExportPaymentParams params;
+                    params.vaultAddress =
+                        *app_.getImportVaultAddress();
+                    params.destination = destination;
+                    params.amount = amount;
+                    params.ticketSeq = ticketSeq;
+                    params.signerCount = signerCount;
+
+                    if (tx->isFieldPresent(sfDestinationTag))
+                        params.destinationTag =
+                            tx->getFieldU32(sfDestinationTag);
+
+                    auto const payment = buildExportPayment(params);
+
+                    // Compute per-signer multisig hash and sign
+                    auto const msHash = exportPaymentMultiSignHash(
+                        payment, signerAccountID);
+                    auto const sig = signDigest(
+                        keys.publicKey, keys.secretKey, msHash);
+
+                    // Register in our local collector
+                    app_.getExportSignatureCollector().registerExport(
+                        account,
+                        exportSeq,
+                        params,
+                        quorum,
+                        ledger.seq());
+
+                    // Build and broadcast the overlay message
+                    protocol::TMExportSignature msg;
+                    msg.set_exportaccount(
+                        account.data(), account.size());
+                    msg.set_exportsequence(exportSeq);
+                    msg.set_validatorkey(
+                        keys.publicKey.data(),
+                        keys.publicKey.size());
+                    msg.set_signature(sig.data(), sig.size());
+                    msg.set_ledgersequence(ledger.seq());
+
+                    // Suppress our own signature in the hash router
+                    auto const suppKey = sha512Half(
+                        Slice(account.data(), account.size()),
+                        exportSeq,
+                        keys.publicKey.slice());
+                    app_.getHashRouter().addSuppression(suppKey);
+
+                    app_.overlay().broadcast(msg);
+
+                    // Also add our own signature to the collector
+                    auto msgPtr = std::make_shared<
+                        protocol::TMExportSignature>(msg);
+                    app_.getExportSignatureCollector()
+                        .onExportSignature(msgPtr);
+
+                    JLOG(j_.info())
+                        << "Signed export " << account << ":"
+                        << exportSeq << " ticket=" << ticketSeq;
+                }
+            }
+            catch (std::exception const& ex)
+            {
+                JLOG(j_.warn())
+                    << "Error signing export: " << ex.what();
+            }
+        });
+}
+
+void
+RCLConsensus::Adaptor::checkSignerListRotation(
+    RCLCxLedger const& ledger,
+    ValidatorKeys::Keys const& keys)
+{
+    auto const& l = *ledger.ledger_;
+
+    auto const sleVault = l.read(keylet::exportVaultState());
+    if (!sleVault)
+        return;
+
+    // Get current UNL validators' signing public keys
+    auto const trustedKeys = app_.validators().getTrustedMasterKeys();
+    if (trustedKeys.empty())
+        return;
+
+    // Compute the hash of the current UNL-derived signer list
+    // Each validator's signing key -> AccountID
+    std::vector<AccountID> signerAccounts;
+    signerAccounts.reserve(trustedKeys.size());
+    for (auto const& masterKey : trustedKeys)
+    {
+        // Get the current signing key for this validator
+        auto const signingKey =
+            app_.validatorManifests().getSigningKey(masterKey);
+        signerAccounts.push_back(calcAccountID(signingKey));
+    }
+
+    // Sort by AccountID for deterministic ordering
+    std::sort(signerAccounts.begin(), signerAccounts.end());
+
+    // Compute hash of the signer list
+    Serializer s;
+    for (auto const& acct : signerAccounts)
+        s.addBitString(acct);
+    auto const currentHash = sha512Half(s.slice());
+
+    // Compare with stored hash
+    auto const storedHash =
+        sleVault->isFieldPresent(sfSignerListHash)
+        ? sleVault->getFieldH256(sfSignerListHash)
+        : uint256{};
+
+    if (currentHash == storedHash)
+        return;  // No change needed
+
+    JLOG(j_.info())
+        << "UNL signer list changed, need SignerListSet update. "
+        << "Validators: " << signerAccounts.size()
+        << " old hash: " << storedHash
+        << " new hash: " << currentHash;
+
+    // Build the SignerListSet transaction
+    auto const signerCount = sleVault->getFieldU32(sfSignerCount);
+    auto const nextTicket = sleVault->getFieldU32(sfNextTicketSeq);
+    auto const maxTicket = sleVault->getFieldU32(sfMaxTicketSeq);
+
+    if (nextTicket > maxTicket)
+    {
+        JLOG(j_.warn())
+            << "No tickets available for SignerListSet";
+        return;
+    }
+
+    auto const newQuorum = static_cast<std::uint32_t>(
+        std::ceil(signerAccounts.size() * 0.8));
+
+    SignerListSetParams params;
+    params.vaultAddress = *app_.getImportVaultAddress();
+    params.ticketSeq = nextTicket;  // Use next available ticket
+    params.signerCount = signerCount;
+    params.quorum = newQuorum;
+    params.signerAccounts = signerAccounts;
+
+    auto const slsTx = buildSignerListSet(params);
+
+    // Compute multisign hash and sign
+    auto const signerAccountID = calcAccountID(keys.publicKey);
+    auto const msHash =
+        exportPaymentMultiSignHash(slsTx, signerAccountID);
+    auto const sig =
+        signDigest(keys.publicKey, keys.secretKey, msHash);
+
+    // Broadcast via overlay using the same message type
+    // The collector treats this as a special "management" export
+    // with a reserved export sequence (UINT32_MAX - 1 for SignerListSet)
+    protocol::TMExportSignature msg;
+    msg.set_exportaccount(
+        params.vaultAddress.data(), params.vaultAddress.size());
+    msg.set_exportsequence(0xFFFFFFFE);  // Reserved for SignerListSet
+    msg.set_validatorkey(
+        keys.publicKey.data(), keys.publicKey.size());
+    msg.set_signature(sig.data(), sig.size());
+    msg.set_ledgersequence(ledger.seq());
+
+    auto const suppKey = sha512Half(
+        Slice(params.vaultAddress.data(), params.vaultAddress.size()),
+        std::uint32_t(0xFFFFFFFE),
+        keys.publicKey.slice());
+    app_.getHashRouter().addSuppression(suppKey);
+
+    app_.overlay().broadcast(msg);
+
+    JLOG(j_.info())
+        << "Broadcast SignerListSet signature for UNL rotation";
+}
+
+void
+RCLConsensus::Adaptor::checkTicketReplenishment(
+    RCLCxLedger const& ledger,
+    ValidatorKeys::Keys const& keys)
+{
+    auto const& l = *ledger.ledger_;
+
+    auto const sleVault = l.read(keylet::exportVaultState());
+    if (!sleVault)
+        return;
+
+    auto const nextTicket = sleVault->getFieldU32(sfNextTicketSeq);
+    auto const maxTicket = sleVault->getFieldU32(sfMaxTicketSeq);
+    auto const signerCount = sleVault->getFieldU32(sfSignerCount);
+
+    // Calculate remaining tickets
+    auto const remaining =
+        (maxTicket >= nextTicket) ? (maxTicket - nextTicket + 1) : 0u;
+
+    // Replenish when less than 25% of max pool (250) remain
+    // Reserve 2 tickets for management transactions (SignerListSet, TicketCreate)
+    constexpr std::uint32_t replenishThreshold = 62;  // ~25% of 250
+    constexpr std::uint32_t newTicketCount = 200;      // Replenish with a batch
+
+    if (remaining > replenishThreshold)
+        return;
+
+    JLOG(j_.info())
+        << "Ticket pool low (" << remaining
+        << " remaining), initiating replenishment";
+
+    if (nextTicket > maxTicket)
+    {
+        JLOG(j_.warn())
+            << "No tickets available for TicketCreate";
+        return;
+    }
+
+    // Use the last available ticket for the TicketCreate itself
+    // (reserve the last ticket for this purpose)
+    auto const ticketForCreate = maxTicket;
+
+    TicketCreateParams params;
+    params.vaultAddress = *app_.getImportVaultAddress();
+    params.ticketSeq = ticketForCreate;
+    params.signerCount = signerCount;
+    params.ticketCount = newTicketCount;
+
+    auto const tcTx = buildTicketCreate(params);
+
+    // Compute multisign hash and sign
+    auto const signerAccountID = calcAccountID(keys.publicKey);
+    auto const msHash =
+        exportPaymentMultiSignHash(tcTx, signerAccountID);
+    auto const sig =
+        signDigest(keys.publicKey, keys.secretKey, msHash);
+
+    // Broadcast via overlay using reserved export sequence
+    protocol::TMExportSignature msg;
+    msg.set_exportaccount(
+        params.vaultAddress.data(), params.vaultAddress.size());
+    msg.set_exportsequence(0xFFFFFFFF);  // Reserved for TicketCreate
+    msg.set_validatorkey(
+        keys.publicKey.data(), keys.publicKey.size());
+    msg.set_signature(sig.data(), sig.size());
+    msg.set_ledgersequence(ledger.seq());
+
+    auto const suppKey = sha512Half(
+        Slice(params.vaultAddress.data(), params.vaultAddress.size()),
+        std::uint32_t(0xFFFFFFFF),
+        keys.publicKey.slice());
+    app_.getHashRouter().addSuppression(suppKey);
+
+    app_.overlay().broadcast(msg);
+
+    JLOG(j_.info())
+        << "Broadcast TicketCreate signature for pool replenishment";
 }
 
 void

@@ -126,6 +126,10 @@ public:
     virtual void
     broadcast(protocol::TMValidation& m) = 0;
 
+    /** Broadcast an export signature. */
+    virtual void
+    broadcast(protocol::TMExportSignature& m) = 0;
+
     /** Relay a proposal.
      * @param m the serialized proposal
      * @param uid the id used to identify this proposal

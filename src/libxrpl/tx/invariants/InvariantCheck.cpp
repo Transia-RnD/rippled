@@ -157,6 +157,45 @@ XRPNotCreated::finalize(
     ReadView const&,
     beast::Journal const& j)
 {
+    // Import transactions mint XRP (positive net change is expected).
+    if (hasPrivilege(tx, mintXRP))
+    {
+        // For Import: drops_ will be positive (XRP was created).
+        // The minted amount plus the fee should equal the positive change.
+        // We only verify that fee was still consumed.
+        // drops_ = (minted - fee), so drops_ + fee.drops() = minted >= 0
+        if (drops_ + fee.drops() < 0)
+        {
+            JLOG(j.fatal())
+                << "Invariant failed: Import minted negative XRP: "
+                << drops_;
+            return false;
+        }
+        return true;
+    }
+
+    // Export transactions burn XRP beyond the fee.
+    if (hasPrivilege(tx, burnExtraXRP))
+    {
+        // For Export: drops_ will be more negative than just the fee
+        // (fee + burned amount). Net change must still be negative.
+        if (drops_ > 0)
+        {
+            JLOG(j.fatal())
+                << "Invariant failed: Export created XRP: " << drops_;
+            return false;
+        }
+        // -drops_ should be >= fee (burned amount + fee)
+        if (-drops_ < fee.drops())
+        {
+            JLOG(j.fatal())
+                << "Invariant failed: Export net change of " << drops_
+                << " is less than fee " << fee.drops();
+            return false;
+        }
+        return true;
+    }
+
     // The net change should never be positive, as this would mean that the
     // transaction created XRP out of thin air. That's not possible.
     if (drops_ > 0)
