@@ -5,6 +5,7 @@ Title:       P256 Passkey Authentication
 Type:        Draft
 Author:      Denis Angell <dangell@transia.co>
 Revision:    1
+Discussion:  https://github.com/XRPLF/XRPL-Standards/discussions/236
 ```
 
 ## Abstract

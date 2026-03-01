@@ -7,6 +7,7 @@ Author:      Denis Angell <dangell@transia.co>,
              Richard Holland <richard@xrpl-labs.com>,
              Wietse Wind <wietse@xrpl-labs.com>
 Revision:    3
+Discussion:  https://github.com/XRPLF/XRPL-Standards/discussions/107
 ```
 
 ## Abstract
