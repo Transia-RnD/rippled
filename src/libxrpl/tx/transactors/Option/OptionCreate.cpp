@@ -36,9 +36,9 @@ namespace xrpl {
 NotTEC
 OptionCreate::preflight(PreflightContext const& ctx)
 {
-    // Verify quantity is valid (must be divisible by 100)
+    // Verify quantity is valid (must be > 0 and divisible by 100)
     std::uint32_t const quantity = ctx.tx[sfQuantity];
-    if (quantity % 100)
+    if (quantity == 0 || quantity % 100)
     {
         JLOG(ctx.j.trace()) << "OptionCreate: Invalid quantity.";
         return temMALFORMED;
@@ -168,6 +168,16 @@ OptionCreate::doApply()
     // Extract option parameters from transaction
     auto const flags = ctx_.tx.getFlags();
     std::uint32_t const expiration = ctx_.tx[sfExpiration];
+
+    // Validate expiration is in the future
+    std::uint32_t const now =
+        sb.parentCloseTime().time_since_epoch().count();
+    if (expiration <= now)
+    {
+        JLOG(j_.trace()) << "OptionCreate: expiration must be in the future.";
+        return tecEXPIRED;
+    }
+
     STAmount const strikePrice = ctx_.tx[sfStrikePrice];
     std::int64_t const strike = static_cast<std::int64_t>(Number(strikePrice));
     Asset const asset = ctx_.tx[sfAsset].get<Issue>();
@@ -222,12 +232,19 @@ OptionCreate::doApply()
     JLOG(j_.trace()) << "OptionCreate: Sealed Options: "
                      << sealedOptions.size();
 
-    // Calculate total quantity that was matched/sealed
-    std::uint32_t totalSealedQuantity = 0;
+    // Calculate total quantity that was matched/sealed (with overflow guard)
+    std::uint64_t totalSealedQuantity64 = 0;
     for (const auto& sealedOption : sealedOptions)
     {
-        totalSealedQuantity += sealedOption.quantitySealed;
+        totalSealedQuantity64 += sealedOption.quantitySealed;
+        if (totalSealedQuantity64 > quantity)
+        {
+            JLOG(j_.trace()) << "OptionCreate: sealed quantity overflow.";
+            return tefINTERNAL;
+        }
     }
+    std::uint32_t const totalSealedQuantity =
+        static_cast<std::uint32_t>(totalSealedQuantity64);
 
     // Calculate remaining open interest
     std::uint32_t openInterest = quantity - totalSealedQuantity;
@@ -321,11 +338,13 @@ OptionCreate::doApply()
 
         slePosition->setFieldU64(sfOwnerNode, *posPage);
 
-        // Link to margin account directory
+        // Link to margin account's owner directory (not the user's again)
+        auto const marginAcctOwner =
+            sleMarginAcct->getAccountID(sfAccount);
         auto const marginPage = sb.dirInsert(
-            keylet::ownerDir(account_),
+            keylet::ownerDir(marginAcctOwner),
             positionKeylet,
-            describeOwnerDir(account_));
+            describeOwnerDir(marginAcctOwner));
         slePosition->setFieldU64(sfMarginAccountNode,
             marginPage ? *marginPage : 0);
 

@@ -126,14 +126,14 @@ matchOptions(
             auto const flags = sleItem->getFlags();
 
             // Match option type (put/call) - we need same type
-            auto const offerPut = flags & tfPut;
-            if (isPut && !offerPut)
-                continue;  // Skip if not matching option type
+            auto const offerPut = (flags & tfPut) != 0;
+            if (isPut != offerPut)
+                continue;  // Skip if option type mismatch (put vs call)
 
             // Match offer side (buy/sell) - we need opposite side
-            auto const offerSell = flags & tfSell;
-            if (isSell && offerSell)
-                continue;  // Skip if both are sell or both are buy
+            auto const offerSell = (flags & tfSell) != 0;
+            if (isSell == offerSell)
+                continue;  // Skip if same side (both sell or both buy)
 
             // Get the premium for this offer
             STAmount offerPremium = sleItem->getFieldAmount(sfPremium);
@@ -692,17 +692,17 @@ closeOffer(
                 auto const flags = sleItem->getFlags();
 
                 // Match same type of option (put/call)
-                auto const offerPut = flags & tfPut;
-                if (isPut && !offerPut)
+                auto const offerPut = (flags & tfPut) != 0;
+                if (isPut != offerPut)
                 {
                     JLOG(j.trace()) << "OptionUtils: Option type mismatch: "
                                     << to_string(offerIndex);
                     continue;  // Option type mismatch
                 }
 
-                // Match same side of option (buy/sell)
-                auto const offerSell = flags & tfSell;
-                if (isSell && !offerSell)
+                // For closeOffer replacement, match same side
+                auto const offerSell = (flags & tfSell) != 0;
+                if (isSell != offerSell)
                 {
                     JLOG(j.trace()) << "OptionUtils: Offer side mismatch: "
                                     << to_string(offerIndex);
@@ -1076,6 +1076,8 @@ exerciseOffer(
                     static_cast<std::int64_t>(settlement), 0);
                 if (isXRP(quoteIssue))
                 {
+                    // XRP settlement: mint XRP to buyer from margin pool.
+                    // The corresponding XRP was burned on margin deposit.
                     auto sleBuyerPeek = sb.peek(keylet::account(buyer));
                     if (sleBuyerPeek)
                     {
@@ -1084,6 +1086,7 @@ exerciseOffer(
                         balance += settlementAmount.xrp();
                         sleBuyerPeek->setFieldAmount(sfBalance, balance);
                         sb.update(sleBuyerPeek);
+                        sb.rawDestroyXRP(-settlementAmount.xrp());
                     }
                 }
                 else

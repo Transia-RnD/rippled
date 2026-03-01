@@ -133,9 +133,19 @@ OptionLiquidate::preclaim(PreclaimContext const& ctx)
 
         Number const notional =
             slePosition->at(~sfNotionalValue).value_or(Number(0));
-        // Use 5% default maintenance margin
+        // Read maintenance margin from leverage tier (default 5% = 5000 1/10 bps)
+        std::uint32_t maintenanceMarginBps = 5000;
+        {
+            Issue const issue =
+                slePosition->getFieldIssue(sfAsset).get<Issue>();
+            auto const sleTier =
+                ctx.view.read(keylet::leverageTier(issue, quoteIssue));
+            if (sleTier && sleTier->isFieldPresent(sfMaintenanceMarginBps))
+                maintenanceMarginBps =
+                    sleTier->getFieldU32(sfMaintenanceMarginBps);
+        }
         Number const maintenance =
-            margin::calculateMaintenanceMargin(notional, 5000);
+            margin::calculateMaintenanceMargin(notional, maintenanceMarginBps);
 
         if (positionEquity >= maintenance)
         {
@@ -201,7 +211,15 @@ OptionLiquidate::doApply()
         Number const eq = am + p;
         Number const n =
             slePosition->at(~sfNotionalValue).value_or(Number(0));
-        Number const maint = margin::calculateMaintenanceMargin(n, 5000);
+        // Read maintenance margin from leverage tier
+        std::uint32_t maintBps = 5000;
+        {
+            auto const sleTier2 =
+                sb.read(keylet::leverageTier(issue, quoteIssue));
+            if (sleTier2 && sleTier2->isFieldPresent(sfMaintenanceMarginBps))
+                maintBps = sleTier2->getFieldU32(sfMaintenanceMarginBps);
+        }
+        Number const maint = margin::calculateMaintenanceMargin(n, maintBps);
         if (eq >= maint)
             return tecCANT_LIQUIDATE;
     }
@@ -248,8 +266,8 @@ OptionLiquidate::doApply()
         {
             if (isXRP(quoteIssue))
             {
-                // For XRP: credit liquidator's balance
-                // Note: this XRP comes from the margin system's pool
+                // For XRP: credit liquidator's balance.
+                // Mint XRP from the margin pool (burned on deposit).
                 auto const balance =
                     sleLiquidator->getFieldAmount(sfBalance);
                 STAmount const bonusAmount(
@@ -262,6 +280,7 @@ OptionLiquidate::doApply()
                 sleLiquidator->setFieldAmount(
                     sfBalance, balance + bonusAmount);
                 sb.update(sleLiquidator);
+                sb.rawDestroyXRP(-bonusAmount.xrp());
             }
             else
             {
@@ -273,8 +292,10 @@ OptionLiquidate::doApply()
                             ? liquidationBonus.mantissa()
                             : 0),
                     liquidationBonus.exponent());
-                [[maybe_unused]] auto const ter = accountSend(
+                auto const ter = accountSend(
                     sb, quoteIssue.account, account_, bonusAmount, j_);
+                if (!isTesSuccess(ter))
+                    return ter;
             }
         }
     }

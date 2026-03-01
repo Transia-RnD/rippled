@@ -124,10 +124,19 @@ isMarginHealthy(
 
             Number notional =
                 sle->at(~sfNotionalValue).value_or(Number(0));
-            // Use a default 5% maintenance margin (500 bps * 10 = 5000 1/10 bps)
-            // In practice, this should come from the leverage tier
+            // Read maintenance margin from leverage tier (default 5%)
+            std::uint32_t maintenanceBps = 5000;
+            Issue const posIssue =
+                sle->getFieldIssue(sfAsset).get<Issue>();
+            Issue const quoteIssue =
+                marginAccount->getFieldIssue(sfCollateralAsset).get<Issue>();
+            auto const sleTier =
+                view.read(keylet::leverageTier(posIssue, quoteIssue));
+            if (sleTier && sleTier->isFieldPresent(sfMaintenanceMarginBps))
+                maintenanceBps =
+                    sleTier->getFieldU32(sfMaintenanceMarginBps);
             totalMaintenance = totalMaintenance +
-                calculateMaintenanceMargin(notional, 5000);
+                calculateMaintenanceMargin(notional, maintenanceBps);
         }
 
         return equity >= totalMaintenance;
@@ -151,8 +160,19 @@ isMarginHealthy(
 
             Number notional =
                 sle->at(~sfNotionalValue).value_or(Number(0));
+            // Read maintenance margin from leverage tier
+            std::uint32_t isolatedBps = 5000;
+            Issue const posIssue =
+                sle->getFieldIssue(sfAsset).get<Issue>();
+            Issue const quoteIssue =
+                marginAccount->getFieldIssue(sfCollateralAsset).get<Issue>();
+            auto const sleTier =
+                view.read(keylet::leverageTier(posIssue, quoteIssue));
+            if (sleTier && sleTier->isFieldPresent(sfMaintenanceMarginBps))
+                isolatedBps =
+                    sleTier->getFieldU32(sfMaintenanceMarginBps);
             Number maintenance =
-                calculateMaintenanceMargin(notional, 5000);
+                calculateMaintenanceMargin(notional, isolatedBps);
 
             if (positionEquity < maintenance)
                 return false;

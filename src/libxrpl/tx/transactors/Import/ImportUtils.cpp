@@ -589,8 +589,6 @@ parseValidatorList(
 
     for (auto const& val : validatorArray)
     {
-        info.totalCount++;
-
         if (!val.isObject() || !val.isMember(jss::validation_public_key) ||
             !val[jss::validation_public_key].isString() ||
             !val.isMember(jss::manifest) || !val[jss::manifest].isString())
@@ -641,6 +639,9 @@ parseValidatorList(
                 << "Import: manifest has no signing key (revoked), skipping";
             continue;
         }
+
+        // Only count validators that pass all validation checks
+        info.totalCount++;
 
         std::string const nodepub =
             toBase58(TokenType::NodePublic, *m->signingKey);
@@ -755,11 +756,13 @@ countValidations(
 bool
 hasQuorum(uint64_t totalValidators, uint64_t validationCount)
 {
+    // Integer arithmetic: quorum = ceil(totalValidators * 4/5)
     uint64_t quorum =
-        static_cast<uint64_t>(totalValidators * kValidatorQuorumThreshold);
+        (totalValidators * kQuorumNumerator + kQuorumDenominator - 1) /
+        kQuorumDenominator;
     if (quorum == 0)
         quorum = 1;
-    return validationCount > quorum;
+    return validationCount >= quorum;
 }
 
 }  // namespace import

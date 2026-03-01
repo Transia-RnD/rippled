@@ -6,6 +6,9 @@
 #include <xrpl/protocol/Indexes.h>
 #include <xrpl/protocol/jss.h>
 
+#include <cstdint>
+#include <limits>
+
 namespace xrpl {
 
 NotTEC
@@ -90,6 +93,8 @@ Export::doApply()
     uint32_t exportSeq = 0;
     if (sle->isFieldPresent(sfExportSequence))
         exportSeq = sle->getFieldU32(sfExportSequence);
+    if (exportSeq == std::numeric_limits<uint32_t>::max())
+        return tefINTERNAL;
     sle->setFieldU32(sfExportSequence, exportSeq + 1);
 
     view().update(sle);
@@ -115,6 +120,8 @@ Export::doApply()
             return tefINTERNAL;
 
         auto const ticketSeq = sleVault->getFieldU32(sfNextTicketSeq);
+        if (ticketSeq == std::numeric_limits<uint32_t>::max())
+            return tefINTERNAL;
         sleExport->setFieldU32(sfTicketSequence, ticketSeq);
 
         // Advance to next ticket

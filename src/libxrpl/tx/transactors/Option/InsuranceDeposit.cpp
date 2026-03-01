@@ -88,12 +88,16 @@ InsuranceDeposit::doApply()
     if (isXRP(amount))
     {
         auto const sourceBalance = sleSource->getFieldAmount(sfBalance);
-        if (sourceBalance < amount)
+        auto const reserve = sb.fees().accountReserve(
+            sleSource->getFieldU32(sfOwnerCount));
+        if (sourceBalance < amount + reserve)
         {
-            JLOG(j_.debug()) << "InsuranceDeposit: insufficient XRP.";
+            JLOG(j_.debug()) << "InsuranceDeposit: insufficient XRP (reserve).";
             return tecUNFUNDED_PAYMENT;
         }
+        // Debit depositor, burn XRP (tracked via sfInsuranceBalance)
         sleSource->setFieldAmount(sfBalance, sourceBalance - amount);
+        sb.rawDestroyXRP(amount.xrp());
     }
     else
     {

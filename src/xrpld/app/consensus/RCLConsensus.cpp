@@ -1009,7 +1009,8 @@ RCLConsensus::Adaptor::checkSignerListRotation(
         // Get the current signing key for this validator
         auto const signingKey =
             app_.validatorManifests().getSigningKey(masterKey);
-        signerAccounts.push_back(calcAccountID(signingKey));
+        if (signingKey)
+            signerAccounts.push_back(calcAccountID(*signingKey));
     }
 
     // Sort by AccountID for deterministic ordering

@@ -20,7 +20,7 @@ namespace xrpl {
 ExportSignatureCollector::ExportSignatureCollector(
     Application& app,
     beast::Journal journal)
-    : app_(app), journal_(journal)
+    : journal_(journal)
 {
 }
 
@@ -28,6 +28,10 @@ void
 ExportSignatureCollector::onExportSignature(
     std::shared_ptr<protocol::TMExportSignature> const& m)
 {
+    // SECURITY: Validate buffer sizes before memcpy
+    if (m->exportaccount().size() != AccountID::bytes)
+        return;
+
     AccountID exportAccount;
     std::memcpy(
         exportAccount.data(),
@@ -35,9 +39,13 @@ ExportSignatureCollector::onExportSignature(
         exportAccount.size());
 
     auto const exportSeq = m->exportsequence();
-    auto const ledgerSeq = m->ledgersequence();
 
-    PublicKey const validatorKey(makeSlice(m->validatorkey()));
+    // Validate the public key before constructing PublicKey
+    auto const keySlice = makeSlice(m->validatorkey());
+    if (!publicKeyType(keySlice))
+        return;
+
+    PublicKey const validatorKey(keySlice);
     auto const signerAccountID = calcAccountID(validatorKey);
 
     std::lock_guard lock(mutex_);
@@ -79,11 +87,11 @@ ExportSignatureCollector::onExportSignature(
         exportPaymentMultiSignHash(pending.unsignedPayment, signerAccountID);
 
     auto const sigSlice = makeSlice(m->signature());
-    if (!verify(validatorKey, expectedHash, sigSlice, false))
+    if (!verifyDigest(validatorKey, expectedHash, sigSlice, false))
     {
         JLOG(journal_.warn())
             << "ExportSignatureCollector: Invalid signature from "
-            << validatorKey;
+            << strHex(validatorKey);
         return;
     }
 
@@ -120,14 +128,16 @@ ExportSignatureCollector::registerExport(
 
     auto payment = buildExportPayment(params);
 
-    PendingExport pending;
-    pending.params = std::move(params);
-    pending.unsignedPayment = std::move(payment);
-    pending.quorum = quorum;
-    pending.created = std::chrono::steady_clock::now();
-    pending.ledgerSequence = ledgerSequence;
-
-    pending_.emplace(key, std::move(pending));
+    pending_.emplace(
+        key,
+        PendingExport{
+            std::move(params),
+            std::move(payment),
+            {},  // signatures
+            quorum,
+            std::nullopt,  // assembledPayment
+            std::chrono::steady_clock::now(),
+            ledgerSequence});
 
     JLOG(journal_.info())
         << "ExportSignatureCollector: Registered export "
@@ -196,7 +206,7 @@ ExportSignatureCollector::getExportStatus(
     result[jss::export_sequence] = exportSeq;
     result[jss::destination] = toBase58(pending.params.destination);
     result[jss::amount] = pending.params.amount.getJson(JsonOptions::none);
-    result[jss::ticket_sequence] = pending.params.ticketSeq;
+    result[jss::ticket_seq] = pending.params.ticketSeq;
     result[jss::signatures_collected] =
         static_cast<Json::UInt>(pending.signatures.size());
     result[jss::signatures_required] = pending.quorum;

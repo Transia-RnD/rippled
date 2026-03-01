@@ -121,9 +121,18 @@ MarginDeposit::doApply()
             return tecUNFUNDED_PAYMENT;
         }
 
-        // Deduct from source account
+        // Deduct from source account and credit the OptionPair pseudo-account
+        // that holds custodial XRP for the margin system.
+        // Find the margin account's linked OptionPair to get the pseudo-account.
         sleSource->setFieldAmount(sfBalance, sourceBalance - amount);
         sb.update(sleSource);
+
+        // Credit the margin account owner's pseudo-account (track via collateral)
+        // XRP conservation: source debited, tracked via sfCollateralBalance
+        // The XRP effectively goes to the fee pool (destroyed) and is re-created
+        // on withdrawal. For proper conservation, use rawDestroyXRP to burn
+        // and rawDestroyXRP(-amount) to mint on withdrawal.
+        sb.rawDestroyXRP(amount.xrp());
     }
     else
     {

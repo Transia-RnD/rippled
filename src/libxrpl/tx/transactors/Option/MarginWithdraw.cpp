@@ -204,9 +204,11 @@ MarginWithdraw::doApply()
     // Transfer tokens back to user from custodial account
     if (isXRP(amount))
     {
+        // Mint XRP back to the withdrawer (counterpart of burn on deposit)
         auto const sourceBalance = sleSource->getFieldAmount(sfBalance);
         sleSource->setFieldAmount(sfBalance, sourceBalance + amount);
         sb.update(sleSource);
+        sb.rawDestroyXRP(-amount.xrp());
     }
     else
     {

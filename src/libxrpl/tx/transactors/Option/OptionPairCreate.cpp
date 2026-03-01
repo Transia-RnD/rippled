@@ -73,7 +73,6 @@ OptionPairCreate::calculateBaseFee(ReadView const& view, STTx const& tx)
 TER
 OptionPairCreate::preclaim(PreclaimContext const& ctx)
 {
-    return tesSUCCESS;
     auto const accountID = ctx.tx[sfAccount];
     Issue const issue = ctx.tx[sfAsset].get<Issue>();
     Issue const issue2 = ctx.tx[sfAsset2].get<Issue>();
@@ -127,6 +126,8 @@ OptionPairCreate::preclaim(PreclaimContext const& ctx)
         JLOG(ctx.j.debug()) << "OptionPairCreate: DefaultRipple not set";
         return terNO_RIPPLE;
     }
+
+    return tesSUCCESS;
 }
 
 static TER
@@ -159,9 +160,15 @@ applyCreate(
     pairSle->setFieldIssue(sfAsset2, STIssue{sfAsset2, _issue2});
 
     // Set trading fee if provided (in 1/10 basis points)
+    // Maximum: 1000000 = 100% (1000000 / 1000000)
     if (ctx_.tx.isFieldPresent(sfTradingFeeBps))
     {
         std::uint32_t const feeBps = ctx_.tx[sfTradingFeeBps];
+        if (feeBps > 1000000)
+        {
+            JLOG(j_.debug()) << "OptionPairCreate: TradingFeeBps too large";
+            return temMALFORMED;
+        }
         pairSle->setFieldU32(sfTradingFeeBps, feeBps);
     }
 
@@ -179,6 +186,7 @@ applyCreate(
         return tecDIR_FULL;
     }
     sb.insert(pairSle);
+    adjustOwnerCount(sb, sb.peek(keylet::account(account)), 1, j_);
 
     return tesSUCCESS;
 }

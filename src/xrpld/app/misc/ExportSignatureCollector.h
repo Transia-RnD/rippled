@@ -75,7 +75,6 @@ private:
     void
     tryAssemble(PendingExport& pending);
 
-    Application& app_;
     beast::Journal journal_;
     mutable std::mutex mutex_;
     std::map<ExportKey, PendingExport> pending_;

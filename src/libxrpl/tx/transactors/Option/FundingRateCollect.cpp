@@ -63,7 +63,8 @@ FundingRateCollect::preclaim(PreclaimContext const& ctx)
         slePosition->at(~sfLastFundingTime).value_or(0);
     std::uint32_t const now = ctx.view.parentCloseTime().time_since_epoch().count();
 
-    if (now - lastFunding < 3600)
+    // Guard against unsigned underflow when lastFunding > now
+    if (now <= lastFunding || (now - lastFunding) < 3600)
     {
         JLOG(ctx.j.debug())
             << "FundingRateCollect: too soon since last funding.";
@@ -109,9 +110,10 @@ FundingRateCollect::doApply()
     auto const sleTier =
         sb.read(keylet::leverageTier(issue, quoteIssue));
 
-    // Default funding rate: 10 bps (0.01%) per hour
-    // This is the base interest rate, similar to Hyperliquid's 0.01% per 8h
+    // Read funding rate from leverage tier (default 10 bps = 0.01% per hour)
     std::uint32_t fundingRateBps = 100;  // 0.01% in 1/10 bps
+    if (sleTier && sleTier->isFieldPresent(sfFundingRateBps))
+        fundingRateBps = sleTier->getFieldU32(sfFundingRateBps);
 
     // Calculate funding payment
     // fundingPayment = notional * fundingRate / 100000

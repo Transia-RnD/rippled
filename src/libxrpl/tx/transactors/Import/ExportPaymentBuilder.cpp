@@ -4,10 +4,15 @@
 #include <xrpl/protocol/HashPrefix.h>
 #include <xrpl/protocol/SField.h>
 #include <xrpl/protocol/STAmount.h>
+#include <xrpl/protocol/STArray.h>
 #include <xrpl/protocol/STTx.h>
 #include <xrpl/protocol/Serializer.h>
 #include <xrpl/protocol/Sign.h>
+#include <xrpl/protocol/TxFlags.h>
 #include <xrpl/protocol/TxFormats.h>
+#include <xrpl/protocol/digest.h>
+
+#include <algorithm>
 
 namespace xrpl {
 
@@ -47,7 +52,7 @@ buildExportPayment(ExportPaymentParams const& params)
     // Multisig fee on mainnet is (1 + numSigners) * baseFee.
     // Use 15 drops as a safe base fee estimate.
     auto const fee =
-        STAmount(static_cast<std::uint64_t>(params.signerCount + 1) * 15);
+        STAmount((static_cast<std::uint64_t>(params.signerCount) + 1) * 15);
     obj.setFieldAmount(sfFee, fee);
 
     // Empty SigningPubKey (required for multi-signed transactions)
@@ -88,13 +93,16 @@ buildSignerListSet(SignerListSetParams const& params)
     obj.setFieldU32(sfSignerQuorum, params.quorum);
 
     auto const fee =
-        STAmount(static_cast<std::uint64_t>(params.signerCount + 1) * 15);
+        STAmount((static_cast<std::uint64_t>(params.signerCount) + 1) * 15);
     obj.setFieldAmount(sfFee, fee);
     obj.setFieldVL(sfSigningPubKey, Blob{});
 
-    // Build the SignerEntries array (sorted by Account)
+    // Build the SignerEntries array, sorted by Account (required by XRPL)
+    // First sort the signer accounts
+    auto sortedAccounts = params.signerAccounts;
+    std::sort(sortedAccounts.begin(), sortedAccounts.end());
     STArray entries(sfSignerEntries);
-    for (auto const& acctID : params.signerAccounts)
+    for (auto const& acctID : sortedAccounts)
     {
         STObject entry = STObject::makeInnerObject(sfSignerEntry);
         entry.setAccountID(sfAccount, acctID);
@@ -124,7 +132,7 @@ buildTicketCreate(TicketCreateParams const& params)
     obj.setFieldU32(sfTicketCount, params.ticketCount);
 
     auto const fee =
-        STAmount(static_cast<std::uint64_t>(params.signerCount + 1) * 15);
+        STAmount((static_cast<std::uint64_t>(params.signerCount) + 1) * 15);
     obj.setFieldAmount(sfFee, fee);
     obj.setFieldVL(sfSigningPubKey, Blob{});
 

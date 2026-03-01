@@ -4,12 +4,14 @@
 #include <xrpl/basics/Log.h>
 #include <xrpl/basics/Slice.h>
 #include <xrpl/basics/StringUtilities.h>
+#include <xrpl/basics/base64.h>
 #include <xrpl/basics/base_uint.h>
 #include <xrpl/basics/contract.h>
 #include <xrpl/basics/safe_cast.h>
 #include <xrpl/basics/strHex.h>
 #include <xrpl/beast/utility/Zero.h>
 #include <xrpl/beast/utility/instrumentation.h>
+#include <xrpl/json/json_reader.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/protocol/AccountID.h>
 #include <xrpl/protocol/Batch.h>
@@ -404,22 +406,77 @@ singleSignHelper(STObject const& sigObject, Slice const& data)
                     passKeySig.getFieldVL(sfAuthenticatorData);
                 auto const clientDataJSON =
                     passKeySig.getFieldVL(sfClientDataJSON);
-                auto const clientDataHash =
-                    sha256(makeSlice(clientDataJSON));
 
-                Blob signingData(
-                    authenticatorData.begin(), authenticatorData.end());
-                signingData.insert(
-                    signingData.end(),
-                    clientDataHash.data(),
-                    clientDataHash.data() + clientDataHash.size());
+                // SECURITY: Validate that the WebAuthn challenge in
+                // clientDataJSON matches the transaction signing hash.
+                // Without this, a passkey signature from any website
+                // could be replayed to authorize transactions.
+                do {
+                    std::string const cdj(
+                        clientDataJSON.begin(), clientDataJSON.end());
+                    Json::Value parsed;
+                    Json::Reader reader;
+                    if (!reader.parse(cdj, parsed) || !parsed.isObject())
+                    {
+                        validSig = false;
+                        break;
+                    }
+                    // Verify type is "webauthn.get"
+                    if (!parsed.isMember("type") ||
+                        parsed["type"].asString() != "webauthn.get")
+                    {
+                        validSig = false;
+                        break;
+                    }
+                    // Verify challenge matches the transaction hash
+                    if (!parsed.isMember("challenge") ||
+                        !parsed["challenge"].isString())
+                    {
+                        validSig = false;
+                        break;
+                    }
+                    // WebAuthn uses base64url encoding (RFC 4648 §5).
+                    // Convert to standard base64 before decoding.
+                    std::string b64 =
+                        parsed["challenge"].asString();
+                    for (auto& c : b64)
+                    {
+                        if (c == '-') c = '+';
+                        else if (c == '_') c = '/';
+                    }
+                    // Add padding if needed
+                    while (b64.size() % 4 != 0)
+                        b64 += '=';
+                    auto const challengeBytes =
+                        base64_decode(b64);
+                    if (challengeBytes.size() != data.size() ||
+                        !std::equal(
+                            challengeBytes.begin(),
+                            challengeBytes.end(),
+                            data.data()))
+                    {
+                        validSig = false;
+                        break;
+                    }
 
-                Blob const signature =
-                    passKeySig.getFieldVL(sfSignature);
-                validSig = verify(
-                    PublicKey(makeSlice(spk)),
-                    makeSlice(signingData),
-                    makeSlice(signature));
+                    auto const clientDataHash =
+                        sha256(makeSlice(clientDataJSON));
+
+                    Blob signingData(
+                        authenticatorData.begin(),
+                        authenticatorData.end());
+                    signingData.insert(
+                        signingData.end(),
+                        clientDataHash.data(),
+                        clientDataHash.data() + clientDataHash.size());
+
+                    Blob const signature =
+                        passKeySig.getFieldVL(sfSignature);
+                    validSig = verify(
+                        PublicKey(makeSlice(spk)),
+                        makeSlice(signingData),
+                        makeSlice(signature));
+                } while (false);
             }
             else
             {

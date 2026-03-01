@@ -421,6 +421,11 @@ public:
 
         , entropyTimer_(get_io_context())
 
+        , exportSignatureCollector_(
+              std::make_unique<ExportSignatureCollector>(
+                  *this,
+                  logs_->journal("ExportSignatureCollector")))
+
         , m_signals(get_io_context())
 
         , checkSigs_(true)
@@ -433,10 +438,6 @@ public:
               std::chrono::milliseconds(100),
               get_io_context())
         , grpcServer_(std::make_unique<GRPCServer>(*this))
-        , exportSignatureCollector_(
-              std::make_unique<ExportSignatureCollector>(
-                  *this,
-                  logs_->journal("ExportSignatureCollector")))
     {
         initAccountIdCache(config_->getValueFor(SizedItem::accountIdCacheSize));
 

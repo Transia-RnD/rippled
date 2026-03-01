@@ -95,14 +95,40 @@ InsuranceWithdraw::doApply()
     if (!sleReceiver)
         return terNO_ACCOUNT;
 
-    // TODO: Verify caller holds share tokens and burn proportional amount
-    // For now, allow direct withdrawal (will be restricted via MPT shares)
+    // Verify caller is authorized to withdraw.
+    // Restrict withdrawal to the vault's asset issuers until MPT shares
+    // are fully implemented.
+    {
+        auto const sleOptionPair = [&]() -> std::shared_ptr<SLE const> {
+            auto const asset = sleVault->getFieldIssue(sfAsset).get<Issue>();
+            auto const asset2 = sleVault->getFieldIssue(sfAsset2).get<Issue>();
+            return sb.read(keylet::optionPair(asset, asset2));
+        }();
+
+        // Only the OptionPair asset issuers may withdraw
+        bool authorized = false;
+        if (sleOptionPair)
+        {
+            auto const asset = sleOptionPair->getFieldIssue(sfAsset).get<Issue>();
+            auto const asset2 = sleOptionPair->getFieldIssue(sfAsset2).get<Issue>();
+            authorized = (account_ == asset.account ||
+                          account_ == asset2.account);
+        }
+        if (!authorized)
+        {
+            JLOG(j_.debug())
+                << "InsuranceWithdraw: caller not authorized to withdraw.";
+            return tecNO_PERMISSION;
+        }
+    }
 
     // Transfer tokens from vault to withdrawer
     if (isXRP(amount))
     {
+        // Mint XRP back (counterpart of burn on deposit)
         auto const receiverBalance = sleReceiver->getFieldAmount(sfBalance);
         sleReceiver->setFieldAmount(sfBalance, receiverBalance + amount);
+        sb.rawDestroyXRP(-amount.xrp());
     }
     else
     {

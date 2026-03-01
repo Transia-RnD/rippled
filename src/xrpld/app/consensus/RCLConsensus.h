@@ -6,6 +6,7 @@
 #include <xrpld/app/consensus/RCLCxTx.h>
 #include <xrpld/app/misc/FeeVote.h>
 #include <xrpld/app/misc/NegativeUNLVote.h>
+#include <xrpld/app/misc/ValidatorKeys.h>
 #include <xrpld/consensus/Consensus.h>
 
 #include <xrpl/beast/utility/Journal.h>
@@ -25,8 +26,6 @@ namespace xrpl {
 class InboundTransactions;
 class LocalTxs;
 class LedgerMaster;
-class ValidatorKeys;
-
 /** Manages the generic consensus algorithm for use by the RCL.
  */
 class RCLConsensus

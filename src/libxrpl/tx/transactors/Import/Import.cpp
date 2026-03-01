@@ -21,6 +21,7 @@
 #include <xrpl/server/Manifest.h>
 
 #include <algorithm>
+#include <limits>
 #include <vector>
 
 namespace xrpl {
@@ -197,7 +198,7 @@ Import::preflight(PreflightContext const& ctx)
                 auto const& innerSigners = stpTrans->getFieldArray(sfSigners);
 
                 bool ok = outerSigners.size() == innerSigners.size() &&
-                    innerSigners.size() > 1;
+                    innerSigners.size() >= 1;
                 for (uint64_t i = 0; ok && i < outerSigners.size(); ++i)
                 {
                     if (outerSigners[i].getAccountID(sfAccount) !=
@@ -625,8 +626,9 @@ Import::doApply()
     if (!isXRP(delivered) || delivered <= beast::zero)
         return tefINTERNAL;
 
-    // Check for overflow
-    if (delivered.xrp() + view().header().drops < view().header().drops)
+    // Check for overflow (safe integer check, no UB)
+    if (delivered.xrp() >
+        std::numeric_limits<std::int64_t>::max() - view().header().drops)
     {
         JLOG(ctx_.journal.warn()) << "Import: ledger header overflow";
         return tecINTERNAL;

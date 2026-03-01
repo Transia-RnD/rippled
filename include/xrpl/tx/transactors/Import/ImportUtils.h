@@ -19,7 +19,10 @@ namespace import {
 // ============================================================
 // Named constants
 // ============================================================
-constexpr double kValidatorQuorumThreshold = 0.8;
+// Quorum threshold: 80% of validators required.
+// Expressed as integer numerator/denominator to avoid floating-point.
+constexpr uint64_t kQuorumNumerator = 4;
+constexpr uint64_t kQuorumDenominator = 5;
 constexpr std::size_t kMaxXPopBlobSize = 512 * 1024;  // 512 KiB
 constexpr int kMaxProofDepth = 64;
 constexpr int kMaxMerkleDepth = 32;

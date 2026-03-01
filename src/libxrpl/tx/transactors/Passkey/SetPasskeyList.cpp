@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <set>
 
 namespace xrpl {
 
@@ -32,7 +33,9 @@ SetPasskeyList::preflight(PreflightContext const& ctx)
         return temMALFORMED;
     }
 
-    // Validate each passkey entry
+    // Validate each passkey entry and check for duplicates
+    std::set<uint256> seenPasskeyIDs;
+    std::set<Blob> seenPublicKeys;
     for (auto const& passkey : passkeys)
     {
         if (!passkey.isFieldPresent(sfPasskeyID) ||
@@ -43,8 +46,25 @@ SetPasskeyList::preflight(PreflightContext const& ctx)
             return temMALFORMED;
         }
 
-        // Validate public key is a valid P256 key
+        // Check for duplicate PasskeyIDs
+        auto const passkeyID = passkey.getFieldH256(sfPasskeyID);
+        if (!seenPasskeyIDs.insert(passkeyID).second)
+        {
+            JLOG(ctx.j.debug())
+                << "SetPasskeyList: duplicate PasskeyID.";
+            return temMALFORMED;
+        }
+
+        // Check for duplicate PublicKeys
         auto const pk = passkey.getFieldVL(sfPublicKey);
+        if (!seenPublicKeys.insert(pk).second)
+        {
+            JLOG(ctx.j.debug())
+                << "SetPasskeyList: duplicate PublicKey.";
+            return temMALFORMED;
+        }
+
+        // Validate public key is a valid P256 key
         auto const keyType = publicKeyType(makeSlice(pk));
         if (!keyType || *keyType != KeyType::p256)
         {

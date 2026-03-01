@@ -455,13 +455,14 @@ Sealed options track the counterparty relationship and enable exercise, where th
 
 ---
 
-## 5. Naked Options
+## 5. Covered vs. Margin-Backed Options
 
-Sell-side option offers may be **naked** (uncollateralized) or **covered** (collateral locked in `sfAmount`). When a sell offer does not lock the full underlying asset:
+Sell-side option offers can be collateralized in two ways:
 
-- The seller takes on unlimited risk
-- Settlement is based on the price difference (cash settlement)
-- With margin, the position is protected by the margin system's liquidation mechanism
+- **Covered**: The seller locks the full underlying asset directly on the offer via `sfAmount`. Settlement delivers the underlying asset.
+- **Margin-backed** (requires `featureOptionsMargin`): The seller does not lock the underlying asset but instead backs the position with collateral in a `MarginAccount`. Settlement is cash-settled based on the price difference, and the margin system's liquidation mechanism protects against insolvency.
+
+> **Note**: Truly naked (zero-collateral) options are not possible. On a decentralized ledger there is no credit system or legal enforcement to guarantee settlement from an unfunded account. Every sell-side offer must be backed by either locked underlying assets or margin collateral.
 
 ---
 
