@@ -26,6 +26,7 @@
 #include <test/jtx.h>
 
 #include <xrpl/basics/random.h>
+#include <xrpl/json/to_string.h>
 #include <xrpl/ledger/Dir.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
@@ -244,7 +245,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         Json::Value const& passkeys)
     {
         Json::Value jv;
-        jv[jss::TransactionType] = jss::SetPasskeyList;
+        jv[jss::TransactionType] = jss::PasskeyListSet;
         jv[jss::Account] = account.human();
         jv[sfPasskeys.jsonName] = passkeys;
         return jv;
@@ -288,7 +289,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         std::int64_t initialDrops)
     {
         auto const currentDrops =
-            static_cast<std::int64_t>(env.current()->info().drops);
+            env.current()->header().drops.drops();
         if (currentDrops > initialDrops)
         {
             log << "INVARIANT VIOLATION: XRP supply increased from "
@@ -351,7 +352,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         jtx::Account const& account)
     {
         auto const bal = env.balance(account);
-        if (bal < XRP(0))
+        if (bal < STAmount(0))
         {
             log << "INVARIANT VIOLATION: Negative balance for "
                 << account.human() << std::endl;
@@ -386,7 +387,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         env.close();
 
         auto const asset = STIssue(sfAsset, USD.issue());
-        auto const xrpAsset = STIssue(sfAsset2, xrpIssue_);
+        auto const xrpAsset = STIssue(sfAsset2, xrpIssue());
 
         env(optionPairCreate(gw, asset, xrpAsset),
             fee(env.current()->fees().increment),
@@ -395,17 +396,17 @@ struct OptionsFuzz_test : public beast::unit_test::suite
 
         // Setup margin accounts
         env(marginAccountSet(
-                alice, STIssue(sfCollateralAsset, xrpIssue_), 0),
+                alice, STIssue(sfCollateralAsset, xrpIssue()), 0),
             ter(tesSUCCESS));
         env(marginAccountSet(
-                bob, STIssue(sfCollateralAsset, xrpIssue_), 0),
+                bob, STIssue(sfCollateralAsset, xrpIssue()), 0),
             ter(tesSUCCESS));
         env.close();
 
         auto const marginIdAlice =
-            keylet::marginAccount(alice.id(), xrpIssue_).key;
+            keylet::marginAccount(alice.id(), xrpIssue()).key;
         auto const marginIdBob =
-            keylet::marginAccount(bob.id(), xrpIssue_).key;
+            keylet::marginAccount(bob.id(), xrpIssue()).key;
 
         env(marginDeposit(alice, marginIdAlice, XRP(5000000)),
             ter(tesSUCCESS));
@@ -414,7 +415,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         env.close();
 
         auto const initialDrops =
-            static_cast<std::int64_t>(env.current()->info().drops);
+            env.current()->header().drops.drops();
 
         // Fuzz: Create many options with random parameters
         constexpr int kIterations = 200;
@@ -501,9 +502,9 @@ struct OptionsFuzz_test : public beast::unit_test::suite
             // Check invariants after every operation
             BEAST_EXPECT(checkXRPSupplyInvariant(env, initialDrops));
             BEAST_EXPECT(
-                checkMarginCollateralInvariant(env, alice, xrpIssue_));
+                checkMarginCollateralInvariant(env, alice, xrpIssue()));
             BEAST_EXPECT(
-                checkMarginCollateralInvariant(env, bob, xrpIssue_));
+                checkMarginCollateralInvariant(env, bob, xrpIssue()));
             BEAST_EXPECT(checkAccountBalanceInvariant(env, alice));
             BEAST_EXPECT(checkAccountBalanceInvariant(env, bob));
         }
@@ -528,15 +529,15 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         env.close();
 
         env(marginAccountSet(
-                alice, STIssue(sfCollateralAsset, xrpIssue_), 0),
+                alice, STIssue(sfCollateralAsset, xrpIssue()), 0),
             ter(tesSUCCESS));
         env.close();
 
         auto const marginId =
-            keylet::marginAccount(alice.id(), xrpIssue_).key;
+            keylet::marginAccount(alice.id(), xrpIssue()).key;
 
         auto const initialDrops =
-            static_cast<std::int64_t>(env.current()->info().drops);
+            env.current()->header().drops.drops();
 
         constexpr int kIterations = 500;
         for (int i = 0; i < kIterations; ++i)
@@ -577,7 +578,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
             // Invariants
             BEAST_EXPECT(checkXRPSupplyInvariant(env, initialDrops));
             BEAST_EXPECT(
-                checkMarginCollateralInvariant(env, alice, xrpIssue_));
+                checkMarginCollateralInvariant(env, alice, xrpIssue()));
             BEAST_EXPECT(checkAccountBalanceInvariant(env, alice));
         }
     }
@@ -603,7 +604,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
 
         auto const USD = gw["USD"];
         auto const asset = STIssue(sfAsset, USD.issue());
-        auto const xrpAsset = STIssue(sfAsset2, xrpIssue_);
+        auto const xrpAsset = STIssue(sfAsset2, xrpIssue());
 
         env(optionPairCreate(gw, asset, xrpAsset),
             fee(env.current()->fees().increment),
@@ -616,11 +617,11 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         env.close();
 
         auto const vaultKeylet =
-            keylet::insuranceVault(USD.issue(), xrpIssue_);
+            keylet::insuranceVault(USD.issue(), xrpIssue());
         auto const vaultID = vaultKeylet.key;
 
         auto const initialDrops =
-            static_cast<std::int64_t>(env.current()->info().drops);
+            env.current()->header().drops.drops();
         auto const depositorBefore = env.balance(depositor);
         auto const attackerBefore = env.balance(attacker);
 
@@ -674,7 +675,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
             BEAST_EXPECT(checkXRPSupplyInvariant(env, initialDrops));
             BEAST_EXPECT(
                 checkInsuranceBalanceInvariant(
-                    env, USD.issue(), xrpIssue_));
+                    env, USD.issue(), xrpIssue()));
 
             // Attacker should never profit
             auto const attackerNow = env.balance(attacker);
@@ -700,7 +701,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         env.close();
 
         auto const initialDrops =
-            static_cast<std::int64_t>(env.current()->info().drops);
+            env.current()->header().drops.drops();
 
         constexpr int kIterations = 200;
         for (int i = 0; i < kIterations; ++i)
@@ -738,8 +739,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
                     xpop["ledger"]["acroot"] = "0000";
                     xpop["transaction"]["blob"] = "0000";
                     xpop["validation"]["data"] = Json::objectValue;
-                    Json::FastWriter w;
-                    blob = w.write(xpop);
+                    blob = Json::to_string(xpop);
                     break;
                 }
                 case 6:
@@ -897,7 +897,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
 
         auto const USD = gw["USD"];
         auto const asset = STIssue(sfAsset, USD.issue());
-        auto const xrpAsset = STIssue(sfAsset2, xrpIssue_);
+        auto const xrpAsset = STIssue(sfAsset2, xrpIssue());
 
         constexpr int kIterations = 200;
         for (int i = 0; i < kIterations; ++i)
@@ -950,7 +950,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         env.close();
 
         auto const asset = STIssue(sfAsset, USD.issue());
-        auto const xrpAsset = STIssue(sfAsset2, xrpIssue_);
+        auto const xrpAsset = STIssue(sfAsset2, xrpIssue());
 
         env(optionPairCreate(gw, asset, xrpAsset),
             fee(env.current()->fees().increment),
@@ -959,17 +959,17 @@ struct OptionsFuzz_test : public beast::unit_test::suite
 
         // Setup margin
         env(marginAccountSet(
-                alice, STIssue(sfCollateralAsset, xrpIssue_), 0),
+                alice, STIssue(sfCollateralAsset, xrpIssue()), 0),
             ter(tesSUCCESS));
         env(marginAccountSet(
-                bob, STIssue(sfCollateralAsset, xrpIssue_), 0),
+                bob, STIssue(sfCollateralAsset, xrpIssue()), 0),
             ter(tesSUCCESS));
         env.close();
 
         auto const marginIdAlice =
-            keylet::marginAccount(alice.id(), xrpIssue_).key;
+            keylet::marginAccount(alice.id(), xrpIssue()).key;
         auto const marginIdBob =
-            keylet::marginAccount(bob.id(), xrpIssue_).key;
+            keylet::marginAccount(bob.id(), xrpIssue()).key;
 
         env(marginDeposit(alice, marginIdAlice, XRP(5000000)),
             ter(tesSUCCESS));
@@ -978,7 +978,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         env.close();
 
         auto const initialDrops =
-            static_cast<std::int64_t>(env.current()->info().drops);
+            env.current()->header().drops.drops();
 
         // Track created offers for settle attempts
         std::vector<std::pair<uint256, uint256>> createdOffers;
@@ -1090,9 +1090,9 @@ struct OptionsFuzz_test : public beast::unit_test::suite
             // Invariants after every operation
             BEAST_EXPECT(checkXRPSupplyInvariant(env, initialDrops));
             BEAST_EXPECT(
-                checkMarginCollateralInvariant(env, alice, xrpIssue_));
+                checkMarginCollateralInvariant(env, alice, xrpIssue()));
             BEAST_EXPECT(
-                checkMarginCollateralInvariant(env, bob, xrpIssue_));
+                checkMarginCollateralInvariant(env, bob, xrpIssue()));
             BEAST_EXPECT(checkAccountBalanceInvariant(env, alice));
             BEAST_EXPECT(checkAccountBalanceInvariant(env, bob));
         }
