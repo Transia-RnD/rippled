@@ -16,7 +16,7 @@ This specification introduces **Import** and **Export** transactions to enable s
 The model is **lock-and-mint / burn-and-release**:
 
 - **Import** (mainnet to sidechain): User sends a Payment to a federated multisig vault on mainnet, locking XRP. An XPop proves the payment. The sidechain mints equivalent XRP to the user's sidechain account.
-- **Export** (sidechain to mainnet): User submits an Export transaction on the sidechain, burning XRP. Witness services observe the on-chain ExportRecord and coordinate a multisig Payment from the vault on mainnet, releasing the locked XRP to the user.
+- **Export** (sidechain to mainnet): User submits an Export transaction on the sidechain, burning XRP. UNL validators automatically sign a deterministic multisig Payment from the vault on mainnet, releasing the locked XRP to the user (see Section 11).
 
 No XRPL mainnet amendments are required. The vault is a standard multisig account.
 
@@ -35,15 +35,15 @@ Alice sends Payment of       ─── XPop ───>  Alice submits Import txn
 (locks XRP in multisig)                     Payment. Sidechain mints
                                             100 XRP to Alice's account.
 
-Bob receives Payment from    <── Witness ── Bob submits Export txn.
+Bob receives Payment from    <── Validators  Bob submits Export txn.
 the vault on mainnet                        Sidechain burns 100 XRP.
-(witnesses release XRP)                     ExportRecord is created for
-                                            witness services to observe.
+(validators sign multisig)                  Validators sign a multisig
+                                            Payment from the vault.
 ```
 
 Key design principles:
 - **Lock-and-mint**: XRP locked in the vault on mainnet equals XRP minted on the sidechain (1:1)
-- **Burn-and-release**: XRP burned on the sidechain is released from the vault on mainnet by witnesses
+- **Burn-and-release**: XRP burned on the sidechain is released from the vault on mainnet by validator-signed multisig
 - **Trustless verification**: Import validates cryptographic proofs and validator quorum (80%+)
 - **Replay protection**: Per-account import sequence and per-VL sequence tracking
 - **Account bootstrapping**: First import creates a new account with a startup bonus
@@ -68,7 +68,7 @@ Tracks the highest validator list (VL) sequence seen from each VL publisher. Pre
 
 ### 2.2 ExportRecord (`ltEXPORT_RECORD`, 0x0092)
 
-Records an export transaction for witness services to observe and attest on the destination chain.
+Records an export transaction. UNL validators use the ExportRecord to construct and collectively sign a deterministic multisig Payment on mainnet (see Section 11).
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -173,7 +173,7 @@ doApply:
 
 ### 3.2 Export
 
-Exports XRP from the sidechain by burning XRP and creating an on-chain record. Witness services observe the ExportRecord and coordinate a multisig Payment from the vault on mainnet to release the locked XRP to the specified destination.
+Exports XRP from the sidechain by burning XRP and creating an on-chain record. UNL validators automatically construct and sign a deterministic multisig Payment from the vault on mainnet to release the locked XRP to the specified destination (see Section 11).
 
 **Amendment**: `featureImportExport`
 
@@ -193,7 +193,7 @@ Exports XRP from the sidechain by burning XRP and creating an on-chain record. W
 4. Increments the account's `OwnerCount` by 1 (reserve required)
 5. Burns the exported XRP from the ledger supply (`rawDestroyXRP` with positive amount)
 
-Witness services observe `ExportRecord` entries and generate corresponding multisig Payments from the vault on mainnet.
+UNL validators observe `ExportRecord` entries and collectively sign corresponding multisig Payments from the vault on mainnet (see Section 11).
 
 **Balance Requirement**:
 
@@ -420,7 +420,7 @@ The sidechain must configure the mainnet vault address that holds locked XRP:
 rVaultAddress123...  # The multisig vault account on XRPL mainnet
 ```
 
-Only Payments to this address are accepted for Import. This vault is a standard XRPL multisig account controlled by witness services.
+Only Payments to this address are accepted for Import. This vault is a standard XRPL multisig account where the UNL validators are the signers (see Section 11).
 
 ---
 
@@ -435,7 +435,7 @@ To transfer XRP from mainnet to the sidechain:
    - `Account`: your mainnet account (must match your sidechain account)
    - No `sfNetworkID` field (must be network 0 / mainnet)
 
-2. **Obtain the XPop**: After the Payment is validated and included in a closed ledger, a witness service or XPop generator extracts the cryptographic proof (XPop JSON blob) from the mainnet ledger.
+2. **Obtain the XPop**: After the Payment is validated and included in a closed ledger, an XPop generator extracts the cryptographic proof (XPop JSON blob) from the mainnet ledger.
 
 3. **On the sidechain**, submit an `Import` transaction with:
    - `Blob`: the XPop JSON blob (max 512 KiB)
