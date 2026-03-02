@@ -1059,6 +1059,9 @@ TRANSACTION(ttLOAN_PAY, 84, LoanPay,
 }))
 
 /** This transaction type sets the passkey list. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/SetPasskeyList.h>
+#endif
 TRANSACTION(ttPASSKEY_LIST_SET, 85, PasskeyListSet,
     Delegation::delegable,
     featurePasskey,
