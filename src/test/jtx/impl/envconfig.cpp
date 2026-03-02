@@ -1,28 +1,9 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012-2017 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
-
 #include <test/jtx/amount.h>
 #include <test/jtx/envconfig.h>
 
 #include <xrpld/core/ConfigSections.h>
 
-namespace ripple {
+namespace xrpl {
 namespace test {
 
 std::atomic<bool> envUseIPv4{false};
@@ -127,9 +108,7 @@ addGrpcConfig(std::unique_ptr<Config> cfg)
 }
 
 std::unique_ptr<Config>
-addGrpcConfigWithSecureGateway(
-    std::unique_ptr<Config> cfg,
-    std::string const& secureGateway)
+addGrpcConfigWithSecureGateway(std::unique_ptr<Config> cfg, std::string const& secureGateway)
 {
     (*cfg)[SECTION_PORT_GRPC].set("ip", getEnvLocalhostAddr());
 
@@ -140,6 +119,39 @@ addGrpcConfigWithSecureGateway(
     return cfg;
 }
 
+std::unique_ptr<Config>
+makeConfig(
+    std::map<std::string, std::string> extraTxQ,
+    std::map<std::string, std::string> extraVoting)
+{
+    auto p = test::jtx::envconfig();
+    auto& section = p->section("transaction_queue");
+    section.set("ledgers_in_queue", "2");
+    section.set("minimum_queue_size", "2");
+    section.set("min_ledgers_to_compute_size_limit", "3");
+    section.set("max_ledger_counts_to_store", "100");
+    section.set("retry_sequence_percent", "25");
+    section.set("normal_consensus_increase_percent", "0");
+
+    for (auto const& [k, v] : extraTxQ)
+        section.set(k, v);
+
+    // Some tests specify different fee settings that are enabled by
+    // a FeeVote
+    if (!extraVoting.empty())
+    {
+        auto& votingSection = p->section("voting");
+        for (auto const& [k, v] : extraVoting)
+        {
+            votingSection.set(k, v);
+        }
+
+        // In order for the vote to occur, we must run as a validator
+        p->section("validation_seed").legacy("shUwVw52ofnCUX5m7kPTKzJdr4HEH");
+    }
+    return p;
+}
+
 }  // namespace jtx
 }  // namespace test
-}  // namespace ripple
+}  // namespace xrpl
