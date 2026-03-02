@@ -1,5 +1,6 @@
 #include <xrpld/app/consensus/RCLValidations.h>
 #include <xrpld/app/misc/ExportSignatureCollector.h>
+#include <xrpld/app/misc/ExportValidatorTrust.h>
 #include <xrpld/app/ledger/InboundLedgers.h>
 #include <xrpld/app/ledger/InboundTransactions.h>
 #include <xrpld/app/ledger/LedgerMaster.h>
@@ -1575,51 +1576,11 @@ PeerImp::onMessage(std::shared_ptr<protocol::TMReplayDeltaResponse> const& m)
 void
 PeerImp::onMessage(std::shared_ptr<protocol::TMExportSignature> const& m)
 {
-    // Validate message size
-    if (m->validatorkey().size() != 33 || m->signature().empty() ||
-        m->exportaccount().size() != 20)
-    {
-        JLOG(p_journal_.warn()) << "ExportSignature: Invalid message size";
-        fee_.update(Resource::feeMalformedRequest, "export_signature");
-        return;
-    }
-
-    // Check that the amendment is enabled
-    if (!app_.getLedgerMaster().getValidatedRules().enabled(featureImportExport))
-        return;
-
-    // Extract validator public key and check trust
-    PublicKey const validatorKey(makeSlice(m->validatorkey()));
-    if (!app_.validators().trusted(validatorKey))
-    {
-        JLOG(p_journal_.trace()) << "ExportSignature: Untrusted validator";
-        fee_.update(Resource::feeUselessData, "export_signature untrusted");
-        return;
-    }
-
-    // Use HashRouter for deduplication
-    auto const suppKey = sha512Half(
-        makeSlice(m->exportaccount()),
-        m->exportsequence(),
-        makeSlice(m->validatorkey()));
-
-    if (!app_.getHashRouter().addSuppressionPeer(suppKey, id_))
-    {
-        JLOG(p_journal_.trace()) << "ExportSignature: Duplicate";
-        return;
-    }
-
-    // Forward to ExportSignatureCollector for signature collection
-    app_.getExportSignatureCollector().onExportSignature(m);
-
-    // Relay to other peers
-    auto const sm = std::make_shared<Message>(
-        *m, protocol::mtEXPORT_SIGNATURE);
-    overlay_.for_each(
-        [&](std::shared_ptr<PeerImp>&& p) {
-            if (p->id() != id_)
-                p->send(sm);
-        });
+    // Deprecated: Export signatures are now piggybacked on TMValidation
+    // messages. This handler is kept for protocol compatibility with
+    // older peers but no longer processes signatures.
+    JLOG(p_journal_.trace())
+        << "ExportSignature: Deprecated message type, ignoring";
 }
 
 void
@@ -2984,6 +2945,46 @@ PeerImp::checkValidation(
             {
                 overlay_.updateSlotAndSquelch(
                     key, val->getSignerPublic(), std::move(haveMessage), protocol::mtVALIDATION);
+            }
+        }
+
+        // Extract piggybacked export signatures from TMValidation
+        if (packet->exportsignatures_size() > 0)
+        {
+            auto const validatorKey = val->getSignerPublic();
+
+            // Check if this validator is trusted for export signing
+            if (auto const vl = app_.getLedgerMaster().getValidatedLedger())
+            {
+                if (isExportValidatorTrusted(
+                        *vl, app_, validatorKey, p_journal_))
+                {
+                    for (int i = 0;
+                         i < packet->exportsignatures_size();
+                         ++i)
+                    {
+                        auto const& entry =
+                            packet->exportsignatures(i);
+                        if (entry.size() <= 32)
+                            continue;
+
+                        // First 32 bytes = txnHash
+                        uint256 txnHash;
+                        std::memcpy(
+                            txnHash.data(), entry.data(), 32);
+
+                        // Remaining bytes = serialized sfSigner
+                        Slice signerSlice(
+                            entry.data() + 32,
+                            entry.size() - 32);
+
+                        app_.getExportSignatureCollector()
+                            .onExportSignatureFromValidation(
+                                txnHash,
+                                signerSlice,
+                                validatorKey);
+                    }
+                }
             }
         }
     }

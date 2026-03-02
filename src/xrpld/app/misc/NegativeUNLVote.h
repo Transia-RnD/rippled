@@ -5,12 +5,17 @@
 #include <xrpl/beast/utility/Journal.h>
 #include <xrpl/protocol/Protocol.h>
 #include <xrpl/protocol/PublicKey.h>
+#include <xrpl/protocol/STTx.h>
 #include <xrpl/protocol/UintTypes.h>
 
+#include <map>
 #include <optional>
+#include <string>
+#include <vector>
 
 namespace xrpl {
 
+class Application;
 template <class Adaptor>
 class Validations;
 class RCLValidationsAdaptor;
@@ -68,8 +73,9 @@ public:
      *
      * @param myId the NodeID of the local node
      * @param j log
+     * @param app the Application instance
      */
-    NegativeUNLVote(NodeID const& myId, beast::Journal j);
+    NegativeUNLVote(NodeID const& myId, beast::Journal j, Application& app);
     ~NegativeUNLVote() = default;
 
     /**
@@ -106,6 +112,7 @@ private:
     beast::Journal j_;
     mutable std::mutex mutex_;
     hash_map<NodeID, LedgerIndex> newValidators_;
+    Application& app_;
 
     /**
      * UNLModify Tx candidates
@@ -185,6 +192,46 @@ private:
      */
     void
     purgeNewValidators(LedgerIndex seq);
+
+    /**
+     * Add ttUNL_REPORT pseudo-transactions for active validators
+     * with score > FLAG_LEDGER_INTERVAL/2 (i.e. > 128 out of 256).
+     *
+     * @param seq the LedgerIndex
+     * @param scoreTable the reliability score table
+     * @param nidToKeyMap NodeID to PublicKey mapping
+     * @param initialSet the transaction set
+     */
+    void
+    addReportingTx(
+        LedgerIndex seq,
+        hash_map<NodeID, std::uint32_t> const& scoreTable,
+        hash_map<NodeID, PublicKey> const& nidToKeyMap,
+        std::shared_ptr<SHAMap> const& initialSet);
+
+    /**
+     * Add ttUNL_REPORT pseudo-transactions for ImportVL keys
+     * from the node's configuration.
+     *
+     * @param seq the LedgerIndex
+     * @param initialSet the transaction set
+     */
+    void
+    addImportVLTx(
+        LedgerIndex seq,
+        std::shared_ptr<SHAMap> const& initialSet);
+
+    /**
+     * Generate ImportVL vote pseudo-transactions.
+     *
+     * @param importVLKeys the configured import VL keys
+     * @param seq the LedgerIndex
+     * @return vector of ttUNL_REPORT transactions
+     */
+    static std::vector<STTx>
+    generateImportVLVoteTx(
+        std::map<std::string, PublicKey> const& importVLKeys,
+        LedgerIndex seq);
 
     friend class test::NegativeUNLVoteInternal_test;
     friend class test::NegativeUNLVoteScoreTable_test;

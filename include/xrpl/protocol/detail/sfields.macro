@@ -169,6 +169,7 @@ TYPED_SFIELD(sfLoanBrokerNode,           UINT64,    31)
 TYPED_SFIELD(sfStrike,                   UINT64,    32)
 TYPED_SFIELD(sfInsuranceVaultNode,       UINT64,    33)
 TYPED_SFIELD(sfMarginAccountNode,        UINT64,    34)
+TYPED_SFIELD(sfExportDirNode,           UINT64,    35)
 
 // 128-bit
 TYPED_SFIELD(sfEmailHash,                UINT128,    1)
@@ -441,6 +442,8 @@ UNTYPED_SFIELD(sfSealedOption,           OBJECT,    38)
 UNTYPED_SFIELD(sfLeverageTier,           OBJECT,    39)
 UNTYPED_SFIELD(sfPasskeySignature,      OBJECT,    40, SField::sMD_Default, SField::notSigning)
 UNTYPED_SFIELD(sfPasskey,               OBJECT,    41)
+UNTYPED_SFIELD(sfActiveValidator,       OBJECT,    42)
+UNTYPED_SFIELD(sfImportVLKey,          OBJECT,    43)
 
 // array of objects (common)
 // ARRAY/1 is reserved for end of array
@@ -478,5 +481,7 @@ UNTYPED_SFIELD(sfBatchSigners,           ARRAY,     31, SField::sMD_Default, SFi
 UNTYPED_SFIELD(sfSealedOptions,          ARRAY,     32)
 UNTYPED_SFIELD(sfLeverageTiers,          ARRAY,     33)
 UNTYPED_SFIELD(sfPasskeys,              ARRAY,     34)
+UNTYPED_SFIELD(sfActiveValidators,      ARRAY,     35)
+UNTYPED_SFIELD(sfImportVLKeys,         ARRAY,     36)
 
 // clang-format on

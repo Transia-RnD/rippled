@@ -234,6 +234,10 @@ public:
     virtual bool
     isImportVLKeyRecognized(std::string const& strPk) const = 0;
 
+    /** Check if any import VL keys are configured. */
+    virtual bool
+    hasImportVLKeys() const = 0;
+
     /** Get the configured import vault address (for lock-and-mint). */
     virtual std::optional<AccountID> const&
     getImportVaultAddress() const = 0;

@@ -396,6 +396,14 @@ exportRecord(AccountID const& account, std::uint32_t seq) noexcept;
 Keylet const&
 exportVaultState() noexcept;
 
+/** Global export directory (singleton root) */
+Keylet const&
+exportDir() noexcept;
+
+/** UNL Report (singleton) */
+Keylet const&
+UNLReport() noexcept;
+
 /** An account's passkey list */
 Keylet
 passkeyList(AccountID const& account) noexcept;

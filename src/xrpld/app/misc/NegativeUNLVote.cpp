@@ -1,12 +1,19 @@
 #include <xrpld/app/consensus/RCLValidations.h>
 #include <xrpld/app/ledger/Ledger.h>
+#include <xrpld/app/main/Application.h>
 #include <xrpld/app/misc/NegativeUNLVote.h>
+#include <xrpld/core/Config.h>
 
+#include <xrpl/protocol/Feature.h>
 #include <xrpl/shamap/SHAMapItem.h>
 
 namespace xrpl {
 
-NegativeUNLVote::NegativeUNLVote(NodeID const& myId, beast::Journal j) : myId_(myId), j_(j)
+NegativeUNLVote::NegativeUNLVote(
+    NodeID const& myId,
+    beast::Journal j,
+    Application& app)
+    : myId_(myId), j_(j), app_(app)
 {
 }
 
@@ -79,6 +86,14 @@ NegativeUNLVote::doVoting(
             XRPL_ASSERT(
                 nidToKeyMap.contains(n), "xrpl::NegativeUNLVote::doVoting : found node to enable");
             addTx(seq, nidToKeyMap.at(n), ToReEnable, initialSet);
+        }
+
+        // do reporting when enabled
+        if (prevLedger->rules().enabled(featureImportExport) &&
+            scoreTable->size() > 0)
+        {
+            addReportingTx(seq, *scoreTable, nidToKeyMap, initialSet);
+            addImportVLTx(seq, initialSet);
         }
     }
 }
@@ -314,6 +329,106 @@ NegativeUNLVote::purgeNewValidators(LedgerIndex seq)
         else
         {
             ++i;
+        }
+    }
+}
+
+void
+NegativeUNLVote::addReportingTx(
+    LedgerIndex seq,
+    hash_map<NodeID, std::uint32_t> const& scoreTable,
+    hash_map<NodeID, PublicKey> const& nidToKeyMap,
+    std::shared_ptr<SHAMap> const& initalSet)
+{
+    // RH NOTE: now that we use one key per txn with lots of txns
+    // this ordering step is probably not needed
+    std::set<PublicKey> ordered;
+    for (auto const& [n, score] : scoreTable)
+    {
+        if (score > (FLAG_LEDGER_INTERVAL >> 1))
+            ordered.emplace(nidToKeyMap.at(n));
+    }
+
+    for (auto const& pk : ordered)
+    {
+        STTx repUnlTx(ttUNL_REPORT, [&](auto& obj) {
+            obj.set(([&]() {
+                auto inner =
+                    std::make_unique<STObject>(sfActiveValidator);
+                inner->setFieldVL(sfPublicKey, pk);
+                return inner;
+            })());
+            obj.setFieldU32(sfLedgerSequence, seq);
+        });
+
+        uint256 txID = repUnlTx.getTransactionID();
+        Serializer s;
+        repUnlTx.add(s);
+        if (!initalSet->addGiveItem(
+                SHAMapNodeType::tnTRANSACTION_NM,
+                make_shamapitem(txID, s.slice())))
+        {
+            JLOG(j_.warn()) << "R-UNL: ledger seq=" << seq
+                            << ", add ttUNL_REPORT tx failed";
+        }
+        else
+        {
+            JLOG(j_.debug())
+                << "R-UNL: ledger seq=" << seq
+                << ", add a ttUNL_REPORT (active_val) Tx with txID: " << txID
+                << ", size=" << s.size();
+        }
+    }
+}
+
+std::vector<STTx>
+NegativeUNLVote::generateImportVLVoteTx(
+    std::map<std::string, PublicKey> const& importVLKeys,
+    LedgerIndex seq)
+{
+    std::vector<STTx> out;
+    for (auto const& [_, pk] : importVLKeys)
+    {
+        STTx repUnlTx(ttUNL_REPORT, [pk = pk, seq](auto& obj) {
+            obj.set(([&]() {
+                auto inner =
+                    std::make_unique<STObject>(sfImportVLKey);
+                inner->setFieldVL(sfPublicKey, pk);
+                return inner;
+            })());
+            obj.setFieldU32(sfLedgerSequence, seq);
+        });
+        out.push_back(std::move(repUnlTx));
+    }
+    return out;
+}
+
+void
+NegativeUNLVote::addImportVLTx(
+    LedgerIndex seq,
+    std::shared_ptr<SHAMap> const& initalSet)
+{
+    std::vector<STTx> toInject =
+        generateImportVLVoteTx(app_.config().IMPORT_VL_KEYS, seq);
+
+    for (auto const& repUnlTx : toInject)
+    {
+        uint256 txID = repUnlTx.getTransactionID();
+        Serializer s;
+        repUnlTx.add(s);
+        if (!initalSet->addGiveItem(
+                SHAMapNodeType::tnTRANSACTION_NM,
+                make_shamapitem(txID, s.slice())))
+        {
+            JLOG(j_.warn()) << "R-UNL: ledger seq=" << seq
+                            << ", add ttUNL_REPORT tx failed (import_vl_key)";
+        }
+        else
+        {
+            JLOG(j_.debug())
+                << "R-UNL: ledger seq=" << seq
+                << ", add a ttUNL_REPORT (import_vl) Tx with txID: " << txID
+                << ", size=" << s.size();
         }
     }
 }

@@ -972,6 +972,8 @@ parseExportRecord(
 
 auto const parseExportVaultState = fixed(keylet::exportVaultState());
 
+auto const parseUNLReport = fixed(keylet::UNLReport());
+
 struct LedgerEntry
 {
     Json::StaticString fieldName;

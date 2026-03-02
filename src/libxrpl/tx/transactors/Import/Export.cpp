@@ -38,8 +38,9 @@ Export::preclaim(PreclaimContext const& ctx)
     STAmount const fee = ctx.tx.getFieldAmount(sfFee);
 
     // Must have enough to cover amount + fee + reserve
+    // ExportRecord is NOT in owner directory (no +1), burn is anti-spam
     auto const reserve = ctx.view.fees().accountReserve(
-        sle->getFieldU32(sfOwnerCount) + 1);  // +1 for ExportRecord
+        sle->getFieldU32(sfOwnerCount));
 
     if (balance < amount + fee + STAmount(reserve))
     {
@@ -132,21 +133,22 @@ Export::doApply()
         view().update(sleVault);
     }
 
-    // Add to owner directory
+    // Record the ledger sequence for stale-pruning
+    sleExport->setFieldU32(sfLedgerSequence, ctx_.view().seq());
+
+    sleExport->setFieldH256(sfPreviousTxnID, ctx_.tx.getTransactionID());
+    sleExport->setFieldU32(sfPreviousTxnLgrSeq, ctx_.view().seq());
+
+    // Add to global export directory (not owner directory — no reserve)
     auto const page = view().dirInsert(
-        keylet::ownerDir(id), exportKeylet, describeOwnerDir(id));
+        keylet::exportDir(), exportKeylet, [](std::shared_ptr<SLE> const&) {});
 
     if (!page)
         return tecDIR_FULL;
 
-    sleExport->setFieldU64(sfOwnerNode, *page);
+    sleExport->setFieldU64(sfExportDirNode, *page);
 
     view().insert(sleExport);
-
-    // Adjust owner count
-    auto const ownerCount = sle->getFieldU32(sfOwnerCount);
-    sle->setFieldU32(sfOwnerCount, ownerCount + 1);
-    view().update(sle);
 
     // Destroy XRP from supply (burn)
     ctx_.rawView().rawDestroyXRP(amount.xrp());

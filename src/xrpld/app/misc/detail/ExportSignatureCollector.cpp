@@ -24,162 +24,245 @@ ExportSignatureCollector::ExportSignatureCollector(
 {
 }
 
-void
-ExportSignatureCollector::onExportSignature(
-    std::shared_ptr<protocol::TMExportSignature> const& m)
+bool
+ExportSignatureCollector::verifySig(
+    TxnData const& data,
+    AccountID const& signerAccountID,
+    PublicKey const& validatorKey,
+    Slice const& sig) const
 {
-    // SECURITY: Validate buffer sizes before memcpy
-    if (m->exportaccount().size() != AccountID::bytes)
-        return;
-
-    AccountID exportAccount;
-    std::memcpy(
-        exportAccount.data(),
-        m->exportaccount().data(),
-        exportAccount.size());
-
-    auto const exportSeq = m->exportsequence();
-
-    // Validate the public key before constructing PublicKey
-    auto const keySlice = makeSlice(m->validatorkey());
-    if (!publicKeyType(keySlice))
-        return;
-
-    PublicKey const validatorKey(keySlice);
-    auto const signerAccountID = calcAccountID(validatorKey);
-
-    std::lock_guard lock(mutex_);
-
-    ExportKey const key{exportAccount, exportSeq};
-    auto it = pending_.find(key);
-
-    if (it == pending_.end())
-    {
-        // We don't have this export registered yet.
-        // This can happen if the signature arrives before we process the
-        // ledger locally. Store a placeholder that will be completed when
-        // registerExport is called.
-        JLOG(journal_.trace())
-            << "ExportSignatureCollector: Received signature for unknown "
-               "export "
-            << exportAccount << ":" << exportSeq
-            << " from validator, deferring";
-        return;
-    }
-
-    auto& pending = it->second;
-
-    // Already assembled — no need for more signatures
-    if (pending.assembledPayment)
-        return;
-
-    // Check if we already have a signature from this signer
-    if (pending.signatures.count(signerAccountID))
-    {
-        JLOG(journal_.trace())
-            << "ExportSignatureCollector: Duplicate signature from "
-            << signerAccountID;
-        return;
-    }
-
-    // Verify the signature against the expected multisign hash
-    auto const expectedHash =
-        exportPaymentMultiSignHash(pending.unsignedPayment, signerAccountID);
-
-    auto const sigSlice = makeSlice(m->signature());
-    if (!verifyDigest(validatorKey, expectedHash, sigSlice, false))
+    // Identity binding: the signer AccountID must match the
+    // validator's public key.
+    if (calcAccountID(validatorKey) != signerAccountID)
     {
         JLOG(journal_.warn())
-            << "ExportSignatureCollector: Invalid signature from "
-            << strHex(validatorKey);
-        return;
+            << "ExportSigCollector: Identity mismatch for "
+            << signerAccountID;
+        return false;
     }
 
-    // Store the valid signature
-    pending.signatures.emplace(
-        signerAccountID,
-        std::make_pair(validatorKey, Buffer(sigSlice)));
+    // Verify the multisig signature against the expected hash
+    auto const expectedHash =
+        exportPaymentMultiSignHash(data.unsignedPayment, signerAccountID);
 
-    JLOG(journal_.info())
-        << "ExportSignatureCollector: Collected "
-        << pending.signatures.size() << "/" << pending.quorum
-        << " signatures for export " << exportAccount << ":" << exportSeq;
+    if (!verifyDigest(validatorKey, expectedHash, sig, false))
+    {
+        JLOG(journal_.warn())
+            << "ExportSigCollector: Invalid signature from "
+            << strHex(validatorKey);
+        return false;
+    }
 
-    // Try to assemble if we've reached quorum
-    if (pending.signatures.size() >= pending.quorum)
-        tryAssemble(pending);
+    return true;
 }
 
 void
-ExportSignatureCollector::registerExport(
-    AccountID const& exportAccount,
-    std::uint32_t exportSequence,
+ExportSignatureCollector::onExportSignatureFromValidation(
+    uint256 const& txnHash,
+    Slice const& signerSlice,
+    PublicKey const& validatorKey)
+{
+    // Parse the sfSigner STObject from the slice
+    SerialIter sit(signerSlice);
+    STObject signerObj(sit, sfSigner);
+
+    if (!signerObj.isFieldPresent(sfAccount) ||
+        !signerObj.isFieldPresent(sfSigningPubKey) ||
+        !signerObj.isFieldPresent(sfTxnSignature))
+    {
+        JLOG(journal_.warn())
+            << "ExportSigCollector: Malformed signer object";
+        return;
+    }
+
+    auto const signerAccountID = signerObj.getAccountID(sfAccount);
+
+    // Identity check: validator key must produce this signer AccountID
+    if (calcAccountID(validatorKey) != signerAccountID)
+    {
+        JLOG(journal_.warn())
+            << "ExportSigCollector: Identity mismatch, validator "
+            << strHex(validatorKey) << " != signer " << signerAccountID;
+        return;
+    }
+
+    std::lock_guard lock(mutex_);
+
+    // Already assembled?
+    if (assembled_.count(txnHash))
+        return;
+
+    // Already have a verified signature from this signer?
+    if (auto it = signatures_.find(txnHash); it != signatures_.end())
+    {
+        if (it->second.count(signerAccountID))
+            return;
+    }
+
+    // Do we have txnData cached? If so, verify immediately (phase 2)
+    if (auto dit = txnData_.find(txnHash); dit != txnData_.end())
+    {
+        auto const sigSlice = signerObj.getFieldVL(sfTxnSignature);
+        if (!verifySig(
+                dit->second,
+                signerAccountID,
+                validatorKey,
+                makeSlice(sigSlice)))
+        {
+            return;  // bad signature, drop it
+        }
+
+        // Store verified signature
+        signatures_[txnHash].emplace(signerAccountID, std::move(signerObj));
+
+        JLOG(journal_.info())
+            << "ExportSigCollector: Verified sig for " << txnHash
+            << " from " << signerAccountID << " ("
+            << signatures_[txnHash].size() << "/"
+            << dit->second.quorum << ")";
+
+        // Check quorum
+        if (signatures_[txnHash].size() >= dit->second.quorum)
+            tryAssemble(txnHash);
+    }
+    else
+    {
+        // Phase 1: No txnData yet. Store unverified.
+        auto const sigSlice = signerObj.getFieldVL(sfTxnSignature);
+        unverified_[txnHash].push_back(
+            {validatorKey, Buffer(makeSlice(sigSlice))});
+
+        JLOG(journal_.trace())
+            << "ExportSigCollector: Stored unverified sig for "
+            << txnHash << " from " << signerAccountID;
+    }
+}
+
+void
+ExportSignatureCollector::stashTxnData(
+    uint256 const& txnHash,
+    AccountID const& account,
+    std::uint32_t exportSeq,
     ExportPaymentParams params,
     std::uint32_t quorum,
-    std::uint32_t ledgerSequence)
+    std::uint32_t ledgerSeq)
 {
     std::lock_guard lock(mutex_);
 
-    ExportKey const key{exportAccount, exportSequence};
-
-    // Don't re-register
-    if (pending_.count(key))
+    // Don't re-stash
+    if (txnData_.count(txnHash))
         return;
 
     auto payment = buildExportPayment(params);
 
-    pending_.emplace(
-        key,
-        PendingExport{
+    txnData_.emplace(
+        txnHash,
+        TxnData{
+            account,
+            exportSeq,
             std::move(params),
             std::move(payment),
-            {},  // signatures
             quorum,
-            std::nullopt,  // assembledPayment
-            std::chrono::steady_clock::now(),
-            ledgerSequence});
+            ledgerSeq});
+
+    // Set up reverse lookup
+    exportKeyLookup_[{account, exportSeq}] = txnHash;
 
     JLOG(journal_.info())
-        << "ExportSignatureCollector: Registered export "
-        << exportAccount << ":" << exportSequence
-        << " quorum=" << quorum << " ledger=" << ledgerSequence;
+        << "ExportSigCollector: Stashed txnData for " << txnHash
+        << " (" << account << ":" << exportSeq
+        << " quorum=" << quorum << ")";
+
+    // Phase 2: Retroactively verify all pending unverified signatures
+    auto uit = unverified_.find(txnHash);
+    if (uit != unverified_.end())
+    {
+        auto const& data = txnData_.at(txnHash);
+        for (auto const& unv : uit->second)
+        {
+            auto const signerAccountID = calcAccountID(unv.validatorKey);
+
+            // Skip if already have a verified sig from this signer
+            if (signatures_[txnHash].count(signerAccountID))
+                continue;
+
+            if (verifySig(
+                    data,
+                    signerAccountID,
+                    unv.validatorKey,
+                    Slice(unv.signature.data(), unv.signature.size())))
+            {
+                // Build sfSigner object for the verified sig
+                STObject signerObj = STObject::makeInnerObject(sfSigner);
+                signerObj.setAccountID(sfAccount, signerAccountID);
+                signerObj.setFieldVL(
+                    sfSigningPubKey, unv.validatorKey.slice());
+                signerObj.setFieldVL(
+                    sfTxnSignature,
+                    Slice(unv.signature.data(), unv.signature.size()));
+
+                signatures_[txnHash].emplace(
+                    signerAccountID, std::move(signerObj));
+
+                JLOG(journal_.info())
+                    << "ExportSigCollector: Retroactively verified "
+                    << signerAccountID << " for " << txnHash;
+            }
+            else
+            {
+                JLOG(journal_.debug())
+                    << "ExportSigCollector: Retroactive verify failed "
+                    << signerAccountID << " for " << txnHash;
+            }
+        }
+
+        // Clear unverified since we've processed them all
+        unverified_.erase(uit);
+    }
+
+    // Check quorum after retroactive verification
+    auto const& data = txnData_.at(txnHash);
+    if (signatures_[txnHash].size() >= data.quorum)
+        tryAssemble(txnHash);
+}
+
+bool
+ExportSignatureCollector::hasQuorum(uint256 const& txnHash) const
+{
+    std::lock_guard lock(mutex_);
+    return assembled_.count(txnHash) > 0;
 }
 
 void
-ExportSignatureCollector::tryAssemble(PendingExport& pending)
+ExportSignatureCollector::tryAssemble(uint256 const& txnHash)
 {
-    // Build the Signers array from collected signatures.
-    // Signers must be sorted by AccountID (ascending).
-    std::vector<std::pair<AccountID, std::pair<PublicKey, Buffer>>> sorted(
-        pending.signatures.begin(), pending.signatures.end());
+    // Already assembled?
+    if (assembled_.count(txnHash))
+        return;
 
-    std::sort(
-        sorted.begin(),
-        sorted.end(),
-        [](auto const& a, auto const& b) { return a.first < b.first; });
+    auto dit = txnData_.find(txnHash);
+    auto sit = signatures_.find(txnHash);
+    if (dit == txnData_.end() || sit == signatures_.end())
+        return;
 
+    auto const& data = dit->second;
+    if (sit->second.size() < data.quorum)
+        return;
+
+    // Build the Signers array sorted by AccountID (ascending)
     STArray signers(sfSigners);
-    for (auto const& [acctID, keyAndSig] : sorted)
-    {
-        auto const& [pubKey, sig] = keyAndSig;
-
-        STObject signer = STObject::makeInnerObject(sfSigner);
-        signer.setAccountID(sfAccount, acctID);
-        signer.setFieldVL(sfSigningPubKey, pubKey.slice());
-        signer.setFieldVL(sfTxnSignature, Slice(sig.data(), sig.size()));
-        signers.push_back(std::move(signer));
-    }
+    for (auto const& [acctID, signerObj] : sit->second)
+        signers.push_back(signerObj);
 
     // Clone the unsigned payment and attach the Signers array
-    STObject obj(pending.unsignedPayment);
+    STObject obj(data.unsignedPayment);
     obj.setFieldArray(sfSigners, signers);
 
-    pending.assembledPayment.emplace(std::move(obj));
+    assembled_.emplace(txnHash, STTx(std::move(obj)));
 
     JLOG(journal_.info())
-        << "ExportSignatureCollector: Assembled multisig payment for export "
-        << pending.params.destination << " with "
-        << pending.signatures.size() << " signatures";
+        << "ExportSigCollector: Assembled multisig for " << txnHash
+        << " with " << sit->second.size() << " sigs";
 }
 
 Json::Value
@@ -191,27 +274,42 @@ ExportSignatureCollector::getExportStatus(
 
     Json::Value result(Json::objectValue);
 
-    ExportKey const key{account, exportSeq};
-    auto it = pending_.find(key);
-
-    if (it == pending_.end())
+    auto lit = exportKeyLookup_.find({account, exportSeq});
+    if (lit == exportKeyLookup_.end())
     {
         result[jss::error] = "exportNotFound";
         return result;
     }
 
-    auto const& pending = it->second;
+    auto const& txnHash = lit->second;
 
     result[jss::account] = toBase58(account);
     result[jss::export_sequence] = exportSeq;
-    result[jss::destination] = toBase58(pending.params.destination);
-    result[jss::amount] = pending.params.amount.getJson(JsonOptions::none);
-    result[jss::ticket_seq] = pending.params.ticketSeq;
-    result[jss::signatures_collected] =
-        static_cast<Json::UInt>(pending.signatures.size());
-    result[jss::signatures_required] = pending.quorum;
-    result[jss::quorum_reached] = pending.assembledPayment.has_value();
-    result[jss::ledger_index] = pending.ledgerSequence;
+    result["txn_hash"] = to_string(txnHash);
+
+    if (auto dit = txnData_.find(txnHash); dit != txnData_.end())
+    {
+        auto const& data = dit->second;
+        result[jss::destination] = toBase58(data.params.destination);
+        result[jss::amount] =
+            data.params.amount.getJson(JsonOptions::none);
+        result[jss::ticket_seq] = data.params.ticketSeq;
+        result["signatures_required"] = data.quorum;
+        result[jss::ledger_index] = data.ledgerSequence;
+    }
+
+    if (auto sit = signatures_.find(txnHash); sit != signatures_.end())
+        result["signatures_collected"] =
+            static_cast<Json::UInt>(sit->second.size());
+    else
+        result["signatures_collected"] = 0u;
+
+    // Count unverified waiting signatures
+    if (auto uit = unverified_.find(txnHash); uit != unverified_.end())
+        result["signatures_unverified"] =
+            static_cast<Json::UInt>(uit->second.size());
+
+    result["quorum_reached"] = assembled_.count(txnHash) > 0;
 
     return result;
 }
@@ -223,35 +321,64 @@ ExportSignatureCollector::getExportPayment(
 {
     std::lock_guard lock(mutex_);
 
-    ExportKey const key{account, exportSeq};
-    auto it = pending_.find(key);
-
-    if (it == pending_.end())
+    auto lit = exportKeyLookup_.find({account, exportSeq});
+    if (lit == exportKeyLookup_.end())
         return std::nullopt;
 
-    return it->second.assembledPayment;
+    auto ait = assembled_.find(lit->second);
+    if (ait == assembled_.end())
+        return std::nullopt;
+
+    return ait->second;
 }
 
 void
-ExportSignatureCollector::pruneStale(std::chrono::seconds maxAge)
+ExportSignatureCollector::pruneStale(
+    std::uint32_t currentLedger,
+    std::uint32_t maxAge)
 {
     std::lock_guard lock(mutex_);
 
-    auto const now = std::chrono::steady_clock::now();
-    for (auto it = pending_.begin(); it != pending_.end();)
+    // Collect txnHashes to prune based on ledger age
+    std::vector<uint256> toErase;
+    for (auto const& [hash, data] : txnData_)
     {
-        if (now - it->second.created > maxAge)
+        if (currentLedger > data.ledgerSequence + maxAge)
+            toErase.push_back(hash);
+    }
+
+    for (auto const& hash : toErase)
+    {
+        // Remove reverse lookup
+        auto dit = txnData_.find(hash);
+        if (dit != txnData_.end())
         {
-            JLOG(journal_.debug())
-                << "ExportSignatureCollector: Pruning stale export "
-                << it->first.first << ":" << it->first.second;
-            it = pending_.erase(it);
+            exportKeyLookup_.erase(
+                {dit->second.exportAccount, dit->second.exportSequence});
         }
-        else
+
+        txnData_.erase(hash);
+        signatures_.erase(hash);
+        unverified_.erase(hash);
+        assembled_.erase(hash);
+
+        JLOG(journal_.debug())
+            << "ExportSigCollector: Pruned stale " << hash;
+    }
+
+    // Also prune unverified entries that have no txnData
+    // (signatures for exports we never learned about)
+    std::vector<uint256> orphanedUnverified;
+    for (auto const& [hash, _] : unverified_)
+    {
+        if (!txnData_.count(hash) &&
+            !signatures_.count(hash))
         {
-            ++it;
+            orphanedUnverified.push_back(hash);
         }
     }
+    for (auto const& hash : orphanedUnverified)
+        unverified_.erase(hash);
 }
 
 }  // namespace xrpl

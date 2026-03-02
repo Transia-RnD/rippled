@@ -743,7 +743,8 @@ LEDGER_ENTRY(ltEXPORT_RECORD, 0x0092, ExportRecord, export_record, ({
     {sfExportSequence,           soeREQUIRED},
     {sfTicketSequence,           soeOPTIONAL},
     {sfDestinationTag,           soeOPTIONAL},
-    {sfOwnerNode,                soeREQUIRED},
+    {sfLedgerSequence,           soeREQUIRED},
+    {sfExportDirNode,            soeREQUIRED},
     {sfPreviousTxnID,            soeREQUIRED},
     {sfPreviousTxnLgrSeq,        soeREQUIRED},
 }))
@@ -757,6 +758,17 @@ LEDGER_ENTRY(ltEXPORT_VAULT_STATE, 0x0093, ExportVaultState, export_vault_state,
     {sfSignerListHash,           soeOPTIONAL},
     {sfExportQuorum,             soeREQUIRED},
     {sfSignerCount,              soeREQUIRED},
+    {sfPreviousTxnID,            soeREQUIRED},
+    {sfPreviousTxnLgrSeq,        soeREQUIRED},
+}))
+
+/** A ledger object that reports on the active dUNL validators
+    that were validating for more than 240 of the last 256 ledgers.
+    \sa keylet::UNLReport
+ */
+LEDGER_ENTRY(ltUNL_REPORT, 0x0052, UNLReport, unl_report, ({
+    {sfImportVLKeys,             soeOPTIONAL},
+    {sfActiveValidators,         soeOPTIONAL},
     {sfPreviousTxnID,            soeREQUIRED},
     {sfPreviousTxnLgrSeq,        soeREQUIRED},
 }))

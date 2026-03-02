@@ -1,4 +1,5 @@
 #include <xrpl/basics/Log.h>
+#include <xrpl/basics/StringUtilities.h>
 #include <xrpl/ledger/AmendmentTable.h>
 #include <xrpl/ledger/Sandbox.h>
 #include <xrpl/protocol/Feature.h>
@@ -7,6 +8,7 @@
 #include <xrpl/server/NetworkOPs.h>
 #include <xrpl/tx/transactors/Change.h>
 
+#include <map>
 #include <string_view>
 
 namespace xrpl {
@@ -49,6 +51,23 @@ Transactor::invokePreflight<Change>(PreflightContext const& ctx)
     {
         JLOG(ctx.j.warn()) << "Change: Bad sequence";
         return temBAD_SEQUENCE;
+    }
+
+    if (ctx.tx.getTxnType() == ttUNL_REPORT)
+    {
+        if (!ctx.rules.enabled(featureImportExport))
+        {
+            JLOG(ctx.j.warn()) << "Change: UNLReport is not enabled.";
+            return temDISABLED;
+        }
+
+        if (!ctx.tx.isFieldPresent(sfActiveValidator) &&
+            !ctx.tx.isFieldPresent(sfImportVLKey))
+        {
+            JLOG(ctx.j.warn()) << "Change: UNLReport must specify at least one "
+                                  "of sfImportVLKey, sfActiveValidator";
+            return temMALFORMED;
+        }
     }
 
     return tesSUCCESS;
@@ -109,6 +128,44 @@ Change::preclaim(PreclaimContext const& ctx)
         case ttAMENDMENT:
         case ttUNL_MODIFY:
             return tesSUCCESS;
+        case ttUNL_REPORT: {
+            if (!ctx.tx.isFieldPresent(sfImportVLKey) ||
+                !ctx.registry.hasImportVLKeys())
+                return tesSUCCESS;
+
+            // if we do specify import_vl_keys in config then we won't approve
+            // keys that aren't on our list and/or aren't in the ledger object
+            auto const& inner = const_cast<xrpl::STTx&>(ctx.tx)
+                                    .getField(sfImportVLKey)
+                                    .downcast<STObject>();
+            auto const pkBlob = inner.getFieldVL(sfPublicKey);
+            std::string const strPk = strHex(makeSlice(pkBlob));
+            if (ctx.registry.isImportVLKeyRecognized(strPk))
+                return tesSUCCESS;
+
+            auto const pkType = publicKeyType(makeSlice(pkBlob));
+            if (!pkType)
+                return tefINTERNAL;
+
+            PublicKey const pk(makeSlice(pkBlob));
+
+            // check on ledger
+            if (auto const unlRep = ctx.view.read(keylet::UNLReport());
+                unlRep && unlRep->isFieldPresent(sfImportVLKeys))
+            {
+                auto const& vlKeys =
+                    unlRep->getFieldArray(sfImportVLKeys);
+                for (auto const& k : vlKeys)
+                {
+                    auto const kPkBlob = k.getFieldVL(sfPublicKey);
+                    if (publicKeyType(makeSlice(kPkBlob)) &&
+                        PublicKey(makeSlice(kPkBlob)) == pk)
+                        return tesSUCCESS;
+                }
+            }
+
+            return telIMPORT_VL_KEY_NOT_RECOGNISED;
+        }
         default:
             return temUNKNOWN;
     }
@@ -125,6 +182,8 @@ Change::doApply()
             return applyFee();
         case ttUNL_MODIFY:
             return applyUNLModify();
+        case ttUNL_REPORT:
+            return applyUNLReport();
         // LCOV_EXCL_START
         default:
             UNREACHABLE("xrpl::Change::doApply : invalid transaction type");
@@ -385,6 +444,109 @@ Change::applyUNLModify()
     }
 
     view().update(negUnlObject);
+    return tesSUCCESS;
+}
+
+TER
+Change::applyUNLReport()
+{
+    // Follows xahaud's applyUNLReport pattern exactly:
+    // Each pseudo-tx carries a single sfActiveValidator (OBJECT).
+    // Multiple pseudo-txs accumulate into the UNLReport SLE's
+    // sfActiveValidators (ARRAY) over the flag ledger.
+
+    auto sle = view().peek(keylet::UNLReport());
+
+    auto const seq = view().seq();
+
+    bool const created = !sle;
+
+    if (created)
+        sle = std::make_shared<SLE>(keylet::UNLReport());
+
+    // Reset detection: if previous update was from a prior ledger,
+    // start fresh (don't carry forward stale validators)
+    bool const reset = sle->isFieldPresent(sfPreviousTxnLgrSeq) &&
+        sle->getFieldU32(sfPreviousTxnLgrSeq) < seq;
+
+    // Canonicalize: merge existing entries with the new one from this tx.
+    // Uses std::map<PublicKey, AccountID> for deterministic ordering.
+    auto canonicalize =
+        [&](SField const& arrayType,
+            SField const& objType) -> std::vector<STObject> {
+        auto const existing = reset || !sle->isFieldPresent(arrayType)
+            ? STArray(arrayType)
+            : sle->getFieldArray(arrayType);
+
+        std::map<PublicKey, AccountID> ordered;
+        for (auto const& obj : existing)
+        {
+            auto pk = obj.getFieldVL(sfPublicKey);
+            if (!publicKeyType(makeSlice(pk)))
+                continue;
+
+            PublicKey p(makeSlice(pk));
+            ordered.emplace(
+                p,
+                obj.isFieldPresent(sfAccount)
+                    ? obj.getAccountID(sfAccount)
+                    : calcAccountID(p));
+        };
+
+        if (ctx_.tx.isFieldPresent(objType))
+        {
+            auto pk = const_cast<xrpl::STTx&>(ctx_.tx)
+                          .getField(objType)
+                          .downcast<STObject>()
+                          .getFieldVL(sfPublicKey);
+
+            if (publicKeyType(makeSlice(pk)))
+            {
+                PublicKey p(makeSlice(pk));
+                ordered.emplace(p, calcAccountID(p));
+            }
+        }
+
+        std::vector<STObject> out;
+        out.reserve(ordered.size());
+        for (auto const& [k, a] : ordered)
+        {
+            out.emplace_back(objType);
+            out.back().setFieldVL(sfPublicKey, k);
+            out.back().setAccountID(sfAccount, a);
+        }
+
+        return out;
+    };
+
+    bool const hasAV = ctx_.tx.isFieldPresent(sfActiveValidator);
+    bool const hasVL = ctx_.tx.isFieldPresent(sfImportVLKey);
+
+    if (hasAV)
+    {
+        auto entries =
+            canonicalize(sfActiveValidators, sfActiveValidator);
+        STArray arr(sfActiveValidators);
+        for (auto& obj : entries)
+            arr.push_back(std::move(obj));
+        sle->setFieldArray(sfActiveValidators, arr);
+    }
+
+    if (hasVL)
+    {
+        auto entries =
+            canonicalize(sfImportVLKeys, sfImportVLKey);
+        STArray arr(sfImportVLKeys);
+        for (auto& obj : entries)
+            arr.push_back(std::move(obj));
+        sle->setFieldArray(sfImportVLKeys, arr);
+    }
+
+    if (created)
+        view().insert(sle);
+    else
+        view().update(sle);
+
     return tesSUCCESS;
 }
 

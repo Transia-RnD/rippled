@@ -90,6 +90,8 @@ enum class LedgerNameSpace : std::uint16_t {
     IMPORT_VL_SEQ = 'F',
     EXPORT_RECORD = 'b',
     EXPORT_VAULT_STATE = 'G',
+    EXPORT_DIR = 'v',
+    UNL_REPORT = 'U',
     PASSKEY_LIST = 'k',
 
     // No longer used or supported. Left here to reserve the space
@@ -706,6 +708,22 @@ exportVaultState() noexcept
     static Keylet const ret{
         ltEXPORT_VAULT_STATE,
         indexHash(LedgerNameSpace::EXPORT_VAULT_STATE)};
+    return ret;
+}
+
+Keylet const&
+exportDir() noexcept
+{
+    static Keylet const ret{
+        ltDIR_NODE, indexHash(LedgerNameSpace::EXPORT_DIR)};
+    return ret;
+}
+
+Keylet const&
+UNLReport() noexcept
+{
+    static Keylet const ret{
+        ltUNL_REPORT, indexHash(LedgerNameSpace::UNL_REPORT)};
     return ret;
 }
 

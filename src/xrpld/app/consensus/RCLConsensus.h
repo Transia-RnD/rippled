@@ -9,12 +9,14 @@
 #include <xrpld/app/misc/ValidatorKeys.h>
 #include <xrpld/consensus/Consensus.h>
 
+#include <xrpl/basics/Buffer.h>
 #include <xrpl/beast/utility/Journal.h>
 #include <xrpl/core/JobQueue.h>
 #include <xrpl/protocol/RippleLedgerHash.h>
 #include <xrpl/shamap/SHAMap.h>
 
 #include <atomic>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <set>
@@ -382,30 +384,41 @@ class RCLConsensus
         void
         validate(RCLCxLedger const& ledger, RCLTxSet const& txns, bool proposing);
 
-        /** Sign new ExportRecords and broadcast signatures via overlay.
-            Called after validation when featureImportExport is enabled.
+        /** Sign export records and return piggybacked signature buffers.
+
+            Each buffer = 32-byte txnHash + serialized sfSigner STObject.
+            Called before TMValidation broadcast; results are attached to
+            the TMValidation's exportSignatures field.
+
+            Sign-once/broadcast-many: signatures are cached and re-emitted
+            every validation cycle for all pending exports in the global
+            export directory.
         */
-        void
+        std::vector<Buffer>
         signExportRecords(
             RCLCxLedger const& ledger,
-            RCLTxSet const& txns,
             ValidatorKeys::Keys const& keys);
 
-        /** Check if the UNL has changed and sign a SignerListSet if needed.
+        /** Check if the UNL has changed and return SignerListSet signature
+            buffers for piggybacking on TMValidation.
             Called at flag ledgers when featureImportExport is enabled.
         */
-        void
+        std::vector<Buffer>
         checkSignerListRotation(
             RCLCxLedger const& ledger,
             ValidatorKeys::Keys const& keys);
 
         /** Check if the mainnet vault ticket pool needs replenishment.
+            Returns TicketCreate signature buffers for piggybacking.
             Called at flag ledgers when featureImportExport is enabled.
         */
-        void
+        std::vector<Buffer>
         checkTicketReplenishment(
             RCLCxLedger const& ledger,
             ValidatorKeys::Keys const& keys);
+
+        /** Cached export signatures: txnHash -> serialized sfSigner */
+        std::map<uint256, Buffer> cachedExportSigs_;
     };
 
 public:

@@ -36,10 +36,14 @@ private:
 
     TER
     applyUNLModify();
+
+    TER
+    applyUNLReport();
 };
 
 using EnableAmendment = Change;
 using SetFee = Change;
 using UNLModify = Change;
+using UNLReportTx = Change;
 
 }  // namespace xrpl

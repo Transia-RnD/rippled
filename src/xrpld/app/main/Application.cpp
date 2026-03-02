@@ -1110,6 +1110,12 @@ private:
             config_->IMPORT_VL_KEYS.end();
     }
 
+    bool
+    hasImportVLKeys() const override
+    {
+        return !config_->IMPORT_VL_KEYS.empty();
+    }
+
     std::optional<AccountID> const&
     getImportVaultAddress() const override
     {
