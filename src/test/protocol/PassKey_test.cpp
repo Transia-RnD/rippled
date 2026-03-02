@@ -21,7 +21,7 @@
 #include <xrpl/protocol/jss.h>
 #include <test/jtx.h>
 
-namespace ripple {
+namespace xrpl {
 namespace test {
 class PassKey_test : public beast::unit_test::suite
 {
@@ -99,11 +99,11 @@ public:
     run() override
     {
         using namespace test::jtx;
-        auto const sa = supported_amendments();
+        auto const sa = testable_amendments();
         testWithFeats(sa);
     }
 };
 
-BEAST_DEFINE_TESTSUITE(PassKey, protocol, ripple);
+BEAST_DEFINE_TESTSUITE(PassKey, protocol, xrpl);
 }  // namespace test
-}  // namespace ripple
+}  // namespace xrpl
