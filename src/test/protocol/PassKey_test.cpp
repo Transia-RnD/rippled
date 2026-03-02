@@ -18,6 +18,7 @@
 //==============================================================================
 
 #include <xrpl/protocol/Feature.h>
+#include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/jss.h>
 #include <test/jtx.h>
 
@@ -25,25 +26,51 @@ namespace xrpl {
 namespace test {
 class PassKey_test : public beast::unit_test::suite
 {
-
-    Json::Value
-    passkeyListSet(jtx::Account const& account)
+    void
+    testP256KeyTypeDetection()
     {
-        Json::Value jv;
-        jv[sfAccount.jsonName] = account.human();
-        jv[sfTransactionType.jsonName] = jss::PasskeyListSet;
-        jv[sfPasskeys] = Json::arrayValue;
-        jv[sfPasskeys][0u][sfPasskey][sfPasskeyID] = "DEADBEEF";
-        jv[sfPasskeys][0u][sfPasskey][sfPublicKey] = strHex(account.pk());
-        return jv;
+        testcase("P256 key type requires 0xF6 prefix");
+
+        using namespace test::jtx;
+
+        // Valid P-256 key from the test framework
+        Account const p256acct{"p256acct", KeyType::p256};
+        auto const keyType = publicKeyType(p256acct.pk());
+        BEAST_EXPECT(keyType.has_value());
+        BEAST_EXPECT(*keyType == KeyType::p256);
+
+        // A 65-byte buffer with 0x04 prefix (standard uncompressed EC)
+        // must NOT be accepted as P-256 on XRPL
+        std::array<uint8_t, 65> badKey{};
+        badKey[0] = 0x04;
+        auto const badType = publicKeyType(makeSlice(badKey));
+        BEAST_EXPECT(!badType.has_value());
+
+        // A 65-byte buffer with 0xF6 prefix should be accepted
+        std::array<uint8_t, 65> goodKey{};
+        goodKey[0] = 0xF6;
+        auto const goodType = publicKeyType(makeSlice(goodKey));
+        BEAST_EXPECT(goodType.has_value());
+        BEAST_EXPECT(*goodType == KeyType::p256);
+
+        // Wrong size keys should not be detected as P-256
+        std::array<uint8_t, 33> shortKey{};
+        shortKey[0] = 0xF6;
+        auto const shortType = publicKeyType(makeSlice(shortKey));
+        BEAST_EXPECT(!shortType.has_value() || *shortType != KeyType::p256);
+
+        std::array<uint8_t, 66> longKey{};
+        longKey[0] = 0xF6;
+        auto const longType = publicKeyType(makeSlice(longKey));
+        BEAST_EXPECT(!longType.has_value());
     }
 
     void
-    testP256(FeatureBitset features)
+    testP256SingleSign(FeatureBitset features)
     {
         using namespace test::jtx;
 
-        testcase("p256");
+        testcase("P256 single sign");
 
         Env env{*this, envconfig(), features};
         Account const alice{"alice", KeyType::p256};
@@ -54,44 +81,36 @@ class PassKey_test : public beast::unit_test::suite
         env(pay(alice, bob, XRP(100)));
         env.close();
 
-        Json::Value params;
-        params[jss::ledger_index] = env.current()->seq() - 1;
-        params[jss::transactions] = true;
-        params[jss::expand] = true;
-        auto const jrr = env.rpc("json", "ledger", to_string(params));
-        std::cout << jrr << std::endl;
+        // Verify the payment went through
+        BEAST_EXPECT(env.balance(bob) == XRP(1100));
     }
 
     void
-    testSimplePayment(FeatureBitset features)
+    testP256WithOtherKeyTypes(FeatureBitset features)
     {
         using namespace test::jtx;
 
-        testcase("simple payment");
+        testcase("P256 alongside other key types");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice"};
-        Account const bob{"bob"};
-        Account const dave{"dave", KeyType::p256};
-        env.fund(XRP(1000), alice, bob, dave);
+        Account const alice{"alice", KeyType::p256};
+        Account const bob{"bob"};  // secp256k1
+        Account const carol{"carol", KeyType::ed25519};
+        env.fund(XRP(1000), alice, bob, carol);
         env.close();
 
-        env(passkeyListSet(alice));
-        env(pay(alice, bob, XRP(100)), sig(dave));
+        // All key types should work for payments
+        env(pay(alice, bob, XRP(10)));
+        env(pay(bob, carol, XRP(10)));
+        env(pay(carol, alice, XRP(10)));
         env.close();
-
-        Json::Value params;
-        params[jss::ledger_index] = env.current()->seq() - 1;
-        params[jss::transactions] = true;
-        params[jss::expand] = true;
-        auto const jrr = env.rpc("json", "ledger", to_string(params));
-        std::cout << jrr << std::endl;
     }
 
     void
     testWithFeats(FeatureBitset features)
     {
-        testP256(features);
+        testP256SingleSign(features);
+        testP256WithOtherKeyTypes(features);
     }
 
 public:
@@ -100,6 +119,11 @@ public:
     {
         using namespace test::jtx;
         auto const sa = testable_amendments();
+
+        // Protocol-level tests (no env needed)
+        testP256KeyTypeDetection();
+
+        // Integration tests with env
         testWithFeats(sa);
     }
 };

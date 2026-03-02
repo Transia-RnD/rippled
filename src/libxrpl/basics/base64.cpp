@@ -214,4 +214,20 @@ base64_decode(std::string_view data)
     return dest;
 }
 
+std::string
+base64url_decode(std::string_view data)
+{
+    std::string b64(data);
+    for (auto& c : b64)
+    {
+        if (c == '-')
+            c = '+';
+        else if (c == '_')
+            c = '/';
+    }
+    while (b64.size() % 4 != 0)
+        b64 += '=';
+    return base64_decode(b64);
+}
+
 }  // namespace xrpl

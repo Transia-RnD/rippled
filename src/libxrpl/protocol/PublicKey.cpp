@@ -219,7 +219,7 @@ publicKeyType(Slice const& slice)
             return KeyType::secp256k1;
     }
 
-    if (slice.size() == 65)
+    if (slice.size() == 65 && slice[0] == 0xF6)
     {
         return KeyType::p256;
     }

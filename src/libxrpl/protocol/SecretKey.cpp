@@ -308,7 +308,7 @@ sign(PublicKey const& pk, SecretKey const& sk, Slice const& m)
                 reinterpret_cast<const unsigned char*>(digest.data()),
                 digest.size(),
                 key);
-            
+
             if (!sig_obj)
             {
                 BN_free(priv_key);
