@@ -1602,8 +1602,8 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
         if (!sleVault)
             return;
 
-        auto const signerCount =
-            sleVault->getFieldU32(sfSignerCount);
+        // signerCount = 0 in unit-test env (no real UNL validators)
+        std::uint32_t const signerCount = 0;
 
         // 4. Build ExportPaymentParams from on-ledger data
         //    (mimics what signExportRecords does in consensus)
@@ -1780,12 +1780,13 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
         params.destination = bob.id();
         params.amount = XRP(100);
         params.ticketSeq = sleExport->getFieldU32(sfTicketSequence);
-        params.signerCount =
-            sleVault->getFieldU32(sfSignerCount);
+        // signerCount = 0 in unit-test env (no real UNL validators)
+        params.signerCount = 0;
 
         auto const payment = buildExportPayment(params);
         auto const txnHash = payment.getTransactionID();
-        auto const quorum = sleVault->getFieldU32(sfExportQuorum);
+        // quorum = 0 in unit-test env
+        std::uint32_t const quorum = 0;
 
         env.app().getExportSignatureCollector().stashTxnData(
             txnHash, alice.id(), 0, params, quorum, env.current()->seq());
@@ -1806,11 +1807,10 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
             BEAST_EXPECT(result.isMember("txn_hash"));
             BEAST_EXPECT(
                 result["signatures_collected"].asUInt() == 0);
-            // quorum may be 0 in unit-test env (no UNL validators),
+            // quorum = 0 in unit-test env (no UNL validators),
             // so quorum_reached is true immediately after stash.
-            auto const expectedQuorum = sleVault->getFieldU32(sfExportQuorum);
             BEAST_EXPECT(
-                result["quorum_reached"].asBool() == (expectedQuorum == 0));
+                result["quorum_reached"].asBool() == (quorum == 0));
         }
 
         // 4. Missing parameters should return errors
@@ -1892,8 +1892,8 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
         params.destination = bob.id();
         params.amount = XRP(50);
         params.ticketSeq = sleExport->getFieldU32(sfTicketSequence);
-        params.signerCount =
-            sleVault->getFieldU32(sfSignerCount);
+        // signerCount = 0 in unit-test env (no real UNL validators)
+        params.signerCount = 0;
 
         auto const payment = buildExportPayment(params);
         auto const txnHash = payment.getTransactionID();
@@ -1984,12 +1984,10 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
                 tx.getFieldU32(sfTicketSequence) ==
                 sleExport->getFieldU32(sfTicketSequence));
 
-            // Fee must be (signerCount + 1) * 15 drops
+            // Fee must be (signerCount + 1) * baseFee drops
+            // In unit-test env, signerCount = 0 (no real UNL)
             auto const expectedFee = STAmount(
-                (static_cast<std::uint64_t>(
-                     sleVault->getFieldU32(sfSignerCount)) +
-                 1) *
-                15);
+                (static_cast<std::uint64_t>(0) + 1) * 15);
             BEAST_EXPECT(tx[sfFee] == expectedFee);
 
             // SigningPubKey must be empty (multi-signed)
@@ -2066,8 +2064,6 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
         auto sle = std::make_shared<SLE>(vaultKeylet);
         sle->setFieldU32(sfNextTicketSeq, nextTicket);
         sle->setFieldU32(sfMaxTicketSeq, maxTicket);
-        sle->setFieldU32(sfExportQuorum, 0);
-        sle->setFieldU32(sfSignerCount, 0);
         sle->setFieldH256(sfPreviousTxnID, uint256{});
         sle->setFieldU32(sfPreviousTxnLgrSeq, 0);
         if (mainnetSeq)

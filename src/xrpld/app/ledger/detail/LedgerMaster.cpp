@@ -6,6 +6,7 @@
 #include <xrpld/app/ledger/PendingSaves.h>
 #include <xrpld/app/main/Application.h>
 #include <xrpld/app/misc/ExportSignatureCollector.h>
+#include <xrpld/app/misc/ExportValidatorTrust.h>
 #include <xrpld/app/misc/SHAMapStore.h>
 #include <xrpld/app/misc/Transaction.h>
 #include <xrpld/app/misc/TxQ.h>
@@ -798,10 +799,15 @@ LedgerMaster::setFullLedger(
             auto const vaultAddr = app_.config().IMPORT_VAULT_ADDRESS;
             if (vaultAddr)
             {
+                auto const signerCount = static_cast<std::uint32_t>(
+                    getExportUNLSize(*ledger, app_));
                 auto const quorum =
-                    sleVault->getFieldU32(sfExportQuorum);
-                auto const signerCount =
-                    sleVault->getFieldU32(sfSignerCount);
+                    calculateExportQuorum(signerCount);
+
+                JLOG(m_journal.info())
+                    << "LedgerMaster export scan: signerCount="
+                    << signerCount << " quorum=" << quorum
+                    << " baseFee=" << app_.config().MAINNET_BASE_FEE;
 
                 forEachItem(
                     *ledger,

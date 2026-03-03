@@ -881,8 +881,15 @@ RCLConsensus::Adaptor::signExportRecords(
     if (!sleVault)
         return result;
 
-    auto const quorum = sleVault->getFieldU32(sfExportQuorum);
-    auto const signerCount = sleVault->getFieldU32(sfSignerCount);
+    auto const signerCount = static_cast<std::uint32_t>(
+        getExportUNLSize(l, app_));
+    auto const quorum = calculateExportQuorum(signerCount);
+
+    JLOG(j_.info())
+        << "signExportRecords: signerCount=" << signerCount
+        << " quorum=" << quorum
+        << " baseFee=" << app_.config().MAINNET_BASE_FEE
+        << " expectedFee=" << ((signerCount + 1) * app_.config().MAINNET_BASE_FEE);
 
     auto const signerAccountID = calcAccountID(keys.publicKey);
 
@@ -1048,7 +1055,8 @@ RCLConsensus::Adaptor::checkSignerListRotation(
         << "UNL signer list changed, need SignerListSet update. "
         << "Validators: " << signerAccounts.size();
 
-    auto const signerCount = sleVault->getFieldU32(sfSignerCount);
+    auto const signerCount = static_cast<std::uint32_t>(
+        signerAccounts.size());
     auto const nextTicket = sleVault->getFieldU32(sfNextTicketSeq);
     auto const maxTicket = sleVault->getFieldU32(sfMaxTicketSeq);
 
@@ -1059,6 +1067,10 @@ RCLConsensus::Adaptor::checkSignerListRotation(
     }
 
     auto const newQuorum = calculateExportQuorum(signerAccounts.size());
+
+    JLOG(j_.info())
+        << "SignerListSet: signerCount=" << signerCount
+        << " newQuorum=" << newQuorum;
 
     SignerListSetParams params;
     params.vaultAddress = *app_.getImportVaultAddress();
@@ -1112,7 +1124,11 @@ RCLConsensus::Adaptor::checkTicketReplenishment(
 
     auto const nextTicket = sleVault->getFieldU32(sfNextTicketSeq);
     auto const maxTicket = sleVault->getFieldU32(sfMaxTicketSeq);
-    auto const signerCount = sleVault->getFieldU32(sfSignerCount);
+    auto const signerCount = static_cast<std::uint32_t>(
+        getExportUNLSize(l, app_));
+
+    JLOG(j_.info())
+        << "checkTicketReplenishment: signerCount=" << signerCount;
 
     auto const remaining =
         (maxTicket >= nextTicket) ? (maxTicket - nextTicket + 1) : 0u;

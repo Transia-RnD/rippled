@@ -150,8 +150,6 @@ Export::doApply()
                 ctx_.registry.getImportVaultMainnetSequence();
             if (mainnetSeq)
                 sleVault->setFieldU32(sfMainnetSequence, *mainnetSeq);
-            sleVault->setFieldU32(sfExportQuorum, 0);
-            sleVault->setFieldU32(sfSignerCount, 0);
             sleVault->setFieldH256(sfPreviousTxnID, uint256{});
             sleVault->setFieldU32(sfPreviousTxnLgrSeq, 0);
             view().insert(sleVault);

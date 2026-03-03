@@ -353,8 +353,6 @@ Change::applyAmendment()
                     ctx_.registry.getImportVaultMainnetSequence();
                 if (mainnetSeq)
                     sle->setFieldU32(sfMainnetSequence, *mainnetSeq);
-                sle->setFieldU32(sfExportQuorum, 0);
-                sle->setFieldU32(sfSignerCount, 0);
                 sle->setFieldH256(sfPreviousTxnID, uint256{});
                 sle->setFieldU32(sfPreviousTxnLgrSeq, 0);
                 view().insert(sle);

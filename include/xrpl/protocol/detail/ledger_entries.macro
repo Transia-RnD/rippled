@@ -758,8 +758,6 @@ LEDGER_ENTRY(ltEXPORT_VAULT_STATE, 0x0093, ExportVaultState, export_vault_state,
     {sfMaxTicketSeq,             soeREQUIRED},
     {sfMainnetSequence,          soeOPTIONAL},
     {sfSignerListHash,           soeOPTIONAL},
-    {sfExportQuorum,             soeREQUIRED},
-    {sfSignerCount,              soeREQUIRED},
     {sfPreviousTxnID,            soeREQUIRED},
     {sfPreviousTxnLgrSeq,        soeREQUIRED},
 }))
