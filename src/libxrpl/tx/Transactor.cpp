@@ -433,14 +433,27 @@ Transactor::checkSeqProxy(ReadView const& view, STTx const& tx, beast::Journal j
 
     auto const sle = view.read(keylet::account(id));
 
+    SeqProxy const t_seqProx = tx.getSeqProxy();
+
     if (!sle)
     {
+        // Allow first Import to create an account (seq must be 0).
+        // Authorization is validated via XPOP proof in Import::preflight.
+        if (view.rules().enabled(featureImportExport) &&
+            tx.getTxnType() == ttIMPORT && t_seqProx.isSeq() &&
+            tx[sfSequence] == 0)
+        {
+            JLOG(j.trace())
+                << "applyTransaction: allowing first Import txn with seq=0 "
+                << toBase58(id);
+            return tesSUCCESS;
+        }
+
         JLOG(j.trace()) << "applyTransaction: delay: source account does not exist "
                         << toBase58(id);
         return terNO_ACCOUNT;
     }
 
-    SeqProxy const t_seqProx = tx.getSeqProxy();
     SeqProxy const a_seq = SeqProxy::sequence((*sle)[sfSequence]);
 
     if (t_seqProx.isSeq())
@@ -498,16 +511,24 @@ Transactor::checkPriorTxAndLastLedger(PreclaimContext const& ctx)
 
     auto const sle = ctx.view.read(keylet::account(id));
 
-    if (!sle)
+    bool const isFirstImport = !sle &&
+        ctx.view.rules().enabled(featureImportExport) &&
+        ctx.tx.getTxnType() == ttIMPORT;
+
+    if (!sle && !isFirstImport)
     {
         JLOG(ctx.j.trace()) << "applyTransaction: delay: source account does not exist "
                             << toBase58(id);
         return terNO_ACCOUNT;
     }
 
-    if (ctx.tx.isFieldPresent(sfAccountTxnID) &&
-        (sle->getFieldH256(sfAccountTxnID) != ctx.tx.getFieldH256(sfAccountTxnID)))
-        return tefWRONG_PRIOR;
+    if (ctx.tx.isFieldPresent(sfAccountTxnID))
+    {
+        if (isFirstImport ||
+            sle->getFieldH256(sfAccountTxnID) !=
+                ctx.tx.getFieldH256(sfAccountTxnID))
+            return tefWRONG_PRIOR;
+    }
 
     if (ctx.tx.isFieldPresent(sfLastLedgerSequence) &&
         (ctx.view.seq() > ctx.tx.getFieldU32(sfLastLedgerSequence)))
@@ -614,9 +635,11 @@ Transactor::apply()
     auto const sle = view().peek(keylet::account(account_));
 
     // sle must exist except for transactions
-    // that allow zero account.
+    // that allow zero account (and first Import creating account).
     XRPL_ASSERT(
-        sle != nullptr || account_ == beast::zero,
+        sle != nullptr || account_ == beast::zero ||
+            (view().rules().enabled(featureImportExport) &&
+                ctx_.tx.getTxnType() == ttIMPORT),
         "xrpl::Transactor::apply : non-null SLE or zero account");
 
     if (sle)
@@ -719,6 +742,11 @@ Transactor::checkSign(
 NotTEC
 Transactor::checkSign(PreclaimContext const& ctx)
 {
+    // Import signatures are validated via XPOP proof in Import::preflight.
+    if (ctx.view.rules().enabled(featureImportExport) &&
+        ctx.tx.getTxnType() == ttIMPORT)
+        return tesSUCCESS;
+
     auto const idAccount = ctx.tx.isFieldPresent(sfDelegate) ? ctx.tx.getAccountID(sfDelegate)
                                                              : ctx.tx.getAccountID(sfAccount);
     return checkSign(ctx.view, ctx.flags, ctx.parentBatchId, idAccount, ctx.tx, ctx.j);

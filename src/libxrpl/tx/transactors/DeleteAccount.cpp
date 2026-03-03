@@ -237,6 +237,11 @@ DeleteAccount::preclaim(PreclaimContext const& ctx)
     if (!sleAccount)
         return terNO_ACCOUNT;
 
+    // Accounts created via Import are blocked from deletion.
+    if (ctx.view.rules().enabled(featureImportExport) &&
+        sleAccount->isFieldPresent(sfImportSequence))
+        return tecHAS_OBLIGATIONS;
+
     // If an issuer has any issued NFTs resident in the ledger then it
     // cannot be deleted.
     if ((*sleAccount)[~sfMintedNFTokens] != (*sleAccount)[~sfBurnedNFTokens])

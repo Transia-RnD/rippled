@@ -1573,22 +1573,33 @@ TxQ::tryDirectApply(
     auto const account = (*tx)[sfAccount];
     auto const sleAccount = view.read(keylet::account(account));
 
+    bool const isFirstImport = !sleAccount &&
+        view.rules().enabled(featureImportExport) &&
+        tx->getTxnType() == ttIMPORT;
+
     // Don't attempt to direct apply if the account is not in the ledger.
-    if (!sleAccount)
+    if (!sleAccount && !isFirstImport)
         return {};
 
-    SeqProxy const acctSeqProx = SeqProxy::sequence((*sleAccount)[sfSequence]);
     SeqProxy const txSeqProx = tx->getSeqProxy();
 
-    // Can only directly apply if the transaction sequence matches the account
-    // sequence or if the transaction uses a ticket.
-    if (txSeqProx.isSeq() && txSeqProx != acctSeqProx)
-        return {};
+    if (!isFirstImport)
+    {
+        SeqProxy const acctSeqProx =
+            SeqProxy::sequence((*sleAccount)[sfSequence]);
 
-    FeeLevel64 const requiredFeeLevel = [this, &view, flags]() {
-        std::lock_guard lock(mutex_);
-        return getRequiredFeeLevel(view, flags, feeMetrics_.getSnapshot(), lock);
-    }();
+        // Can only directly apply if the transaction sequence matches the
+        // account sequence or if the transaction uses a ticket.
+        if (txSeqProx.isSeq() && txSeqProx != acctSeqProx)
+            return {};
+    }
+
+    FeeLevel64 const requiredFeeLevel =
+        isFirstImport ? FeeLevel64{0} : [this, &view, flags]() {
+            std::lock_guard lock(mutex_);
+            return getRequiredFeeLevel(
+                view, flags, feeMetrics_.getSnapshot(), lock);
+        }();
 
     // If the transaction's fee is high enough we may be able to put the
     // transaction straight into the ledger.
