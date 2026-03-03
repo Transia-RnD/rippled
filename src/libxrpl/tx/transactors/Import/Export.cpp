@@ -110,7 +110,13 @@ Export::doApply()
     auto const exportKeylet = keylet::exportRecord(id, exportSeq);
     auto sleExport = std::make_shared<SLE>(exportKeylet);
 
-    sleExport->setAccountID(sfAccount, id);
+    // sfAccount = the vault address (mainnet sender); falls back to
+    // the exporter's address if [import_vault_address] is not configured.
+    auto const vaultAddr = ctx_.registry.getImportVaultAddress();
+    sleExport->setAccountID(sfAccount, vaultAddr ? *vaultAddr : id);
+    // sfOwner = the sidechain account that exported (for lookup keying)
+    sleExport->setAccountID(sfOwner, id);
+    // sfDestination = the mainnet recipient
     sleExport->setAccountID(sfDestination, ctx_.tx[sfDestination]);
     sleExport->setFieldAmount(sfAmount, amount);
     sleExport->setFieldU32(sfExportSequence, exportSeq);
@@ -131,9 +137,19 @@ Export::doApply()
         // pseudo-tx fires or standalone/test environments.
         if (!sleVault)
         {
+            auto const firstTicket =
+                ctx_.registry.getImportVaultFirstTicket().value_or(1);
+            auto const maxTicket =
+                ctx_.registry.getImportVaultMaxTicket().value_or(
+                    firstTicket + 249);
+
             sleVault = std::make_shared<SLE>(vaultKeylet);
-            sleVault->setFieldU32(sfNextTicketSeq, 1);
-            sleVault->setFieldU32(sfMaxTicketSeq, 250);
+            sleVault->setFieldU32(sfNextTicketSeq, firstTicket);
+            sleVault->setFieldU32(sfMaxTicketSeq, maxTicket);
+            auto const mainnetSeq =
+                ctx_.registry.getImportVaultMainnetSequence();
+            if (mainnetSeq)
+                sleVault->setFieldU32(sfMainnetSequence, *mainnetSeq);
             sleVault->setFieldU32(sfExportQuorum, 0);
             sleVault->setFieldU32(sfSignerCount, 0);
             sleVault->setFieldH256(sfPreviousTxnID, uint256{});

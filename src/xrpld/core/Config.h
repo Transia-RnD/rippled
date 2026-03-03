@@ -266,6 +266,17 @@ public:
     // locked XRP for the lock-and-mint cross-chain model
     std::optional<AccountID> IMPORT_VAULT_ADDRESS;
 
+    // The first and last mainnet ticket sequence assigned to the vault.
+    // These must match the actual Ticket objects on mainnet created via
+    // TicketCreate.  sfNextTicketSeq is initialised to FIRST_TICKET and
+    // sfMaxTicketSeq is initialised to MAX_TICKET when the ExportVaultState
+    // ledger object is created.
+    std::optional<std::uint32_t> IMPORT_VAULT_FIRST_TICKET;
+    std::optional<std::uint32_t> IMPORT_VAULT_MAX_TICKET;
+
+    // Vault's mainnet account Sequence after setup (for ticket prediction).
+    std::optional<std::uint32_t> IMPORT_VAULT_MAINNET_SEQUENCE;
+
     // Mainnet WebSocket URLs for the embedded MainnetWatcher
     std::vector<std::string> MAINNET_NODES;
 

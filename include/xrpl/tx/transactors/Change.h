@@ -42,6 +42,9 @@ private:
 
     TER
     applyImportCredit();
+
+    TER
+    applyExportConfirm();
 };
 
 using EnableAmendment = Change;
@@ -49,5 +52,6 @@ using SetFee = Change;
 using UNLModify = Change;
 using UNLReportTx = Change;
 using ImportCreditTx = Change;
+using ExportConfirmTx = Change;
 
 }  // namespace xrpl

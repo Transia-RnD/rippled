@@ -6,6 +6,7 @@
 
 #include <xrpl/basics/StringUtilities.h>
 #include <xrpl/basics/base64.h>
+#include <xrpl/protocol/digest.h>
 #include <xrpl/json/json_reader.h>
 #include <xrpl/json/json_writer.h>
 #include <xrpl/json/to_string.h>
@@ -208,10 +209,13 @@ MainnetWatcher::connect()
                     << "MainnetWatcher: Connected and subscribed to "
                     << url;
 
-                // Read loop
+                // Read loop — periodically drain submit queue
                 beast_ns::flat_buffer buffer;
                 while (running_)
                 {
+                    drainSubmitQueue(ws);
+                    resubmitPending(ws);
+
                     buffer.clear();
                     ws.read(buffer);
                     auto const msg = beast_ns::buffers_to_string(
@@ -249,6 +253,9 @@ MainnetWatcher::connect()
                 beast_ns::flat_buffer buffer;
                 while (running_)
                 {
+                    drainSubmitQueue(ws);
+                    resubmitPending(ws);
+
                     buffer.clear();
                     ws.read(buffer);
                     auto const msg = beast_ns::buffers_to_string(
@@ -308,6 +315,8 @@ MainnetWatcher::onLedger(Json::Value const& data)
     auto const idx = data["ledger_index"].asUInt();
 
     std::lock_guard lock(mutex_);
+
+    latestLedgerIndex_ = std::max(latestLedgerIndex_, idx);
 
     LedgerData ld;
     ld.ledgerIndex = idx;
@@ -386,6 +395,13 @@ MainnetWatcher::onTransaction(Json::Value const& data)
         return;
 
     auto const& tx = data["transaction"];
+
+    // Check for vault outbound confirmations (TicketCreate, Payment, etc.)
+    if (isVaultOutbound(tx))
+    {
+        onVaultOutbound(data);
+        return;
+    }
 
     if (!isVaultPayment(tx))
         return;
@@ -585,6 +601,12 @@ MainnetWatcher::getStatus() const
         static_cast<Json::UInt>(readyImports_.size());
     result["completed_count"] =
         static_cast<Json::UInt>(completedTxHashes_.size());
+    result["submit_queue"] =
+        static_cast<Json::UInt>(submitQueue_.size());
+    result["pending_submissions"] =
+        static_cast<Json::UInt>(pendingSubmissions_.size());
+    result["confirmed_vault_txs"] =
+        static_cast<Json::UInt>(confirmedVaultTxs_.size());
 
     if (!ledgers_.empty())
     {
@@ -594,5 +616,231 @@ MainnetWatcher::getStatus() const
 
     return result;
 }
+
+void
+MainnetWatcher::submitTransaction(std::string const& txBlob)
+{
+    std::lock_guard lock(mutex_);
+    submitQueue_.push_back(txBlob);
+
+    JLOG(journal_.info())
+        << "MainnetWatcher: Queued tx for submission, queue size="
+        << submitQueue_.size();
+}
+
+std::vector<MainnetWatcher::ConfirmedVaultTx>
+MainnetWatcher::consumeConfirmedVaultTxs()
+{
+    std::lock_guard lock(mutex_);
+    std::vector<ConfirmedVaultTx> result;
+    result.swap(confirmedVaultTxs_);
+    return result;
+}
+
+bool
+MainnetWatcher::isVaultOutbound(Json::Value const& tx) const
+{
+    if (!tx.isMember("Account"))
+        return false;
+
+    auto const acct =
+        parseBase58<AccountID>(tx["Account"].asString());
+    return acct && *acct == vaultAddress_;
+}
+
+void
+MainnetWatcher::onVaultOutbound(Json::Value const& data)
+{
+    auto const& tx = data["transaction"];
+    auto const& meta = data["meta"];
+
+    // Only care about successful transactions
+    if (meta.isMember("TransactionResult") &&
+        meta["TransactionResult"].asString() != "tesSUCCESS")
+    {
+        JLOG(journal_.warn())
+            << "MainnetWatcher: Vault outbound failed: "
+            << meta["TransactionResult"].asString();
+        return;
+    }
+
+    ConfirmedVaultTx confirmed;
+
+    if (data.isMember("ledger_index"))
+        confirmed.ledgerIndex = data["ledger_index"].asUInt();
+
+    if (tx.isMember("TransactionType"))
+        confirmed.txType = tx["TransactionType"].asString();
+
+    if (tx.isMember("hash"))
+        (void)confirmed.txHash.parseHex(tx["hash"].asString());
+
+    // For TicketCreate: extract ticket count and new Sequence
+    if (confirmed.txType == "TicketCreate")
+    {
+        if (tx.isMember("TicketCount"))
+            confirmed.ticketCount = tx["TicketCount"].asUInt();
+
+        // Extract new Sequence from metadata AffectedNodes
+        if (meta.isMember("AffectedNodes"))
+        {
+            for (auto const& node : meta["AffectedNodes"])
+            {
+                if (!node.isMember("ModifiedNode"))
+                    continue;
+                auto const& mn = node["ModifiedNode"];
+                if (mn.isMember("LedgerEntryType") &&
+                    mn["LedgerEntryType"].asString() == "AccountRoot" &&
+                    mn.isMember("FinalFields") &&
+                    mn["FinalFields"].isMember("Sequence"))
+                {
+                    confirmed.newSequence =
+                        mn["FinalFields"]["Sequence"].asUInt();
+                    break;
+                }
+            }
+        }
+
+        JLOG(journal_.info())
+            << "MainnetWatcher: Vault TicketCreate confirmed, "
+            << confirmed.ticketCount << " tickets, newSeq="
+            << confirmed.newSequence;
+    }
+    else
+    {
+        JLOG(journal_.info())
+            << "MainnetWatcher: Vault " << confirmed.txType
+            << " confirmed in ledger " << confirmed.ledgerIndex;
+    }
+
+    std::lock_guard lock(mutex_);
+
+    confirmedVaultTxs_.push_back(std::move(confirmed));
+
+    // Remove from pending submissions
+    pendingSubmissions_.erase(confirmed.txHash);
+}
+
+template <class WsStream>
+void
+MainnetWatcher::drainSubmitQueue(WsStream& ws)
+{
+    std::deque<std::string> toSend;
+    {
+        std::lock_guard lock(mutex_);
+        toSend.swap(submitQueue_);
+    }
+
+    Json::FastWriter writer;
+    for (auto const& blob : toSend)
+    {
+        Json::Value cmd;
+        cmd["command"] = "submit";
+        cmd["tx_blob"] = blob;
+
+        try
+        {
+            ws.write(net::buffer(writer.write(cmd)));
+
+            JLOG(journal_.info())
+                << "MainnetWatcher: Submitted tx to mainnet";
+
+            // Track as pending for retry
+            // We don't know the hash yet — it will be matched on confirmation
+            // Store by blob hash for dedup
+            std::lock_guard lock(mutex_);
+            // Use SHA512Half of the blob as a tracking key
+            auto const blobHash = sha512Half(Slice(
+                reinterpret_cast<std::uint8_t const*>(blob.data()),
+                blob.size()));
+            pendingSubmissions_[blobHash] = {
+                blob, latestLedgerIndex_, 0};
+        }
+        catch (std::exception const& e)
+        {
+            JLOG(journal_.warn())
+                << "MainnetWatcher: Submit failed: " << e.what();
+            // Re-queue for retry
+            std::lock_guard lock(mutex_);
+            submitQueue_.push_back(blob);
+        }
+    }
+}
+
+template <class WsStream>
+void
+MainnetWatcher::resubmitPending(WsStream& ws)
+{
+    std::vector<std::pair<uint256, SubmissionState>> toRetry;
+    std::vector<uint256> toRemove;
+
+    {
+        std::lock_guard lock(mutex_);
+        for (auto& [hash, state] : pendingSubmissions_)
+        {
+            if (latestLedgerIndex_ <
+                state.lastSubmitLedger + kRetryAfterLedgers)
+                continue;
+
+            if (state.retryCount >= kMaxRetries)
+            {
+                JLOG(journal_.warn())
+                    << "MainnetWatcher: Giving up on submission "
+                    << hash << " after " << kMaxRetries << " retries";
+                toRemove.push_back(hash);
+                continue;
+            }
+
+            toRetry.push_back({hash, state});
+        }
+    }
+
+    Json::FastWriter writer;
+    for (auto& [hash, state] : toRetry)
+    {
+        Json::Value cmd;
+        cmd["command"] = "submit";
+        cmd["tx_blob"] = state.txBlob;
+
+        try
+        {
+            ws.write(net::buffer(writer.write(cmd)));
+
+            std::lock_guard lock(mutex_);
+            auto it = pendingSubmissions_.find(hash);
+            if (it != pendingSubmissions_.end())
+            {
+                it->second.retryCount++;
+                it->second.lastSubmitLedger = latestLedgerIndex_;
+            }
+
+            JLOG(journal_.info())
+                << "MainnetWatcher: Resubmitted tx, retry #"
+                << state.retryCount + 1;
+        }
+        catch (std::exception const& e)
+        {
+            JLOG(journal_.warn())
+                << "MainnetWatcher: Resubmit failed: " << e.what();
+        }
+    }
+
+    if (!toRemove.empty())
+    {
+        std::lock_guard lock(mutex_);
+        for (auto const& h : toRemove)
+            pendingSubmissions_.erase(h);
+    }
+}
+
+// Explicit template instantiations for both WebSocket stream types
+template void MainnetWatcher::drainSubmitQueue(
+    websocket::stream<ssl::stream<tcp::socket>>& ws);
+template void MainnetWatcher::drainSubmitQueue(
+    websocket::stream<tcp::socket>& ws);
+template void MainnetWatcher::resubmitPending(
+    websocket::stream<ssl::stream<tcp::socket>>& ws);
+template void MainnetWatcher::resubmitPending(
+    websocket::stream<tcp::socket>& ws);
 
 }  // namespace xrpl

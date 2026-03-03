@@ -133,6 +133,7 @@ TYPED_SFIELD(sfMaxTicketSeq,            UINT32,    84) // highest allocated main
 TYPED_SFIELD(sfExportQuorum,            UINT32,    85) // required validator signatures for export
 TYPED_SFIELD(sfSignerCount,             UINT32,    86) // number of vault signers
 TYPED_SFIELD(sfPasskeySignCount,        UINT32,    87) // passkey sign counter
+TYPED_SFIELD(sfMainnetSequence,         UINT32,    88) // vault's mainnet account Sequence
 
 // 64-bit integers (common)
 TYPED_SFIELD(sfIndexNext,                UINT64,     1)

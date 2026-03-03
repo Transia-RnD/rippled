@@ -809,8 +809,10 @@ LedgerMaster::setFullLedger(
                     [&](std::shared_ptr<SLE const> const& sle) {
                         try
                         {
-                            auto const account =
-                                sle->getAccountID(sfAccount);
+                            // sfAccount = vault (mainnet sender)
+                            // sfOwner = original exporter (lookup key)
+                            auto const owner =
+                                sle->getAccountID(sfOwner);
                             auto const destination =
                                 sle->getAccountID(sfDestination);
                             auto const amount =
@@ -825,7 +827,8 @@ LedgerMaster::setFullLedger(
                                 sle->getFieldU32(sfTicketSequence);
 
                             ExportPaymentParams params;
-                            params.vaultAddress = *vaultAddr;
+                            params.vaultAddress =
+                                sle->getAccountID(sfAccount);
                             params.destination = destination;
                             params.amount = amount;
                             params.ticketSeq = ticketSeq;
@@ -843,7 +846,7 @@ LedgerMaster::setFullLedger(
                             app_.getExportSignatureCollector()
                                 .stashTxnData(
                                     txnHash,
-                                    account,
+                                    owner,
                                     exportSeq,
                                     params,
                                     quorum,

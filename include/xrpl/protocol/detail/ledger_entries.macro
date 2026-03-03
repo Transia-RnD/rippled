@@ -738,6 +738,7 @@ LEDGER_ENTRY(ltIMPORT_VL_SEQ, 0x0091, ImportVLSeq, import_vlseq, ({
  */
 LEDGER_ENTRY(ltEXPORT_RECORD, 0x0092, ExportRecord, export_record, ({
     {sfAccount,                  soeREQUIRED},
+    {sfOwner,                    soeREQUIRED},
     {sfDestination,              soeREQUIRED},
     {sfAmount,                   soeREQUIRED},
     {sfExportSequence,           soeREQUIRED},
@@ -755,6 +756,7 @@ LEDGER_ENTRY(ltEXPORT_RECORD, 0x0092, ExportRecord, export_record, ({
 LEDGER_ENTRY(ltEXPORT_VAULT_STATE, 0x0093, ExportVaultState, export_vault_state, ({
     {sfNextTicketSeq,            soeREQUIRED},
     {sfMaxTicketSeq,             soeREQUIRED},
+    {sfMainnetSequence,          soeOPTIONAL},
     {sfSignerListHash,           soeOPTIONAL},
     {sfExportQuorum,             soeREQUIRED},
     {sfSignerCount,              soeREQUIRED},

@@ -1,6 +1,7 @@
 #include <xrpld/app/misc/ExportSignatureCollector.h>
 
 #include <xrpld/app/main/Application.h>
+#include <xrpld/app/misc/MainnetWatcher.h>
 #include <xrpld/app/misc/ValidatorList.h>
 
 #include <xrpl/basics/Slice.h>
@@ -9,6 +10,7 @@
 #include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/STArray.h>
 #include <xrpl/protocol/STObject.h>
+#include <xrpl/protocol/Serializer.h>
 #include <xrpl/protocol/Sign.h>
 #include <xrpl/protocol/digest.h>
 #include <xrpl/protocol/jss.h>
@@ -269,6 +271,19 @@ ExportSignatureCollector::tryAssemble(uint256 const& txnHash)
     JLOG(journal_.info())
         << "ExportSigCollector: Assembled multisig for " << txnHash
         << " with " << sit->second.size() << " sigs";
+
+    // Auto-submit to mainnet via MainnetWatcher
+    if (mainnetWatcher_)
+    {
+        auto const& stx = assembled_.at(txnHash);
+        Serializer s;
+        stx.add(s);
+        mainnetWatcher_->submitTransaction(strHex(s.peekData()));
+
+        JLOG(journal_.info())
+            << "ExportSigCollector: Auto-submitted " << txnHash
+            << " to mainnet";
+    }
 }
 
 Json::Value

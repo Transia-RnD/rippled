@@ -78,6 +78,9 @@ struct ConfigSection
 #define SECTION_WORKERS "workers"
 #define SECTION_IMPORT_VL_KEYS "import_vl_keys"
 #define SECTION_IMPORT_VAULT_ADDRESS "import_vault_address"
+#define SECTION_IMPORT_VAULT_FIRST_TICKET "import_vault_first_ticket"
+#define SECTION_IMPORT_VAULT_MAX_TICKET "import_vault_max_ticket"
+#define SECTION_IMPORT_VAULT_MAINNET_SEQUENCE "import_vault_mainnet_sequence"
 #define SECTION_MAINNET_NODES "mainnet_nodes"
 
 }  // namespace xrpl

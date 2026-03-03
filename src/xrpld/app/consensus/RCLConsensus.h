@@ -5,6 +5,7 @@
 #include <xrpld/app/consensus/RCLCxPeerPos.h>
 #include <xrpld/app/consensus/RCLCxTx.h>
 #include <xrpld/app/misc/FeeVote.h>
+#include <xrpld/app/misc/ExportConfirmVote.h>
 #include <xrpld/app/misc/ImportCreditVote.h>
 #include <xrpld/app/misc/NegativeUNLVote.h>
 #include <xrpld/app/misc/ValidatorKeys.h>
@@ -70,6 +71,7 @@ class RCLConsensus
         RCLCensorshipDetector<TxID, LedgerIndex> censorshipDetector_;
         NegativeUNLVote nUnlVote_;
         ImportCreditVote importCreditVote_;
+        ExportConfirmVote exportConfirmVote_;
 
     public:
         using Ledger_t = RCLCxLedger;

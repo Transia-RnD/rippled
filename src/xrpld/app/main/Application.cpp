@@ -1124,6 +1124,24 @@ private:
         return config_->IMPORT_VAULT_ADDRESS;
     }
 
+    std::optional<std::uint32_t>
+    getImportVaultFirstTicket() const override
+    {
+        return config_->IMPORT_VAULT_FIRST_TICKET;
+    }
+
+    std::optional<std::uint32_t>
+    getImportVaultMaxTicket() const override
+    {
+        return config_->IMPORT_VAULT_MAX_TICKET;
+    }
+
+    std::optional<std::uint32_t>
+    getImportVaultMainnetSequence() const override
+    {
+        return config_->IMPORT_VAULT_MAINNET_SEQUENCE;
+    }
+
     ExportSignatureCollector&
     getExportSignatureCollector() override
     {
@@ -1515,6 +1533,11 @@ ApplicationImp::start(bool withTimers)
             config_->MAINNET_NODES,
             logs_->journal("MainnetWatcher"));
         mainnetWatcher_->start();
+
+        // Wire auto-submit: when ExportSignatureCollector assembles a
+        // multisig tx, it auto-submits via MainnetWatcher
+        exportSignatureCollector_->setMainnetWatcher(
+            mainnetWatcher_.get());
     }
 }
 

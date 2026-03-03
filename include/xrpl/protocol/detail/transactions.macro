@@ -1355,3 +1355,20 @@ TRANSACTION(ttIMPORT_CREDIT, 104, ImportCreditTx,
     {sfLedgerSequence, soeREQUIRED},
     {sfInvoiceID, soeOPTIONAL},
 }))
+
+/** Pseudo-transaction: export confirmation from mainnet.
+    Validators automatically propose these when the MainnetWatcher
+    confirms that a vault TicketCreate has landed on mainnet.
+    Updates sfMaxTicketSeq and sfMainnetSequence on ExportVaultState.
+    Processed by the Change transactor.
+ */
+TRANSACTION(ttEXPORT_CONFIRM, 105, ExportConfirmTx,
+    Delegation::notDelegable,
+    featureImportExport,
+    noPriv,
+    ({
+    {sfMaxTicketSeq, soeOPTIONAL},
+    {sfMainnetSequence, soeOPTIONAL},
+    {sfSourceTxnID, soeREQUIRED},
+    {sfLedgerSequence, soeREQUIRED},
+}))

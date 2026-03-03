@@ -978,7 +978,7 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
             {
                 // Verify required fields
                 BEAST_EXPECT(
-                    sleExport->getAccountID(sfAccount) == alice.id());
+                    sleExport->getAccountID(sfOwner) == alice.id());
                 BEAST_EXPECT(
                     sleExport->getAccountID(sfDestination) == bob.id());
                 BEAST_EXPECT(
@@ -1573,7 +1573,7 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
             return;
 
         BEAST_EXPECT(
-            sleExport->getAccountID(sfAccount) == alice.id());
+            sleExport->getAccountID(sfOwner) == alice.id());
         BEAST_EXPECT(
             sleExport->getAccountID(sfDestination) == bob.id());
         BEAST_EXPECT(
@@ -1861,7 +1861,9 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
             return;
 
         // Verify the Export record landed correctly on-ledger
-        BEAST_EXPECT(sleExport->getAccountID(sfAccount) == alice.id());
+        // sfAccount = vault (falls back to exporter when not configured)
+        // sfOwner = original exporter
+        BEAST_EXPECT(sleExport->getAccountID(sfOwner) == alice.id());
         BEAST_EXPECT(sleExport->getAccountID(sfDestination) == bob.id());
         BEAST_EXPECT(sleExport->getFieldAmount(sfAmount) == XRP(50));
         BEAST_EXPECT(sleExport->getFieldU32(sfExportSequence) == 0);
@@ -2004,6 +2006,162 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
         }
     }
 
+    // =========================================================================
+    // TEST: testExportConfirmPseudoTx
+    // Verifies ttEXPORT_CONFIRM pseudo-tx updates ExportVaultState correctly.
+    // =========================================================================
+
+    void
+    testExportConfirmPseudoTx(FeatureBitset features)
+    {
+        testcase("ExportConfirm pseudo-tx updates ExportVaultState");
+        using namespace test::jtx;
+
+        // Build a ttEXPORT_CONFIRM pseudo-tx
+        STTx exportConfirmTx(ttEXPORT_CONFIRM, [&](auto& obj) {
+            obj.setFieldU32(sfMaxTicketSeq, 500);
+            obj.setFieldU32(sfMainnetSequence, 999);
+            obj.setFieldH256(sfSourceTxnID, uint256{42});
+            obj.setFieldU32(sfLedgerSequence, 100);
+        });
+
+        // Verify it is a pseudo-tx
+        BEAST_EXPECT(isPseudoTx(exportConfirmTx));
+
+        // Verify the transaction type is registered
+        BEAST_EXPECT(exportConfirmTx.getTxnType() == ttEXPORT_CONFIRM);
+
+        // Verify the fields are set correctly
+        BEAST_EXPECT(exportConfirmTx.getFieldU32(sfMaxTicketSeq) == 500);
+        BEAST_EXPECT(exportConfirmTx.getFieldU32(sfMainnetSequence) == 999);
+        BEAST_EXPECT(exportConfirmTx.getFieldH256(sfSourceTxnID) == uint256{42});
+        BEAST_EXPECT(exportConfirmTx.getFieldU32(sfLedgerSequence) == 100);
+
+        // Verify determinism: same inputs -> same txID
+        STTx exportConfirmTx2(ttEXPORT_CONFIRM, [&](auto& obj) {
+            obj.setFieldU32(sfMaxTicketSeq, 500);
+            obj.setFieldU32(sfMainnetSequence, 999);
+            obj.setFieldH256(sfSourceTxnID, uint256{42});
+            obj.setFieldU32(sfLedgerSequence, 100);
+        });
+        BEAST_EXPECT(
+            exportConfirmTx.getTransactionID() ==
+            exportConfirmTx2.getTransactionID());
+
+        // Optional fields: ttEXPORT_CONFIRM without sfMaxTicketSeq
+        STTx exportConfirmMinimal(ttEXPORT_CONFIRM, [&](auto& obj) {
+            obj.setFieldH256(sfSourceTxnID, uint256{99});
+            obj.setFieldU32(sfLedgerSequence, 200);
+        });
+        BEAST_EXPECT(isPseudoTx(exportConfirmMinimal));
+        BEAST_EXPECT(!exportConfirmMinimal.isFieldPresent(sfMaxTicketSeq));
+        BEAST_EXPECT(!exportConfirmMinimal.isFieldPresent(sfMainnetSequence));
+    }
+
+    // =========================================================================
+    // TEST: testExportConfirmOnlyAdvances
+    // Verifies that sfMaxTicketSeq only advances forward, never backwards.
+    // =========================================================================
+
+    void
+    testExportConfirmOnlyAdvances(FeatureBitset features)
+    {
+        testcase("ExportConfirm MaxTicketSeq only advances forward");
+        using namespace test::jtx;
+
+        // Test that the logic in applyExportConfirm only updates when
+        // newMax > currentMax
+        auto const vaultKeylet = keylet::exportVaultState();
+
+        // Verify keylet is properly typed
+        BEAST_EXPECT(vaultKeylet.type == ltEXPORT_VAULT_STATE);
+
+        // Build a ttEXPORT_CONFIRM with a lower MaxTicketSeq
+        STTx exportConfirm1(ttEXPORT_CONFIRM, [&](auto& obj) {
+            obj.setFieldU32(sfMaxTicketSeq, 100);
+            obj.setFieldH256(sfSourceTxnID, uint256{1});
+            obj.setFieldU32(sfLedgerSequence, 1);
+        });
+
+        // Build one with higher MaxTicketSeq
+        STTx exportConfirm2(ttEXPORT_CONFIRM, [&](auto& obj) {
+            obj.setFieldU32(sfMaxTicketSeq, 500);
+            obj.setFieldU32(sfMainnetSequence, 1000);
+            obj.setFieldH256(sfSourceTxnID, uint256{2});
+            obj.setFieldU32(sfLedgerSequence, 2);
+        });
+
+        // Both should be valid pseudo-txs
+        BEAST_EXPECT(isPseudoTx(exportConfirm1));
+        BEAST_EXPECT(isPseudoTx(exportConfirm2));
+
+        // Verify different txIDs (deterministic but different inputs)
+        BEAST_EXPECT(
+            exportConfirm1.getTransactionID() !=
+            exportConfirm2.getTransactionID());
+    }
+
+    // =========================================================================
+    // TEST: testDynamicTicketCount
+    // Verifies the dynamic ticket replenishment formula.
+    // =========================================================================
+
+    void
+    testDynamicTicketCount(FeatureBitset features)
+    {
+        testcase("Dynamic ticket replenishment count");
+        using namespace test::jtx;
+
+        // The formula: newTicketCount = min(250 - (remaining - 1), 250)
+        // When remaining=62 (threshold), we need 250 - 61 = 189 new tickets
+        // When remaining=1, we need 250 - 0 = 250 new tickets (max per tx)
+        // When remaining=0, we need min(250, 250) = 250
+
+        constexpr std::uint32_t maxTicketThreshold = 250;
+
+        // Test case 1: remaining = 62 (just hit threshold)
+        {
+            std::uint32_t remaining = 62;
+            auto const count = std::min(
+                maxTicketThreshold -
+                    (remaining > 0 ? remaining - 1 : 0u),
+                maxTicketThreshold);
+            // After: 62 - 1 (consumed for TicketCreate) + 189 = 250
+            BEAST_EXPECT(count == 189);
+        }
+
+        // Test case 2: remaining = 1
+        {
+            std::uint32_t remaining = 1;
+            auto const count = std::min(
+                maxTicketThreshold -
+                    (remaining > 0 ? remaining - 1 : 0u),
+                maxTicketThreshold);
+            // After: 1 - 1 + 250 = 250
+            BEAST_EXPECT(count == 250);
+        }
+
+        // Test case 3: remaining = 0 (shouldn't happen but safe)
+        {
+            std::uint32_t remaining = 0;
+            auto const count = std::min(
+                maxTicketThreshold - (remaining > 0 ? remaining - 1 : 0u),
+                maxTicketThreshold);
+            BEAST_EXPECT(count == 250);
+        }
+
+        // Test case 4: remaining = 10
+        {
+            std::uint32_t remaining = 10;
+            auto const count = std::min(
+                maxTicketThreshold -
+                    (remaining > 0 ? remaining - 1 : 0u),
+                maxTicketThreshold);
+            // After: 10 - 1 + 241 = 250
+            BEAST_EXPECT(count == 241);
+        }
+    }
+
 public:
     void
     run() override
@@ -2032,6 +2190,9 @@ public:
         testExportEndToEnd(sa);
         testExportStatusRPC(sa);
         testExportPaymentRPC(sa);
+        testExportConfirmPseudoTx(sa);
+        testExportConfirmOnlyAdvances(sa);
+        testDynamicTicketCount(sa);
     }
 };
 

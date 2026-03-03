@@ -103,6 +103,26 @@ public:
         readyImports_.push_back(std::move(ri));
     }
 
+    /** Submit a signed transaction blob to mainnet via WebSocket.
+        Thread-safe — queued for async delivery on the watcher's connection. */
+    void
+    submitTransaction(std::string const& txBlob);
+
+    /** A confirmed vault outbound transaction on mainnet. */
+    struct ConfirmedVaultTx
+    {
+        uint256 txHash;              // Mainnet tx hash
+        std::uint32_t ledgerIndex;   // Ledger it was confirmed in
+        std::string txType;          // "TicketCreate", "Payment", etc.
+        std::uint32_t ticketCount;   // For TicketCreate: number of tickets
+        std::uint32_t newSequence;   // Post-tx account Sequence
+    };
+
+    /** Consume all confirmed vault transactions (thread-safe).
+        Returns and clears the list. */
+    std::vector<ConfirmedVaultTx>
+    consumeConfirmedVaultTxs();
+
 private:
     /** Main event loop running in the watcher thread. */
     void
@@ -138,6 +158,24 @@ private:
     bool
     isVaultPayment(Json::Value const& tx) const;
 
+    /** Check if a transaction is an outbound tx from our vault account. */
+    bool
+    isVaultOutbound(Json::Value const& tx) const;
+
+    /** Handle a confirmed vault outbound transaction. */
+    void
+    onVaultOutbound(Json::Value const& data);
+
+    /** Drain the submit queue over an open WebSocket (templated for TLS/plain). */
+    template <class WsStream>
+    void
+    drainSubmitQueue(WsStream& ws);
+
+    /** Resubmit pending submissions that haven't confirmed. */
+    template <class WsStream>
+    void
+    resubmitPending(WsStream& ws);
+
     Application& app_;
     beast::Journal journal_;
     std::vector<std::string> wsUrls_;
@@ -164,8 +202,28 @@ private:
     // Completed tx hashes (for dedup)
     std::deque<uint256> completedTxHashes_;
 
+    // Submit queue: signed tx blobs waiting to be sent to mainnet
+    std::deque<std::string> submitQueue_;
+
+    // Confirmed vault outbound transactions
+    std::vector<ConfirmedVaultTx> confirmedVaultTxs_;
+
+    // Pending submissions awaiting confirmation
+    struct SubmissionState
+    {
+        std::string txBlob;
+        std::uint32_t lastSubmitLedger{0};
+        std::uint32_t retryCount{0};
+    };
+    std::map<uint256, SubmissionState> pendingSubmissions_;
+
+    // Latest known mainnet ledger index (for retry timing)
+    std::uint32_t latestLedgerIndex_{0};
+
     static constexpr std::size_t kMaxLedgerHistory = 256;
     static constexpr std::size_t kMaxCompletedHistory = 1024;
+    static constexpr std::uint32_t kRetryAfterLedgers = 10;
+    static constexpr std::uint32_t kMaxRetries = 5;
 };
 
 }  // namespace xrpl

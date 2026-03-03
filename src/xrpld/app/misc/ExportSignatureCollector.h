@@ -18,6 +18,7 @@
 namespace xrpl {
 
 class Application;
+class MainnetWatcher;
 
 /** Collects export signatures from validators using two-phase verification.
 
@@ -54,6 +55,13 @@ public:
     };
 
     ExportSignatureCollector(Application& app, beast::Journal journal);
+
+    /** Set the MainnetWatcher for auto-submission of assembled transactions. */
+    void
+    setMainnetWatcher(MainnetWatcher* watcher)
+    {
+        mainnetWatcher_ = watcher;
+    }
 
     /** Process an incoming export signature extracted from a TMValidation.
 
@@ -130,6 +138,7 @@ private:
         Slice const& sig) const;
 
     beast::Journal journal_;
+    MainnetWatcher* mainnetWatcher_{nullptr};
     mutable std::mutex mutex_;
 
     // Primary storage: txnHash -> verified signatures

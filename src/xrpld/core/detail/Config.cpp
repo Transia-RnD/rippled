@@ -966,6 +966,80 @@ Config::loadFromString(std::string const& fileContents)
                 IMPORT_VAULT_ADDRESS = *id;
             }
 
+            // Parse [import_vault_first_ticket]
+            if (auto sec = getIniFileSection(
+                    iniFile, SECTION_IMPORT_VAULT_FIRST_TICKET);
+                sec)
+            {
+                if (sec->size() != 1)
+                    Throw<std::runtime_error>(
+                        "[" SECTION_IMPORT_VAULT_FIRST_TICKET
+                        "] must contain exactly one value.");
+                try
+                {
+                    IMPORT_VAULT_FIRST_TICKET =
+                        static_cast<std::uint32_t>(
+                            std::stoul((*sec)[0]));
+                }
+                catch (...)
+                {
+                    Throw<std::runtime_error>(
+                        "Invalid value in "
+                        "[" SECTION_IMPORT_VAULT_FIRST_TICKET "]: " +
+                        (*sec)[0]);
+                }
+            }
+
+            // Parse [import_vault_max_ticket]
+            if (auto sec = getIniFileSection(
+                    iniFile, SECTION_IMPORT_VAULT_MAX_TICKET);
+                sec)
+            {
+                if (sec->size() != 1)
+                    Throw<std::runtime_error>(
+                        "[" SECTION_IMPORT_VAULT_MAX_TICKET
+                        "] must contain exactly one value.");
+                try
+                {
+                    IMPORT_VAULT_MAX_TICKET =
+                        static_cast<std::uint32_t>(
+                            std::stoul((*sec)[0]));
+                }
+                catch (...)
+                {
+                    Throw<std::runtime_error>(
+                        "Invalid value in "
+                        "[" SECTION_IMPORT_VAULT_MAX_TICKET "]: " +
+                        (*sec)[0]);
+                }
+            }
+
+            // Parse [import_vault_mainnet_sequence]
+            if (auto sec = getIniFileSection(
+                    iniFile, SECTION_IMPORT_VAULT_MAINNET_SEQUENCE);
+                sec)
+            {
+                if (sec->empty())
+                {
+                    Throw<std::runtime_error>(
+                        "[" SECTION_IMPORT_VAULT_MAINNET_SEQUENCE
+                        "] is empty");
+                }
+                try
+                {
+                    IMPORT_VAULT_MAINNET_SEQUENCE =
+                        static_cast<std::uint32_t>(
+                            std::stoul((*sec)[0]));
+                }
+                catch (...)
+                {
+                    Throw<std::runtime_error>(
+                        "Invalid value in "
+                        "[" SECTION_IMPORT_VAULT_MAINNET_SEQUENCE "]: " +
+                        (*sec)[0]);
+                }
+            }
+
             // Parse [mainnet_nodes] for embedded MainnetWatcher
             if (auto mainnetNodes =
                     getIniFileSection(iniFile, SECTION_MAINNET_NODES);

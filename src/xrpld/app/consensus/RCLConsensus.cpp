@@ -78,6 +78,7 @@ RCLConsensus::Adaptor::Adaptor(
     , valCookie_(1 + rand_int(crypto_prng(), std::numeric_limits<std::uint64_t>::max() - 1))
     , nUnlVote_(validatorKeys_.nodeID, j_, app_)
     , importCreditVote_(app_, journal)
+    , exportConfirmVote_(app_, journal)
 {
     XRPL_ASSERT(valCookie_, "xrpl::RCLConsensus::Adaptor::Adaptor : nonzero cookie");
 
@@ -341,6 +342,7 @@ RCLConsensus::Adaptor::onClose(
         if (prevLedger->rules().enabled(featureImportExport))
         {
             importCreditVote_.doVoting(prevLedger, initialSet);
+            exportConfirmVote_.doVoting(prevLedger, initialSet);
         }
     }
 
@@ -892,7 +894,9 @@ RCLConsensus::Adaptor::signExportRecords(
         [&](std::shared_ptr<SLE const> const& sle) {
             try
             {
-                auto const account = sle->getAccountID(sfAccount);
+                // sfAccount = vault (mainnet sender)
+                // sfOwner = original exporter (lookup key)
+                auto const owner = sle->getAccountID(sfOwner);
                 auto const destination = sle->getAccountID(sfDestination);
                 auto const amount = sle->getFieldAmount(sfAmount);
                 auto const exportSeq = sle->getFieldU32(sfExportSequence);
@@ -904,7 +908,7 @@ RCLConsensus::Adaptor::signExportRecords(
 
                 // Build deterministic mainnet Payment
                 ExportPaymentParams params;
-                params.vaultAddress = *app_.getImportVaultAddress();
+                params.vaultAddress = sle->getAccountID(sfAccount);
                 params.destination = destination;
                 params.amount = amount;
                 params.ticketSeq = ticketSeq;
@@ -962,14 +966,14 @@ RCLConsensus::Adaptor::signExportRecords(
                 // Stash txnData in collector (for two-phase verification)
                 app_.getExportSignatureCollector().stashTxnData(
                     txnHash,
-                    account,
+                    owner,
                     exportSeq,
                     params,
                     quorum,
                     ledger.seq());
 
                 JLOG(j_.trace())
-                    << "Export sig for " << account << ":"
+                    << "Export sig for " << owner << ":"
                     << exportSeq << " txnHash=" << txnHash;
             }
             catch (std::exception const& ex)
@@ -1112,10 +1116,19 @@ RCLConsensus::Adaptor::checkTicketReplenishment(
         (maxTicket >= nextTicket) ? (maxTicket - nextTicket + 1) : 0u;
 
     constexpr std::uint32_t replenishThreshold = 62;
-    constexpr std::uint32_t newTicketCount = 200;
+    constexpr std::uint32_t maxTicketThreshold = 250;
 
     if (remaining > replenishThreshold)
         return result;
+
+    // Dynamic ticket count: fill back to maxTicketThreshold (250)
+    // remaining = current owned tickets (including the one we consume
+    // for this TicketCreate). The TicketCreate itself consumes one
+    // ticket, so after the tx we have: remaining - 1 + newTicketCount.
+    // We want remaining - 1 + newTicketCount <= maxTicketThreshold.
+    auto const newTicketCount = std::min(
+        maxTicketThreshold - (remaining > 0 ? remaining - 1 : 0u),
+        maxTicketThreshold);
 
     JLOG(j_.info())
         << "Ticket pool low (" << remaining

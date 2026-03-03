@@ -243,6 +243,18 @@ public:
     virtual std::optional<AccountID> const&
     getImportVaultAddress() const = 0;
 
+    /** Get the first mainnet ticket sequence for the vault. */
+    virtual std::optional<std::uint32_t>
+    getImportVaultFirstTicket() const = 0;
+
+    /** Get the max mainnet ticket sequence for the vault. */
+    virtual std::optional<std::uint32_t>
+    getImportVaultMaxTicket() const = 0;
+
+    /** Get the vault's mainnet account Sequence (for ticket prediction). */
+    virtual std::optional<std::uint32_t>
+    getImportVaultMainnetSequence() const = 0;
+
     /** Get the export signature collector (for validator-signed exports). */
     virtual ExportSignatureCollector&
     getExportSignatureCollector() = 0;

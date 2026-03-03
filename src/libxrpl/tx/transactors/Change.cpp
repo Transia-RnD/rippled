@@ -99,6 +99,23 @@ Transactor::invokePreflight<Change>(PreflightContext const& ctx)
         }
     }
 
+    if (ctx.tx.getTxnType() == ttEXPORT_CONFIRM)
+    {
+        if (!ctx.rules.enabled(featureImportExport))
+        {
+            JLOG(ctx.j.warn()) << "Change: ExportConfirm is not enabled.";
+            return temDISABLED;
+        }
+
+        if (!ctx.tx.isFieldPresent(sfSourceTxnID) ||
+            !ctx.tx.isFieldPresent(sfLedgerSequence))
+        {
+            JLOG(ctx.j.warn())
+                << "Change: ExportConfirm missing required fields";
+            return temMALFORMED;
+        }
+    }
+
     return tesSUCCESS;
 }
 
@@ -196,6 +213,7 @@ Change::preclaim(PreclaimContext const& ctx)
             return telIMPORT_VL_KEY_NOT_RECOGNISED;
         }
         case ttIMPORT_CREDIT:
+        case ttEXPORT_CONFIRM:
             return tesSUCCESS;
         default:
             return temUNKNOWN;
@@ -217,6 +235,8 @@ Change::doApply()
             return applyUNLReport();
         case ttIMPORT_CREDIT:
             return applyImportCredit();
+        case ttEXPORT_CONFIRM:
+            return applyExportConfirm();
         // LCOV_EXCL_START
         default:
             UNREACHABLE("xrpl::Change::doApply : invalid transaction type");
@@ -320,9 +340,19 @@ Change::applyAmendment()
             auto const vaultKeylet = keylet::exportVaultState();
             if (!view().peek(vaultKeylet))
             {
+                auto const firstTicket =
+                    ctx_.registry.getImportVaultFirstTicket().value_or(1);
+                auto const maxTicket =
+                    ctx_.registry.getImportVaultMaxTicket().value_or(
+                        firstTicket + 249);
+
                 auto sle = std::make_shared<SLE>(vaultKeylet);
-                sle->setFieldU32(sfNextTicketSeq, 1);
-                sle->setFieldU32(sfMaxTicketSeq, 250);
+                sle->setFieldU32(sfNextTicketSeq, firstTicket);
+                sle->setFieldU32(sfMaxTicketSeq, maxTicket);
+                auto const mainnetSeq =
+                    ctx_.registry.getImportVaultMainnetSequence();
+                if (mainnetSeq)
+                    sle->setFieldU32(sfMainnetSequence, *mainnetSeq);
                 sle->setFieldU32(sfExportQuorum, 0);
                 sle->setFieldU32(sfSignerCount, 0);
                 sle->setFieldH256(sfPreviousTxnID, uint256{});
@@ -694,6 +724,46 @@ Change::applyImportCredit()
         sleImport->setFieldU64(sfImportDirNode, *page);
         view().insert(sleImport);
     }
+
+    return tesSUCCESS;
+}
+
+TER
+Change::applyExportConfirm()
+{
+    auto const vaultKeylet = keylet::exportVaultState();
+    auto sleVault = view().peek(vaultKeylet);
+    if (!sleVault)
+    {
+        JLOG(j_.warn()) << "ExportConfirm: No ExportVaultState";
+        return tefINTERNAL;
+    }
+
+    // Update sfMaxTicketSeq if present — only advance, never go backwards
+    if (ctx_.tx.isFieldPresent(sfMaxTicketSeq))
+    {
+        auto const newMax = ctx_.tx.getFieldU32(sfMaxTicketSeq);
+        auto const currentMax = sleVault->getFieldU32(sfMaxTicketSeq);
+
+        if (newMax > currentMax)
+        {
+            sleVault->setFieldU32(sfMaxTicketSeq, newMax);
+            JLOG(j_.info())
+                << "ExportConfirm: MaxTicketSeq " << currentMax
+                << " -> " << newMax;
+        }
+    }
+
+    // Update sfMainnetSequence if present
+    if (ctx_.tx.isFieldPresent(sfMainnetSequence))
+    {
+        auto const newSeq = ctx_.tx.getFieldU32(sfMainnetSequence);
+        sleVault->setFieldU32(sfMainnetSequence, newSeq);
+    }
+
+    sleVault->setFieldH256(sfPreviousTxnID, ctx_.tx.getTransactionID());
+    sleVault->setFieldU32(sfPreviousTxnLgrSeq, ctx_.view().seq());
+    view().update(sleVault);
 
     return tesSUCCESS;
 }
