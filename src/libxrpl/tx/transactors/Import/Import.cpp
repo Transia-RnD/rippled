@@ -632,14 +632,12 @@ Import::doApply()
 
     bool const create = !sle;
 
-    // Lock-and-mint: 1:1 ratio — mint equals delivered amount
-    uint64_t creditDrops = delivered.xrp().drops();
-
-    XRPAmount const bonusAmount = Import::computeStartingBonus(ctx_.view());
-    STAmount startBal =
-        create ? STAmount(bonusAmount) : STAmount(mSourceBalance);
-
-    STAmount finalBal = startBal + STAmount(XRPAmount(creditDrops));
+    // Lock-and-mint: credit exactly the delivered amount (1:1 ratio).
+    // No starting bonus — the imported amount must cover the account
+    // reserve on its own to maintain XRP conservation with the vault.
+    STAmount const creditAmount{delivered.xrp()};
+    STAmount startBal = create ? STAmount{0} : STAmount(mSourceBalance);
+    STAmount finalBal = startBal + creditAmount;
 
     if (finalBal < startBal)
     {

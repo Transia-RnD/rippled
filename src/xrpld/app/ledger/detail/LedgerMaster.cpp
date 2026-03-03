@@ -5,6 +5,7 @@
 #include <xrpld/app/ledger/OpenLedger.h>
 #include <xrpld/app/ledger/PendingSaves.h>
 #include <xrpld/app/main/Application.h>
+#include <xrpld/app/misc/ExportSignatureCollector.h>
 #include <xrpld/app/misc/SHAMapStore.h>
 #include <xrpld/app/misc/Transaction.h>
 #include <xrpld/app/misc/TxQ.h>
@@ -23,9 +24,13 @@
 #include <xrpl/beast/utility/instrumentation.h>
 #include <xrpl/ledger/AmendmentTable.h>
 #include <xrpl/ledger/OrderBookDB.h>
+#include <xrpl/ledger/View.h>
 #include <xrpl/protocol/BuildInfo.h>
+#include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/HashPrefix.h>
+#include <xrpl/protocol/Indexes.h>
 #include <xrpl/protocol/digest.h>
+#include <xrpl/tx/transactors/Import/ExportPaymentBuilder.h>
 #include <xrpl/rdb/RelationalDatabase.h>
 #include <xrpl/resource/Fees.h>
 #include <xrpl/server/LoadFeeTrack.h>
@@ -781,6 +786,79 @@ LedgerMaster::setFullLedger(
     }
 
     pendSaveValidated(app_, ledger, isSynchronous, isCurrent);
+
+    // Populate the ExportSignatureCollector's txnData for all nodes
+    // (validators already do this in signExportRecords; this ensures
+    // non-validator RPC nodes can also serve export_status queries).
+    if (ledger->rules().enabled(featureImportExport))
+    {
+        auto const sleVault = ledger->read(keylet::exportVaultState());
+        if (sleVault)
+        {
+            auto const vaultAddr = app_.config().IMPORT_VAULT_ADDRESS;
+            if (vaultAddr)
+            {
+                auto const quorum =
+                    sleVault->getFieldU32(sfExportQuorum);
+                auto const signerCount =
+                    sleVault->getFieldU32(sfSignerCount);
+
+                forEachItem(
+                    *ledger,
+                    keylet::exportDir(),
+                    [&](std::shared_ptr<SLE const> const& sle) {
+                        try
+                        {
+                            auto const account =
+                                sle->getAccountID(sfAccount);
+                            auto const destination =
+                                sle->getAccountID(sfDestination);
+                            auto const amount =
+                                sle->getFieldAmount(sfAmount);
+                            auto const exportSeq =
+                                sle->getFieldU32(sfExportSequence);
+
+                            if (!sle->isFieldPresent(sfTicketSequence))
+                                return;
+
+                            auto const ticketSeq =
+                                sle->getFieldU32(sfTicketSequence);
+
+                            ExportPaymentParams params;
+                            params.vaultAddress = *vaultAddr;
+                            params.destination = destination;
+                            params.amount = amount;
+                            params.ticketSeq = ticketSeq;
+                            params.signerCount = signerCount;
+
+                            if (sle->isFieldPresent(sfDestinationTag))
+                                params.destinationTag =
+                                    sle->getFieldU32(sfDestinationTag);
+
+                            auto const payment =
+                                buildExportPayment(params);
+                            auto const txnHash =
+                                payment.getTransactionID();
+
+                            app_.getExportSignatureCollector()
+                                .stashTxnData(
+                                    txnHash,
+                                    account,
+                                    exportSeq,
+                                    params,
+                                    quorum,
+                                    ledger->seq());
+                        }
+                        catch (std::exception const& ex)
+                        {
+                            JLOG(m_journal.warn())
+                                << "Error scanning export dir: "
+                                << ex.what();
+                        }
+                    });
+            }
+        }
+    }
 
     {
         std::lock_guard ml(mCompleteLock);

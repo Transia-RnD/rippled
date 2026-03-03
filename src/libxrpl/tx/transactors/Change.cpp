@@ -649,13 +649,12 @@ Change::applyImportCredit()
             sle->setAccountID(sfRegularKey, regularKeyID);
         }
 
-        STAmount const bonus = Import::computeStartingBonus(ctx_.view());
-        sle->setFieldAmount(sfBalance, bonus + amount);
+        sle->setFieldAmount(sfBalance, amount);
         sle->setFieldU32(sfImportSequence, importSequence);
         view().insert(sle);
 
         // Mint XRP
-        ctx_.rawView().rawDestroyXRP(-(bonus + amount).xrp());
+        ctx_.rawView().rawDestroyXRP(-amount.xrp());
     }
     else
     {

@@ -32,10 +32,13 @@
 #include <xrpl/protocol/STArray.h>
 #include <xrpl/protocol/STObject.h>
 #include <xrpl/protocol/TxFlags.h>
+#include <xrpl/protocol/Serializer.h>
+#include <xrpl/protocol/Sign.h>
 #include <xrpl/protocol/jss.h>
 #include <xrpl/tx/applySteps.h>
 #include <xrpl/tx/transactors/Import/ExportPaymentBuilder.h>
 #include <xrpl/tx/transactors/Import/ImportUtils.h>
+#include <xrpld/app/misc/ExportSignatureCollector.h>
 #include <xrpld/app/misc/ExportValidatorTrust.h>
 
 #include <cstdint>
@@ -1712,6 +1715,295 @@ struct ImportExportFunctionality_test : public beast::unit_test::suite
         BEAST_EXPECT(s.getDataLength() > 0);
     }
 
+    // =========================================================================
+    // TEST: testExportStatusRPC
+    // Verifies that the export_status RPC returns the expected data
+    // after stashTxnData populates the collector, and returns
+    // exportNotFound when no data is stashed.
+    // =========================================================================
+
+    void
+    testExportStatusRPC(FeatureBitset features)
+    {
+        testcase("export_status RPC");
+        using namespace test::jtx;
+
+        Env env{*this, features};
+
+        Account const alice{"alice"};
+        Account const bob{"bob"};
+        env.fund(XRP(1000000), alice, bob);
+        env.close();
+
+        // 1. Query export_status before any export — should return error
+        {
+            Json::Value params;
+            params[jss::account] = alice.human();
+            params[jss::export_sequence] = 0u;
+            auto const result = env.rpc(
+                "json", "export_status", to_string(params))[jss::result];
+            BEAST_EXPECT(result.isMember(jss::error));
+            BEAST_EXPECT(
+                result[jss::error].asString() == "exportNotFound");
+        }
+
+        // 2. Submit Export tx, then stash via collector
+        env(exportTx(alice, bob, XRP(100)));
+        env.close();
+
+        auto const sleExport = env.le(keylet::exportRecord(alice.id(), 0));
+        BEAST_EXPECT(sleExport);
+        if (!sleExport)
+            return;
+
+        auto const sleVault = env.le(keylet::exportVaultState());
+        BEAST_EXPECT(sleVault);
+        if (!sleVault)
+            return;
+
+        // Build params and stash (simulates what setFullLedger does)
+        AccountID vaultAddr;
+        (void)vaultAddr.parseHex(
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
+        ExportPaymentParams params;
+        params.vaultAddress = vaultAddr;
+        params.destination = bob.id();
+        params.amount = XRP(100);
+        params.ticketSeq = sleExport->getFieldU32(sfTicketSequence);
+        params.signerCount =
+            sleVault->getFieldU32(sfSignerCount);
+
+        auto const payment = buildExportPayment(params);
+        auto const txnHash = payment.getTransactionID();
+        auto const quorum = sleVault->getFieldU32(sfExportQuorum);
+
+        env.app().getExportSignatureCollector().stashTxnData(
+            txnHash, alice.id(), 0, params, quorum, env.current()->seq());
+
+        // 3. Now export_status should return data
+        {
+            Json::Value rpcParams;
+            rpcParams[jss::account] = alice.human();
+            rpcParams[jss::export_sequence] = 0u;
+            auto const result = env.rpc(
+                "json", "export_status",
+                to_string(rpcParams))[jss::result];
+            BEAST_EXPECT(!result.isMember(jss::error) ||
+                result[jss::error].asString() != "exportNotFound");
+            BEAST_EXPECT(
+                result[jss::account].asString() == alice.human());
+            BEAST_EXPECT(result[jss::export_sequence].asUInt() == 0);
+            BEAST_EXPECT(result.isMember("txn_hash"));
+            BEAST_EXPECT(
+                result["signatures_collected"].asUInt() == 0);
+            // quorum may be 0 in unit-test env (no UNL validators),
+            // so quorum_reached is true immediately after stash.
+            auto const expectedQuorum = sleVault->getFieldU32(sfExportQuorum);
+            BEAST_EXPECT(
+                result["quorum_reached"].asBool() == (expectedQuorum == 0));
+        }
+
+        // 4. Missing parameters should return errors
+        {
+            Json::Value noAcct;
+            noAcct[jss::export_sequence] = 0u;
+            auto const r1 = env.rpc(
+                "json", "export_status", to_string(noAcct))[jss::result];
+            BEAST_EXPECT(r1.isMember(jss::error));
+
+            Json::Value noSeq;
+            noSeq[jss::account] = alice.human();
+            auto const r2 = env.rpc(
+                "json", "export_status", to_string(noSeq))[jss::result];
+            BEAST_EXPECT(r2.isMember(jss::error));
+        }
+    }
+
+    // =========================================================================
+    // TEST: testExportPaymentRPC
+    // Verifies that the export_payment RPC returns submit_ready=false
+    // when quorum is not reached, and returns a valid blob when
+    // quorum is reached via manually adding signatures.
+    // =========================================================================
+
+    void
+    testExportPaymentRPC(FeatureBitset features)
+    {
+        testcase("export_payment RPC");
+        using namespace test::jtx;
+
+        Env env{*this, features};
+
+        Account const alice{"alice"};
+        Account const bob{"bob"};
+        env.fund(XRP(1000000), alice, bob);
+        env.close();
+
+        // 1. Query before any export — should return submit_ready=false
+        {
+            Json::Value params;
+            params[jss::account] = alice.human();
+            params[jss::export_sequence] = 0u;
+            auto const result = env.rpc(
+                "json", "export_payment", to_string(params))[jss::result];
+            BEAST_EXPECT(result[jss::submit_ready].asBool() == false);
+            BEAST_EXPECT(result[jss::mainnet_payment_blob].isNull());
+        }
+
+        // 2. Submit Export and verify on-ledger record
+        env(exportTx(alice, bob, XRP(50)));
+        env.close();
+
+        auto const sleExport = env.le(keylet::exportRecord(alice.id(), 0));
+        BEAST_EXPECT(sleExport);
+        if (!sleExport)
+            return;
+
+        // Verify the Export record landed correctly on-ledger
+        BEAST_EXPECT(sleExport->getAccountID(sfAccount) == alice.id());
+        BEAST_EXPECT(sleExport->getAccountID(sfDestination) == bob.id());
+        BEAST_EXPECT(sleExport->getFieldAmount(sfAmount) == XRP(50));
+        BEAST_EXPECT(sleExport->getFieldU32(sfExportSequence) == 0);
+        BEAST_EXPECT(sleExport->isFieldPresent(sfTicketSequence));
+
+        auto const sleVault = env.le(keylet::exportVaultState());
+        BEAST_EXPECT(sleVault);
+        if (!sleVault)
+            return;
+
+        AccountID vaultAddr;
+        (void)vaultAddr.parseHex(
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+
+        ExportPaymentParams params;
+        params.vaultAddress = vaultAddr;
+        params.destination = bob.id();
+        params.amount = XRP(50);
+        params.ticketSeq = sleExport->getFieldU32(sfTicketSequence);
+        params.signerCount =
+            sleVault->getFieldU32(sfSignerCount);
+
+        auto const payment = buildExportPayment(params);
+        auto const txnHash = payment.getTransactionID();
+
+        // Use quorum=1 so a single signature reaches quorum
+        env.app().getExportSignatureCollector().stashTxnData(
+            txnHash, alice.id(), 0, params, 1, env.current()->seq());
+
+        // 3. Before adding signatures, submit_ready should be false
+        {
+            Json::Value rpcParams;
+            rpcParams[jss::account] = alice.human();
+            rpcParams[jss::export_sequence] = 0u;
+            auto const result = env.rpc(
+                "json", "export_payment",
+                to_string(rpcParams))[jss::result];
+            BEAST_EXPECT(result[jss::submit_ready].asBool() == false);
+        }
+
+        // 4. Add a signature via onExportSignatureFromValidation
+        Account const val1{"validator1"};
+        auto const signerAccountID = calcAccountID(val1.pk());
+        auto const msHash =
+            exportPaymentMultiSignHash(payment, signerAccountID);
+        auto const sig = signDigest(val1.pk(), val1.sk(), msHash);
+
+        STObject signerObj = STObject::makeInnerObject(sfSigner);
+        signerObj.setAccountID(sfAccount, signerAccountID);
+        signerObj.setFieldVL(sfSigningPubKey, val1.pk().slice());
+        signerObj.setFieldVL(sfTxnSignature, sig);
+
+        Serializer ser;
+        signerObj.add(ser);
+
+        env.app().getExportSignatureCollector()
+            .onExportSignatureFromValidation(
+                txnHash,
+                ser.slice(),
+                val1.pk());
+
+        // 5. Now export_payment should return submit_ready=true
+        //    and the blob should be a well-formed mainnet transaction
+        {
+            Json::Value rpcParams;
+            rpcParams[jss::account] = alice.human();
+            rpcParams[jss::export_sequence] = 0u;
+            auto const result = env.rpc(
+                "json", "export_payment",
+                to_string(rpcParams))[jss::result];
+            BEAST_EXPECT(result[jss::submit_ready].asBool() == true);
+            BEAST_EXPECT(!result[jss::mainnet_payment_blob].isNull());
+
+            // Decode the blob back into an STTx and validate it
+            auto const blobHex =
+                result[jss::mainnet_payment_blob].asString();
+            BEAST_EXPECT(blobHex.size() > 0);
+
+            auto const blobBytes = strUnHex(blobHex);
+            BEAST_EXPECT(blobBytes);
+            if (!blobBytes)
+                return;
+
+            SerialIter sit(makeSlice(*blobBytes));
+            STTx const tx(sit);
+
+            // --- Well-formedness checks for mainnet submission ---
+
+            // Must be a Payment
+            BEAST_EXPECT(tx.getTxnType() == ttPAYMENT);
+
+            // NetworkID MUST NOT be present — mainnet rejects it
+            BEAST_EXPECT(!tx.isFieldPresent(sfNetworkID));
+
+            // Account must be the vault address we specified
+            BEAST_EXPECT(tx.getAccountID(sfAccount) == vaultAddr);
+
+            // Destination must be bob
+            BEAST_EXPECT(tx.getAccountID(sfDestination) == bob.id());
+
+            // Amount must be XRP(50)
+            BEAST_EXPECT(tx[sfAmount] == XRP(50));
+
+            // Sequence must be 0 (ticket-based)
+            BEAST_EXPECT(tx.getFieldU32(sfSequence) == 0);
+
+            // TicketSequence must match the export record
+            BEAST_EXPECT(
+                tx.getFieldU32(sfTicketSequence) ==
+                sleExport->getFieldU32(sfTicketSequence));
+
+            // Fee must be (signerCount + 1) * 15 drops
+            auto const expectedFee = STAmount(
+                (static_cast<std::uint64_t>(
+                     sleVault->getFieldU32(sfSignerCount)) +
+                 1) *
+                15);
+            BEAST_EXPECT(tx[sfFee] == expectedFee);
+
+            // SigningPubKey must be empty (multi-signed)
+            BEAST_EXPECT(tx.getFieldVL(sfSigningPubKey).empty());
+
+            // Signers array must be present and non-empty
+            BEAST_EXPECT(tx.isFieldPresent(sfSigners));
+            auto const& signers = tx.getFieldArray(sfSigners);
+            BEAST_EXPECT(signers.size() >= 1);
+
+            // Flags must include tfFullyCanonicalSig
+            BEAST_EXPECT(tx.getFlags() & tfFullyCanonicalSig);
+        }
+
+        // 6. Missing parameters should return errors
+        {
+            Json::Value noAcct;
+            noAcct[jss::export_sequence] = 0u;
+            auto const r1 = env.rpc(
+                "json", "export_payment",
+                to_string(noAcct))[jss::result];
+            BEAST_EXPECT(r1.isMember(jss::error));
+        }
+    }
+
 public:
     void
     run() override
@@ -1738,6 +2030,8 @@ public:
         testExportNoReserveForRecord(sa);
         testImportRealXpopNoDeliveredAmount(sa);
         testExportEndToEnd(sa);
+        testExportStatusRPC(sa);
+        testExportPaymentRPC(sa);
     }
 };
 
