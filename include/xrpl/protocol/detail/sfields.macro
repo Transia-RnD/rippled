@@ -170,6 +170,7 @@ TYPED_SFIELD(sfStrike,                   UINT64,    32)
 TYPED_SFIELD(sfInsuranceVaultNode,       UINT64,    33)
 TYPED_SFIELD(sfMarginAccountNode,        UINT64,    34)
 TYPED_SFIELD(sfExportDirNode,           UINT64,    35)
+TYPED_SFIELD(sfImportDirNode,          UINT64,    36)
 
 // 128-bit
 TYPED_SFIELD(sfEmailHash,                UINT128,    1)
@@ -237,6 +238,7 @@ TYPED_SFIELD(sfInsuranceVaultID,         UINT256,   44,
     SField::sMD_PseudoAccount | SField::sMD_Default)
 TYPED_SFIELD(sfMarginPositionID,         UINT256,   45)
 TYPED_SFIELD(sfSignerListHash,          UINT256,   46) // hash of vault signer list for rotation detection
+TYPED_SFIELD(sfSourceTxnID,            UINT256,   47) // mainnet tx hash for import audit trail
 
 // number (common)
 TYPED_SFIELD(sfNumber,                   NUMBER,     1)

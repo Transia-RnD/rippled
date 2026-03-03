@@ -55,11 +55,22 @@ checkValidity(HashRouter& router, STTx const& tx, Rules const& rules)
 
     if (!any(flags & SF_SIGGOOD))
     {
-        auto const sigVerify = tx.checkSign(rules);
-        if (!sigVerify)
+        // Relayer-submitted Import transactions have no signature.
+        // The XPOP blob is the proof, validated in Import::preflight.
+        bool const isUnsignedImport =
+            tx.getTxnType() == ttIMPORT &&
+            tx.getSigningPubKey().empty() &&
+            !tx.isFieldPresent(sfSigners) &&
+            rules.enabled(featureImportExport);
+
+        if (!isUnsignedImport)
         {
-            router.setFlags(id, SF_SIGBAD);
-            return {Validity::SigBad, sigVerify.error()};
+            auto const sigVerify = tx.checkSign(rules);
+            if (!sigVerify)
+            {
+                router.setFlags(id, SF_SIGBAD);
+                return {Validity::SigBad, sigVerify.error()};
+            }
         }
         router.setFlags(id, SF_SIGGOOD);
     }

@@ -266,6 +266,9 @@ public:
     // locked XRP for the lock-and-mint cross-chain model
     std::optional<AccountID> IMPORT_VAULT_ADDRESS;
 
+    // Mainnet WebSocket URLs for the embedded MainnetWatcher
+    std::vector<std::string> MAINNET_NODES;
+
     std::string SERVER_DOMAIN;
 
     // How long can a peer remain in the "unknown" state

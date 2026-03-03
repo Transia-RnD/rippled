@@ -39,11 +39,15 @@ private:
 
     TER
     applyUNLReport();
+
+    TER
+    applyImportCredit();
 };
 
 using EnableAmendment = Change;
 using SetFee = Change;
 using UNLModify = Change;
 using UNLReportTx = Change;
+using ImportCreditTx = Change;
 
 }  // namespace xrpl

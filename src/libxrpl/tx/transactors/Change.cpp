@@ -7,7 +7,9 @@
 #include <xrpl/protocol/TxFlags.h>
 #include <xrpl/server/NetworkOPs.h>
 #include <xrpl/tx/transactors/Change.h>
+#include <xrpl/tx/transactors/Import/Import.h>
 
+#include <cstring>
 #include <map>
 #include <string_view>
 
@@ -66,6 +68,33 @@ Transactor::invokePreflight<Change>(PreflightContext const& ctx)
         {
             JLOG(ctx.j.warn()) << "Change: UNLReport must specify at least one "
                                   "of sfImportVLKey, sfActiveValidator";
+            return temMALFORMED;
+        }
+    }
+
+    if (ctx.tx.getTxnType() == ttIMPORT_CREDIT)
+    {
+        if (!ctx.rules.enabled(featureImportExport))
+        {
+            JLOG(ctx.j.warn()) << "Change: ImportCredit is not enabled.";
+            return temDISABLED;
+        }
+
+        if (!ctx.tx.isFieldPresent(sfDestination) ||
+            !ctx.tx.isFieldPresent(sfAmount) ||
+            !ctx.tx.isFieldPresent(sfSourceTxnID) ||
+            !ctx.tx.isFieldPresent(sfImportSequence) ||
+            !ctx.tx.isFieldPresent(sfLedgerSequence))
+        {
+            JLOG(ctx.j.warn()) << "Change: ImportCredit missing required fields";
+            return temMALFORMED;
+        }
+
+        STAmount const amount = ctx.tx.getFieldAmount(sfAmount);
+        if (!isXRP(amount) || amount <= beast::zero)
+        {
+            JLOG(ctx.j.warn())
+                << "Change: ImportCredit amount must be positive XRP";
             return temMALFORMED;
         }
     }
@@ -166,6 +195,8 @@ Change::preclaim(PreclaimContext const& ctx)
 
             return telIMPORT_VL_KEY_NOT_RECOGNISED;
         }
+        case ttIMPORT_CREDIT:
+            return tesSUCCESS;
         default:
             return temUNKNOWN;
     }
@@ -184,6 +215,8 @@ Change::doApply()
             return applyUNLModify();
         case ttUNL_REPORT:
             return applyUNLReport();
+        case ttIMPORT_CREDIT:
+            return applyImportCredit();
         // LCOV_EXCL_START
         default:
             UNREACHABLE("xrpl::Change::doApply : invalid transaction type");
@@ -277,6 +310,25 @@ Change::applyAmendment()
             JLOG(j_.error()) << "Unsupported amendment " << amendment
                              << " activated: server blocked.";
             ctx_.registry.getOPs().setAmendmentBlocked();
+        }
+
+        // Create ExportVaultState singleton when ImportExport activates.
+        // Initial ticket range is pre-allocated on mainnet during sidechain
+        // setup.
+        if (amendment == featureImportExport)
+        {
+            auto const vaultKeylet = keylet::exportVaultState();
+            if (!view().peek(vaultKeylet))
+            {
+                auto sle = std::make_shared<SLE>(vaultKeylet);
+                sle->setFieldU32(sfNextTicketSeq, 1);
+                sle->setFieldU32(sfMaxTicketSeq, 250);
+                sle->setFieldU32(sfExportQuorum, 0);
+                sle->setFieldU32(sfSignerCount, 0);
+                sle->setFieldH256(sfPreviousTxnID, uint256{});
+                sle->setFieldU32(sfPreviousTxnLgrSeq, 0);
+                view().insert(sle);
+            }
         }
     }
 
@@ -546,6 +598,103 @@ Change::applyUNLReport()
         view().insert(sle);
     else
         view().update(sle);
+
+    return tesSUCCESS;
+}
+
+TER
+Change::applyImportCredit()
+{
+    auto const id = ctx_.tx.getAccountID(sfDestination);
+    STAmount const amount = ctx_.tx.getFieldAmount(sfAmount);
+    auto const importSequence = ctx_.tx.getFieldU32(sfImportSequence);
+    uint256 const sourceTxnID = ctx_.tx.getFieldH256(sfSourceTxnID);
+
+    auto sle = view().peek(keylet::account(id));
+    bool const create = !sle;
+
+    // Replay protection: check ImportSequence
+    if (sle && sle->getFieldU32(sfImportSequence) >= importSequence)
+    {
+        JLOG(j_.warn())
+            << "ImportCredit: replay detected, seq=" << importSequence;
+        return tefINTERNAL;
+    }
+
+    // Check for supply overflow
+    if (amount.xrp() >
+        std::numeric_limits<std::int64_t>::max() - view().header().drops)
+    {
+        JLOG(j_.warn()) << "ImportCredit: supply overflow";
+        return tecINTERNAL;
+    }
+
+    if (create)
+    {
+        std::uint32_t const seqno{view().seq()};
+
+        sle = std::make_shared<SLE>(keylet::account(id));
+        sle->setAccountID(sfAccount, id);
+        sle->setFieldU32(sfSequence, seqno);
+        sle->setFieldU32(sfOwnerCount, 0);
+
+        // Master key enabled (derived from inner tx's signing key)
+
+        // If InvoiceID is present, set RegularKey from first 20 bytes
+        if (ctx_.tx.isFieldPresent(sfInvoiceID))
+        {
+            uint256 const invoiceID = ctx_.tx.getFieldH256(sfInvoiceID);
+            AccountID regularKeyID;
+            std::memcpy(regularKeyID.data(), invoiceID.data(), 20);
+            sle->setAccountID(sfRegularKey, regularKeyID);
+        }
+
+        STAmount const bonus = Import::computeStartingBonus(ctx_.view());
+        sle->setFieldAmount(sfBalance, bonus + amount);
+        sle->setFieldU32(sfImportSequence, importSequence);
+        view().insert(sle);
+
+        // Mint XRP
+        ctx_.rawView().rawDestroyXRP(-(bonus + amount).xrp());
+    }
+    else
+    {
+        STAmount const startBal = sle->getFieldAmount(sfBalance);
+        STAmount const finalBal = startBal + amount;
+
+        sle->setFieldU32(sfImportSequence, importSequence);
+        sle->setFieldAmount(sfBalance, finalBal);
+        view().update(sle);
+
+        // Mint XRP
+        ctx_.rawView().rawDestroyXRP(-amount.xrp());
+    }
+
+    // Create ImportRecord for audit trail
+    {
+        auto const importKeylet = keylet::importRecord(id, importSequence);
+        auto sleImport = std::make_shared<SLE>(importKeylet);
+
+        sleImport->setAccountID(sfAccount, id);
+        sleImport->setFieldAmount(sfAmount, amount);
+        sleImport->setFieldU32(sfImportSequence, importSequence);
+        sleImport->setFieldH256(sfSourceTxnID, sourceTxnID);
+        sleImport->setFieldU32(sfLedgerSequence, ctx_.view().seq());
+        sleImport->setFieldH256(
+            sfPreviousTxnID, ctx_.tx.getTransactionID());
+        sleImport->setFieldU32(sfPreviousTxnLgrSeq, ctx_.view().seq());
+
+        auto const page = view().dirInsert(
+            keylet::importDir(),
+            importKeylet,
+            [](std::shared_ptr<SLE> const&) {});
+
+        if (!page)
+            return tecDIR_FULL;
+
+        sleImport->setFieldU64(sfImportDirNode, *page);
+        view().insert(sleImport);
+    }
 
     return tesSUCCESS;
 }

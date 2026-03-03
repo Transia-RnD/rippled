@@ -16,6 +16,7 @@
 #include <xrpld/app/main/NodeIdentity.h>
 #include <xrpld/app/main/NodeStoreScheduler.h>
 #include <xrpld/app/misc/ExportSignatureCollector.h>
+#include <xrpld/app/misc/MainnetWatcher.h>
 #include <xrpld/app/misc/SHAMapStore.h>
 #include <xrpld/app/misc/TxQ.h>
 #include <xrpld/app/misc/ValidatorKeys.h>
@@ -200,6 +201,7 @@ public:
     std::unique_ptr<DatabaseCon> mWalletDB;
     std::unique_ptr<Overlay> overlay_;
     std::unique_ptr<ExportSignatureCollector> exportSignatureCollector_;
+    std::unique_ptr<MainnetWatcher> mainnetWatcher_;
     std::optional<uint256> trapTxID_;
 
     boost::asio::signal_set m_signals;
@@ -1128,6 +1130,12 @@ private:
         return *exportSignatureCollector_;
     }
 
+    MainnetWatcher*
+    getMainnetWatcher() override
+    {
+        return mainnetWatcher_.get();
+    }
+
     Application&
     app() override
     {
@@ -1498,6 +1506,16 @@ ApplicationImp::start(bool withTimers)
 
     ledgerCleaner_->start();
     perfLog_->start();
+
+    // Start MainnetWatcher if mainnet nodes are configured
+    if (!config_->MAINNET_NODES.empty())
+    {
+        mainnetWatcher_ = std::make_unique<MainnetWatcher>(
+            *this,
+            config_->MAINNET_NODES,
+            logs_->journal("MainnetWatcher"));
+        mainnetWatcher_->start();
+    }
 }
 
 void
@@ -1515,6 +1533,10 @@ ApplicationImp::run()
     isTimeToStop.wait(false, std::memory_order_relaxed);
 
     JLOG(m_journal.debug()) << "Application stopping";
+
+    // Stop MainnetWatcher before other components
+    if (mainnetWatcher_)
+        mainnetWatcher_->stop();
 
     m_io_latency_sampler.cancel_async();
 

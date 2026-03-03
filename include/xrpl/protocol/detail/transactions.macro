@@ -1336,3 +1336,22 @@ TRANSACTION(ttUNL_REPORT, 103, UNLReportTx,
     {sfActiveValidator, soeOPTIONAL},
     {sfImportVLKey, soeOPTIONAL},
 }))
+
+/** Pseudo-transaction: consensus-driven import credit.
+    Validators automatically propose these when the MainnetWatcher detects
+    vault Payments on mainnet. Each validator independently builds the same
+    deterministic ttIMPORT_CREDIT -> consensus naturally provides quorum.
+    Processed by the Change transactor.
+ */
+TRANSACTION(ttIMPORT_CREDIT, 104, ImportCreditTx,
+    Delegation::notDelegable,
+    featureImportExport,
+    createAcct | mintXRP,
+    ({
+    {sfDestination, soeREQUIRED},
+    {sfAmount, soeREQUIRED},
+    {sfSourceTxnID, soeREQUIRED},
+    {sfImportSequence, soeREQUIRED},
+    {sfLedgerSequence, soeREQUIRED},
+    {sfInvoiceID, soeOPTIONAL},
+}))

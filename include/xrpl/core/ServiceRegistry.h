@@ -34,6 +34,7 @@ class CollectorManager;
 class DatabaseCon;
 class ExportSignatureCollector;
 class Family;
+class MainnetWatcher;
 class HashRouter;
 class InboundLedgers;
 class InboundTransactions;
@@ -245,6 +246,10 @@ public:
     /** Get the export signature collector (for validator-signed exports). */
     virtual ExportSignatureCollector&
     getExportSignatureCollector() = 0;
+
+    /** Get the embedded mainnet watcher (may be nullptr if not configured). */
+    virtual MainnetWatcher*
+    getMainnetWatcher() = 0;
 
     // Temporary: Get the underlying Application for functions that haven't
     // been migrated yet. This should be removed once all code is migrated.

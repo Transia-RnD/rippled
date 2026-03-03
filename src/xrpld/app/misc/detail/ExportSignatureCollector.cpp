@@ -254,8 +254,14 @@ ExportSignatureCollector::tryAssemble(uint256 const& txnHash)
     for (auto const& [acctID, signerObj] : sit->second)
         signers.push_back(signerObj);
 
-    // Clone the unsigned payment and attach the Signers array
-    STObject obj(data.unsignedPayment);
+    // Round-trip through serialization to strip nonPresent template
+    // entries (e.g. sfPaths soeDEFAULT) that STTx::applyTemplate adds.
+    // A direct STObject copy would preserve those artifacts, causing
+    // the subsequent STTx constructor to throw.
+    Serializer ser;
+    data.unsignedPayment.add(ser);
+    SerialIter si(ser.slice());
+    STObject obj(si, sfTransaction);
     obj.setFieldArray(sfSigners, signers);
 
     assembled_.emplace(txnHash, STTx(std::move(obj)));

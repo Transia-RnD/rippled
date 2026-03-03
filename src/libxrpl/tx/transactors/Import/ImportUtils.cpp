@@ -355,6 +355,78 @@ syntaxCheckXPOP(Blob const& blob, beast::Journal const& j)
             return {};
         }
 
+        // Optional chain array for ledger-chaining recovery
+        if (xpop.isMember("chain"))
+        {
+            auto const& chain = xpop["chain"];
+            if (!chain.isArray())
+            {
+                JLOG(j.warn()) << "XPOP.chain must be an array";
+                return {};
+            }
+
+            for (unsigned int i = 0; i < chain.size(); ++i)
+            {
+                auto const& entry = chain[i];
+                if (!entry.isObject())
+                {
+                    JLOG(j.warn())
+                        << "XPOP.chain[" << i << "] is not an object";
+                    return {};
+                }
+
+                // Same field validation as the ledger section
+                auto checkChainHex64 =
+                    [&](char const* field) -> bool {
+                    return entry[field].isString() &&
+                        entry[field].asString().size() == 64 &&
+                        isHex(entry[field].asString());
+                };
+
+                if (!checkChainHex64("acroot") ||
+                    !checkChainHex64("txroot") ||
+                    !checkChainHex64("phash"))
+                {
+                    JLOG(j.warn())
+                        << "XPOP.chain[" << i
+                        << "] hash fields missing or wrong format";
+                    return {};
+                }
+
+                if (!entry["close"].isInt() || !entry["cres"].isInt() ||
+                    !entry["index"].isInt() || !entry["flags"].isInt() ||
+                    !entry["pclose"].isInt())
+                {
+                    JLOG(j.warn())
+                        << "XPOP.chain[" << i
+                        << "] integer fields missing or wrong format";
+                    return {};
+                }
+
+                if (entry["coins"].isInt())
+                {
+                    // ok
+                }
+                else if (entry["coins"].isString())
+                {
+                    if (!parseUint64(entry["coins"].asString()))
+                    {
+                        JLOG(j.warn())
+                            << "XPOP.chain[" << i
+                            << "].coins wrong format";
+                        return {};
+                    }
+                }
+                else
+                {
+                    JLOG(j.warn())
+                        << "XPOP.chain[" << i
+                        << "].coins missing or wrong type";
+                    return {};
+                }
+            }
+        }
+
         return xpop;
     }
     catch (...)
@@ -763,6 +835,68 @@ hasQuorum(uint64_t totalValidators, uint64_t validationCount)
     if (quorum == 0)
         quorum = 1;
     return validationCount >= quorum;
+}
+
+// ============================================================
+// Ledger chaining for recovery
+// ============================================================
+
+uint256
+verifyLedgerChain(
+    Json::Value const& chain,
+    uint256 const& startingLedgerHash,
+    beast::Journal const& j)
+{
+    if (!chain.isArray() || chain.size() == 0)
+        return uint256{};
+
+    uint256 prevHash = startingLedgerHash;
+
+    for (unsigned int i = 0; i < chain.size(); ++i)
+    {
+        auto const& entry = chain[i];
+
+        // Verify phash links to previous ledger
+        uint256 entryPhash;
+        if (!entryPhash.parseHex(entry["phash"].asString()))
+        {
+            JLOG(j.warn())
+                << "Import: chain[" << i << "] phash not valid hex";
+            return uint256{};
+        }
+
+        if (entryPhash != prevHash)
+        {
+            JLOG(j.warn())
+                << "Import: chain[" << i
+                << "] phash does not match previous hash. Expected "
+                << prevHash << " got " << entryPhash;
+            return uint256{};
+        }
+
+        // Compute this chain entry's ledger hash.
+        // Chain entries don't have transactions relevant to us, so txroot
+        // is taken directly from the entry (not recomputed from proof).
+        uint256 txroot;
+        if (!txroot.parseHex(entry["txroot"].asString()))
+        {
+            JLOG(j.warn())
+                << "Import: chain[" << i << "] txroot not valid hex";
+            return uint256{};
+        }
+
+        prevHash = computeLedgerHash(entry, txroot);
+
+        if (prevHash == uint256{})
+        {
+            JLOG(j.warn())
+                << "Import: chain[" << i
+                << "] error computing ledger hash";
+            return uint256{};
+        }
+    }
+
+    return prevHash;
 }
 
 }  // namespace import

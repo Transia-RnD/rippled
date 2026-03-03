@@ -966,6 +966,18 @@ Config::loadFromString(std::string const& fileContents)
                 IMPORT_VAULT_ADDRESS = *id;
             }
 
+            // Parse [mainnet_nodes] for embedded MainnetWatcher
+            if (auto mainnetNodes =
+                    getIniFileSection(iniFile, SECTION_MAINNET_NODES);
+                mainnetNodes)
+            {
+                for (auto const& url : *mainnetNodes)
+                {
+                    if (!url.empty())
+                        MAINNET_NODES.push_back(url);
+                }
+            }
+
             if (!entries && !valKeyEntries && !valListKeys)
                 Throw<std::runtime_error>(
                     "The file specified in [" SECTION_VALIDATORS_FILE

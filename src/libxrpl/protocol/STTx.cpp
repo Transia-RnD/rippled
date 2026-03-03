@@ -893,7 +893,8 @@ isPseudoTx(STObject const& tx)
 
     auto const tt = safe_cast<TxType>(*t);
 
-    return tt == ttAMENDMENT || tt == ttFEE || tt == ttUNL_MODIFY;
+    return tt == ttAMENDMENT || tt == ttFEE || tt == ttUNL_MODIFY ||
+        tt == ttUNL_REPORT || tt == ttIMPORT_CREDIT;
 }
 
 }  // namespace xrpl

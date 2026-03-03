@@ -970,6 +970,28 @@ parseExportRecord(
     return keylet::exportRecord(*id, *seq).key;
 }
 
+static Expected<uint256, Json::Value>
+parseImportRecord(
+    Json::Value const& params,
+    Json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+        return parseObjectID(params, fieldName);
+
+    auto const id = LedgerEntryHelpers::requiredAccountID(
+        params, jss::account, "malformedAddress");
+    if (!id)
+        return Unexpected(id.error());
+
+    auto const seq = LedgerEntryHelpers::requiredUInt32(
+        params, jss::import_sequence, "malformedRequest");
+    if (!seq)
+        return Unexpected(seq.error());
+
+    return keylet::importRecord(*id, *seq).key;
+}
+
 auto const parseExportVaultState = fixed(keylet::exportVaultState());
 
 auto const parseUNLReport = fixed(keylet::UNLReport());

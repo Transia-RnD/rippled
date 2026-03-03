@@ -93,6 +93,8 @@ enum class LedgerNameSpace : std::uint16_t {
     EXPORT_DIR = 'v',
     UNL_REPORT = 'U',
     PASSKEY_LIST = 'k',
+    IMPORT_RECORD = 'w',
+    IMPORT_DIR = 'z',
 
     // No longer used or supported. Left here to reserve the space
     // to avoid accidental reuse.
@@ -737,6 +739,22 @@ Keylet
 passkeyList(AccountID const& account) noexcept
 {
     return passkeyList(account, 0);
+}
+
+Keylet
+importRecord(AccountID const& account, std::uint32_t seq) noexcept
+{
+    return {
+        ltIMPORT_RECORD,
+        indexHash(LedgerNameSpace::IMPORT_RECORD, account, seq)};
+}
+
+Keylet const&
+importDir() noexcept
+{
+    static Keylet const ret{
+        ltDIR_NODE, indexHash(LedgerNameSpace::IMPORT_DIR)};
+    return ret;
 }
 
 }  // namespace keylet

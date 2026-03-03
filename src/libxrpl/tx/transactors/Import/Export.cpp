@@ -14,6 +14,12 @@ namespace xrpl {
 NotTEC
 Export::preflight(PreflightContext const& ctx)
 {
+    if (!ctx.rules.enabled(featureImportExport))
+    {
+        JLOG(ctx.j.warn()) << "Export: featureImportExport is not enabled";
+        return temDISABLED;
+    }
+
     auto& tx = ctx.tx;
 
     STAmount const amount = tx.getFieldAmount(sfAmount);
@@ -48,28 +54,28 @@ Export::preclaim(PreclaimContext const& ctx)
         return tecUNFUNDED;
     }
 
-    // If validator-signed exports are enabled, check ticket availability
+    // If validator-signed exports are enabled, check ticket availability.
+    // The ExportVaultState singleton is created lazily in doApply() if
+    // it doesn't already exist (e.g. before the amendment activation
+    // pseudo-tx fires).  Only check ticket exhaustion when the vault
+    // is already on ledger.
     if (ctx.view.rules().enabled(featureImportExport))
     {
         auto const sleVault =
             ctx.view.read(keylet::exportVaultState());
-        if (!sleVault)
+        if (sleVault)
         {
-            JLOG(ctx.j.warn())
-                << "Export: ExportVaultState not initialized";
-            return tecINTERNAL;
-        }
+            auto const nextTicket =
+                sleVault->getFieldU32(sfNextTicketSeq);
+            auto const maxTicket =
+                sleVault->getFieldU32(sfMaxTicketSeq);
 
-        auto const nextTicket =
-            sleVault->getFieldU32(sfNextTicketSeq);
-        auto const maxTicket =
-            sleVault->getFieldU32(sfMaxTicketSeq);
-
-        if (nextTicket > maxTicket)
-        {
-            JLOG(ctx.j.warn())
-                << "Export: No mainnet tickets available";
-            return tecINTERNAL;
+            if (nextTicket > maxTicket)
+            {
+                JLOG(ctx.j.warn())
+                    << "Export: No mainnet tickets available";
+                return tecINTERNAL;
+            }
         }
     }
 
@@ -116,9 +122,24 @@ Export::doApply()
     // Assign mainnet ticket if validator-signed exports are enabled
     if (view().rules().enabled(featureImportExport))
     {
-        auto sleVault = view().peek(keylet::exportVaultState());
+        auto const vaultKeylet = keylet::exportVaultState();
+        auto sleVault = view().peek(vaultKeylet);
+
+        // Lazily create ExportVaultState if it doesn't exist yet.
+        // In production this is created during amendment activation;
+        // this fallback handles the window before the activation
+        // pseudo-tx fires or standalone/test environments.
         if (!sleVault)
-            return tefINTERNAL;
+        {
+            sleVault = std::make_shared<SLE>(vaultKeylet);
+            sleVault->setFieldU32(sfNextTicketSeq, 1);
+            sleVault->setFieldU32(sfMaxTicketSeq, 250);
+            sleVault->setFieldU32(sfExportQuorum, 0);
+            sleVault->setFieldU32(sfSignerCount, 0);
+            sleVault->setFieldH256(sfPreviousTxnID, uint256{});
+            sleVault->setFieldU32(sfPreviousTxnLgrSeq, 0);
+            view().insert(sleVault);
+        }
 
         auto const ticketSeq = sleVault->getFieldU32(sfNextTicketSeq);
         if (ticketSeq == std::numeric_limits<uint32_t>::max())

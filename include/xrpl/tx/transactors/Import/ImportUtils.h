@@ -131,5 +131,17 @@ countValidations(
 bool
 hasQuorum(uint64_t totalValidators, uint64_t validationCount);
 
+/** Verify a chain of ledger headers for recovery.
+    Given the computed hash of the XPOP's primary ledger, walk the chain
+    array forward verifying each entry's phash links to the previous hash.
+    Returns the final ledger hash if the chain is valid, or uint256{} on
+    failure.
+*/
+uint256
+verifyLedgerChain(
+    Json::Value const& chain,
+    uint256 const& startingLedgerHash,
+    beast::Journal const& j);
+
 }  // namespace import
 }  // namespace xrpl

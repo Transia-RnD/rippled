@@ -256,6 +256,7 @@ JSS(expected_date);           // out: any (warnings)
 JSS(expected_date_UTC);       // out: any (warnings)
 JSS(expected_ledger_size);    // out: TxQ
 JSS(export_sequence);         // in: LedgerEntry
+JSS(import_sequence);         // in: LedgerEntry
 JSS(export_payment);          // out: export_payment RPC
 JSS(export_status);           // out: export_status RPC
 JSS(signatures_collected);    // out: export_status

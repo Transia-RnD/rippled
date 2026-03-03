@@ -3,7 +3,9 @@
 ```
 Title:       P256 Passkey Authentication
 Type:        Draft
-Author:      Denis Angell <dangell@transia.co>
+Author:      Elliot Lee <https://github.com/intelliot>,
+             Javi Romero <https://github.com/elmurci>,
+             Denis Angell <https://github.com/dangell7>
 Revision:    1
 Discussion:  https://github.com/XRPLF/XRPL-Standards/discussions/236
 ```

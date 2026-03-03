@@ -784,5 +784,19 @@ LEDGER_ENTRY(ltPASSKEY_LIST, 0x0094, PasskeyList, passkey_list, ({
     {sfPasskeys,             soeREQUIRED},
 }))
 
+/** A ledger object recording an Import for audit trail (double-entry bookkeeping).
+    \sa keylet::importRecord
+ */
+LEDGER_ENTRY(ltIMPORT_RECORD, 0x0095, ImportRecord, import_record, ({
+    {sfAccount,                  soeREQUIRED},
+    {sfAmount,                   soeREQUIRED},
+    {sfImportSequence,           soeREQUIRED},
+    {sfSourceTxnID,              soeREQUIRED},
+    {sfLedgerSequence,           soeREQUIRED},
+    {sfImportDirNode,            soeREQUIRED},
+    {sfPreviousTxnID,            soeREQUIRED},
+    {sfPreviousTxnLgrSeq,        soeREQUIRED},
+}))
+
 #undef EXPAND
 #undef LEDGER_ENTRY_DUPLICATE

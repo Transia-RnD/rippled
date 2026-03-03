@@ -207,6 +207,18 @@ Transactor::preflight2(PreflightContext const& ctx)
     // Skip signature check on batch inner transactions
     if (ctx.tx.isFlag(tfInnerBatchTxn) && ctx.rules.enabled(featureBatch))
         return tesSUCCESS;
+
+    // Skip signature check on relayer-submitted Import transactions.
+    // The XPOP blob serves as the authorization proof and is fully
+    // validated in Import::preflight. The outer tx has no signature.
+    if (ctx.tx.getTxnType() == ttIMPORT &&
+        ctx.tx.getSigningPubKey().empty() &&
+        !ctx.tx.isFieldPresent(sfSigners) &&
+        ctx.rules.enabled(featureImportExport))
+    {
+        return tesSUCCESS;
+    }
+
     // Do not add any checks after this point that are relevant for
     // batch inner transactions. They will be skipped.
 
@@ -665,6 +677,16 @@ Transactor::checkSign(
     {
         // simulate: skip signature validation when neither SigningPubKey nor
         // Signers are provided
+        return tesSUCCESS;
+    }
+
+    // Import transactions with empty SigningPubKey and no Signers are
+    // relayer-submitted. The XPOP blob (validated in Import::preflight)
+    // serves as the authorization proof. Skip signature check here.
+    if (pkSigner.empty() && !sigObject.isFieldPresent(sfSigners) &&
+        sigObject.isFieldPresent(sfTransactionType) &&
+        sigObject.getFieldU16(sfTransactionType) == ttIMPORT)
+    {
         return tesSUCCESS;
     }
 

@@ -77,6 +77,7 @@ RCLConsensus::Adaptor::Adaptor(
     , validatorKeys_(validatorKeys)
     , valCookie_(1 + rand_int(crypto_prng(), std::numeric_limits<std::uint64_t>::max() - 1))
     , nUnlVote_(validatorKeys_.nodeID, j_, app_)
+    , importCreditVote_(app_, journal)
 {
     XRPL_ASSERT(valCookie_, "xrpl::RCLConsensus::Adaptor::Adaptor : nonzero cookie");
 
@@ -334,6 +335,12 @@ RCLConsensus::Adaptor::onClose(
                 app_.validators().getTrustedMasterKeys(),
                 app_.getValidations(),
                 initialSet);
+        }
+
+        // Import credit voting: every ledger, if featureImportExport enabled
+        if (prevLedger->rules().enabled(featureImportExport))
+        {
+            importCreditVote_.doVoting(prevLedger, initialSet);
         }
     }
 

@@ -3,9 +3,10 @@
 ```
 Title:       XPOP Import/Export
 Type:        Draft
-Author:      Denis Angell <dangell@transia.co>,
-             Richard Holland <richard@xrpl-labs.com>,
-             Wietse Wind <wietse@xrpl-labs.com>
+Author:      Richard Holland <https://github.com/RichardAH>,
+             Nic Dudfield <https://github.com/sublimator>,
+             Denis Angell <https://github.com/dangell7>,
+             Wietse Wind <https://github.com/WietseWind>
 Revision:    4
 Discussion:  https://github.com/XRPLF/XRPL-Standards/discussions/107
 ```

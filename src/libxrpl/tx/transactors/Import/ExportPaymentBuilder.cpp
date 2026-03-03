@@ -9,7 +9,6 @@
 #include <xrpl/protocol/Serializer.h>
 #include <xrpl/protocol/Sign.h>
 #include <xrpl/protocol/TxFlags.h>
-#include <xrpl/protocol/TxFormats.h>
 #include <xrpl/protocol/digest.h>
 
 #include <algorithm>
@@ -21,11 +20,13 @@ buildExportPayment(ExportPaymentParams const& params)
 {
     // Construct the exact same Payment on every validator node.
     // Field order and values must be 100% deterministic.
+    // Note: Do NOT use STObject(paymentFormat, sfTransaction) here.
+    // That pre-populates soeDEFAULT fields (like sfPaths) as nonPresent
+    // entries, which STTx::applyTemplate then rejects as "explicitly set
+    // to default".  Build a bare STObject and let the STTx constructor
+    // apply the template on the fields we actually set.
 
-    SOTemplate const& paymentFormat =
-        TxFormats::getInstance().findByType(ttPAYMENT)->getSOTemplate();
-
-    STObject obj(paymentFormat, sfTransaction);
+    STObject obj(sfTransaction);
 
     // TransactionType = Payment
     obj.setFieldU16(sfTransactionType, ttPAYMENT);
@@ -78,12 +79,7 @@ exportPaymentMultiSignHash(STTx const& tx, AccountID const& signerID)
 STTx
 buildSignerListSet(SignerListSetParams const& params)
 {
-    SOTemplate const& format =
-        TxFormats::getInstance()
-            .findByType(ttSIGNER_LIST_SET)
-            ->getSOTemplate();
-
-    STObject obj(format, sfTransaction);
+    STObject obj(sfTransaction);
 
     obj.setFieldU16(sfTransactionType, ttSIGNER_LIST_SET);
     obj.setFieldU32(sfFlags, tfFullyCanonicalSig);
@@ -117,12 +113,7 @@ buildSignerListSet(SignerListSetParams const& params)
 STTx
 buildTicketCreate(TicketCreateParams const& params)
 {
-    SOTemplate const& format =
-        TxFormats::getInstance()
-            .findByType(ttTICKET_CREATE)
-            ->getSOTemplate();
-
-    STObject obj(format, sfTransaction);
+    STObject obj(sfTransaction);
 
     obj.setFieldU16(sfTransactionType, ttTICKET_CREATE);
     obj.setFieldU32(sfFlags, tfFullyCanonicalSig);

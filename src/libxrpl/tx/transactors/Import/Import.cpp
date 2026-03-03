@@ -21,6 +21,7 @@
 #include <xrpl/server/Manifest.h>
 
 #include <algorithm>
+#include <cstring>
 #include <limits>
 #include <vector>
 
@@ -43,11 +44,13 @@ Import::makeTxConsequences(PreflightContext const& ctx)
         if (!isTesSuccess(innerTer))
             return beast::zero;
 
-        // Lock-and-mint: use DeliveredAmount from metadata
-        if (!meta->isFieldPresent(sfDeliveredAmount))
-            return beast::zero;
-
-        STAmount const delivered = meta->getFieldAmount(sfDeliveredAmount);
+        // Lock-and-mint: use DeliveredAmount from metadata, or fall
+        // back to sfAmount on the inner Payment (standard XRPL nodes
+        // omit sfDeliveredAmount for simple XRP-to-XRP payments).
+        STAmount const delivered =
+            meta->isFieldPresent(sfDeliveredAmount)
+            ? meta->getFieldAmount(sfDeliveredAmount)
+            : inner->getFieldAmount(sfAmount);
         if (!isXRP(delivered) || delivered <= beast::zero)
             return beast::zero;
 
@@ -182,54 +185,18 @@ Import::preflight(PreflightContext const& ctx)
         return temMALFORMED;
     }
 
-    // Check signing key match between inner and outer
+    // The outer Import tx does not need to be signed by the inner tx's key.
+    // The XPOP (inner tx signature + validator quorum) is the authorization.
+    // A relayer can submit with empty SigningPubKey. The inner tx's signing
+    // key is used for account derivation on first import.
+    // We still verify the inner tx signature below to prove mainnet ownership.
     {
-        auto outer = tx.getSigningPubKey();
         auto inner = stpTrans->getSigningPubKey();
-
-        if (outer.empty() && inner.empty())
+        if (inner.empty() && !stpTrans->isFieldPresent(sfSigners))
         {
-            bool const outerHasSigners = tx.isFieldPresent(sfSigners);
-            bool const innerHasSigners = stpTrans->isFieldPresent(sfSigners);
-
-            if (outerHasSigners && innerHasSigners)
-            {
-                auto const& outerSigners = tx.getFieldArray(sfSigners);
-                auto const& innerSigners = stpTrans->getFieldArray(sfSigners);
-
-                bool ok = outerSigners.size() == innerSigners.size() &&
-                    innerSigners.size() >= 1;
-                for (uint64_t i = 0; ok && i < outerSigners.size(); ++i)
-                {
-                    if (outerSigners[i].getAccountID(sfAccount) !=
-                            innerSigners[i].getAccountID(sfAccount) ||
-                        outerSigners[i].getFieldVL(sfSigningPubKey) !=
-                            innerSigners[i].getFieldVL(sfSigningPubKey))
-                        ok = false;
-                }
-
-                if (!ok)
-                {
-                    JLOG(ctx.j.warn())
-                        << "Import: outer and inner txns were (multi) signed "
-                           "with different keys. "
-                        << tx.getTransactionID();
-                    return temMALFORMED;
-                }
-            }
-            else
-            {
-                JLOG(ctx.j.warn())
-                    << "Import: outer or inner txn was missing signers. "
-                    << tx.getTransactionID();
-                return temMALFORMED;
-            }
-        }
-        else if (outer != inner)
-        {
-            JLOG(ctx.j.warn()) << "Import: outer and inner txns were signed "
-                                  "with different keys. "
-                               << tx.getTransactionID();
+            JLOG(ctx.j.warn())
+                << "Import: inner txn has no signing key or signers "
+                << tx.getTransactionID();
             return temMALFORMED;
         }
     }
@@ -386,6 +353,28 @@ Import::preflight(PreflightContext const& ctx)
         return temMALFORMED;
     }
 
+    // If a chain array is present, walk the chain forward to get the
+    // final ledger hash that validators signed. This supports recovery
+    // when the original ledger's validations were missed.
+    uint256 quorumLedgerHash = computedLedgerHash;
+    if (xpop->isMember("chain"))
+    {
+        auto const& chain = (*xpop)["chain"];
+        if (chain.isArray() && chain.size() > 0)
+        {
+            quorumLedgerHash = import::verifyLedgerChain(
+                chain, computedLedgerHash, ctx.j);
+
+            if (quorumLedgerHash == uint256{})
+            {
+                JLOG(ctx.j.warn())
+                    << "Import: ledger chain verification failed "
+                    << tx.getTransactionID();
+                return temMALFORMED;
+            }
+        }
+    }
+
     // Parse validators and check quorum
     auto const validatorInfo =
         import::parseValidatorList(list[jss::validators], ctx.j);
@@ -393,7 +382,7 @@ Import::preflight(PreflightContext const& ctx)
     auto const validationCount = import::countValidations(
         (*xpop)["validation"][jss::data],
         validatorInfo,
-        computedLedgerHash,
+        quorumLedgerHash,
         ctx.j);
 
     if (!import::hasQuorum(validatorInfo.totalCount, validationCount))
@@ -412,17 +401,14 @@ Import::preflight(PreflightContext const& ctx)
         return temMALFORMED;
     }
 
-    // Lock-and-mint: DeliveredAmount must be present in metadata
-    if (!meta->isFieldPresent(sfDeliveredAmount))
+    // Lock-and-mint: use DeliveredAmount from metadata when present,
+    // otherwise fall back to sfAmount on the inner Payment.  Standard
+    // XRPL nodes omit sfDeliveredAmount for simple XRP-to-XRP payments.
     {
-        JLOG(ctx.j.warn())
-            << "Import: inner Payment metadata missing DeliveredAmount "
-            << tx.getTransactionID();
-        return temMALFORMED;
-    }
-
-    {
-        STAmount const delivered = meta->getFieldAmount(sfDeliveredAmount);
+        STAmount const delivered =
+            meta->isFieldPresent(sfDeliveredAmount)
+            ? meta->getFieldAmount(sfDeliveredAmount)
+            : stpTrans->getFieldAmount(sfAmount);
         if (!isXRP(delivered) || delivered <= beast::zero)
         {
             JLOG(ctx.j.warn())
@@ -615,14 +601,17 @@ Import::doApply()
         import::getInnerTxn(ctx_.tx, ctx_.journal, &(*xpop));
 
     if (!stpTrans || !stpTrans->isFieldPresent(sfSequence) || !meta ||
-        !meta->isFieldPresent(sfTransactionResult) ||
-        !meta->isFieldPresent(sfDeliveredAmount))
+        !meta->isFieldPresent(sfTransactionResult))
     {
         return tefINTERNAL;
     }
 
-    // Lock-and-mint: get delivered amount from inner Payment metadata
-    STAmount const delivered = meta->getFieldAmount(sfDeliveredAmount);
+    // Lock-and-mint: use DeliveredAmount from metadata when present,
+    // otherwise fall back to sfAmount on the inner Payment.
+    STAmount const delivered =
+        meta->isFieldPresent(sfDeliveredAmount)
+        ? meta->getFieldAmount(sfDeliveredAmount)
+        : stpTrans->getFieldAmount(sfAmount);
     if (!isXRP(delivered) || delivered <= beast::zero)
         return tefINTERNAL;
 
@@ -667,12 +656,21 @@ Import::doApply()
         sle->setFieldU32(sfSequence, seqno);
         sle->setFieldU32(sfOwnerCount, 0);
 
-        if (ctx_.tx.getSigningPubKey().empty() ||
-            calcAccountID(PublicKey(makeSlice(ctx_.tx.getSigningPubKey()))) !=
-                id)
+        // Master key is derived from the inner tx's signing key (which
+        // determines the AccountID). Leave master ENABLED — the user
+        // controls this account via their mainnet key.
+        // No lsfDisableMaster flag set.
+
+        // If the inner Payment has InvoiceID, use the first 20 bytes as
+        // an AccountID to set as the RegularKey. This allows users to
+        // specify a passkey account for the sidechain via the mainnet
+        // Payment's InvoiceID field.
+        if (stpTrans->isFieldPresent(sfInvoiceID))
         {
-            // Disable master unless the first Import is signed with master
-            sle->setFieldU32(sfFlags, lsfDisableMaster);
+            uint256 const invoiceID = stpTrans->getFieldH256(sfInvoiceID);
+            AccountID regularKeyID;
+            std::memcpy(regularKeyID.data(), invoiceID.data(), 20);
+            sle->setAccountID(sfRegularKey, regularKeyID);
         }
     }
 
@@ -687,6 +685,36 @@ Import::doApply()
     // Mint XRP by adjusting the ledger header
     STAmount added = create ? finalBal : finalBal - startBal;
     ctx_.rawView().rawDestroyXRP(-added.xrp());
+
+    // Create ImportRecord for audit trail (double-entry bookkeeping)
+    {
+        auto const importKeylet =
+            keylet::importRecord(id, importSequence);
+        auto sleImport = std::make_shared<SLE>(importKeylet);
+
+        sleImport->setAccountID(sfAccount, id);
+        sleImport->setFieldAmount(sfAmount, added);
+        sleImport->setFieldU32(sfImportSequence, importSequence);
+        sleImport->setFieldH256(
+            sfSourceTxnID, stpTrans->getTransactionID());
+        sleImport->setFieldU32(sfLedgerSequence, ctx_.view().seq());
+        sleImport->setFieldH256(
+            sfPreviousTxnID, ctx_.tx.getTransactionID());
+        sleImport->setFieldU32(sfPreviousTxnLgrSeq, ctx_.view().seq());
+
+        // Add to global import directory (not owner directory — no reserve)
+        auto const page = view().dirInsert(
+            keylet::importDir(),
+            importKeylet,
+            [](std::shared_ptr<SLE> const&) {});
+
+        if (!page)
+            return tecDIR_FULL;
+
+        sleImport->setFieldU64(sfImportDirNode, *page);
+
+        view().insert(sleImport);
+    }
 
     return tesSUCCESS;
 }

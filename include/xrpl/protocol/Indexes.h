@@ -408,6 +408,14 @@ UNLReport() noexcept;
 Keylet
 passkeyList(AccountID const& account) noexcept;
 
+/** Import record for audit trail */
+Keylet
+importRecord(AccountID const& account, std::uint32_t seq) noexcept;
+
+/** Global import directory (singleton root) */
+Keylet const&
+importDir() noexcept;
+
 }  // namespace keylet
 
 // Everything below is deprecated and should be removed in favor of keylets:
