@@ -280,6 +280,12 @@ public:
     // Mainnet WebSocket URLs for the embedded MainnetWatcher
     std::vector<std::string> MAINNET_NODES;
 
+    // Base fee in drops for mainnet multisig transactions.
+    // Fee formula: (signerCount + 1) * MAINNET_BASE_FEE
+    // Default 15 drops.  Should be queried from mainnet and set higher
+    // when the network is under load.
+    std::uint32_t MAINNET_BASE_FEE{15};
+
     std::string SERVER_DOMAIN;
 
     // How long can a peer remain in the "unknown" state

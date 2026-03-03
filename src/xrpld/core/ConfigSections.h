@@ -82,5 +82,6 @@ struct ConfigSection
 #define SECTION_IMPORT_VAULT_MAX_TICKET "import_vault_max_ticket"
 #define SECTION_IMPORT_VAULT_MAINNET_SEQUENCE "import_vault_mainnet_sequence"
 #define SECTION_MAINNET_NODES "mainnet_nodes"
+#define SECTION_MAINNET_BASE_FEE "mainnet_base_fee"
 
 }  // namespace xrpl

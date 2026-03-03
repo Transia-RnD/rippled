@@ -913,6 +913,7 @@ RCLConsensus::Adaptor::signExportRecords(
                 params.amount = amount;
                 params.ticketSeq = ticketSeq;
                 params.signerCount = signerCount;
+                params.baseFee = app_.config().MAINNET_BASE_FEE;
 
                 if (sle->isFieldPresent(sfDestinationTag))
                     params.destinationTag =
@@ -1065,6 +1066,7 @@ RCLConsensus::Adaptor::checkSignerListRotation(
     params.signerCount = signerCount;
     params.quorum = newQuorum;
     params.signerAccounts = signerAccounts;
+    params.baseFee = app_.config().MAINNET_BASE_FEE;
 
     auto const slsTx = buildSignerListSet(params);
     auto const txnHash = slsTx.getTransactionID();
@@ -1147,6 +1149,7 @@ RCLConsensus::Adaptor::checkTicketReplenishment(
     params.ticketSeq = ticketForCreate;
     params.signerCount = signerCount;
     params.ticketCount = newTicketCount;
+    params.baseFee = app_.config().MAINNET_BASE_FEE;
 
     auto const tcTx = buildTicketCreate(params);
     auto const txnHash = tcTx.getTransactionID();

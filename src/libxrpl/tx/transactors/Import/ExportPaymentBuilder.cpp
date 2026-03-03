@@ -49,11 +49,11 @@ buildExportPayment(ExportPaymentParams const& params)
     // TicketSequence = the assigned mainnet ticket
     obj.setFieldU32(sfTicketSequence, params.ticketSeq);
 
-    // Fee = (signerCount + 1) * 15 drops
+    // Fee = (signerCount + 1) * baseFee drops
     // Multisig fee on mainnet is (1 + numSigners) * baseFee.
-    // Use 15 drops as a safe base fee estimate.
-    auto const fee =
-        STAmount((static_cast<std::uint64_t>(params.signerCount) + 1) * 15);
+    // baseFee is configurable via [mainnet_base_fee] (default 15 drops).
+    auto const fee = STAmount(
+        (static_cast<std::uint64_t>(params.signerCount) + 1) * params.baseFee);
     obj.setFieldAmount(sfFee, fee);
 
     // Empty SigningPubKey (required for multi-signed transactions)
@@ -88,8 +88,8 @@ buildSignerListSet(SignerListSetParams const& params)
     obj.setFieldU32(sfTicketSequence, params.ticketSeq);
     obj.setFieldU32(sfSignerQuorum, params.quorum);
 
-    auto const fee =
-        STAmount((static_cast<std::uint64_t>(params.signerCount) + 1) * 15);
+    auto const fee = STAmount(
+        (static_cast<std::uint64_t>(params.signerCount) + 1) * params.baseFee);
     obj.setFieldAmount(sfFee, fee);
     obj.setFieldVL(sfSigningPubKey, Blob{});
 
@@ -122,8 +122,8 @@ buildTicketCreate(TicketCreateParams const& params)
     obj.setFieldU32(sfTicketSequence, params.ticketSeq);
     obj.setFieldU32(sfTicketCount, params.ticketCount);
 
-    auto const fee =
-        STAmount((static_cast<std::uint64_t>(params.signerCount) + 1) * 15);
+    auto const fee = STAmount(
+        (static_cast<std::uint64_t>(params.signerCount) + 1) * params.baseFee);
     obj.setFieldAmount(sfFee, fee);
     obj.setFieldVL(sfSigningPubKey, Blob{});
 

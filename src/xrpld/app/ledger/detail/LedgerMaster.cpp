@@ -833,6 +833,7 @@ LedgerMaster::setFullLedger(
                             params.amount = amount;
                             params.ticketSeq = ticketSeq;
                             params.signerCount = signerCount;
+                            params.baseFee = app_.config().MAINNET_BASE_FEE;
 
                             if (sle->isFieldPresent(sfDestinationTag))
                                 params.destinationTag =

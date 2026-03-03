@@ -1052,6 +1052,30 @@ Config::loadFromString(std::string const& fileContents)
                 }
             }
 
+            // Parse [mainnet_base_fee] — per-signer base fee in drops
+            if (auto sec = getIniFileSection(
+                    iniFile, SECTION_MAINNET_BASE_FEE);
+                sec)
+            {
+                if (sec->size() != 1)
+                    Throw<std::runtime_error>(
+                        "[" SECTION_MAINNET_BASE_FEE
+                        "] must contain exactly one value.");
+                try
+                {
+                    MAINNET_BASE_FEE =
+                        static_cast<std::uint32_t>(
+                            std::stoul((*sec)[0]));
+                }
+                catch (...)
+                {
+                    Throw<std::runtime_error>(
+                        "Invalid value in "
+                        "[" SECTION_MAINNET_BASE_FEE "]: " +
+                        (*sec)[0]);
+                }
+            }
+
             if (!entries && !valKeyEntries && !valListKeys)
                 Throw<std::runtime_error>(
                     "The file specified in [" SECTION_VALIDATORS_FILE

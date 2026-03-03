@@ -22,6 +22,7 @@ struct ExportPaymentParams
     std::uint32_t ticketSeq;     // Mainnet ticket for this export
     std::uint32_t signerCount;   // Number of signers (for fee calculation)
     std::optional<std::uint32_t> destinationTag;
+    std::uint32_t baseFee{15};   // Per-signer base fee in drops (configurable)
 };
 
 /** Build the unsigned mainnet Payment STTx from deterministic parameters.
@@ -56,6 +57,7 @@ struct SignerListSetParams
     std::uint32_t quorum;        // New quorum value
     // Sorted list of (AccountID, weight=1) for each validator
     std::vector<AccountID> signerAccounts;
+    std::uint32_t baseFee{15};   // Per-signer base fee in drops (configurable)
 };
 
 /** Build an unsigned SignerListSet STTx for the mainnet vault. */
@@ -71,6 +73,7 @@ struct TicketCreateParams
     std::uint32_t ticketSeq;     // Use a ticket to create more tickets
     std::uint32_t signerCount;
     std::uint32_t ticketCount;   // Number of new tickets to create
+    std::uint32_t baseFee{15};   // Per-signer base fee in drops (configurable)
 };
 
 /** Build an unsigned TicketCreate STTx for the mainnet vault. */
