@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include <xrpl/basics/Blob.h>
 #include <xrpl/basics/Buffer.h>
 #include <xrpl/basics/Expected.h>
@@ -449,11 +451,14 @@ singleSignHelper(STObject const& sigObject, Slice const& data)
                         b64 += '=';
                     auto const challengeBytes =
                         base64_decode(b64);
+                    // Use memcmp for correct byte comparison
+                    // (std::equal with char vs uint8_t fails
+                    // for bytes >= 128 due to signed promotion)
                     if (challengeBytes.size() != data.size() ||
-                        !std::equal(
-                            challengeBytes.begin(),
-                            challengeBytes.end(),
-                            data.data()))
+                        std::memcmp(
+                            challengeBytes.data(),
+                            data.data(),
+                            data.size()) != 0)
                     {
                         validSig = false;
                         break;
