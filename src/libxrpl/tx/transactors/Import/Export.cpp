@@ -1,6 +1,7 @@
 #include <xrpl/tx/transactors/Import/Export.h>
 
 #include <xrpl/basics/Log.h>
+#include <xrpl/ledger/Credit.h>
 #include <xrpl/ledger/View.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
@@ -23,9 +24,9 @@ Export::preflight(PreflightContext const& ctx)
     auto& tx = ctx.tx;
 
     STAmount const amount = tx.getFieldAmount(sfAmount);
-    if (!isXRP(amount) || amount <= beast::zero)
+    if (isXRP(amount) || amount <= beast::zero)
     {
-        JLOG(ctx.j.warn()) << "Export: amount must be positive XRP";
+        JLOG(ctx.j.warn()) << "Export: amount must be a positive IOU";
         return temBAD_AMOUNT;
     }
 
@@ -35,7 +36,8 @@ Export::preflight(PreflightContext const& ctx)
 TER
 Export::preclaim(PreclaimContext const& ctx)
 {
-    auto const& sle = ctx.view.read(keylet::account(ctx.tx[sfAccount]));
+    auto const id = ctx.tx[sfAccount];
+    auto const& sle = ctx.view.read(keylet::account(id));
     if (!sle)
         return terNO_ACCOUNT;
 
@@ -43,22 +45,42 @@ Export::preclaim(PreclaimContext const& ctx)
     STAmount const balance = sle->getFieldAmount(sfBalance);
     STAmount const fee = ctx.tx.getFieldAmount(sfFee);
 
-    // Must have enough to cover amount + fee + reserve
-    // ExportRecord is NOT in owner directory (no +1), burn is anti-spam
+    // Validate exported IOU matches configured currency + vault issuer
+    auto const& vaultAddr = ctx.registry.getImportVaultAddress();
+    auto const& exportCurrency = ctx.registry.getExportMainnetIouCurrency();
+
+    if (exportCurrency && amount.getCurrency() != *exportCurrency)
+    {
+        JLOG(ctx.j.warn()) << "Export: currency does not match configured "
+                              "export_mainnet_iou_currency";
+        return temBAD_AMOUNT;
+    }
+    if (vaultAddr && amount.getIssuer() != *vaultAddr)
+    {
+        JLOG(ctx.j.warn()) << "Export: issuer does not match vault address";
+        return temBAD_AMOUNT;
+    }
+
+    // XRP balance must cover fee + reserve (XRP is still needed for gas)
     auto const reserve = ctx.view.fees().accountReserve(
         sle->getFieldU32(sfOwnerCount));
 
-    if (balance < amount + fee + STAmount(reserve))
+    if (balance < fee + STAmount(reserve))
     {
-        JLOG(ctx.j.warn()) << "Export: insufficient balance";
+        JLOG(ctx.j.warn()) << "Export: insufficient XRP for fee + reserve";
+        return tecUNFUNDED;
+    }
+
+    // IOU balance must cover the export amount
+    auto const iouBal = creditBalance(
+        ctx.view, id, amount.getIssuer(), amount.getCurrency());
+    if (iouBal < amount)
+    {
+        JLOG(ctx.j.warn()) << "Export: insufficient IOU balance";
         return tecUNFUNDED;
     }
 
     // If validator-signed exports are enabled, check ticket availability.
-    // The ExportVaultState singleton is created lazily in doApply() if
-    // it doesn't already exist (e.g. before the amendment activation
-    // pseudo-tx fires).  Only check ticket exhaustion when the vault
-    // is already on ledger.
     if (ctx.view.rules().enabled(featureImportExport))
     {
         auto const sleVault =
@@ -92,9 +114,17 @@ Export::doApply()
 
     STAmount const amount = ctx_.tx.getFieldAmount(sfAmount);
 
-    // Debit account balance
-    STAmount const balance = sle->getFieldAmount(sfBalance);
-    sle->setFieldAmount(sfBalance, balance - amount);
+    // Redeem IOU from trust line (debit the user's balance)
+    {
+        auto const ter = redeemIOU(
+            view(),
+            id,
+            amount,
+            Issue(amount.getCurrency(), amount.getIssuer()),
+            ctx_.journal);
+        if (!isTesSuccess(ter))
+            return ter;
+    }
 
     // Get and increment export sequence
     uint32_t exportSeq = 0;
@@ -132,9 +162,6 @@ Export::doApply()
         auto sleVault = view().peek(vaultKeylet);
 
         // Lazily create ExportVaultState if it doesn't exist yet.
-        // In production this is created during amendment activation;
-        // this fallback handles the window before the activation
-        // pseudo-tx fires or standalone/test environments.
         if (!sleVault)
         {
             auto const firstTicket =
@@ -185,8 +212,7 @@ Export::doApply()
 
     view().insert(sleExport);
 
-    // Destroy XRP from supply (burn)
-    ctx_.rawView().rawDestroyXRP(amount.xrp());
+    // No rawDestroyXRP — IOU redemption handles the balance change
 
     return tesSUCCESS;
 }

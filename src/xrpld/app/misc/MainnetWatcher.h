@@ -115,6 +115,7 @@ public:
         std::uint32_t ledgerIndex;   // Ledger it was confirmed in
         std::string txType;          // "TicketCreate", "Payment", etc.
         std::uint32_t ticketCount;   // For TicketCreate: number of tickets
+        std::uint32_t ticketSequence{0};  // For Payment: the TicketSequence used
         std::uint32_t newSequence;   // Post-tx account Sequence
     };
 

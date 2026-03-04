@@ -277,6 +277,64 @@ SetSignerList::validateQuorumAndSignerEntries(
     return tesSUCCESS;
 }
 
+// Static version used by Import for cross-chain signer list imports
+TER
+SetSignerList::replaceSignersFromLedger(
+    ServiceRegistry& registry,
+    ApplyView& view,
+    beast::Journal j,
+    AccountID const& acc,
+    std::uint32_t quorum,
+    std::vector<SignerEntries::SignerEntry> const& signers,
+    XRPAmount const mPriorBalance)
+{
+    auto const accountKeylet = keylet::account(acc);
+    auto const ownerDirKeylet = keylet::ownerDir(acc);
+    auto const signerListKeylet = keylet::signers(acc);
+
+    // Preemptively remove any old signer list
+    if (TER const ter = removeSignersFromLedger(
+            registry, view, accountKeylet, ownerDirKeylet, signerListKeylet, j))
+        return ter;
+
+    auto const sle = view.peek(accountKeylet);
+    if (!sle)
+        return tefINTERNAL;
+
+    // Compute new reserve
+    std::uint32_t const oldOwnerCount{(*sle)[sfOwnerCount]};
+
+    constexpr int addedOwnerCount = 1;
+    std::uint32_t flags{lsfOneOwnerCount};
+
+    XRPAmount const newReserve{
+        view.fees().accountReserve(oldOwnerCount + addedOwnerCount)};
+
+    if (mPriorBalance < newReserve)
+        return tecINSUFFICIENT_RESERVE;
+
+    // Add the ltSIGNER_LIST to the ledger
+    auto signerList = std::make_shared<SLE>(signerListKeylet);
+    view.insert(signerList);
+    writeSignersToSLE(view, signerList, flags, quorum, signers);
+
+    // Add to account directory
+    auto const page =
+        view.dirInsert(ownerDirKeylet, signerListKeylet, describeOwnerDir(acc));
+
+    JLOG(j.trace()) << "Create signer list for account " << toBase58(acc)
+                    << ": " << (page ? "success" : "failure");
+
+    if (!page)
+        return tecDIR_FULL;
+
+    signerList->setFieldU64(sfOwnerNode, *page);
+
+    auto viewJ = registry.journal("View");
+    adjustOwnerCount(view, sle, addedOwnerCount, viewJ);
+    return tesSUCCESS;
+}
+
 TER
 SetSignerList::replaceSignerList()
 {
@@ -382,6 +440,41 @@ SetSignerList::writeSignersToSLE(SLE::pointer const& ledgerEntry, std::uint32_t 
     }
 
     // Assign the SignerEntries.
+    ledgerEntry->setFieldArray(sfSignerEntries, toLedger);
+}
+
+// Static version for use by Import and replaceSignersFromLedger
+void
+SetSignerList::writeSignersToSLE(
+    ApplyView& view,
+    std::shared_ptr<SLE> const& ledgerEntry,
+    std::uint32_t flags,
+    std::uint32_t quorum,
+    std::vector<SignerEntries::SignerEntry> const& signers)
+{
+    if (view.rules().enabled(fixIncludeKeyletFields))
+    {
+        // Note: for the static version we skip setting sfOwner since
+        // it's set by the caller's context if needed.
+    }
+    ledgerEntry->setFieldU32(sfSignerQuorum, quorum);
+    ledgerEntry->setFieldU32(sfSignerListID, DEFAULT_SIGNER_LIST_ID);
+    if (flags)
+        ledgerEntry->setFieldU32(sfFlags, flags);
+
+    STArray toLedger(signers.size());
+    for (auto const& entry : signers)
+    {
+        toLedger.push_back(STObject::makeInnerObject(sfSignerEntry));
+        STObject& obj = toLedger.back();
+        obj.reserve(2);
+        obj[sfAccount] = entry.account;
+        obj[sfSignerWeight] = entry.weight;
+
+        if (entry.tag)
+            obj.setFieldH256(sfWalletLocator, *(entry.tag));
+    }
+
     ledgerEntry->setFieldArray(sfSignerEntries, toLedger);
 }
 

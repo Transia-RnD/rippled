@@ -1,5 +1,7 @@
 #include <xrpl/tx/transactors/Import/Import.h>
 #include <xrpl/tx/transactors/Import/ImportUtils.h>
+#include <xrpl/tx/transactors/SetSignerList.h>
+#include <xrpl/tx/SignerEntries.h>
 
 #include <xrpl/basics/Log.h>
 #include <xrpl/basics/StringUtilities.h>
@@ -9,12 +11,14 @@
 #include <xrpl/core/ServiceRegistry.h>
 #include <xrpl/json/json_reader.h>
 #include <xrpl/json/json_value.h>
+#include <xrpl/ledger/Sandbox.h>
 #include <xrpl/ledger/View.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
 #include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/STTx.h>
 #include <xrpl/protocol/STValidation.h>
+#include <xrpl/protocol/TxFormats.h>
 #include <xrpl/protocol/digest.h>
 #include <xrpl/protocol/jss.h>
 #include <xrpl/protocol/st.h>
@@ -44,17 +48,13 @@ Import::makeTxConsequences(PreflightContext const& ctx)
         if (!isTesSuccess(innerTer))
             return beast::zero;
 
-        // Lock-and-mint: use DeliveredAmount from metadata, or fall
-        // back to sfAmount on the inner Payment (standard XRPL nodes
-        // omit sfDeliveredAmount for simple XRP-to-XRP payments).
-        STAmount const delivered =
-            meta->isFieldPresent(sfDeliveredAmount)
-            ? meta->getFieldAmount(sfDeliveredAmount)
-            : inner->getFieldAmount(sfAmount);
-        if (!isXRP(delivered) || delivered <= beast::zero)
+        // Non-Payment imports don't mint XRP
+        if (inner->getTxnType() != ttPAYMENT)
             return beast::zero;
 
-        return delivered.xrp();
+        // IOU imports don't have direct XRP consequences; XRP is
+        // auto-minted as a side effect in doApply.
+        return beast::zero;
     };
 
     return TxConsequences{ctx.tx, calculate(ctx)};
@@ -131,16 +131,18 @@ Import::preflight(PreflightContext const& ctx)
         return temMALFORMED;
     }
 
-    // Inner transaction must be a Payment (lock-and-mint model)
-    if (stpTrans->getTxnType() != ttPAYMENT)
+    // Inner transaction must be a supported type
+    auto const innerType = stpTrans->getTxnType();
+    if (innerType != ttPAYMENT &&
+        innerType != ttREGULAR_KEY_SET &&
+        innerType != ttSIGNER_LIST_SET)
     {
-        JLOG(ctx.j.warn()) << "Import: inner txn is not a Payment "
+        JLOG(ctx.j.warn()) << "Import: unsupported inner txn type "
                            << tx.getTransactionID();
         return temMALFORMED;
     }
 
-    // Ensure the inner txn was tesSUCCESS (Payment must have succeeded
-    // for DeliveredAmount to be meaningful)
+    // Ensure the inner txn was tesSUCCESS
     if (!meta->isFieldPresent(sfTransactionResult))
     {
         JLOG(ctx.j.warn()) << "Import: inner txn lacked transaction result "
@@ -154,7 +156,7 @@ Import::preflight(PreflightContext const& ctx)
         if (!isTesSuccess(innerTer))
         {
             JLOG(ctx.j.warn())
-                << "Import: inner Payment did not have a tesSUCCESS result "
+                << "Import: inner txn did not have a tesSUCCESS result "
                 << tx.getTransactionID();
             return temMALFORMED;
         }
@@ -401,18 +403,19 @@ Import::preflight(PreflightContext const& ctx)
         return temMALFORMED;
     }
 
-    // Lock-and-mint: use DeliveredAmount from metadata when present,
-    // otherwise fall back to sfAmount on the inner Payment.  Standard
-    // XRPL nodes omit sfDeliveredAmount for simple XRP-to-XRP payments.
+    // IOU-only import: DeliveredAmount must be a positive IOU (not XRP).
+    // XRP imports are blocked to prevent accounting mismatch — sidechain
+    // XRP is freely minted as a gas token.
+    if (innerType == ttPAYMENT)
     {
         STAmount const delivered =
             meta->isFieldPresent(sfDeliveredAmount)
             ? meta->getFieldAmount(sfDeliveredAmount)
             : stpTrans->getFieldAmount(sfAmount);
-        if (!isXRP(delivered) || delivered <= beast::zero)
+        if (isXRP(delivered) || delivered <= beast::zero)
         {
             JLOG(ctx.j.warn())
-                << "Import: DeliveredAmount must be positive XRP "
+                << "Import: DeliveredAmount must be a positive IOU "
                 << tx.getTransactionID();
             return temMALFORMED;
         }
@@ -488,6 +491,7 @@ Import::preclaim(PreclaimContext const& ctx)
     }
 
     // Lock-and-mint: Verify inner Payment destination is the vault address
+    if (stpTrans->getTxnType() == ttPAYMENT)
     {
         auto const& vaultAddress = ctx.registry.getImportVaultAddress();
         if (!vaultAddress)
@@ -516,6 +520,15 @@ Import::preclaim(PreclaimContext const& ctx)
     }
 
     auto const& sle = ctx.view.read(keylet::account(ctx.tx[sfAccount]));
+
+    // Non-Payment imports require an existing account (no XRP is minted)
+    if (stpTrans->getTxnType() != ttPAYMENT && !sle)
+    {
+        JLOG(ctx.j.warn())
+            << "Import: non-Payment import requires existing account "
+            << ctx.tx.getTransactionID();
+        return tecNO_DST;
+    }
 
     // Replay protection: check ImportSequence
     if (sle && sle->isFieldPresent(sfImportSequence))
@@ -606,116 +619,304 @@ Import::doApply()
         return tefINTERNAL;
     }
 
-    // Lock-and-mint: use DeliveredAmount from metadata when present,
-    // otherwise fall back to sfAmount on the inner Payment.
-    STAmount const delivered =
-        meta->isFieldPresent(sfDeliveredAmount)
-        ? meta->getFieldAmount(sfDeliveredAmount)
-        : stpTrans->getFieldAmount(sfAmount);
-    if (!isXRP(delivered) || delivered <= beast::zero)
-        return tefINTERNAL;
-
-    // Check for overflow (safe integer check, no UB)
-    if (delivered.xrp() >
-        std::numeric_limits<std::int64_t>::max() - view().header().drops)
-    {
-        JLOG(ctx_.journal.warn()) << "Import: ledger header overflow";
-        return tecINTERNAL;
-    }
-
+    auto const innerType = stpTrans->getTxnType();
     uint32_t importSequence = stpTrans->getFieldU32(sfSequence);
     auto const id = ctx_.tx[sfAccount];
     auto sle = view().peek(keylet::account(id));
 
-    if (sle && sle->getFieldU32(sfImportSequence) >= importSequence)
+    // Replay protection
+    if (sle && sle->isFieldPresent(sfImportSequence) &&
+        sle->getFieldU32(sfImportSequence) >= importSequence)
         return tefINTERNAL;
 
-    bool const create = !sle;
-
-    // Lock-and-mint: credit exactly the delivered amount (1:1 ratio).
-    // No starting bonus — the imported amount must cover the account
-    // reserve on its own to maintain XRP conservation with the vault.
-    STAmount const creditAmount{delivered.xrp()};
-    STAmount startBal = create ? STAmount{0} : STAmount(mSourceBalance);
-    STAmount finalBal = startBal + creditAmount;
-
-    if (finalBal < startBal)
+    if (innerType == ttPAYMENT)
     {
-        JLOG(ctx_.journal.warn()) << "Import: overflow finalBal < startBal.";
-        return tefINTERNAL;
-    }
+        // ── Payment Import: IOU credit + auto XRP mint ────────
 
-    if (create)
-    {
-        std::uint32_t const seqno{view().seq()};
+        STAmount const delivered =
+            meta->isFieldPresent(sfDeliveredAmount)
+            ? meta->getFieldAmount(sfDeliveredAmount)
+            : stpTrans->getFieldAmount(sfAmount);
+        if (isXRP(delivered) || delivered <= beast::zero)
+            return tefINTERNAL;
 
-        sle = std::make_shared<SLE>(keylet::account(id));
-        sle->setAccountID(sfAccount, id);
-        sle->setFieldU32(sfSequence, seqno);
-        sle->setFieldU32(sfOwnerCount, 0);
+        // Get vault address (issuer on sidechain)
+        auto const vaultOpt = ctx_.registry.getImportVaultAddress();
+        if (!vaultOpt)
+            return tefINTERNAL;
+        auto const& vaultAddr = *vaultOpt;
 
-        // Master key is derived from the inner tx's signing key (which
-        // determines the AccountID). Leave master ENABLED — the user
-        // controls this account via their mainnet key.
-        // No lsfDisableMaster flag set.
+        // Map to sidechain representation: same currency, vault as issuer
+        Issue const sidechainIssue(delivered.getCurrency(), vaultAddr);
+        STAmount const creditAmount(
+            sidechainIssue, delivered.mantissa(), delivered.exponent());
 
-        // If the inner Payment has InvoiceID, use the first 20 bytes as
-        // an AccountID to set as the RegularKey. This allows users to
-        // specify a passkey account for the sidechain via the mainnet
-        // Payment's InvoiceID field.
-        if (stpTrans->isFieldPresent(sfInvoiceID))
+        // Auto-mint XRP threshold (default 50 XRP)
+        auto const mintThreshold =
+            ctx_.registry.getImportXrpMintAmount()
+                .value_or(XRPAmount{50'000'000});
+
+        bool const create = !sle;
+
+        // ── Account creation / XRP top-up ──────────────────────
+        if (create)
         {
-            uint256 const invoiceID = stpTrans->getFieldH256(sfInvoiceID);
-            AccountID regularKeyID;
-            std::memcpy(regularKeyID.data(), invoiceID.data(), 20);
-            sle->setAccountID(sfRegularKey, regularKeyID);
+            std::uint32_t const seqno{view().seq()};
+
+            sle = std::make_shared<SLE>(keylet::account(id));
+            sle->setAccountID(sfAccount, id);
+            sle->setFieldU32(sfSequence, seqno);
+            sle->setFieldU32(sfOwnerCount, 0);
+            sle->setFieldAmount(sfBalance, STAmount{mintThreshold});
+            sle->setFieldU32(sfImportSequence, importSequence);
+            view().insert(sle);
+
+            // Mint the XRP
+            ctx_.rawView().rawDestroyXRP(-mintThreshold);
+        }
+        else
+        {
+            // Existing account: top up XRP if below threshold
+            STAmount const currentBal{mSourceBalance};
+            if (currentBal.xrp() < mintThreshold)
+            {
+                auto const toMint = mintThreshold - currentBal.xrp();
+
+                // Overflow check
+                if (toMint >
+                    std::numeric_limits<std::int64_t>::max() -
+                        view().header().drops)
+                {
+                    JLOG(ctx_.journal.warn())
+                        << "Import: ledger header overflow on XRP mint";
+                    return tecINTERNAL;
+                }
+
+                sle->setFieldAmount(
+                    sfBalance, STAmount{currentBal.xrp() + toMint});
+                ctx_.rawView().rawDestroyXRP(-toMint);
+            }
+
+            sle->setFieldU32(sfImportSequence, importSequence);
+            view().update(sle);
+        }
+
+        // ── Credit IOU via issueIOU (auto-creates trust line) ──
+        {
+            auto const ter = issueIOU(
+                view(), id, creditAmount, sidechainIssue, ctx_.journal);
+            if (!isTesSuccess(ter))
+                return ter;
+        }
+
+        // Create ImportRecord for audit trail
+        {
+            auto const importKeylet =
+                keylet::importRecord(id, importSequence);
+            auto sleImport = std::make_shared<SLE>(importKeylet);
+
+            sleImport->setAccountID(sfAccount, id);
+            sleImport->setFieldAmount(sfAmount, creditAmount);
+            sleImport->setFieldU32(sfImportSequence, importSequence);
+            sleImport->setFieldH256(
+                sfSourceTxnID, stpTrans->getTransactionID());
+            sleImport->setFieldU32(
+                sfLedgerSequence, ctx_.view().seq());
+            sleImport->setFieldH256(
+                sfPreviousTxnID, ctx_.tx.getTransactionID());
+            sleImport->setFieldU32(
+                sfPreviousTxnLgrSeq, ctx_.view().seq());
+
+            auto const page = view().dirInsert(
+                keylet::importDir(),
+                importKeylet,
+                [](std::shared_ptr<SLE> const&) {});
+
+            if (!page)
+                return tecDIR_FULL;
+
+            sleImport->setFieldU64(sfImportDirNode, *page);
+
+            view().insert(sleImport);
         }
     }
-
-    sle->setFieldU32(sfImportSequence, importSequence);
-    sle->setFieldAmount(sfBalance, finalBal);
-
-    if (create)
-        view().insert(sle);
     else
-        view().update(sle);
-
-    // Mint XRP by adjusting the ledger header
-    STAmount added = create ? finalBal : finalBal - startBal;
-    ctx_.rawView().rawDestroyXRP(-added.xrp());
-
-    // Create ImportRecord for audit trail (double-entry bookkeeping)
     {
-        auto const importKeylet =
-            keylet::importRecord(id, importSequence);
-        auto sleImport = std::make_shared<SLE>(importKeylet);
+        // ── Key-only Import: SetRegularKey or SignerList ────────
+        // No XRP minting, no ImportRecord — just account configuration.
 
-        sleImport->setAccountID(sfAccount, id);
-        sleImport->setFieldAmount(sfAmount, added);
-        sleImport->setFieldU32(sfImportSequence, importSequence);
-        sleImport->setFieldH256(
-            sfSourceTxnID, stpTrans->getTransactionID());
-        sleImport->setFieldU32(sfLedgerSequence, ctx_.view().seq());
-        sleImport->setFieldH256(
-            sfPreviousTxnID, ctx_.tx.getTransactionID());
-        sleImport->setFieldU32(sfPreviousTxnLgrSeq, ctx_.view().seq());
+        if (!sle)
+            return tefINTERNAL;  // preclaim already checks
 
-        // Add to global import directory (not owner directory — no reserve)
-        auto const page = view().dirInsert(
-            keylet::importDir(),
-            importKeylet,
-            [](std::shared_ptr<SLE> const&) {});
+        // Only apply key changes if inner tx succeeded
+        if (isTesSuccess(
+                TER::fromInt(meta->getFieldU8(sfTransactionResult))))
+        {
+            if (innerType == ttREGULAR_KEY_SET)
+                doRegularKey(sle, *stpTrans);
+            else if (innerType == ttSIGNER_LIST_SET)
+                doSignerList(sle, *stpTrans);
+        }
 
-        if (!page)
-            return tecDIR_FULL;
-
-        sleImport->setFieldU64(sfImportDirNode, *page);
-
-        view().insert(sleImport);
+        sle->setFieldU32(sfImportSequence, importSequence);
+        view().update(sle);
     }
 
     return tesSUCCESS;
 }
+
+// ── Key Import Helpers ─────────────────────────────────────────
+
+void
+Import::doRegularKey(std::shared_ptr<SLE>& sle, STTx const& stpTrans)
+{
+    AccountID id = stpTrans.getAccountID(sfAccount);
+
+    JLOG(ctx_.journal.trace()) << "Import: doRegularKey acc: " << id;
+
+    if (stpTrans.getFieldU16(sfTransactionType) != ttREGULAR_KEY_SET)
+    {
+        JLOG(ctx_.journal.warn())
+            << "Import: doRegularKey called on non-regular key transaction.";
+        return;
+    }
+
+    if (!stpTrans.isFieldPresent(sfRegularKey))
+    {
+        // delete op
+        JLOG(ctx_.journal.trace()) << "Import: clearing SetRegularKey "
+                                   << " acc: " << id;
+        if (sle->isFieldPresent(sfRegularKey))
+            sle->makeFieldAbsent(sfRegularKey);
+        return;
+    }
+
+    AccountID rk = stpTrans.getAccountID(sfRegularKey);
+    JLOG(ctx_.journal.trace())
+        << "Import: actioning SetRegularKey " << rk << " acc: " << id;
+    sle->setAccountID(sfRegularKey, rk);
+
+    // always set this flag if they have done any regular keying
+    sle->setFlag(lsfPasswordSpent);
+
+    ctx_.view().update(sle);
+
+    return;
+}
+
+void
+Import::doSignerList(std::shared_ptr<SLE>& sle, STTx const& stpTrans)
+{
+    AccountID id = stpTrans.getAccountID(sfAccount);
+
+    JLOG(ctx_.journal.trace()) << "Import: doSignerList acc: " << id;
+
+    if (!stpTrans.isFieldPresent(sfSignerQuorum))
+    {
+        JLOG(ctx_.journal.warn())
+            << "Import: acc " << id
+            << " tried to import signerlist without sfSignerQuorum, skipping";
+        return;
+    }
+
+    Sandbox sb(&view());
+
+    uint32_t quorum = stpTrans.getFieldU32(sfSignerQuorum);
+
+    if (quorum == 0)
+    {
+        // delete operation
+        TER result =
+            SetSignerList::removeFromLedger(ctx_.registry, sb, id, ctx_.journal);
+        if (isTesSuccess(result))
+        {
+            JLOG(ctx_.journal.warn())
+                << "Import: successful destroy SignerListSet";
+            sb.apply(ctx_.rawView());
+        }
+        else
+        {
+            JLOG(ctx_.journal.warn())
+                << "Import: SetSignerList destroy failed with code " << result
+                << " acc: " << id;
+        }
+        return;
+    }
+
+    if (!stpTrans.isFieldPresent(sfSignerEntries) ||
+        stpTrans.getFieldArray(sfSignerEntries).empty())
+    {
+        JLOG(ctx_.journal.warn())
+            << "Import: SetSignerList lacked populated array and quorum was "
+               "non-zero. Ignoring. acc: "
+            << id;
+        return;
+    }
+
+    // Extract signer entries and sort them
+    std::vector<SignerEntries::SignerEntry> signers;
+    auto const entries = stpTrans.getFieldArray(sfSignerEntries);
+    signers.reserve(entries.size());
+    for (auto const& e : entries)
+    {
+        if (!e.isFieldPresent(sfAccount) || !e.isFieldPresent(sfSignerWeight))
+        {
+            JLOG(ctx_.journal.warn())
+                << "Import: SignerListSet entry lacked a required field "
+                   "(Account/SignerWeight). "
+                << "Skipping SignerListSet.";
+            return;
+        }
+
+        std::optional<uint256> tag;
+        if (e.isFieldPresent(sfWalletLocator))
+            tag = e.getFieldH256(sfWalletLocator);
+
+        signers.emplace_back(
+            e.getAccountID(sfAccount), e.getFieldU16(sfSignerWeight), tag);
+    }
+    std::sort(signers.begin(), signers.end());
+
+    // Validate signer list
+    JLOG(ctx_.journal.warn()) << "Import: actioning SignerListSet "
+                              << "quorum: " << quorum << " "
+                              << "size: " << signers.size();
+
+    if (SetSignerList::validateQuorumAndSignerEntries(
+            quorum, signers, id, ctx_.journal, ctx_.view().rules()) !=
+        tesSUCCESS)
+    {
+        JLOG(ctx_.journal.warn())
+            << "Import: validation of signer entries failed acc: " << id
+            << ". Skipping.";
+        return;
+    }
+
+    // Install signer list
+    TER result = SetSignerList::replaceSignersFromLedger(
+        ctx_.registry,
+        sb,
+        ctx_.journal,
+        id,
+        quorum,
+        signers,
+        sle->getFieldAmount(sfBalance).xrp());
+
+    if (isTesSuccess(result))
+    {
+        JLOG(ctx_.journal.warn()) << "Import: successful set SignerListSet";
+        sb.apply(ctx_.rawView());
+    }
+    else
+    {
+        JLOG(ctx_.journal.warn())
+            << "Import: SetSignerList set failed with code " << result
+            << " acc: " << id;
+    }
+    return;
+}
+
+// ── Fee Calculation ────────────────────────────────────────────
 
 XRPAmount
 Import::calculateBaseFee(ReadView const& view, STTx const& tx)

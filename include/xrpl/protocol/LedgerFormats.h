@@ -190,6 +190,9 @@ enum LedgerSpecificFlags {
     lsfLoanDefault = 0x00010000,
     lsfLoanImpaired = 0x00020000,
     lsfLoanOverpayment = 0x00040000, // True, loan allows overpayments
+
+    // ltEXPORT_RECORD
+    lsfExportConfirmed = 0x00010000,  // True, mainnet Payment confirmed
 };
 
 //------------------------------------------------------------------------------

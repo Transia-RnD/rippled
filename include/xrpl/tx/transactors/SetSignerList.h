@@ -49,10 +49,7 @@ public:
         AccountID const& account,
         beast::Journal j);
 
-private:
-    static std::tuple<NotTEC, std::uint32_t, std::vector<SignerEntries::SignerEntry>, Operation>
-    determineOperation(STTx const& tx, ApplyFlags flags, beast::Journal j);
-
+    // Public static methods used by Import for cross-chain key imports
     static NotTEC
     validateQuorumAndSignerEntries(
         std::uint32_t quorum,
@@ -61,6 +58,20 @@ private:
         beast::Journal j,
         Rules const&);
 
+    static TER
+    replaceSignersFromLedger(
+        ServiceRegistry& registry,
+        ApplyView& view,
+        beast::Journal j,
+        AccountID const& acc,
+        std::uint32_t quorum,
+        std::vector<SignerEntries::SignerEntry> const& signers,
+        XRPAmount const mPriorBalance);
+
+private:
+    static std::tuple<NotTEC, std::uint32_t, std::vector<SignerEntries::SignerEntry>, Operation>
+    determineOperation(STTx const& tx, ApplyFlags flags, beast::Journal j);
+
     TER
     replaceSignerList();
     TER
@@ -68,6 +79,14 @@ private:
 
     void
     writeSignersToSLE(SLE::pointer const& ledgerEntry, std::uint32_t flags) const;
+
+    static void
+    writeSignersToSLE(
+        ApplyView& view,
+        std::shared_ptr<SLE> const& ledgerEntry,
+        std::uint32_t flags,
+        std::uint32_t quorum,
+        std::vector<SignerEntries::SignerEntry> const& signers);
 };
 
 using SignerListSet = SetSignerList;

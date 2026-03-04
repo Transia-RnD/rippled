@@ -5,6 +5,8 @@
 #include <xrpl/basics/TaggedCache.h>
 #include <xrpl/ledger/CachedSLEs.h>
 #include <xrpl/protocol/AccountID.h>
+#include <xrpl/protocol/UintTypes.h>
+#include <xrpl/protocol/XRPAmount.h>
 
 #include <boost/asio.hpp>
 
@@ -254,6 +256,18 @@ public:
     /** Get the vault's mainnet account Sequence (for ticket prediction). */
     virtual std::optional<std::uint32_t>
     getImportVaultMainnetSequence() const = 0;
+
+    /** Get XRP drops to auto-mint to accounts on IOU import. */
+    virtual std::optional<XRPAmount>
+    getImportXrpMintAmount() const = 0;
+
+    /** Get the mainnet IOU issuer for export Payments (sidechain vault → mainnet issuer). */
+    virtual std::optional<AccountID> const&
+    getExportMainnetIouIssuer() const = 0;
+
+    /** Get the allowed export IOU currency code. */
+    virtual std::optional<Currency> const&
+    getExportMainnetIouCurrency() const = 0;
 
     /** Get the export signature collector (for validator-signed exports). */
     virtual ExportSignatureCollector&

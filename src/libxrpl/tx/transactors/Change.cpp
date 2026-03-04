@@ -4,6 +4,7 @@
 #include <xrpl/ledger/Sandbox.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
+#include <xrpl/protocol/LedgerFormats.h>
 #include <xrpl/protocol/TxFlags.h>
 #include <xrpl/server/NetworkOPs.h>
 #include <xrpl/tx/transactors/Change.h>
@@ -729,6 +730,42 @@ Change::applyImportCredit()
 TER
 Change::applyExportConfirm()
 {
+    // Payment confirmation: flag the ExportRecord as confirmed
+    if (ctx_.tx.isFieldPresent(sfTicketSequence) &&
+        ctx_.tx.isFieldPresent(sfOwner) &&
+        ctx_.tx.isFieldPresent(sfExportSequence))
+    {
+        auto const owner = ctx_.tx.getAccountID(sfOwner);
+        auto const exportSeq = ctx_.tx.getFieldU32(sfExportSequence);
+
+        auto const sleExport =
+            view().peek(keylet::exportRecord(owner, exportSeq));
+        if (!sleExport)
+        {
+            JLOG(j_.warn())
+                << "ExportConfirm: ExportRecord not found for "
+                << owner << ":" << exportSeq;
+            return tefINTERNAL;
+        }
+
+        if (!(sleExport->isFlag(lsfExportConfirmed)))
+        {
+            sleExport->setFlag(lsfExportConfirmed);
+            sleExport->setFieldH256(
+                sfPreviousTxnID, ctx_.tx.getTransactionID());
+            sleExport->setFieldU32(
+                sfPreviousTxnLgrSeq, ctx_.view().seq());
+            view().update(sleExport);
+
+            JLOG(j_.info())
+                << "ExportConfirm: Flagged ExportRecord "
+                << owner << ":" << exportSeq << " as confirmed";
+        }
+
+        return tesSUCCESS;
+    }
+
+    // TicketCreate confirmation: update ExportVaultState
     auto const vaultKeylet = keylet::exportVaultState();
     auto sleVault = view().peek(vaultKeylet);
     if (!sleVault)

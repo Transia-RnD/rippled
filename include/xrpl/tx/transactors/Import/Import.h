@@ -2,7 +2,11 @@
 
 #include <xrpl/basics/Log.h>
 #include <xrpl/protocol/Indexes.h>
+#include <xrpl/protocol/STLedgerEntry.h>
+#include <xrpl/protocol/STTx.h>
 #include <xrpl/tx/Transactor.h>
+
+#include <memory>
 
 namespace xrpl {
 
@@ -70,6 +74,13 @@ public:
 
     TER
     doApply() override;
+
+private:
+    void
+    doRegularKey(std::shared_ptr<SLE>& sle, STTx const& stpTrans);
+
+    void
+    doSignerList(std::shared_ptr<SLE>& sle, STTx const& stpTrans);
 };
 
 }  // namespace xrpl

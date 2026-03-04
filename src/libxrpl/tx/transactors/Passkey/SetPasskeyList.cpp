@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstring>
 #include <set>
 
 namespace xrpl {
@@ -47,7 +48,16 @@ SetPasskeyList::preflight(PreflightContext const& ctx)
         }
 
         // Check for duplicate PasskeyIDs
-        auto const passkeyID = passkey.getFieldH256(sfPasskeyID);
+        auto const passkeyIDBlob = passkey.getFieldVL(sfPasskeyID);
+        if (passkeyIDBlob.size() > 32 || passkeyIDBlob.empty())
+        {
+            JLOG(ctx.j.debug())
+                << "SetPasskeyList: invalid PasskeyID length.";
+            return temMALFORMED;
+        }
+        // Convert VL blob to uint256 for dedup (right-pad with zeros if < 32)
+        uint256 passkeyID{};
+        std::memcpy(passkeyID.data(), passkeyIDBlob.data(), passkeyIDBlob.size());
         if (!seenPasskeyIDs.insert(passkeyID).second)
         {
             JLOG(ctx.j.debug())

@@ -25,6 +25,7 @@
 #include <xrpl/protocol/BuildInfo.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
+#include <xrpl/protocol/LedgerFormats.h>
 #include <xrpl/protocol/SecretKey.h>
 #include <xrpl/protocol/digest.h>
 #include <xrpl/tx/transactors/Import/ExportPaymentBuilder.h>
@@ -895,12 +896,22 @@ RCLConsensus::Adaptor::signExportRecords(
 
     // Track which txnHashes are still in the export directory
     std::set<uint256> activeExports;
+    std::size_t signedCount = 0;
+    auto const batchSize = app_.config().EXPORT_SIGN_BATCH_SIZE;
 
     // Iterate the global export directory (sign-once, broadcast-many)
     forEachItem(l, keylet::exportDir(),
         [&](std::shared_ptr<SLE const> const& sle) {
             try
             {
+                // Skip confirmed exports
+                if (sle->isFlag(lsfExportConfirmed))
+                    return;
+
+                // Batch limit: only sign up to batchSize per ledger
+                if (signedCount >= batchSize)
+                    return;
+
                 // sfAccount = vault (mainnet sender)
                 // sfOwner = original exporter (lookup key)
                 auto const owner = sle->getAccountID(sfOwner);
@@ -921,6 +932,10 @@ RCLConsensus::Adaptor::signExportRecords(
                 params.ticketSeq = ticketSeq;
                 params.signerCount = signerCount;
                 params.baseFee = app_.config().MAINNET_BASE_FEE;
+
+                if (!isXRP(amount))
+                    params.mainnetIssuer =
+                        app_.config().EXPORT_MAINNET_IOU_ISSUER;
 
                 if (sle->isFieldPresent(sfDestinationTag))
                     params.destinationTag =
@@ -970,6 +985,7 @@ RCLConsensus::Adaptor::signExportRecords(
                 }
 
                 result.push_back(sigBuf);
+                ++signedCount;
 
                 // Stash txnData in collector (for two-phase verification)
                 app_.getExportSignatureCollector().stashTxnData(

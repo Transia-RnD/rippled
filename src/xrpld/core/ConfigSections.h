@@ -83,5 +83,9 @@ struct ConfigSection
 #define SECTION_IMPORT_VAULT_MAINNET_SEQUENCE "import_vault_mainnet_sequence"
 #define SECTION_MAINNET_NODES "mainnet_nodes"
 #define SECTION_MAINNET_BASE_FEE "mainnet_base_fee"
+#define SECTION_EXPORT_SIGN_BATCH_SIZE "export_sign_batch_size"
+#define SECTION_IMPORT_XRP_MINT_AMOUNT "import_xrp_mint_amount"
+#define SECTION_EXPORT_MAINNET_IOU_ISSUER "export_mainnet_iou_issuer"
+#define SECTION_EXPORT_MAINNET_IOU_CURRENCY "export_mainnet_iou_currency"
 
 }  // namespace xrpl

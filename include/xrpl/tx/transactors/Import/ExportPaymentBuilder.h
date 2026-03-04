@@ -18,11 +18,12 @@ struct ExportPaymentParams
 {
     AccountID vaultAddress;      // Mainnet vault account (source of Payment)
     AccountID destination;       // Mainnet destination
-    STAmount amount;             // XRP amount
+    STAmount amount;             // Amount (XRP or IOU)
     std::uint32_t ticketSeq;     // Mainnet ticket for this export
     std::uint32_t signerCount;   // Number of signers (for fee calculation)
     std::optional<std::uint32_t> destinationTag;
     std::uint32_t baseFee{15};   // Per-signer base fee in drops (configurable)
+    std::optional<AccountID> mainnetIssuer;  // Maps sidechain vault → mainnet IOU issuer
 };
 
 /** Build the unsigned mainnet Payment STTx from deterministic parameters.

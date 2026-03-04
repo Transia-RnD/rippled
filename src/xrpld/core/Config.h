@@ -7,6 +7,7 @@
 #include <xrpl/core/StartUpType.h>
 #include <xrpl/protocol/AccountID.h>
 #include <xrpl/protocol/PublicKey.h>
+#include <xrpl/protocol/UintTypes.h>
 #include <xrpl/protocol/SystemParameters.h>  // VFALCO Breaks levelization
 #include <xrpl/rdb/DatabaseCon.h>
 
@@ -285,6 +286,22 @@ public:
     // Default 15 drops.  Should be queried from mainnet and set higher
     // when the network is under load.
     std::uint32_t MAINNET_BASE_FEE{15};
+
+    // Maximum number of export records to sign per validation cycle.
+    // Limits the burst of signatures on startup and TMValidation message size.
+    std::uint32_t EXPORT_SIGN_BATCH_SIZE{5};
+
+    // XRP drops to auto-mint to accounts on IOU import (default 50 XRP).
+    // Covers account reserves and thousands of transaction fees.
+    std::optional<XRPAmount> IMPORT_XRP_MINT_AMOUNT;
+
+    // Mainnet RLUSD issuer address (used by ExportPaymentBuilder to map
+    // sidechain vault issuer → mainnet issuer in export Payments).
+    std::optional<AccountID> EXPORT_MAINNET_IOU_ISSUER;
+
+    // Allowed export currency (hex code). Exports are restricted to this
+    // single IOU. Must match the currency on the user's trust line.
+    std::optional<Currency> EXPORT_MAINNET_IOU_CURRENCY;
 
     std::string SERVER_DOMAIN;
 

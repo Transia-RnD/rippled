@@ -4,8 +4,10 @@
 #include <xrpld/app/misc/MainnetWatcher.h>
 
 #include <xrpl/ledger/ReadView.h>
+#include <xrpl/ledger/View.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
+#include <xrpl/protocol/LedgerFormats.h>
 #include <xrpl/protocol/Serializer.h>
 #include <xrpl/protocol/STTx.h>
 #include <xrpl/shamap/SHAMap.h>
@@ -40,8 +42,76 @@ ExportConfirmVote::doVoting(
         if (proposedHashes_.count(ctx.txHash))
             continue;
 
-        // Only process TicketCreate confirmations for now
-        // (Payment confirmations don't need state updates)
+        if (ctx.txType == "Payment" && ctx.ticketSequence != 0)
+        {
+            // Find the ExportRecord matching this ticket sequence
+            AccountID owner;
+            std::uint32_t exportSeq = 0;
+            bool found = false;
+
+            forEachItem(
+                *prevLedger,
+                keylet::exportDir(),
+                [&](std::shared_ptr<SLE const> const& sle) {
+                    if (found)
+                        return;
+                    if (!sle || !sle->isFieldPresent(sfTicketSequence))
+                        return;
+                    if (sle->getFieldU32(sfTicketSequence) !=
+                        ctx.ticketSequence)
+                        return;
+                    // Already confirmed — skip
+                    if (sle->isFlag(lsfExportConfirmed))
+                        return;
+                    owner = sle->getAccountID(sfOwner);
+                    exportSeq = sle->getFieldU32(sfExportSequence);
+                    found = true;
+                });
+
+            if (!found)
+            {
+                JLOG(journal_.info())
+                    << "ExportConfirmVote: No matching ExportRecord for "
+                    << "ticket=" << ctx.ticketSequence;
+                proposedHashes_.insert(ctx.txHash);
+                continue;
+            }
+
+            STTx exportConfirmTx(ttEXPORT_CONFIRM, [&](auto& obj) {
+                obj.setFieldU32(sfTicketSequence, ctx.ticketSequence);
+                obj.setAccountID(sfOwner, owner);
+                obj.setFieldU32(sfExportSequence, exportSeq);
+                obj.setFieldH256(sfSourceTxnID, ctx.txHash);
+                obj.setFieldU32(sfLedgerSequence, seq);
+            });
+
+            uint256 const txID = exportConfirmTx.getTransactionID();
+            Serializer s;
+            exportConfirmTx.add(s);
+
+            if (!initialSet->addGiveItem(
+                    SHAMapNodeType::tnTRANSACTION_NM,
+                    make_shamapitem(txID, s.slice())))
+            {
+                JLOG(journal_.warn())
+                    << "ExportConfirmVote: failed to add Payment confirm, "
+                    << "txID=" << txID;
+            }
+            else
+            {
+                proposedHashes_.insert(ctx.txHash);
+
+                JLOG(journal_.info())
+                    << "ExportConfirmVote: proposed confirm for Payment, "
+                    << "ticket=" << ctx.ticketSequence
+                    << " owner=" << owner
+                    << " exportSeq=" << exportSeq
+                    << " txID=" << txID;
+            }
+
+            continue;
+        }
+
         if (ctx.txType != "TicketCreate")
         {
             proposedHashes_.insert(ctx.txHash);

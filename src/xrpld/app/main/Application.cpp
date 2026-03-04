@@ -1142,6 +1142,24 @@ private:
         return config_->IMPORT_VAULT_MAINNET_SEQUENCE;
     }
 
+    std::optional<XRPAmount>
+    getImportXrpMintAmount() const override
+    {
+        return config_->IMPORT_XRP_MINT_AMOUNT;
+    }
+
+    std::optional<AccountID> const&
+    getExportMainnetIouIssuer() const override
+    {
+        return config_->EXPORT_MAINNET_IOU_ISSUER;
+    }
+
+    std::optional<Currency> const&
+    getExportMainnetIouCurrency() const override
+    {
+        return config_->EXPORT_MAINNET_IOU_CURRENCY;
+    }
+
     ExportSignatureCollector&
     getExportSignatureCollector() override
     {

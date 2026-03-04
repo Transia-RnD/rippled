@@ -40,8 +40,20 @@ buildExportPayment(ExportPaymentParams const& params)
     // Destination = the export recipient on mainnet
     obj.setAccountID(sfDestination, params.destination);
 
-    // Amount = the XRP being released
-    obj.setFieldAmount(sfAmount, params.amount);
+    // Amount — for IOUs, map sidechain vault issuer → mainnet issuer
+    auto amt = params.amount;
+    if (!isXRP(amt) && params.mainnetIssuer)
+    {
+        amt = STAmount(
+            Issue(amt.getCurrency(), *params.mainnetIssuer),
+            amt.mantissa(),
+            amt.exponent());
+    }
+    obj.setFieldAmount(sfAmount, amt);
+
+    // SendMax for IOU payments (vault sends IOUs it holds)
+    if (!isXRP(amt))
+        obj.setFieldAmount(sfSendMax, amt);
 
     // Sequence = 0 (required when using TicketSequence)
     obj.setFieldU32(sfSequence, 0);

@@ -841,6 +841,10 @@ LedgerMaster::setFullLedger(
                             params.signerCount = signerCount;
                             params.baseFee = app_.config().MAINNET_BASE_FEE;
 
+                            if (!isXRP(amount))
+                                params.mainnetIssuer =
+                                    app_.config().EXPORT_MAINNET_IOU_ISSUER;
+
                             if (sle->isFieldPresent(sfDestinationTag))
                                 params.destinationTag =
                                     sle->getFieldU32(sfDestinationTag);

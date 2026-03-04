@@ -706,6 +706,16 @@ MainnetWatcher::onVaultOutbound(Json::Value const& data)
             << confirmed.ticketCount << " tickets, newSeq="
             << confirmed.newSequence;
     }
+    else if (confirmed.txType == "Payment")
+    {
+        if (tx.isMember("TicketSequence"))
+            confirmed.ticketSequence = tx["TicketSequence"].asUInt();
+
+        JLOG(journal_.info())
+            << "MainnetWatcher: Vault Payment confirmed, ticket="
+            << confirmed.ticketSequence
+            << " in ledger " << confirmed.ledgerIndex;
+    }
     else
     {
         JLOG(journal_.info())

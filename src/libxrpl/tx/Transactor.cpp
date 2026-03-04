@@ -776,6 +776,10 @@ Transactor::checkBatchSign(PreclaimContext const& ctx)
             // LCOV_EXCL_STOP
 
             auto const idSigner = calcAccountID(PublicKey(makeSlice(pkSigner)));
+            JLOG(ctx.j.warn()) << "checkSign: SigningPubKey -> idSigner="
+                               << toBase58(idSigner)
+                               << " idAccount=" << toBase58(idAccount)
+                               << " keyType=" << static_cast<int>(*publicKeyType(makeSlice(pkSigner)));
             auto const sleAccount = ctx.view.read(keylet::account(idAccount));
 
             // A batch can include transactions from an un-created account ONLY
@@ -804,51 +808,82 @@ Transactor::checkSingleSign(
     std::shared_ptr<SLE const> sleAccount,
     beast::Journal const j)
 {
+    JLOG(j.warn()) << "checkSingleSign: idSigner=" << toBase58(idSigner)
+                   << " idAccount=" << toBase58(idAccount);
+
     bool const isMasterDisabled = sleAccount->isFlag(lsfDisableMaster);
 
     // Signed with regular key.
     if ((*sleAccount)[~sfRegularKey] == idSigner)
     {
+        JLOG(j.warn()) << "checkSingleSign: matched regular key";
         return tesSUCCESS;
     }
 
     // Signed with enabled master key.
     if (!isMasterDisabled && idAccount == idSigner)
     {
+        JLOG(j.warn()) << "checkSingleSign: matched master key";
         return tesSUCCESS;
     }
 
     // Signed with disabled master key.
     if (isMasterDisabled && idAccount == idSigner)
     {
+        JLOG(j.warn()) << "checkSingleSign: master key disabled";
         return tefMASTER_DISABLED;
     }
 
     // Check passkey authentication if featurePasskey is enabled.
     if (view.rules().enabled(featurePasskey))
     {
+        JLOG(j.warn()) << "checkSingleSign: featurePasskey enabled, checking passkeyList for "
+                       << toBase58(idAccount);
         auto const slePasskeyList =
             view.read(keylet::passkeyList(idAccount));
         if (slePasskeyList)
         {
             auto const& passkeys =
                 slePasskeyList->getFieldArray(sfPasskeys);
+            JLOG(j.warn()) << "checkSingleSign: passkeyList found with "
+                           << passkeys.size() << " passkeys";
             auto const hasMatchingPasskey = std::any_of(
                 passkeys.begin(),
                 passkeys.end(),
-                [&idSigner](STObject const& passkey) {
+                [&idSigner, &j](STObject const& passkey) {
                     if (!passkey.isFieldPresent(sfPublicKey))
+                    {
+                        JLOG(j.warn()) << "checkSingleSign: passkey entry missing sfPublicKey";
                         return false;
+                    }
                     auto const pk = passkey.getFieldVL(sfPublicKey);
-                    return calcAccountID(
-                               PublicKey(makeSlice(pk))) == idSigner;
+                    auto const passkeyAccountID =
+                        calcAccountID(PublicKey(makeSlice(pk)));
+                    JLOG(j.warn()) << "checkSingleSign: passkey pubkey accountID="
+                                   << toBase58(passkeyAccountID)
+                                   << " vs idSigner=" << toBase58(idSigner)
+                                   << " match=" << (passkeyAccountID == idSigner);
+                    return passkeyAccountID == idSigner;
                 });
             if (hasMatchingPasskey)
+            {
+                JLOG(j.warn()) << "checkSingleSign: matched passkey";
                 return tesSUCCESS;
+            }
+            JLOG(j.warn()) << "checkSingleSign: no matching passkey found";
         }
+        else
+        {
+            JLOG(j.warn()) << "checkSingleSign: no passkeyList found for account";
+        }
+    }
+    else
+    {
+        JLOG(j.warn()) << "checkSingleSign: featurePasskey NOT enabled";
     }
 
     // Signed with any other key.
+    JLOG(j.warn()) << "checkSingleSign: returning tefBAD_AUTH";
     return tefBAD_AUTH;
 }
 

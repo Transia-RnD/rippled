@@ -10,6 +10,7 @@
 #include <xrpl/net/HTTPClient.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/SystemParameters.h>
+#include <xrpl/protocol/UintTypes.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
@@ -1074,6 +1075,95 @@ Config::loadFromString(std::string const& fileContents)
                         "[" SECTION_MAINNET_BASE_FEE "]: " +
                         (*sec)[0]);
                 }
+            }
+
+            // Parse [export_sign_batch_size] — max exports signed per ledger
+            if (auto sec = getIniFileSection(
+                    iniFile, SECTION_EXPORT_SIGN_BATCH_SIZE);
+                sec)
+            {
+                if (sec->size() != 1)
+                    Throw<std::runtime_error>(
+                        "[" SECTION_EXPORT_SIGN_BATCH_SIZE
+                        "] must contain exactly one value.");
+                try
+                {
+                    EXPORT_SIGN_BATCH_SIZE =
+                        static_cast<std::uint32_t>(
+                            std::stoul((*sec)[0]));
+                }
+                catch (...)
+                {
+                    Throw<std::runtime_error>(
+                        "Invalid value in "
+                        "[" SECTION_EXPORT_SIGN_BATCH_SIZE "]: " +
+                        (*sec)[0]);
+                }
+            }
+
+            // Parse [import_xrp_mint_amount] — XRP drops to auto-mint on IOU import
+            if (auto sec = getIniFileSection(
+                    iniFile, SECTION_IMPORT_XRP_MINT_AMOUNT);
+                sec)
+            {
+                if (sec->size() != 1)
+                    Throw<std::runtime_error>(
+                        "[" SECTION_IMPORT_XRP_MINT_AMOUNT
+                        "] must contain exactly one value.");
+                try
+                {
+                    IMPORT_XRP_MINT_AMOUNT =
+                        XRPAmount{static_cast<std::int64_t>(
+                            std::stoull((*sec)[0]))};
+                }
+                catch (...)
+                {
+                    Throw<std::runtime_error>(
+                        "Invalid value in "
+                        "[" SECTION_IMPORT_XRP_MINT_AMOUNT "]: " +
+                        (*sec)[0]);
+                }
+            }
+
+            // Parse [export_mainnet_iou_issuer] — mainnet RLUSD issuer
+            if (auto sec = getIniFileSection(
+                    iniFile, SECTION_EXPORT_MAINNET_IOU_ISSUER);
+                sec)
+            {
+                if (sec->size() != 1)
+                    Throw<std::runtime_error>(
+                        "[" SECTION_EXPORT_MAINNET_IOU_ISSUER
+                        "] must contain exactly one address.");
+
+                auto const id =
+                    parseBase58<AccountID>((*sec)[0]);
+                if (!id)
+                    Throw<std::runtime_error>(
+                        "Invalid address in "
+                        "[" SECTION_EXPORT_MAINNET_IOU_ISSUER "]: " +
+                        (*sec)[0]);
+
+                EXPORT_MAINNET_IOU_ISSUER = *id;
+            }
+
+            // Parse [export_mainnet_iou_currency] — allowed export currency (hex)
+            if (auto sec = getIniFileSection(
+                    iniFile, SECTION_EXPORT_MAINNET_IOU_CURRENCY);
+                sec)
+            {
+                if (sec->size() != 1)
+                    Throw<std::runtime_error>(
+                        "[" SECTION_EXPORT_MAINNET_IOU_CURRENCY
+                        "] must contain exactly one value.");
+
+                Currency c;
+                if (!to_currency(c, (*sec)[0]) || c == beast::zero)
+                    Throw<std::runtime_error>(
+                        "Invalid currency in "
+                        "[" SECTION_EXPORT_MAINNET_IOU_CURRENCY "]: " +
+                        (*sec)[0]);
+
+                EXPORT_MAINNET_IOU_CURRENCY = c;
             }
 
             if (!entries && !valKeyEntries && !valListKeys)
