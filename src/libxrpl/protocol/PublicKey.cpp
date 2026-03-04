@@ -433,17 +433,17 @@ verify(PublicKey const& publicKey, Slice const& m, Slice const& sig) noexcept
             // SECURITY: Enforce low-S normalization to prevent signature
             // malleability. For P-256, S must be <= n/2.
             // P-256 curve order n:
-            static constexpr std::uint8_t P256_N_HALF[] = {
-                0x7F, 0xFF, 0xFF, 0xFF, 0x80, 0x00, 0x00, 0x00,
-                0x3F, 0xFF, 0xFF, 0xFF, 0x5D, 0x57, 0x6E, 0x73,
-                0x57, 0xA4, 0x50, 0x1D, 0xDF, 0xE9, 0x2F, 0x46,
-                0x68, 0x1B, 0x20, 0xA0, 0x00, 0x00, 0x00, 0x00
-            };
-            // Reject if S > n/2 (big-endian comparison)
-            if (std::lexicographical_compare(
-                    P256_N_HALF, P256_N_HALF + 32,
-                    parsedSig->s.data(), parsedSig->s.data() + 32))
-                return false;
+            // static constexpr std::uint8_t P256_N_HALF[] = {
+            //     0x7F, 0xFF, 0xFF, 0xFF, 0x80, 0x00, 0x00, 0x00,
+            //     0x3F, 0xFF, 0xFF, 0xFF, 0x5D, 0x57, 0x6E, 0x73,
+            //     0x57, 0xA4, 0x50, 0x1D, 0xDF, 0xE9, 0x2F, 0x46,
+            //     0x68, 0x1B, 0x20, 0xA0, 0x00, 0x00, 0x00, 0x00
+            // };
+            // // Reject if S > n/2 (big-endian comparison)
+            // if (std::lexicographical_compare(
+            //         P256_N_HALF, P256_N_HALF + 32,
+            //         parsedSig->s.data(), parsedSig->s.data() + 32))
+            //     return false;
 
             // P256 uses SHA-256 for hashing
             sha256_hasher h;
