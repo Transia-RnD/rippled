@@ -60,6 +60,32 @@ OptionPairCreate::preflight(PreflightContext const& ctx)
         return err;
     }
 
+    // Validate OracleEntries array
+    if (!ctx.tx.isFieldPresent(sfOracleEntries))
+    {
+        JLOG(ctx.j.debug()) << "OptionPairCreate: missing OracleEntries.";
+        return temMALFORMED;
+    }
+
+    auto const& oracles = ctx.tx.getFieldArray(sfOracleEntries);
+    if (oracles.size() == 0 || oracles.size() > 10)
+    {
+        JLOG(ctx.j.debug())
+            << "OptionPairCreate: OracleEntries must have 1-10 entries.";
+        return temMALFORMED;
+    }
+
+    for (auto const& entry : oracles)
+    {
+        if (!entry.isFieldPresent(sfAccount) ||
+            !entry.isFieldPresent(sfOracleDocumentID))
+        {
+            JLOG(ctx.j.debug())
+                << "OptionPairCreate: OracleEntry missing fields.";
+            return temMALFORMED;
+        }
+    }
+
     return tesSUCCESS;
 }
 
@@ -127,6 +153,20 @@ OptionPairCreate::preclaim(PreclaimContext const& ctx)
         return terNO_RIPPLE;
     }
 
+    // Verify each referenced oracle exists on-ledger
+    auto const& oracles = ctx.tx.getFieldArray(sfOracleEntries);
+    for (auto const& entry : oracles)
+    {
+        auto const oracleAccount = entry.getAccountID(sfAccount);
+        auto const oracleDocID = entry.getFieldU32(sfOracleDocumentID);
+        if (!ctx.view.read(keylet::oracle(oracleAccount, oracleDocID)))
+        {
+            JLOG(ctx.j.debug())
+                << "OptionPairCreate: oracle not found on-ledger.";
+            return tecNO_ENTRY;
+        }
+    }
+
     return tesSUCCESS;
 }
 
@@ -158,6 +198,9 @@ applyCreate(
     auto const& [_issue1, _issue2] = std::minmax(issue, issue2);
     pairSle->setFieldIssue(sfAsset, STIssue{sfAsset, _issue1});
     pairSle->setFieldIssue(sfAsset2, STIssue{sfAsset2, _issue2});
+
+    // Store oracle references on the OptionPair
+    pairSle->setFieldArray(sfOracleEntries, ctx_.tx.getFieldArray(sfOracleEntries));
 
     // Set trading fee if provided (in 1/10 basis points)
     // Maximum: 1000000 = 100% (1000000 / 1000000)

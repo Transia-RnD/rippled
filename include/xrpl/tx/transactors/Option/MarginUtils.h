@@ -21,7 +21,6 @@
 
 #include <xrpl/ledger/ApplyView.h>
 #include <xrpl/ledger/ReadView.h>
-#include <xrpl/protocol/Asset.h>
 #include <xrpl/basics/Number.h>
 #include <xrpl/protocol/STLedgerEntry.h>
 #include <xrpl/protocol/STAmount.h>
@@ -87,15 +86,15 @@ calculateUnrealizedPnl(
     Number markPrice);
 
 /**
- * @brief Check if a margin account is healthy (above maintenance margin).
+ * @brief Check if all positions in a margin account are healthy.
  *
- * For isolated margin: checks single position equity vs maintenance
- * For cross margin: checks total account equity vs total maintenance
+ * Checks each position's equity (allocatedMargin - funding + PnL)
+ * against its maintenance margin requirement.
  *
  * @param view Ledger view for reading positions
  * @param marginAccount The margin account SLE
  * @param markPrice Current mark price from oracle
- * @return true if margin is healthy, false if liquidatable
+ * @return true if all positions are healthy, false if any is liquidatable
  */
 bool
 isMarginHealthy(
@@ -104,39 +103,57 @@ isMarginHealthy(
     Number markPrice);
 
 /**
- * @brief Calculate total account equity for cross-margin.
- *
- * equity = collateralBalance + sum(unrealizedPnl for all positions)
- *
- * @param view Ledger view for reading positions
- * @param account The account ID
- * @param marginAccount The margin account SLE
- * @param markPrice Current mark price from oracle
- * @return Number Total account equity
- */
-Number
-calculateAccountEquity(
-    ReadView const& view,
-    AccountID const& account,
-    std::shared_ptr<SLE const> const& marginAccount,
-    Number markPrice);
-
-/**
  * @brief Get aggregate mark price from the oracle system.
  *
- * Reads oracle entries for the given asset pair and computes
- * the median price, similar to the GetAggregatePrice RPC.
+ * Reads OracleEntries stored on the OptionPair SLE, performs
+ * direct O(1) keylet::oracle lookups, and computes the median
+ * price — same pattern as the get_aggregate_price RPC.
  *
  * @param view Ledger view for reading oracle entries
- * @param baseAsset Base asset of the pair
- * @param quoteAsset Quote asset of the pair
+ * @param slePair The OptionPair SLE containing OracleEntries
  * @return Number The aggregated mark price (0 if no valid oracles)
  */
 Number
 getMarkPrice(
     ReadView const& view,
-    Asset const& baseAsset,
-    Asset const& quoteAsset);
+    std::shared_ptr<SLE const> const& slePair);
+
+/**
+ * @brief Get funding rate from leverage tier (default 100 = 0.01%/hr).
+ */
+std::uint32_t
+getFundingRateBps(
+    ReadView const& view,
+    Issue const& base,
+    Issue const& quote);
+
+/**
+ * @brief Calculate accumulated funding owed since last funding time.
+ *
+ * hoursElapsed = floor((now - lastFundingTime) / 3600)
+ * funding = notional * fundingRateBps * hoursElapsed / 100000
+ * Result is capped at allocatedMargin.
+ *
+ * Returns 0 if lastFundingTime is 0 (legacy positions).
+ */
+Number
+calculateAccumulatedFunding(
+    std::shared_ptr<SLE const> const& position,
+    std::uint32_t currentTime,
+    std::uint32_t fundingRateBps);
+
+/**
+ * @brief Deduct accumulated funding from position and route to OptionPair fees.
+ *
+ * Calculates lazy funding, deducts from sfAllocatedMargin,
+ * routes to OptionPair sfAccumulatedFees, and returns the net margin
+ * (allocatedMargin - funding).
+ */
+Number
+deductFundingAndRelease(
+    ApplyView& view,
+    std::shared_ptr<SLE> const& position,
+    std::uint32_t currentTime);
 
 }  // namespace margin
 }  // namespace xrpl

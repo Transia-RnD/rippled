@@ -95,9 +95,7 @@ OptionLiquidate::preclaim(PreclaimContext const& ctx)
     }
 
     // Get mark price from oracle
-    Issue const quoteIssue = slePair->getFieldIssue(sfAsset2).get<Issue>();
-    Number const markPrice =
-        margin::getMarkPrice(ctx.view, issue, quoteIssue);
+    Number const markPrice = margin::getMarkPrice(ctx.view, slePair);
 
     // SECURITY: Reject liquidation if no oracle price available.
     // markPrice=0 would make all long positions appear underwater.
@@ -108,36 +106,28 @@ OptionLiquidate::preclaim(PreclaimContext const& ctx)
         return tecNO_PERMISSION;
     }
 
-    // Check if the position is actually underwater
-    std::uint32_t const marginMode =
-        sleMarginAcct->getFieldU32(sfMarginMode);
+    // Get quote issue from the option pair
+    Issue const quoteIssue =
+        slePair->getFieldIssue(sfAsset2).get<Issue>();
 
-    if (marginMode == 1)  // Cross-margin
+    // Check if the position is actually underwater (isolated margin)
     {
-        // For cross-margin, check account-level health
-        if (margin::isMarginHealthy(ctx.view, sleMarginAcct, markPrice))
-        {
-            JLOG(ctx.j.debug())
-                << "OptionLiquidate: position is healthy (cross-margin).";
-            return tecCANT_LIQUIDATE;
-        }
-    }
-    else  // Isolated margin
-    {
-        // For isolated, check this specific position
         Number const allocatedMargin =
             slePosition->at(~sfAllocatedMargin).value_or(Number(0));
         Number const pnl =
             margin::calculateUnrealizedPnl(slePosition, markPrice);
-        Number const positionEquity = allocatedMargin + pnl;
+        std::uint32_t const fundingRateBps =
+            margin::getFundingRateBps(ctx.view, issue, quoteIssue);
+        std::uint32_t const nowPre =
+            ctx.view.parentCloseTime().time_since_epoch().count();
+        Number const accFunding =
+            margin::calculateAccumulatedFunding(slePosition, nowPre, fundingRateBps);
+        Number const positionEquity = (allocatedMargin - accFunding) + pnl;
 
         Number const notional =
             slePosition->at(~sfNotionalValue).value_or(Number(0));
-        // Read maintenance margin from leverage tier (default 5% = 5000 1/10 bps)
         std::uint32_t maintenanceMarginBps = 5000;
         {
-            Issue const issue =
-                slePosition->getFieldIssue(sfAsset).get<Issue>();
             auto const sleTier =
                 ctx.view.read(keylet::leverageTier(issue, quoteIssue));
             if (sleTier && sleTier->isFieldPresent(sfMaintenanceMarginBps))
@@ -150,7 +140,7 @@ OptionLiquidate::preclaim(PreclaimContext const& ctx)
         if (positionEquity >= maintenance)
         {
             JLOG(ctx.j.debug())
-                << "OptionLiquidate: position is healthy (isolated).";
+                << "OptionLiquidate: position is healthy.";
             return tecCANT_LIQUIDATE;
         }
     }
@@ -197,7 +187,7 @@ OptionLiquidate::doApply()
         slePair->getFieldIssue(sfAsset2).get<Issue>();
 
     // Get mark price
-    Number const markPrice = margin::getMarkPrice(sb, issue, quoteIssue);
+    Number const markPrice = margin::getMarkPrice(sb, slePair);
 
     // SECURITY: Re-verify oracle availability in doApply (TOCTOU defense)
     if (markPrice <= Number(0))
@@ -208,7 +198,13 @@ OptionLiquidate::doApply()
         Number const am =
             slePosition->at(~sfAllocatedMargin).value_or(Number(0));
         Number const p = margin::calculateUnrealizedPnl(slePosition, markPrice);
-        Number const eq = am + p;
+        std::uint32_t const fundingBps =
+            margin::getFundingRateBps(sb, issue, quoteIssue);
+        std::uint32_t const nowCheck =
+            sb.parentCloseTime().time_since_epoch().count();
+        Number const accFund =
+            margin::calculateAccumulatedFunding(slePosition, nowCheck, fundingBps);
+        Number const eq = (am - accFund) + p;
         Number const n =
             slePosition->at(~sfNotionalValue).value_or(Number(0));
         // Read maintenance margin from leverage tier
@@ -224,12 +220,14 @@ OptionLiquidate::doApply()
             return tecCANT_LIQUIDATE;
     }
 
-    // Calculate remaining collateral after PnL
-    Number const allocatedMargin =
-        slePosition->at(~sfAllocatedMargin).value_or(Number(0));
+    // Deduct accumulated funding and calculate remaining collateral
+    std::uint32_t const nowLiq =
+        sb.parentCloseTime().time_since_epoch().count();
+    Number const netMargin =
+        margin::deductFundingAndRelease(sb, slePosition, nowLiq);
     Number const pnl =
         margin::calculateUnrealizedPnl(slePosition, markPrice);
-    Number const remainingCollateral = allocatedMargin + pnl;
+    Number const remainingCollateral = netMargin + pnl;
 
     // Look up liquidation bonus rate from the leverage tier
     auto const sleTier =

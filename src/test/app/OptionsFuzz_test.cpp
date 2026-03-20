@@ -123,15 +123,13 @@ struct OptionsFuzz_test : public beast::unit_test::suite
     Json::Value
     marginAccountSet(
         jtx::Account const& account,
-        STIssue const& collateralAsset,
-        std::uint32_t marginMode)
+        STIssue const& collateralAsset)
     {
         Json::Value jv;
         jv[jss::TransactionType] = jss::MarginAccountSet;
         jv[jss::Account] = account.human();
         jv[sfCollateralAsset.jsonName] =
             collateralAsset.getJson(JsonOptions::none);
-        jv[sfMarginMode.jsonName] = marginMode;
         return jv;
     }
 
@@ -396,10 +394,10 @@ struct OptionsFuzz_test : public beast::unit_test::suite
 
         // Setup margin accounts
         env(marginAccountSet(
-                alice, STIssue(sfCollateralAsset, xrpIssue()), 0),
+                alice, STIssue(sfCollateralAsset, xrpIssue())),
             ter(tesSUCCESS));
         env(marginAccountSet(
-                bob, STIssue(sfCollateralAsset, xrpIssue()), 0),
+                bob, STIssue(sfCollateralAsset, xrpIssue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -529,7 +527,7 @@ struct OptionsFuzz_test : public beast::unit_test::suite
         env.close();
 
         env(marginAccountSet(
-                alice, STIssue(sfCollateralAsset, xrpIssue()), 0),
+                alice, STIssue(sfCollateralAsset, xrpIssue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -959,10 +957,10 @@ struct OptionsFuzz_test : public beast::unit_test::suite
 
         // Setup margin
         env(marginAccountSet(
-                alice, STIssue(sfCollateralAsset, xrpIssue()), 0),
+                alice, STIssue(sfCollateralAsset, xrpIssue())),
             ter(tesSUCCESS));
         env(marginAccountSet(
-                bob, STIssue(sfCollateralAsset, xrpIssue()), 0),
+                bob, STIssue(sfCollateralAsset, xrpIssue())),
             ter(tesSUCCESS));
         env.close();
 

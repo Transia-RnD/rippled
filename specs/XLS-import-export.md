@@ -7,7 +7,7 @@ Author:      Richard Holland <https://github.com/RichardAH>,
              Nic Dudfield <https://github.com/sublimator>,
              Denis Angell <https://github.com/dangell7>,
              Wietse Wind <https://github.com/WietseWind>
-Revision:    4
+Revision:    5
 Discussion:  https://github.com/XRPLF/XRPL-Standards/discussions/107
 ```
 
@@ -18,7 +18,7 @@ This specification introduces **Import** and **Export** transactions to enable s
 The model is **lock-and-mint / burn-and-release**:
 
 - **Import** (mainnet to sidechain): User sends a Payment to a federated multisig vault on mainnet, locking XRP. An XPop proves the payment. The sidechain mints equivalent XRP to the user's sidechain account.
-- **Export** (sidechain to mainnet): User submits an Export transaction on the sidechain, burning XRP. UNL validators automatically sign a deterministic multisig Payment from the vault on mainnet, releasing the locked XRP to the user (see Section 11).
+- **Export** (sidechain to mainnet): User submits an Export transaction on the sidechain, burning XRP. UNL validators automatically sign a deterministic multisig Payment from the vault on mainnet, releasing the locked XRP to the user (see Section 12).
 
 No XRPL mainnet amendments are required. The vault is a standard multisig account.
 
@@ -70,7 +70,7 @@ Tracks the highest validator list (VL) sequence seen from each VL publisher. Pre
 
 ### 2.2 ExportRecord (`ltEXPORT_RECORD`, 0x0092)
 
-Records an export transaction. UNL validators use the ExportRecord to construct and collectively sign a deterministic multisig Payment on mainnet (see Section 11). The ExportRecord is a **standalone ledger entry** -- it is NOT placed in the account's owner directory and does NOT increment `OwnerCount` or require object reserve. The XRP burn itself is sufficient anti-spam protection; requiring additional reserve on top of a burn would be redundant.
+Records an export transaction. UNL validators use the ExportRecord to construct and collectively sign a deterministic multisig Payment on mainnet (see Section 12). The ExportRecord is a **standalone ledger entry** -- it is NOT placed in the account's owner directory and does NOT increment `OwnerCount` or require object reserve. The XRP burn itself is sufficient anti-spam protection; requiring additional reserve on top of a burn would be redundant.
 
 ExportRecords are inserted into a **global export directory** (`keylet::exportDir()`) rather than per-account owner directories. This allows validators to efficiently iterate all pending exports for signing, and provides a single queryable index for RPC clients. The directory is a standard XRPL directory page structure.
 
@@ -79,13 +79,14 @@ The ExportRecord remains on-ledger permanently until the export is fulfilled. Th
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `Account` | AccountID | Yes | Exporting account |
+| `Owner` | AccountID | Yes | Account owner (same as Account) |
 | `Destination` | AccountID | Yes | Recipient on the target chain |
 | `Amount` | Amount | Yes | Export amount (XRP) |
 | `ExportSequence` | UINT32 | Yes | Per-account export counter |
-| `TicketSequence` | UINT32 | Yes | Assigned mainnet ticket (see Section 11.3) |
+| `TicketSequence` | UINT32 | Optional | Assigned mainnet ticket (see Section 12.3) |
 | `DestinationTag` | UINT32 | Optional | Recipient destination tag |
 | `LedgerSequence` | UINT32 | Yes | Ledger in which the Export was validated |
-| `DirNode` | UINT64 | Yes | Export directory page reference |
+| `ExportDirNode` | UINT64 | Yes | Export directory page reference |
 | `PreviousTxnID` | UINT256 | Yes | Previous transaction hash |
 | `PreviousTxnLgrSeq` | UINT32 | Yes | Previous transaction ledger sequence |
 
@@ -105,7 +106,7 @@ Two new optional fields are added to the AccountRoot ledger entry:
 
 ## 3. Transaction Types
 
-### 3.1 Import
+### 3.1 Import (type 98)
 
 Imports value from XRPL mainnet by presenting an XPop proof of a Payment to the configured vault address.
 
@@ -180,9 +181,9 @@ doApply:
 | `telIMPORT_VL_KEY_NOT_RECOGNISED` | - | VL master key not in IMPORT_VL_KEYS config |
 | `tecNO_DST` | - | Inner Payment destination is not the configured vault address |
 
-### 3.2 Export
+### 3.2 Export (type 99)
 
-Exports XRP from the sidechain by burning XRP and creating an on-chain record. UNL validators automatically construct and sign a deterministic multisig Payment from the vault on mainnet to release the locked XRP to the specified destination (see Section 11).
+Exports XRP from the sidechain by burning XRP and creating an on-chain record. UNL validators automatically construct and sign a deterministic multisig Payment from the vault on mainnet to release the locked XRP to the specified destination (see Section 12).
 
 **Amendment**: `featureImportExport`
 
@@ -206,7 +207,7 @@ Exports XRP from the sidechain by burning XRP and creating an on-chain record. U
 
 The ExportRecord is inserted into the global export directory (not the account's owner directory) and does not require object reserve. The XRP burn is the cost -- no additional reserve is needed.
 
-UNL validators observe `ExportRecord` entries and collectively sign corresponding multisig Payments from the vault on mainnet (see Section 11).
+UNL validators observe `ExportRecord` entries and collectively sign corresponding multisig Payments from the vault on mainnet (see Section 12).
 
 **Balance Requirement**:
 
@@ -221,12 +222,88 @@ Balance >= Amount + Fee + AccountReserve(OwnerCount)
 | `temDISABLED` | - | `featureImportExport` not enabled |
 | `temBAD_AMOUNT` | - | Amount is not positive XRP |
 | `terNO_ACCOUNT` | - | Sending account doesn't exist |
-| `tecUNFUNDED` | - | Insufficient balance for amount + fee + current reserve |
-| `tecNO_TICKET` | - | No tickets available in VaultState |
+| `tecUNFUNDED` | - | Insufficient balance for amount + fee + current reserve, or no tickets available in VaultState |
+
+### 3.3 Pseudo-Transactions
+
+The following consensus-driven pseudo-transactions are emitted by the network, not submitted by users.
+
+#### 3.3.1 UNLReport (type 103)
+
+Emitted at flag ledgers (every 256 ledgers) to maintain the on-chain UNL report. Not gated by any specific amendment.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `LedgerSequence` | UINT32 | Yes | Flag ledger sequence |
+| `ActiveValidator` | Object | Optional | Validator to add to the active set |
+| `ImportVLKey` | Object | Optional | VL publisher key to register |
+
+#### 3.3.2 ImportCredit (type 104)
+
+Consensus-driven import: validators propose this when the MainnetWatcher detects payments to the vault on mainnet. Mints XRP to the destination account.
+
+**Amendment**: `featureImportExport`
+**Privileges**: `createAcct | mintXRP`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `Destination` | AccountID | Yes | Recipient account |
+| `Amount` | Amount | Yes | XRP amount to mint |
+| `SourceTxnID` | UINT256 | Yes | Mainnet transaction hash |
+| `ImportSequence` | UINT32 | Yes | Import sequence for replay protection |
+| `LedgerSequence` | UINT32 | Yes | Mainnet ledger sequence |
+| `InvoiceID` | UINT256 | Optional | Optional invoice identifier |
+
+#### 3.3.3 ExportConfirm (type 105)
+
+Confirms that an export was fulfilled on mainnet. Updates the ExportVaultState singleton.
+
+**Amendment**: `featureImportExport`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `SourceTxnID` | UINT256 | Yes | Mainnet transaction hash confirming the export |
+| `LedgerSequence` | UINT32 | Yes | Mainnet ledger sequence |
+| `MaxTicketSeq` | UINT32 | Optional | Updates max ticket sequence in VaultState |
+| `MainnetSequence` | UINT32 | Optional | Updates vault's mainnet account Sequence |
 
 ---
 
-## 4. XPop Structure
+## 4. Additional Ledger Entry Types
+
+### 4.1 UNLReport (`ltUNL_REPORT`, 0x0052)
+
+Stores the on-chain UNL report, listing active validators and recognized VL publisher keys. Used by the export validator trust model (Section 12.2).
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `ImportVLKeys` | Array | Optional | Array of registered VL publisher key objects |
+| `ActiveValidators` | Array | Optional | Array of active validator objects |
+| `PreviousTxnID` | UINT256 | Yes | Previous transaction hash |
+| `PreviousTxnLgrSeq` | UINT32 | Yes | Previous transaction ledger sequence |
+
+**Keylet**: `keylet::unlReport()`
+
+### 4.2 ImportRecord (`ltIMPORT_RECORD`, 0x0095)
+
+Audit trail for imports. Records each successful import for double-entry bookkeeping.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `Account` | AccountID | Yes | Account that received the import |
+| `Amount` | Amount | Yes | Amount imported |
+| `ImportSequence` | UINT32 | Yes | Import sequence number |
+| `SourceTxnID` | UINT256 | Yes | Mainnet transaction hash |
+| `LedgerSequence` | UINT32 | Yes | Mainnet ledger sequence |
+| `ImportDirNode` | UINT64 | Yes | Import directory page reference |
+| `PreviousTxnID` | UINT256 | Yes | Previous transaction hash |
+| `PreviousTxnLgrSeq` | UINT32 | Yes | Previous transaction ledger sequence |
+
+**Keylet**: `keylet::importRecord(account, seq)`
+
+---
+
+## 5. XPop Structure
 
 An XPop is a JSON blob containing cryptographic proof that a transaction was included in a validated ledger on another chain.
 
@@ -264,7 +341,7 @@ An XPop is a JSON blob containing cryptographic proof that a transaction was inc
 }
 ```
 
-### 4.1 Ledger Section
+### 5.1 Ledger Section
 
 Contains the ledger header fields needed to reconstruct the ledger hash:
 
@@ -280,7 +357,7 @@ Contains the ledger header fields needed to reconstruct the ledger hash:
 | `pclose` | Integer | Parent close time |
 | `coins` | Integer/String | Total XRP drops in ledger |
 
-### 4.2 Transaction Section
+### 5.2 Transaction Section
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -313,7 +390,7 @@ Two proof tree formats are supported:
 - Maximum proof depth: 64
 - Maximum Merkle computation depth: 32
 
-### 4.3 Validation Section
+### 5.3 Validation Section
 
 **`data`**: Map of validator node public keys (base58) to their hex-encoded signatures over the computed ledger hash.
 
@@ -345,30 +422,30 @@ Two proof tree formats are supported:
 
 ---
 
-## 5. Verification Process
+## 6. Verification Process
 
-### 5.1 Manifest Verification
+### 6.1 Manifest Verification
 
 1. Deserialize the manifest from `validation.unl.manifest`
 2. Verify the manifest's master key matches `validation.unl.public_key`
 3. Verify the manifest's signature is valid
 4. Extract the signing key from the manifest
 
-### 5.2 UNL Blob Verification
+### 6.2 UNL Blob Verification
 
 1. Decode the blob from base64
 2. Parse as JSON and validate required fields (`sequence`, `expiration`, `validators`)
 3. Check temporal validity: `effective <= now < expiration`
 4. Verify the blob signature using the signing key from the manifest
 
-### 5.3 Inner Transaction Validation
+### 6.3 Inner Transaction Validation
 
 1. The inner transaction must be a `Payment` (`ttPAYMENT`)
 2. The transaction result must be `tesSUCCESS` (the Payment must succeed for `DeliveredAmount` to be meaningful)
 3. The `DeliveredAmount` in the metadata must be present and be positive XRP
 4. The `Destination` of the Payment must match the configured `[import_vault_address]` (checked in preclaim)
 
-### 5.4 Transaction Proof Verification
+### 6.4 Transaction Proof Verification
 
 1. Serialize the inner transaction: `VL(blob) + VL(meta) + txHash`
 2. Compute `SHA512Half(HashPrefix::txNode, serialized)` to get `txHashAndMeta`
@@ -376,11 +453,11 @@ Two proof tree formats are supported:
 4. Compute the Merkle root from the proof tree
 5. Verify the computed root matches the `txroot` in the ledger section
 
-### 5.5 Ledger Hash Verification
+### 6.5 Ledger Hash Verification
 
 Compute the ledger hash from all ledger header fields and the verified transaction root. The computed hash must match what the validators signed.
 
-### 5.6 Validator Quorum
+### 6.6 Validator Quorum
 
 1. Parse each validator's manifest from the UNL blob
 2. For each entry in `validation.data`, verify the signature over the computed ledger hash
@@ -394,9 +471,9 @@ Quorum = validationCount >= threshold
 
 ---
 
-## 6. Replay Protection
+## 7. Replay Protection
 
-### 6.1 Per-Account Import Sequence
+### 7.1 Per-Account Import Sequence
 
 Each account's `ImportSequence` field tracks the highest inner transaction sequence number that has been imported. An Import is rejected if:
 
@@ -406,15 +483,15 @@ AccountRoot.ImportSequence >= InnerTransaction.Sequence
 
 This prevents the same mainnet transaction from being imported twice.
 
-### 6.2 Per-VL Sequence
+### 7.2 Per-VL Sequence
 
 The `ImportVLSeq` ledger entry tracks the highest VL sequence for each VL publisher. This prevents replay using older validator lists that may have been compromised.
 
 ---
 
-## 7. Configuration
+## 8. Configuration
 
-### 7.1 IMPORT_VL_KEYS
+### 8.1 IMPORT_VL_KEYS
 
 The sidechain must configure recognized VL publisher master public keys in its node configuration:
 
@@ -425,7 +502,7 @@ ED1234...  # Hex-encoded VL publisher master public key
 
 Only XPop proofs signed by validators from recognized VL publishers are accepted.
 
-### 7.2 IMPORT_VAULT_ADDRESS
+### 8.2 IMPORT_VAULT_ADDRESS
 
 The sidechain must configure the mainnet vault address that holds locked XRP:
 
@@ -434,11 +511,11 @@ The sidechain must configure the mainnet vault address that holds locked XRP:
 rVaultAddress123...  # The multisig vault account on XRPL mainnet
 ```
 
-Only Payments to this address are accepted for Import. This vault is a standard XRPL multisig account where the UNL validators are the signers (see Section 11).
+Only Payments to this address are accepted for Import. This vault is a standard XRPL multisig account where the UNL validators are the signers (see Section 12).
 
 ---
 
-## 8. User Guide: Constructing a Valid Import
+## 9. User Guide: Constructing a Valid Import
 
 To transfer XRP from mainnet to the sidechain:
 
@@ -461,7 +538,7 @@ The sidechain validates the XPop, verifies the Payment was to the vault, and min
 
 ---
 
-## 9. Serialized Field Reference
+## 10. Serialized Field Reference
 
 ### New UINT32 Fields
 
@@ -470,6 +547,24 @@ The sidechain validates the XPop, verifies the Payment was to the vault, and min
 | `sfOperationLimit` | 29 | Network ID validation for inner transaction |
 | `sfImportSequence` | 81 | Import replay protection counter |
 | `sfExportSequence` | 82 | Per-account export counter |
+| `sfNextTicketSeq` | 83 | Next mainnet ticket to assign (ExportVaultState) |
+| `sfMaxTicketSeq` | 84 | Highest allocated mainnet ticket (ExportVaultState) |
+| `sfExportQuorum` | 85 | Required validator signatures for export (reserved) |
+| `sfSignerCount` | 86 | Number of vault signers (reserved) |
+| `sfMainnetSequence` | 88 | Vault's mainnet account Sequence (ExportVaultState) |
+
+### New UINT256 Fields
+
+| Field | ID | Description |
+|-------|-----|-------------|
+| `sfSourceTxnID` | 47 | Mainnet transaction hash (ImportCredit, ExportConfirm, ImportRecord) |
+
+### New UINT64 Fields
+
+| Field | ID | Description |
+|-------|-----|-------------|
+| `sfExportDirNode` | 35 | Export directory page reference (ExportRecord) |
+| `sfImportDirNode` | 36 | Import directory page reference (ImportRecord) |
 
 ### New VL Fields
 
@@ -477,9 +572,18 @@ The sidechain validates the XPop, verifies the Payment was to the vault, and min
 |-------|-----|-------------|
 | `sfBlob` | 32 | XPop proof data (JSON, max 512 KiB) |
 
+### New Object/Array Fields
+
+| Field | Type | ID | Description |
+|-------|------|----|-------------|
+| `sfActiveValidator` | Object | 42 | Validator entry in UNLReport |
+| `sfImportVLKey` | Object | 43 | VL publisher key entry in UNLReport |
+| `sfActiveValidators` | Array | 35 | Array of active validators (UNLReport) |
+| `sfImportVLKeys` | Array | 36 | Array of VL publisher keys (UNLReport) |
+
 ---
 
-## 10. Security Considerations
+## 11. Security Considerations
 
 1. **Quorum threshold**: The 80% quorum requirement ensures that a supermajority of the source chain's validators confirmed the transaction. This makes forgery infeasible without compromising 80%+ of validators.
 
@@ -507,9 +611,9 @@ The sidechain validates the XPop, verifies the Payment was to the vault, and min
 
 ---
 
-## 11. Validator-Signed Exports
+## 12. Validator-Signed Exports
 
-### 11.1 Overview
+### 12.1 Overview
 
 The `featureImportExport` amendment includes validator-signed exports, making the sidechain's UNL validators the signers on the mainnet vault multisig. This eliminates the need for external witness services.
 
@@ -536,7 +640,7 @@ Sidechain                                          Mainnet
    → Re-broadcasts cached sigs every ledger
 
 3. All nodes collect signatures
-   → Two-phase verification (see 11.7)
+   → Two-phase verification (see 12.7)
    → When 80%+ verified, assemble
      full multisig Payment blob
 
@@ -545,7 +649,7 @@ Sidechain                                          Mainnet
                                                      → Destination receives funds
 ```
 
-### 11.2 Export Validator Trust (UNLReport)
+### 12.2 Export Validator Trust (UNLReport)
 
 Export signing uses a **three-tier trust model** to determine which validators may sign export transactions:
 
@@ -563,7 +667,7 @@ threshold = ceil(unlSize * 0.8) = (unlSize * 80 + 99) / 100
 
 Where `unlSize` is the number of active validators from UNLReport (or local config as fallback, minimum 1).
 
-### 11.3 ExportVaultState (`ltEXPORT_VAULT_STATE`, 0x0093)
+### 12.3 ExportVaultState (`ltEXPORT_VAULT_STATE`, 0x0093)
 
 A singleton ledger entry tracking the state of the mainnet vault as known to the sidechain.
 
@@ -571,15 +675,14 @@ A singleton ledger entry tracking the state of the mainnet vault as known to the
 |-------|------|----------|-------------|
 | `NextTicketSeq` | UINT32 | Yes | Next mainnet ticket to assign |
 | `MaxTicketSeq` | UINT32 | Yes | Highest allocated mainnet ticket |
+| `MainnetSequence` | UINT32 | Optional | Vault's mainnet account Sequence number |
 | `SignerListHash` | UINT256 | Optional | Hash of current validator-derived signer list |
-| `ExportQuorum` | UINT32 | Yes | Required number of validator signatures |
-| `SignerCount` | UINT32 | Yes | Number of signers on the vault |
 | `PreviousTxnID` | UINT256 | Yes | Previous transaction hash |
 | `PreviousTxnLgrSeq` | UINT32 | Yes | Previous transaction ledger sequence |
 
 **Keylet**: `keylet::exportVaultState()` (singleton)
 
-### 11.4 Ticket Assignment
+### 12.4 Ticket Assignment
 
 The Export transactor:
 
@@ -587,9 +690,9 @@ The Export transactor:
 2. Assigns the ticket to the ExportRecord (`sfTicketSequence`)
 3. Increments `NextTicketSeq` in the VaultState
 
-If `NextTicketSeq > MaxTicketSeq`, the Export fails with `tecNO_TICKET`.
+If `NextTicketSeq > MaxTicketSeq`, the Export fails with `tecUNFUNDED`.
 
-### 11.5 Overlay: Piggybacking on TMValidation
+### 12.5 Overlay: Piggybacking on TMValidation
 
 Export signatures are carried as a **repeated bytes field** on the existing `TMValidation` protobuf message, rather than introducing a new message type. This is efficient: no new protocol negotiation, no separate gossip topology, and signatures naturally propagate with validation messages which already have optimized network paths.
 
@@ -605,9 +708,9 @@ Each `exportSignatures` entry contains:
 - **txnHash** (32 bytes): Hash of the deterministic unsigned mainnet Payment (used as the key for signature collection)
 - **sfSigner** (variable): A serialized STObject containing `sfAccount`, `sfSigningPubKey`, and `sfTxnSignature`
 
-Messages are only processed from validators trusted per the UNLReport trust model (Section 11.2). The HashRouter deduplicates by `hash(txnHash + validatorKey)`.
+Messages are only processed from validators trusted per the UNLReport trust model (Section 12.2). The HashRouter deduplicates by `hash(txnHash + validatorKey)`.
 
-### 11.6 Deterministic Payment Construction
+### 12.6 Deterministic Payment Construction
 
 All validators must produce **byte-identical** unsigned mainnet Payment transactions from the same ExportRecord. This is essential because XRPL multisig requires all signers to sign the exact same transaction bytes.
 
@@ -629,7 +732,7 @@ SHA512Half(HashPrefix::txMultiSign || serializedTxFields || signerAccountID)
 
 Where `signerAccountID = calcAccountID(validatorSigningKey)`.
 
-### 11.7 Signature Collection and Assembly
+### 12.7 Signature Collection and Assembly
 
 Each node maintains an `ExportSignatureCollector` -- a thread-safe, mutex-protected in-memory collector keyed by `(account, exportSequence)`.
 
@@ -647,7 +750,7 @@ This ensures no valid signatures are dropped due to timing, while invalid signat
 
 **Stale cleanup**: Entries older than 256 ledgers without quorum are pruned from memory to prevent leaks.
 
-### 11.8 Sign-Once, Broadcast-Many
+### 12.8 Sign-Once, Broadcast-Many
 
 Validators sign each ExportRecord **once** but **re-broadcast their cached signature every validation cycle** (every ledger) as long as the ExportRecord remains on-ledger. This makes the system self-healing:
 
@@ -657,7 +760,7 @@ Validators sign each ExportRecord **once** but **re-broadcast their cached signa
 
 This is why the ExportRecord must remain on-ledger permanently -- it is the signal that tells validators "this export still needs signatures." Without it, validators would have no way to discover pending exports after a restart.
 
-### 11.9 RPC Endpoints
+### 12.9 RPC Endpoints
 
 **`export_status`**: Returns status of a pending export's signature collection.
 
@@ -687,14 +790,14 @@ This is why the ExportRecord must remain on-ledger permanently -- it is the sign
 
 A relayer (any client or service) calls `export_payment`, and if `submit_ready` is true, submits the `mainnet_payment_blob` directly to a mainnet node via the standard `submit` RPC.
 
-### 11.10 Validator Rotation
+### 12.10 Validator Rotation
 
 At flag ledgers (every 256 ledgers), the sidechain detects UNL changes by comparing the hash of the current validator-derived signer list (from UNLReport) against `VaultState.SignerListHash`. If changed, validators collectively sign a mainnet `SignerListSet` transaction to update the vault's signer list, using reserved export sequence `0xFFFFFFFE`.
 
-### 11.11 Ticket Management
+### 12.11 Ticket Management
 
 Mainnet tickets (max 250) are pre-allocated on the vault. The sidechain assigns them sequentially via `VaultState.NextTicketSeq`. When the pool runs low (<25% remaining, checked at flag ledgers), validators collectively sign a mainnet `TicketCreate` transaction to replenish it, using reserved export sequence `0xFFFFFFFF`.
 
-### 11.12 Signer Identity
+### 12.12 Signer Identity
 
-Each validator's signer AccountID on the mainnet SignerList is derived from their current signing (ephemeral) public key: `calcAccountID(signingPubKey)`. When keys rotate via manifests, the SignerList is updated accordingly (Section 11.10).
+Each validator's signer AccountID on the mainnet SignerList is derived from their current signing (ephemeral) public key: `calcAccountID(signingPubKey)`. When keys rotate via manifests, the SignerList is updated accordingly (Section 12.10).

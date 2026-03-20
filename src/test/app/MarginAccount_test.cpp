@@ -59,15 +59,13 @@ struct MarginAccount_test : public beast::unit_test::suite
     Json::Value
     marginAccountSet(
         jtx::Account const& account,
-        STIssue const& collateralAsset,
-        std::uint32_t marginMode)
+        STIssue const& collateralAsset)
     {
         Json::Value jv;
         jv[jss::TransactionType] = jss::MarginAccountSet;
         jv[jss::Account] = account.human();
         jv[sfCollateralAsset.jsonName] =
             collateralAsset.getJson(JsonOptions::none);
-        jv[sfMarginMode.jsonName] = marginMode;
         return jv;
     }
 
@@ -261,11 +259,10 @@ struct MarginAccount_test : public beast::unit_test::suite
         env.fund(XRP(10000), gw, alice);
         env.close();
 
-        // Create isolated margin account
+        // Create margin account
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),  // isolated mode
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -278,66 +275,7 @@ struct MarginAccount_test : public beast::unit_test::suite
         {
             BEAST_EXPECT(
                 sleMarginAcct->getAccountID(sfAccount) == alice.id());
-            BEAST_EXPECT(sleMarginAcct->getFieldU32(sfMarginMode) == 0);
         }
-    }
-
-    void
-    testMarginAccountCrossMode(FeatureBitset features)
-    {
-        testcase("Margin Account Cross Mode");
-
-        using namespace test::jtx;
-        Env env{*this, features};
-
-        auto const gw = Account("gateway");
-        auto const alice = Account("alice");
-        auto const USD = gw["USD"];
-
-        env.fund(XRP(10000), gw, alice);
-        env.close();
-
-        // Create cross-margin account
-        env(marginAccountSet(
-                alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                1),  // cross mode
-            ter(tesSUCCESS));
-        env.close();
-
-        // Verify cross mode
-        auto const marginAcctKeylet =
-            keylet::marginAccount(alice.id(), USD.issue());
-        auto const sleMarginAcct = env.current()->read(marginAcctKeylet);
-        BEAST_EXPECT(sleMarginAcct);
-        if (sleMarginAcct)
-        {
-            BEAST_EXPECT(sleMarginAcct->getFieldU32(sfMarginMode) == 1);
-        }
-    }
-
-    void
-    testMarginAccountInvalidMode(FeatureBitset features)
-    {
-        testcase("Margin Account Invalid Mode");
-
-        using namespace test::jtx;
-        Env env{*this, features};
-
-        auto const alice = Account("alice");
-        auto const gw = Account("gateway");
-        auto const USD = gw["USD"];
-
-        env.fund(XRP(10000), alice, gw);
-        env.close();
-
-        // Invalid margin mode (> 1)
-        env(marginAccountSet(
-                alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                2),  // invalid
-            ter(temMALFORMED));
-        env.close();
     }
 
     void
@@ -364,8 +302,7 @@ struct MarginAccount_test : public beast::unit_test::suite
         // Create margin account
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -418,8 +355,7 @@ struct MarginAccount_test : public beast::unit_test::suite
         // Create margin account for alice
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -468,8 +404,7 @@ struct MarginAccount_test : public beast::unit_test::suite
         // Create margin account and deposit
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -551,8 +486,6 @@ public:
         testLeverageTierValidation(sa);
         testLeverageTierUpdate(sa);
         testMarginAccountCreate(sa);
-        testMarginAccountCrossMode(sa);
-        testMarginAccountInvalidMode(sa);
         testMarginDepositWithdraw(sa);
         testMarginDepositInvalid(sa);
         testMarginWithdrawInsufficient(sa);

@@ -1053,6 +1053,30 @@ Config::loadFromString(std::string const& fileContents)
                 }
             }
 
+            // Parse [mainnet_peers] for native peer protocol connections
+            if (auto mainnetPeers =
+                    getIniFileSection(iniFile, SECTION_MAINNET_PEERS);
+                mainnetPeers)
+            {
+                for (auto const& ep : *mainnetPeers)
+                {
+                    if (!ep.empty())
+                        MAINNET_PEERS.push_back(ep);
+                }
+            }
+
+            // Parse [mainnet_network_id] — network ID for peer handshake
+            if (auto sec = getIniFileSection(
+                    iniFile, SECTION_MAINNET_NETWORK_ID);
+                sec)
+            {
+                if (!sec->empty())
+                {
+                    MAINNET_NETWORK_ID =
+                        beast::lexicalCastThrow<std::uint32_t>((*sec)[0]);
+                }
+            }
+
             // Parse [mainnet_base_fee] — per-signer base fee in drops
             if (auto sec = getIniFileSection(
                     iniFile, SECTION_MAINNET_BASE_FEE);

@@ -4,19 +4,18 @@
 Title:       Options and Margin Trading
 Type:        Draft
 Author:      Denis Angell <dangell@transia.co>
-Revision:    7
+Revision:    8
 ```
 
 ## Abstract
 
 This specification introduces **Options trading** and **Margin/Leverage trading** to the XRP Ledger Protocol. Options are American-style derivative contracts that give holders the right (but not the obligation) to buy or sell an underlying asset at a predetermined strike price before expiration. The margin system enables leveraged positions with risk management via liquidation, insurance vaults, and funding rates.
 
-Two amendments control this feature:
+A single amendment controls this feature:
 
 | Amendment | Description |
 |-----------|-------------|
-| `featureOptions` | Core options trading: OptionPairCreate, OptionCreate, OptionSettle |
-| `featureOptionsMargin` | Margin system: LeverageTierSet, MarginAccountSet, MarginDeposit, MarginWithdraw, OptionLiquidate, InsuranceVaultCreate, InsuranceDeposit, InsuranceWithdraw, FundingRateCollect |
+| `featureOptions` | All options and margin trading: OptionPairCreate, OptionCreate, OptionSettle, LeverageTierSet, MarginAccountSet, MarginDeposit, MarginWithdraw, OptionLiquidate, InsuranceVaultCreate, InsuranceDeposit, InsuranceWithdraw |
 
 ---
 
@@ -31,6 +30,7 @@ A pseudo-account representing an options market for a specific asset pair. Simil
 | `Account` | AccountID | Yes | Pseudo-account address |
 | `Asset` | Issue | Yes | Base asset (underlying) |
 | `Asset2` | Issue | Yes | Quote asset (settlement currency) |
+| `OracleEntries` | Array | Yes | Array of oracle references for mark price (see Section 3.5) |
 | `TradingFeeBps` | UINT32 | Default(0) | Trading fee in 1/10 basis points |
 | `AccumulatedFees` | Number | Default(0) | Accumulated trading fees |
 | `OwnerNode` | UINT64 | Yes | Owner directory node |
@@ -67,7 +67,6 @@ An individual user's offer to buy or sell an option contract.
 | `Expiration` | UINT32 | Yes | Option expiration time |
 | `Premium` | Amount | Yes | Price per option contract |
 | `Quantity` | UINT32 | Yes | Number of contracts (divisible by 100) |
-| `Amount` | Amount | Optional | Locked collateral for sell offers |
 | `OpenInterest` | UINT32 | Optional | Number of matched contracts |
 | `SealedOptions` | Array | Optional | Matched counterparty relationships |
 | `MarginPositionID` | UINT256 | Optional | Link to margin position (leveraged) |
@@ -107,7 +106,6 @@ A user's margin account that holds collateral for leveraged positions.
 | `Account` | AccountID | Yes | Account owner |
 | `CollateralAsset` | Issue | Yes | Collateral denomination |
 | `CollateralBalance` | Number | Default(0) | Current collateral balance |
-| `MarginMode` | UINT32 | Yes | `0` = Isolated, `1` = Cross-margin |
 | `OwnerNode` | UINT64 | Yes | Owner directory node |
 | `PreviousTxnID` | UINT256 | Yes | Previous transaction hash |
 | `PreviousTxnLgrSeq` | UINT32 | Yes | Previous transaction ledger sequence |
@@ -172,11 +170,14 @@ Creates a new options market for an asset pair.
 |-------|------|----------|-------------|
 | `Asset` | Issue | Yes | Base (underlying) asset |
 | `Asset2` | Issue | Yes | Quote (settlement) asset |
+| `OracleEntries` | Array | Yes | Oracle references for price data (1-10 entries) |
 | `TradingFeeBps` | UINT32 | Optional | Trading fee in 1/10 basis points |
 
 **Behavior**:
+- Validates `OracleEntries` (1-10 entries, each must have `Account` + `OracleDocumentID`)
+- Verifies each referenced oracle exists on-ledger (fails with `tecNO_ENTRY` if not)
 - Creates a pseudo-account with master key disabled and regular key set to account zero
-- Creates the `OptionPair` ledger entry associated with the pseudo-account
+- Creates the `OptionPair` ledger entry with oracle references stored for mark price lookups
 - Fails with `tecDUPLICATE` (148) if the pair already exists
 
 **Privileges**: `createPseudoAcct`
@@ -194,8 +195,8 @@ Creates a buy or sell offer for an option contract.
 | `Expiration` | UINT32 | Yes | Option expiration (Unix timestamp) |
 | `Premium` | Amount | Yes | Price per contract |
 | `Quantity` | UINT32 | Yes | Number of contracts (must be divisible by 100) |
-| `MarginAccountID` | UINT256 | Optional | Margin account for leveraged positions |
-| `Leverage` | UINT32 | Optional | Leverage multiplier (2-200, requires `MarginAccountID`) |
+| `MarginAccountID` | UINT256 | Yes | Margin account for the position |
+| `Leverage` | UINT32 | Yes | Leverage multiplier (2-200) |
 
 **Flags**:
 
@@ -208,12 +209,11 @@ Creates a buy or sell offer for an option contract.
 **Behavior**:
 1. Validates the option pair exists
 2. Validates quantity is divisible by 100
-3. For sell offers: locks collateral (underlying asset) via `sfAmount`
+3. Creates a `MarginPosition` linked to the offer, backed by the specified margin account
 4. Attempts to match against existing counterpart offers on the option book
 5. Matched offers create **Sealed Options** linking buyer and seller
 6. Premium is transferred from buyer to seller on match
 7. Unmatched remainder is placed on the book as a resting offer
-8. If `MarginAccountID` and `Leverage` are present, creates a `MarginPosition` linked to the offer
 
 **Errors**:
 - `temMALFORMED`: Invalid fields, quantity not divisible by 100
@@ -266,7 +266,7 @@ Settles an option by exercising, closing, or expiring it.
 
 Configures leverage parameters for an asset pair.
 
-**Amendment**: `featureOptionsMargin`
+**Amendment**: `featureOptions`
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -282,23 +282,19 @@ Configures leverage parameters for an asset pair.
 
 Creates or modifies a margin account.
 
-**Amendment**: `featureOptionsMargin`
+**Amendment**: `featureOptions`
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `CollateralAsset` | Issue | Yes | Asset used as collateral |
-| `MarginMode` | UINT32 | Yes | `0` = Isolated, `1` = Cross-margin |
 
-**Margin Modes**:
-
-- **Isolated** (`0`): Each position has independent collateral. If one position is liquidated, others are unaffected.
-- **Cross-margin** (`1`): All positions share a single collateral pool. Higher capital efficiency but shared liquidation risk.
+All margin accounts use **isolated margin**: each position has independent collateral. If one position is liquidated, others are unaffected.
 
 ### 2.6 MarginDeposit (type 91)
 
 Deposits collateral into a margin account.
 
-**Amendment**: `featureOptionsMargin`
+**Amendment**: `featureOptions`
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -309,7 +305,7 @@ Deposits collateral into a margin account.
 
 Withdraws collateral from a margin account.
 
-**Amendment**: `featureOptionsMargin`
+**Amendment**: `featureOptions`
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -322,15 +318,14 @@ Withdrawal fails if it would leave the account below maintenance margin requirem
 
 Liquidates an underwater margin position. Can be called by **any account**, not just the position owner.
 
-**Amendment**: `featureOptionsMargin`
+**Amendment**: `featureOptions`
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `MarginPositionID` | UINT256 | Yes | Position to liquidate |
 
 **Liquidation Conditions**:
-- **Isolated mode**: Position equity (`allocatedMargin + unrealizedPnL`) < maintenance margin
-- **Cross-margin mode**: Account equity (`collateralBalance + sum(unrealizedPnL)`) < total maintenance margin
+- Position equity (`(allocatedMargin - accumulatedFunding) + unrealizedPnL`) < maintenance margin
 
 **Liquidation Process**:
 1. Calculate remaining collateral: `allocatedMargin + unrealizedPnL`
@@ -346,7 +341,7 @@ Liquidates an underwater margin position. Can be called by **any account**, not 
 
 Creates an insurance vault for an option pair.
 
-**Amendment**: `featureOptionsMargin`
+**Amendment**: `featureOptions`
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -361,12 +356,14 @@ Creates a pseudo-account and an MPToken issuance for LP shares.
 
 Deposits funds into the insurance vault.
 
-**Amendment**: `featureOptionsMargin`
+**Amendment**: `featureOptions`
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `InsuranceVaultID` | UINT256 | Yes | Target insurance vault |
 | `Amount` | Amount | Yes | Deposit amount (MPT supported) |
+
+**Privileges**: `mayAuthorizeMPT`
 
 Depositors receive proportional MPToken LP shares.
 
@@ -374,24 +371,14 @@ Depositors receive proportional MPToken LP shares.
 
 Withdraws funds from the insurance vault.
 
-**Amendment**: `featureOptionsMargin`
+**Amendment**: `featureOptions`
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `InsuranceVaultID` | UINT256 | Yes | Source insurance vault |
 | `Amount` | Amount | Yes | Withdrawal amount (MPT supported) |
 
-### 2.12 FundingRateCollect (type 97)
-
-Collects funding rate payments on margin positions.
-
-**Amendment**: `featureOptionsMargin`
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `MarginPositionID` | UINT256 | Yes | Target position |
-
-Funding rates balance long/short positions. Longs pay shorts when the mark price exceeds the index price, and vice versa.
+**Privileges**: `mayDeleteMPT | mayAuthorizeMPT`
 
 ---
 
@@ -425,18 +412,56 @@ Long:  UnrealizedPnL = (MarkPrice - EntryPrice) * PositionSize
 Short: UnrealizedPnL = (EntryPrice - MarkPrice) * PositionSize
 ```
 
-### 3.5 Position Health
+### 3.5 Mark Price (Oracle-Derived)
 
-**Isolated mode**:
+The mark price is **not stored on any ledger entry**. It is computed at runtime by reading oracle references directly from the `OptionPair` SLE.
+
+Each `OptionPair` stores an `OracleEntries` array (set at creation via `OptionPairCreate`). Each entry contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Account` | AccountID | Oracle provider account |
+| `OracleDocumentID` | UINT32 | Oracle document identifier |
+
+**Computation** (`margin::getMarkPrice`):
+
+1. Read `OracleEntries` from the OptionPair SLE
+2. For each entry, perform a direct O(1) lookup via `keylet::oracle(Account, OracleDocumentID)`
+3. Within each Oracle entry, search `sfPriceDataSeries` for entries matching the currency pair (by `sfBaseAsset` and `sfQuoteAsset`)
+4. Extract `sfAssetPrice` and `sfScale` from matching entries
+5. Compute the **median** of all collected prices
+
+This uses the same oracle lookup pattern as the `get_aggregate_price` RPC, providing O(1) per-oracle access rather than directory scanning.
+
+If no oracle data is found, `getMarkPrice` returns 0, causing dependent transactions (liquidation, withdrawal, exercise) to fail.
+
+**Used by**: OptionLiquidate (preclaim + doApply), MarginWithdraw (health check), OptionSettle (via `exerciseOffer`), `get_margin_status` RPC.
+
+### 3.6 Funding Rate (Lazy Evaluation)
+
+Funding is calculated lazily at settlement, liquidation, or equity check time — no per-position hourly transactions.
+
 ```
-PositionEquity = AllocatedMargin + UnrealizedPnL
+HoursElapsed = floor((CurrentTime - LastFundingTime) / 3600)
+AccumulatedFunding = NotionalValue * FundingRateBps * HoursElapsed / 100000
+EffectiveMargin = AllocatedMargin - AccumulatedFunding  (capped at 0)
+```
+
+Where `FundingRateBps` defaults to 100 (0.01% per hour), read from the `LeverageTier`.
+
+`LastFundingTime` is set to the current ledger close time at position creation. Legacy positions with `LastFundingTime = 0` accrue no funding.
+
+Accumulated funding is deducted from margin and routed to `OptionPair.AccumulatedFees` at:
+- Option close (OptionSettle with tfClose)
+- Option expire (OptionSettle with tfExpire)
+- Option exercise (OptionSettle with tfExercise)
+- Liquidation (OptionLiquidate)
+
+### 3.7 Position Health
+
+```
+PositionEquity = (AllocatedMargin - AccumulatedFunding) + UnrealizedPnL
 Healthy = PositionEquity >= MaintenanceMargin
-```
-
-**Cross-margin mode**:
-```
-AccountEquity = CollateralBalance + Sum(UnrealizedPnL for all positions)
-Healthy = AccountEquity >= Sum(MaintenanceMargin for all positions)
 ```
 
 ---
@@ -455,14 +480,11 @@ Sealed options track the counterparty relationship and enable exercise, where th
 
 ---
 
-## 5. Covered vs. Margin-Backed Options
+## 5. Margin-Backed Options
 
-Sell-side option offers can be collateralized in two ways:
+All option offers are margin-backed. Every OptionCreate transaction requires a `MarginAccountID` and `Leverage` parameter — the seller backs the position with collateral in a `MarginAccount`. Settlement is cash-settled based on the price difference, and the margin system's liquidation mechanism protects against insolvency.
 
-- **Covered**: The seller locks the full underlying asset directly on the offer via `sfAmount`. Settlement delivers the underlying asset.
-- **Margin-backed** (requires `featureOptionsMargin`): The seller does not lock the underlying asset but instead backs the position with collateral in a `MarginAccount`. Settlement is cash-settled based on the price difference, and the margin system's liquidation mechanism protects against insolvency.
-
-> **Note**: Truly naked (zero-collateral) options are not possible. On a decentralized ledger there is no credit system or legal enforcement to guarantee settlement from an unfunded account. Every sell-side offer must be backed by either locked underlying assets or margin collateral.
+> **Note**: Truly naked (zero-collateral) options are not possible. On a decentralized ledger there is no credit system or legal enforcement to guarantee settlement from an unfunded account. Every sell-side offer must be backed by margin collateral.
 
 ---
 
@@ -498,7 +520,6 @@ Query margin account health and position details.
 
 | Field | Description |
 |-------|-------------|
-| `margin_mode` | "isolated" or "cross" |
 | `collateral_balance` | Current collateral |
 | `positions` | Array of position details |
 
@@ -560,7 +581,7 @@ Enforces the following safety invariants on every transaction:
 | `sfInitialMarginBps` | 72 | Initial margin (1/10 bps) |
 | `sfMaintenanceMarginBps` | 73 | Maintenance margin (1/10 bps) |
 | `sfLiquidationBonusBps` | 74 | Liquidation bonus (1/10 bps) |
-| `sfMarginMode` | 75 | 0=isolated, 1=cross |
+| `sfMarginMode` | 75 | Reserved (unused) |
 | `sfLeverage` | 76 | Position leverage |
 | `sfPositionSide` | 77 | 0=long, 1=short |
 | `sfTradingFeeBps` | 78 | Trading fee (1/10 bps) |
@@ -581,7 +602,7 @@ Enforces the following safety invariants on every transaction:
 |-------|-----|-------------|
 | `sfCollateralBalance` | 18 | Margin account collateral balance |
 | `sfEntryPrice` | 19 | Position entry price |
-| `sfMarkPrice` | 20 | Current mark price |
+| `sfMarkPrice` | 20 | Current mark price (not stored; computed at runtime from Oracle entries, see Section 3.5) |
 | `sfPositionSize` | 21 | Position size |
 | `sfAllocatedMargin` | 22 | Margin allocated to position |
 | `sfInsuranceBalance` | 23 | Insurance vault balance |
@@ -596,8 +617,10 @@ Enforces the following safety invariants on every transaction:
 |-------|------|----|-------------|
 | `sfSealedOption` | Object | 38 | Single matched option pair |
 | `sfLeverageTier` | Object | 39 | Single leverage tier config |
+| `sfOracleEntry` | Object | 44 | Single oracle reference (`Account` + `OracleDocumentID`) |
 | `sfSealedOptions` | Array | 32 | Array of matched option pairs |
 | `sfLeverageTiers` | Array | 33 | Array of leverage tier configs |
+| `sfOracleEntries` | Array | 37 | Array of oracle references |
 
 ### New Issue Fields
 
@@ -618,3 +641,20 @@ Enforces the following safety invariants on every transaction:
 | `MARGIN_ACCOUNT` | `'M'` | MarginAccount keylet |
 | `INSURANCE_VAULT` | `'J'` | InsuranceVault keylet |
 | `MARGIN_POSITION` | `'j'` | MarginPosition keylet |
+
+---
+
+## 11. Existing Ledger Entry Extensions
+
+### 11.1 AccountRoot
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `OptionPairID` | UINT256 | Optional | Pseudo-account designator linking to the OptionPair this account represents |
+
+### 11.2 DirectoryNode
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `Strike` | UINT64 | Optional | Strike price for option book directory ordering |
+| `Expiration` | UINT32 | Optional | Expiration timestamp for option book directory ordering |

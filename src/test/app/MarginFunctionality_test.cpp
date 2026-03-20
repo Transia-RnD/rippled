@@ -38,15 +38,13 @@ struct MarginFunctionality_test : public beast::unit_test::suite
     Json::Value
     marginAccountSet(
         jtx::Account const& account,
-        STIssue const& collateralAsset,
-        std::uint32_t marginMode)
+        STIssue const& collateralAsset)
     {
         Json::Value jv;
         jv[jss::TransactionType] = jss::MarginAccountSet;
         jv[jss::Account] = account.human();
         jv[sfCollateralAsset.jsonName] =
             collateralAsset.getJson(JsonOptions::none);
-        jv[sfMarginMode.jsonName] = marginMode;
         return jv;
     }
 
@@ -178,21 +176,6 @@ struct MarginFunctionality_test : public beast::unit_test::suite
     }
 
     // -----------------------------------------------------------------------
-    // Helper: build a FundingRateCollect transaction JSON
-    // -----------------------------------------------------------------------
-    Json::Value
-    fundingRateCollect(
-        jtx::Account const& account,
-        uint256 const& marginPositionID)
-    {
-        Json::Value jv;
-        jv[jss::TransactionType] = jss::FundingRateCollect;
-        jv[jss::Account] = account.human();
-        jv[sfMarginPositionID.jsonName] = to_string(marginPositionID);
-        return jv;
-    }
-
-    // -----------------------------------------------------------------------
     // Helper: build an OptionCreate transaction JSON (with optional margin)
     // -----------------------------------------------------------------------
     Json::Value
@@ -271,11 +254,10 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             env.fund(XRP(10000), gw, alice);
             env.close();
 
-            // Create isolated margin account (marginMode = 0)
+            // Create margin account
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    0),
+                    STIssue(sfCollateralAsset, USD.issue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -289,40 +271,6 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             {
                 BEAST_EXPECT(
                     sleMarginAcct->getAccountID(sfAccount) == alice.id());
-                BEAST_EXPECT(
-                    sleMarginAcct->getFieldU32(sfMarginMode) == 0);
-            }
-        }
-
-        testcase("MarginAccountSet - Cross Mode with IOU Collateral");
-        {
-            using namespace test::jtx;
-            Env env{*this, features};
-
-            auto const gw = Account("gateway");
-            auto const alice = Account("alice");
-            auto const USD = gw["USD"];
-
-            env.fund(XRP(10000), gw, alice);
-            env.close();
-
-            // Create cross-margin account (marginMode = 1)
-            env(marginAccountSet(
-                    alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    1),
-                ter(tesSUCCESS));
-            env.close();
-
-            auto const marginAcctKeylet =
-                keylet::marginAccount(alice.id(), USD.issue());
-            auto const sleMarginAcct =
-                env.current()->read(marginAcctKeylet);
-            BEAST_EXPECT(sleMarginAcct);
-            if (sleMarginAcct)
-            {
-                BEAST_EXPECT(
-                    sleMarginAcct->getFieldU32(sfMarginMode) == 1);
             }
         }
 
@@ -339,8 +287,7 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             // Create margin account with XRP as collateral
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, xrpIssue()),
-                    0),
+                    STIssue(sfCollateralAsset, xrpIssue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -353,77 +300,6 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             {
                 BEAST_EXPECT(
                     sleMarginAcct->getAccountID(sfAccount) == alice.id());
-                BEAST_EXPECT(
-                    sleMarginAcct->getFieldU32(sfMarginMode) == 0);
-            }
-        }
-
-        testcase("MarginAccountSet - Invalid Mode Rejected");
-        {
-            using namespace test::jtx;
-            Env env{*this, features};
-
-            auto const gw = Account("gateway");
-            auto const alice = Account("alice");
-            auto const USD = gw["USD"];
-
-            env.fund(XRP(10000), gw, alice);
-            env.close();
-
-            // Invalid margin mode (> 1) should be rejected
-            env(marginAccountSet(
-                    alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    2),
-                ter(temMALFORMED));
-            env.close();
-        }
-
-        testcase("MarginAccountSet - Update Existing Account Mode");
-        {
-            using namespace test::jtx;
-            Env env{*this, features};
-
-            auto const gw = Account("gateway");
-            auto const alice = Account("alice");
-            auto const USD = gw["USD"];
-
-            env.fund(XRP(10000), gw, alice);
-            env.close();
-
-            // Create isolated
-            env(marginAccountSet(
-                    alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    0),
-                ter(tesSUCCESS));
-            env.close();
-
-            auto const marginAcctKeylet =
-                keylet::marginAccount(alice.id(), USD.issue());
-
-            // Verify isolated mode
-            {
-                auto const sle = env.current()->read(marginAcctKeylet);
-                BEAST_EXPECT(sle);
-                if (sle)
-                    BEAST_EXPECT(sle->getFieldU32(sfMarginMode) == 0);
-            }
-
-            // Update to cross mode
-            env(marginAccountSet(
-                    alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    1),
-                ter(tesSUCCESS));
-            env.close();
-
-            // Verify cross mode
-            {
-                auto const sle = env.current()->read(marginAcctKeylet);
-                BEAST_EXPECT(sle);
-                if (sle)
-                    BEAST_EXPECT(sle->getFieldU32(sfMarginMode) == 1);
             }
         }
     }
@@ -455,8 +331,7 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             // Create margin account
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    0),
+                    STIssue(sfCollateralAsset, USD.issue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -502,8 +377,7 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             // Create XRP-collateral margin account
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, xrpIssue()),
-                    0),
+                    STIssue(sfCollateralAsset, xrpIssue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -550,8 +424,7 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             // Create XRP-collateral margin account
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, xrpIssue()),
-                    0),
+                    STIssue(sfCollateralAsset, xrpIssue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -589,8 +462,7 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             // Create margin account for alice
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    0),
+                    STIssue(sfCollateralAsset, USD.issue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -628,8 +500,7 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             // Create margin account with USD collateral
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    0),
+                    STIssue(sfCollateralAsset, USD.issue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -696,8 +567,7 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             // Create margin account and deposit
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    0),
+                    STIssue(sfCollateralAsset, USD.issue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -748,8 +618,7 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             // Create XRP margin account, deposit, then withdraw
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, xrpIssue()),
-                    0),
+                    STIssue(sfCollateralAsset, xrpIssue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -794,8 +663,7 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             // Create margin account and deposit 1000 USD
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    0),
+                    STIssue(sfCollateralAsset, USD.issue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -835,8 +703,7 @@ struct MarginFunctionality_test : public beast::unit_test::suite
             // Create margin account for alice and deposit
             env(marginAccountSet(
                     alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    0),
+                    STIssue(sfCollateralAsset, USD.issue())),
                 ter(tesSUCCESS));
             env.close();
 
@@ -1515,250 +1382,6 @@ struct MarginFunctionality_test : public beast::unit_test::suite
         }
     }
 
-    // ===================================================================
-    // Test 6: FundingRateCollect
-    // ===================================================================
-    void
-    testFundingRateCollect(FeatureBitset features)
-    {
-        testcase("FundingRateCollect - Too Soon Rejected");
-        {
-            using namespace test::jtx;
-            using namespace std::literals::chrono_literals;
-            Env env{*this, features};
-
-            auto const gw = Account("gateway");
-            auto const alice = Account("alice");
-            auto const GME = gw["GME"];
-            auto const USD = gw["USD"];
-
-            env.fund(XRP(100000), gw, alice);
-            env.close();
-
-            env.trust(USD(100000), alice);
-            env.trust(GME(100000), alice);
-            env.close();
-
-            env(pay(gw, alice, USD(50000)));
-            env(pay(gw, alice, GME(50000)));
-            env.close();
-
-            // Setup option pair, leverage tier, margin account, and position
-            env(optionPairCreate(
-                    gw,
-                    STIssue(sfAsset, GME.issue()),
-                    STIssue(sfAsset2, USD.issue())),
-                fee(env.current()->fees().increment),
-                ter(tesSUCCESS));
-            env.close();
-
-            env(leverageTierSet(
-                    gw,
-                    STIssue(sfAsset, GME.issue()),
-                    STIssue(sfAsset2, USD.issue()),
-                    5, 20000, 10000, 500),
-                ter(tesSUCCESS));
-            env.close();
-
-            env(marginAccountSet(
-                    alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    0),
-                ter(tesSUCCESS));
-            env.close();
-
-            auto const marginAcctKeylet =
-                keylet::marginAccount(alice.id(), USD.issue());
-            auto const marginAcctID = marginAcctKeylet.key;
-
-            env(marginDeposit(alice, marginAcctID, USD(10000)),
-                ter(tesSUCCESS));
-            env.close();
-
-            // Create a leveraged option position
-            auto const expiration = env.now() + 3700s;
-            auto const offerId =
-                keylet::optionOffer(alice.id(), env.seq(alice)).key;
-            env(optionCreateWithMargin(
-                    alice,
-                    expiration,
-                    USD(20),
-                    STIssue(sfAsset, GME.issue()),
-                    100,
-                    USD(1),
-                    marginAcctID,
-                    5),
-                txflags(tfSell | tfPut),
-                ter(tesSUCCESS));
-            env.close();
-
-            // Get the margin position ID from the option offer
-            auto const sleOffer =
-                env.current()->read(keylet::unchecked(offerId));
-            if (!sleOffer ||
-                !sleOffer->isFieldPresent(sfMarginPositionID))
-            {
-                // If the option did not create a margin position,
-                // we test with a fake position ID that does not exist
-                // and verify FundingRateCollect rejects it
-                uint256 const fakePositionID(12345);
-                env(fundingRateCollect(alice, fakePositionID),
-                    ter(tecNO_ENTRY));
-                env.close();
-                return;
-            }
-
-            uint256 const marginPositionID =
-                sleOffer->getFieldH256(sfMarginPositionID);
-
-            // Try to collect funding immediately (< 1 hour)
-            // This should fail because not enough time has passed
-            env(fundingRateCollect(alice, marginPositionID),
-                ter(tecNO_PERMISSION));
-            env.close();
-        }
-
-        testcase("FundingRateCollect - Nonexistent Position Rejected");
-        {
-            using namespace test::jtx;
-            Env env{*this, features};
-
-            auto const alice = Account("alice");
-
-            env.fund(XRP(10000), alice);
-            env.close();
-
-            // Try to collect funding for a position that does not exist
-            uint256 const fakePositionID(99999);
-            env(fundingRateCollect(alice, fakePositionID),
-                ter(tecNO_ENTRY));
-            env.close();
-        }
-
-        testcase("FundingRateCollect - After 1 Hour with Position");
-        {
-            using namespace test::jtx;
-            using namespace std::literals::chrono_literals;
-            Env env{*this, features};
-
-            auto const gw = Account("gateway");
-            auto const alice = Account("alice");
-            auto const GME = gw["GME"];
-            auto const USD = gw["USD"];
-
-            env.fund(XRP(100000), gw, alice);
-            env.close();
-
-            env.trust(USD(100000), alice);
-            env.trust(GME(100000), alice);
-            env.close();
-
-            env(pay(gw, alice, USD(50000)));
-            env(pay(gw, alice, GME(50000)));
-            env.close();
-
-            // Full setup
-            env(optionPairCreate(
-                    gw,
-                    STIssue(sfAsset, GME.issue()),
-                    STIssue(sfAsset2, USD.issue())),
-                fee(env.current()->fees().increment),
-                ter(tesSUCCESS));
-            env.close();
-
-            env(leverageTierSet(
-                    gw,
-                    STIssue(sfAsset, GME.issue()),
-                    STIssue(sfAsset2, USD.issue()),
-                    5, 20000, 10000, 500),
-                ter(tesSUCCESS));
-            env.close();
-
-            env(marginAccountSet(
-                    alice,
-                    STIssue(sfCollateralAsset, USD.issue()),
-                    0),
-                ter(tesSUCCESS));
-            env.close();
-
-            auto const marginAcctKeylet =
-                keylet::marginAccount(alice.id(), USD.issue());
-            auto const marginAcctID = marginAcctKeylet.key;
-
-            env(marginDeposit(alice, marginAcctID, USD(10000)),
-                ter(tesSUCCESS));
-            env.close();
-
-            // Create leveraged position
-            auto const expiration = env.now() + 7200s;
-            auto const offerId =
-                keylet::optionOffer(alice.id(), env.seq(alice)).key;
-            env(optionCreateWithMargin(
-                    alice,
-                    expiration,
-                    USD(20),
-                    STIssue(sfAsset, GME.issue()),
-                    100,
-                    USD(1),
-                    marginAcctID,
-                    5),
-                txflags(tfSell | tfPut),
-                ter(tesSUCCESS));
-            env.close();
-
-            // Get the margin position ID
-            auto const sleOffer =
-                env.current()->read(keylet::unchecked(offerId));
-            if (!sleOffer ||
-                !sleOffer->isFieldPresent(sfMarginPositionID))
-            {
-                // If no margin position was created, skip this subtest
-                // (the position creation may depend on oracle setup)
-                pass();
-                return;
-            }
-
-            uint256 const marginPositionID =
-                sleOffer->getFieldH256(sfMarginPositionID);
-
-            // Advance time by > 1 hour (3600+ seconds)
-            // Close enough ledgers to advance the clock
-            for (int i = 0; i < 15; ++i)
-                env.close();
-
-            // Now attempt funding collection after enough time has passed
-            // This should succeed if the clock advanced past 1 hour
-            auto const now =
-                env.current()->parentCloseTime().time_since_epoch().count();
-            auto const slePos = env.current()->read(
-                Keylet{ltMARGIN_POSITION, marginPositionID});
-            if (slePos)
-            {
-                std::uint32_t const lastFunding =
-                    slePos->at(~sfLastFundingTime).value_or(0);
-                if (now > lastFunding && (now - lastFunding) >= 3600)
-                {
-                    // Enough time has passed, collection should succeed
-                    env(fundingRateCollect(alice, marginPositionID),
-                        ter(tesSUCCESS));
-                    env.close();
-                }
-                else
-                {
-                    // Not enough time yet; verify the rejection
-                    env(fundingRateCollect(alice, marginPositionID),
-                        ter(tecNO_PERMISSION));
-                    env.close();
-                }
-            }
-            else
-            {
-                // Position was consumed or does not exist
-                pass();
-            }
-        }
-    }
-
 public:
     void
     run() override
@@ -1771,7 +1394,6 @@ public:
         testMarginWithdraw(all);
         testLeverageTierSet(all);
         testInsuranceVault(all);
-        testFundingRateCollect(all);
     }
 };
 

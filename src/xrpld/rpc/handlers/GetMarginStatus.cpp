@@ -65,13 +65,10 @@ doGetMarginStatus(RPC::JsonContext& context)
     }
 
     AccountID const account = sleMarginAcct->getAccountID(sfAccount);
-    std::uint32_t const marginMode =
-        sleMarginAcct->getFieldU32(sfMarginMode);
 
     Number const collateralBalance =
         sleMarginAcct->at(~sfCollateralBalance).value_or(Number(0));
 
-    jvResult[jss::margin_mode] = marginMode;
     jvResult[jss::collateral_balance] = to_string(collateralBalance);
 
     // Iterate all margin positions for this account
@@ -110,12 +107,7 @@ doGetMarginStatus(RPC::JsonContext& context)
         Number unrealizedPnl(0);
         if (slePair)
         {
-            Issue const baseIssue =
-                sle->getFieldIssue(sfAsset).get<Issue>();
-            Issue const quoteIssue =
-                slePair->getFieldIssue(sfAsset2).get<Issue>();
-            markPrice =
-                margin::getMarkPrice(*ledger, baseIssue, quoteIssue);
+            markPrice = margin::getMarkPrice(*ledger, slePair);
             unrealizedPnl =
                 margin::calculateUnrealizedPnl(sle, markPrice);
         }

@@ -82,6 +82,8 @@ struct ConfigSection
 #define SECTION_IMPORT_VAULT_MAX_TICKET "import_vault_max_ticket"
 #define SECTION_IMPORT_VAULT_MAINNET_SEQUENCE "import_vault_mainnet_sequence"
 #define SECTION_MAINNET_NODES "mainnet_nodes"
+#define SECTION_MAINNET_PEERS "mainnet_peers"
+#define SECTION_MAINNET_NETWORK_ID "mainnet_network_id"
 #define SECTION_MAINNET_BASE_FEE "mainnet_base_fee"
 #define SECTION_EXPORT_SIGN_BATCH_SIZE "export_sign_batch_size"
 #define SECTION_IMPORT_XRP_MINT_AMOUNT "import_xrp_mint_amount"

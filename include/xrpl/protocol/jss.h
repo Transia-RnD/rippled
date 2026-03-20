@@ -401,7 +401,6 @@ JSS(lp_token);                // out: amm_info
 JSS(maintenance_margin);      // out: get_margin_status
 JSS(majority);                // out: RPC feature
 // Note: margin_account is auto-generated from ledger_entries.macro
-JSS(margin_mode);             // out: get_margin_status
 JSS(mark_price);              // out: get_margin_status
 JSS(manifest);                // out: ValidatorInfo, Manifest
 JSS(marker);                  // in/out: AccountTx, AccountOffers,

@@ -4,6 +4,7 @@
 #include <xrpl/basics/base_uint.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/protocol/AccountID.h>
+#include <xrpl/protocol/messages.h>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -16,6 +17,7 @@
 #include <memory>
 #include <mutex>
 #include <optional>
+#include <set>
 #include <string>
 #include <thread>
 #include <vector>
@@ -23,12 +25,14 @@
 namespace xrpl {
 
 class Application;
+class MainnetPeerClient;
 
-/** Embedded mainnet watcher that connects via WebSocket to mainnet nodes,
-    monitors the vault address for incoming Payments with OperationLimit,
+/** Embedded mainnet watcher that monitors mainnet for vault payments,
     collects validation signatures, and builds XPOPs in-memory.
 
-    Replaces the external wietsewind/xpop Docker container.
+    Supports two transport modes:
+    1. Native peer protocol via MainnetPeerClient (preferred)
+    2. WebSocket subscriptions (fallback)
 */
 class MainnetWatcher
 {
@@ -67,6 +71,17 @@ public:
         uint256 txHash;
     };
 
+    /** Construct with optional peer protocol and/or WebSocket transport.
+        If peerEndpoints is non-empty, native peer protocol is used (preferred).
+        If wsUrls is non-empty, WebSocket is used as fallback. */
+    MainnetWatcher(
+        Application& app,
+        std::vector<std::string> const& wsUrls,
+        std::vector<std::string> const& peerEndpoints,
+        std::uint32_t mainnetNetworkID,
+        beast::Journal journal);
+
+    /** Legacy constructor — WebSocket only. */
     MainnetWatcher(
         Application& app,
         std::vector<std::string> const& wsUrls,
@@ -167,6 +182,47 @@ private:
     void
     onVaultOutbound(Json::Value const& data);
 
+    // -- Peer protocol callbacks (from MainnetPeerClient) --
+
+    /** Handle a TMValidation from a mainnet peer. */
+    void
+    onPeerValidation(protocol::TMValidation const& m);
+
+    /** Handle a TMStatusChange from a mainnet peer. */
+    void
+    onPeerStatusChange(protocol::TMStatusChange const& m);
+
+    /** Handle a TMTransaction from a mainnet peer (mempool). */
+    void
+    onPeerTransaction(protocol::TMTransaction const& m);
+
+    /** Handle a TMLedgerData response from a mainnet peer. */
+    void
+    onPeerLedgerData(protocol::TMLedgerData const& m);
+
+    /** Process a liBASE response — extract ledger header. */
+    void
+    processLedgerBase(protocol::TMLedgerData const& m);
+
+    /** Process a liTX_NODE response — continue SHAMap traversal. */
+    void
+    processTxNodes(protocol::TMLedgerData const& m);
+
+    /** Check if an STTx is a vault payment (peer protocol version). */
+    bool
+    isVaultPaymentRaw(Slice txData) const;
+
+    /** Handle a TMValidatorList from a mainnet peer. */
+    void
+    onPeerValidatorList(protocol::TMValidatorList const& m);
+
+    /** Handle a TMValidatorListCollection from a mainnet peer. */
+    void
+    onPeerValidatorListCollection(
+        protocol::TMValidatorListCollection const& m);
+
+    // -- WebSocket transport (fallback) --
+
     /** Drain the submit queue over an open WebSocket (templated for TLS/plain). */
     template <class WsStream>
     void
@@ -220,6 +276,40 @@ private:
 
     // Latest known mainnet ledger index (for retry timing)
     std::uint32_t latestLedgerIndex_{0};
+
+    // -- Peer protocol transport --
+    std::unique_ptr<MainnetPeerClient> peerClient_;
+    std::vector<std::string> peerEndpoints_;
+    std::uint32_t mainnetNetworkID_{0};
+
+    // Tx hashes detected in mempool (via TMTransaction), pending confirmation
+    std::set<uint256> mempoolDetected_;
+
+    // SHAMap traversal state for finding confirmed tx data
+    struct SHAMapTraversal
+    {
+        uint256 txHash;
+        uint256 ledgerHash;
+        std::uint32_t ledgerSeq{0};
+        std::vector<std::string> proofPath;  // inner node data on path
+        int depth{0};
+    };
+    std::map<uint256, SHAMapTraversal> activeTraversals_;
+
+    // Dedup set for peer validations (hash of validation blob)
+    std::set<uint256> recentValHashes_;
+    std::uint32_t lastValPruneSeq_{0};
+
+    // Stored UNL data received from mainnet peers (for XPOP validation.unl)
+    struct StoredUNL
+    {
+        std::string publicKey;   // Hex-encoded VL master public key
+        std::string manifest;    // Base64-encoded manifest
+        std::string blob;        // Base64-encoded blob
+        std::string signature;   // Hex-encoded signature
+        std::uint32_t version{0};
+    };
+    std::vector<StoredUNL> storedUNLs_;
 
     static constexpr std::size_t kMaxLedgerHistory = 256;
     static constexpr std::size_t kMaxCompletedHistory = 1024;

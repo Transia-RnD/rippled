@@ -1,4 +1,5 @@
 #include <xrpld/app/misc/MainnetWatcher.h>
+#include <xrpld/app/misc/MainnetPeerClient.h>
 
 #include <xrpld/app/main/Application.h>
 
@@ -7,6 +8,10 @@
 #include <xrpl/basics/StringUtilities.h>
 #include <xrpl/basics/base64.h>
 #include <xrpl/protocol/digest.h>
+#include <xrpl/protocol/Serializer.h>
+#include <xrpl/protocol/STTx.h>
+#include <xrpl/protocol/STValidation.h>
+#include <xrpl/server/Manifest.h>
 #include <xrpl/json/json_reader.h>
 #include <xrpl/json/json_writer.h>
 #include <xrpl/json/to_string.h>
@@ -35,6 +40,24 @@ using tcp = net::ip::tcp;
 MainnetWatcher::MainnetWatcher(
     Application& app,
     std::vector<std::string> const& wsUrls,
+    std::vector<std::string> const& peerEndpoints,
+    std::uint32_t mainnetNetworkID,
+    beast::Journal journal)
+    : app_(app)
+    , journal_(journal)
+    , wsUrls_(wsUrls)
+    , peerEndpoints_(peerEndpoints)
+    , mainnetNetworkID_(mainnetNetworkID)
+{
+    if (auto const va = app_.config().IMPORT_VAULT_ADDRESS)
+        vaultAddress_ = *va;
+
+    networkID_ = app_.config().NETWORK_ID;
+}
+
+MainnetWatcher::MainnetWatcher(
+    Application& app,
+    std::vector<std::string> const& wsUrls,
     beast::Journal journal)
     : app_(app), journal_(journal), wsUrls_(wsUrls)
 {
@@ -52,16 +75,59 @@ MainnetWatcher::~MainnetWatcher()
 void
 MainnetWatcher::start()
 {
-    if (wsUrls_.empty())
-    {
-        JLOG(journal_.warn()) << "MainnetWatcher: No WebSocket URLs configured";
-        return;
-    }
-
     if (vaultAddress_ == AccountID{})
     {
         JLOG(journal_.warn())
             << "MainnetWatcher: No vault address configured, not starting";
+        return;
+    }
+
+    // Prefer native peer protocol if configured
+    if (!peerEndpoints_.empty())
+    {
+        MainnetPeerClient::Callbacks cb;
+        cb.onValidation = [this](protocol::TMValidation const& m) {
+            onPeerValidation(m);
+        };
+        cb.onStatusChange = [this](protocol::TMStatusChange const& m) {
+            onPeerStatusChange(m);
+        };
+        cb.onTransaction = [this](protocol::TMTransaction const& m) {
+            onPeerTransaction(m);
+        };
+        cb.onLedgerData = [this](protocol::TMLedgerData const& m) {
+            onPeerLedgerData(m);
+        };
+        cb.onValidatorList = [this](protocol::TMValidatorList const& m) {
+            onPeerValidatorList(m);
+        };
+        cb.onValidatorListCollection =
+            [this](protocol::TMValidatorListCollection const& m) {
+                onPeerValidatorListCollection(m);
+            };
+
+        peerClient_ = std::make_unique<MainnetPeerClient>(
+            app_,
+            peerEndpoints_,
+            mainnetNetworkID_,
+            std::move(cb),
+            journal_);
+        peerClient_->start();
+
+        running_ = true;
+
+        JLOG(journal_.info())
+            << "MainnetWatcher: Started with " << peerEndpoints_.size()
+            << " mainnet peer(s) (native protocol), vault="
+            << toBase58(vaultAddress_);
+        return;
+    }
+
+    // Fallback: WebSocket mode
+    if (wsUrls_.empty())
+    {
+        JLOG(journal_.warn())
+            << "MainnetWatcher: No mainnet connectivity configured";
         return;
     }
 
@@ -70,13 +136,18 @@ MainnetWatcher::start()
 
     JLOG(journal_.info())
         << "MainnetWatcher: Started with " << wsUrls_.size()
-        << " mainnet node(s), vault=" << toBase58(vaultAddress_);
+        << " mainnet node(s) (WebSocket), vault="
+        << toBase58(vaultAddress_);
 }
 
 void
 MainnetWatcher::stop()
 {
     running_ = false;
+
+    if (peerClient_)
+        peerClient_->stop();
+
     if (thread_.joinable())
         thread_.join();
 }
@@ -521,8 +592,22 @@ MainnetWatcher::tryBuildXPOPs()
         }
         valSection["data"] = valData;
 
-        // UNL section - populated from our import_vl_keys config
-        valSection["unl"] = Json::Value(Json::objectValue);
+        // UNL section — use first stored UNL from a trusted publisher
+        if (!storedUNLs_.empty())
+        {
+            auto const& unl = storedUNLs_.front();
+            Json::Value unlSection;
+            unlSection["public_key"] = unl.publicKey;
+            unlSection["manifest"] = unl.manifest;
+            unlSection["blob"] = unl.blob;
+            unlSection["signature"] = unl.signature;
+            unlSection["version"] = unl.version;
+            valSection["unl"] = unlSection;
+        }
+        else
+        {
+            valSection["unl"] = Json::Value(Json::objectValue);
+        }
 
         xpop["validation"] = valSection;
 
@@ -620,11 +705,21 @@ MainnetWatcher::getStatus() const
 void
 MainnetWatcher::submitTransaction(std::string const& txBlob)
 {
+    // Use peer client if available
+    if (peerClient_)
+    {
+        peerClient_->submitTransaction(txBlob);
+        JLOG(journal_.info())
+            << "MainnetWatcher: Submitted tx via peer protocol";
+        return;
+    }
+
+    // Fallback: queue for WebSocket submission
     std::lock_guard lock(mutex_);
     submitQueue_.push_back(txBlob);
 
     JLOG(journal_.info())
-        << "MainnetWatcher: Queued tx for submission, queue size="
+        << "MainnetWatcher: Queued tx for WebSocket submission, queue size="
         << submitQueue_.size();
 }
 
@@ -852,5 +947,736 @@ template void MainnetWatcher::resubmitPending(
     websocket::stream<ssl::stream<tcp::socket>>& ws);
 template void MainnetWatcher::resubmitPending(
     websocket::stream<tcp::socket>& ws);
+
+// ---------------------------------------------------------------------------
+// Peer protocol callbacks
+// ---------------------------------------------------------------------------
+
+void
+MainnetWatcher::onPeerValidation(protocol::TMValidation const& m)
+{
+    auto const& valBytes = m.validation();
+    if (valBytes.size() < 50)
+        return;
+
+    try
+    {
+        // Deserialize STValidation to extract ledger sequence and key
+        SerialIter sit(
+            reinterpret_cast<std::uint8_t const*>(valBytes.data()),
+            valBytes.size());
+        auto val = std::make_shared<STValidation>(
+            sit,
+            [](PublicKey const& pk) { return calcNodeID(pk); },
+            false);
+
+        auto const ledgerSeq = val->getFieldU32(sfLedgerSequence);
+        auto const pubKey = val->getSignerPublic();
+
+        // Dedup via hash of validation blob
+        auto const valHash = sha512Half(
+            Slice(valBytes.data(), valBytes.size()));
+
+        std::lock_guard lock(mutex_);
+
+        // Prune dedup set on new ledger
+        if (ledgerSeq > lastValPruneSeq_ + 2)
+        {
+            recentValHashes_.clear();
+            lastValPruneSeq_ = ledgerSeq;
+        }
+
+        if (!recentValHashes_.insert(valHash).second)
+            return;  // duplicate
+
+        ValidationEntry ve;
+        ve.validatorKey = toBase58(TokenType::NodePublic, pubKey);
+        ve.validationHex = strHex(
+            Slice(valBytes.data(), valBytes.size()));
+
+        validations_[ledgerSeq].push_back(std::move(ve));
+
+        while (validations_.size() > kMaxLedgerHistory)
+            validations_.erase(validations_.begin());
+
+        JLOG(journal_.trace())
+            << "MainnetWatcher: Peer validation for ledger "
+            << ledgerSeq;
+
+        tryBuildXPOPs();
+    }
+    catch (std::exception const& e)
+    {
+        JLOG(journal_.warn())
+            << "MainnetWatcher: Failed to parse peer validation: "
+            << e.what();
+    }
+}
+
+void
+MainnetWatcher::onPeerStatusChange(protocol::TMStatusChange const& m)
+{
+    if (!m.has_ledgerseq())
+        return;
+
+    // We care about accepted/closed ledger events
+    if (m.has_newevent())
+    {
+        auto const ev = m.newevent();
+        if (ev != protocol::neACCEPTED_LEDGER &&
+            ev != protocol::neCLOSING_LEDGER)
+            return;
+    }
+
+    auto const seq = m.ledgerseq();
+
+    std::lock_guard lock(mutex_);
+
+    latestLedgerIndex_ = std::max(latestLedgerIndex_, seq);
+
+    LedgerData ld;
+    ld.ledgerIndex = seq;
+    ld.ledgerHeader["index"] = seq;
+
+    if (m.has_ledgerhash() && m.ledgerhash().size() == 32)
+    {
+        ld.ledgerHeader["hash"] = strHex(
+            Slice(m.ledgerhash().data(), m.ledgerhash().size()));
+    }
+    // hasHeader stays false until liBASE response fills in details
+
+    ledgers_[seq] = std::move(ld);
+
+    while (ledgers_.size() > kMaxLedgerHistory)
+        ledgers_.erase(ledgers_.begin());
+
+    JLOG(journal_.trace())
+        << "MainnetWatcher: Peer status change, ledger " << seq;
+
+    // Request full ledger header via liBASE
+    if (peerClient_ && m.has_ledgerhash() && m.ledgerhash().size() == 32)
+    {
+        uint256 hash;
+        std::memcpy(hash.data(), m.ledgerhash().data(), 32);
+        peerClient_->requestLedgerBase(seq);
+    }
+}
+
+void
+MainnetWatcher::onPeerTransaction(protocol::TMTransaction const& m)
+{
+    auto const& raw = m.rawtransaction();
+    if (raw.empty())
+        return;
+
+    try
+    {
+        SerialIter sit(
+            reinterpret_cast<std::uint8_t const*>(raw.data()),
+            raw.size());
+        auto stx = std::make_shared<STTx const>(sit);
+
+        // Check if this is a Payment to our vault with correct OperationLimit
+        if (stx->getTxnType() != ttPAYMENT)
+            return;
+
+        auto const dest = stx->getAccountID(sfDestination);
+        if (dest != vaultAddress_)
+            return;
+
+        if (!stx->isFieldPresent(sfOperationLimit))
+            return;
+
+        if (stx->getFieldU32(sfOperationLimit) != networkID_)
+            return;
+
+        auto const txHash = stx->getTransactionID();
+
+        std::lock_guard lock(mutex_);
+
+        // Dedup
+        for (auto const& h : completedTxHashes_)
+        {
+            if (h == txHash)
+                return;
+        }
+
+        mempoolDetected_.insert(txHash);
+
+        JLOG(journal_.info())
+            << "MainnetWatcher: Detected vault payment in mempool: "
+            << txHash;
+    }
+    catch (std::exception const& e)
+    {
+        JLOG(journal_.trace())
+            << "MainnetWatcher: Failed to parse peer tx: " << e.what();
+    }
+}
+
+void
+MainnetWatcher::onPeerLedgerData(protocol::TMLedgerData const& m)
+{
+    if (m.type() == protocol::liBASE)
+        processLedgerBase(m);
+    else if (m.type() == protocol::liTX_NODE)
+        processTxNodes(m);
+}
+
+void
+MainnetWatcher::processLedgerBase(protocol::TMLedgerData const& m)
+{
+    if (m.nodes_size() < 1)
+        return;
+
+    auto const seq = m.ledgerseq();
+
+    // Node 0 is the serialized LedgerHeader
+    auto const& headerNode = m.nodes(0);
+    auto const& headerData = headerNode.nodedata();
+
+    if (headerData.empty())
+        return;
+
+    std::lock_guard lock(mutex_);
+
+    auto it = ledgers_.find(seq);
+    if (it == ledgers_.end())
+    {
+        LedgerData ld;
+        ld.ledgerIndex = seq;
+        ledgers_[seq] = std::move(ld);
+        it = ledgers_.find(seq);
+    }
+
+    auto& ld = it->second;
+
+    // Parse serialized LedgerHeader
+    try
+    {
+        Serializer s(headerData.data(), headerData.size());
+        SerialIter sit(s.slice());
+
+        // LedgerHeader wire format:
+        // uint32 sequence, uint64 drops, uint256 accountHash,
+        // uint256 txHash, uint256 parentHash, uint32 closeTime,
+        // uint32 parentCloseTime, uint8 closeTimeResolution,
+        // uint8 closeFlags
+        // (Plus the ledger hash which is in the TMLedgerData envelope)
+
+        auto const ledgerSeq = sit.get32();
+        auto const drops = sit.get64();
+        auto const accountHash = sit.get256();
+        auto const txHash = sit.get256();
+        auto const parentHash = sit.get256();
+        auto const closeTime = sit.get32();
+        auto const parentCloseTime = sit.get32();
+        auto const closeTimeRes = sit.get8();
+        auto const closeFlags = sit.get8();
+
+        ld.ledgerHeader["index"] = ledgerSeq;
+        ld.ledgerHeader["coins"] = std::to_string(drops);
+        ld.ledgerHeader["acroot"] = strHex(accountHash);
+        ld.ledgerHeader["txroot"] = strHex(txHash);
+        ld.ledgerHeader["phash"] = strHex(parentHash);
+        ld.ledgerHeader["close"] = closeTime;
+        ld.ledgerHeader["pclose"] = parentCloseTime;
+        ld.ledgerHeader["cres"] = closeTimeRes;
+        ld.ledgerHeader["flags"] = closeFlags;
+
+        if (m.has_ledgerhash() && m.ledgerhash().size() == 32)
+        {
+            ld.ledgerHeader["hash"] = strHex(
+                Slice(m.ledgerhash().data(), m.ledgerhash().size()));
+        }
+
+        ld.hasHeader = true;
+
+        JLOG(journal_.info())
+            << "MainnetWatcher: Got ledger header for " << seq;
+
+        // Check if any mempool-detected txs are in this ledger
+        // Start SHAMap traversal using the tx root from liBASE
+        if (!mempoolDetected_.empty())
+        {
+            uint256 ledgerHash;
+            if (m.has_ledgerhash() && m.ledgerhash().size() == 32)
+                std::memcpy(
+                    ledgerHash.data(), m.ledgerhash().data(), 32);
+
+            for (auto const& txH : mempoolDetected_)
+            {
+                SHAMapTraversal traversal;
+                traversal.txHash = txH;
+                traversal.ledgerHash = ledgerHash;
+                traversal.ledgerSeq = seq;
+                activeTraversals_[txH] = std::move(traversal);
+            }
+
+            // Try to parse the tx root from node[2] of liBASE
+            // to start targeted traversal at depth 1
+            bool startedTargeted = false;
+            if (m.nodes_size() >= 3)
+            {
+                auto const& txRootNode = m.nodes(2);
+                auto const& txRootData = txRootNode.nodedata();
+                if (txRootData.size() >= 2)
+                {
+                    auto const typeByte = static_cast<unsigned char>(
+                        txRootData[txRootData.size() - 1]);
+                    uint256 branches[16];
+                    auto const innerData = Slice(
+                        txRootData.data(), txRootData.size() - 1);
+
+                    if (parseInnerNode(
+                            innerData, typeByte, branches))
+                    {
+                        // For each pending tx, follow the
+                        // matching branch at depth 0
+                        std::vector<std::string> nodeIDs;
+                        for (auto& [txH2, trav] :
+                             activeTraversals_)
+                        {
+                            if (trav.ledgerSeq != seq)
+                                continue;
+                            auto const nibble =
+                                getNibble(txH2, 0);
+                            if (branches[nibble] ==
+                                beast::zero)
+                                continue;
+
+                            // Store root as proof
+                            trav.proofPath.push_back(
+                                std::string(
+                                    txRootData.begin(),
+                                    txRootData.end()));
+                            trav.depth = 1;
+
+                            // Build child nodeID at depth 1
+                            uint256 childId;
+                            childId.begin()[0] =
+                                static_cast<unsigned char>(
+                                    nibble << 4);
+                            nodeIDs.push_back(
+                                makeNodeIDString(childId, 1));
+                        }
+
+                        if (peerClient_ && !nodeIDs.empty())
+                        {
+                            peerClient_->requestTxNodes(
+                                ledgerHash, seq, nodeIDs, 3);
+                            startedTargeted = true;
+                        }
+                    }
+                }
+            }
+
+            // Fallback: request the root if we couldn't parse it
+            if (!startedTargeted && peerClient_ &&
+                !mempoolDetected_.empty())
+            {
+                std::string rootNodeID(33, '\0');
+                peerClient_->requestTxNodes(
+                    ledgerHash, seq, {rootNodeID}, 3);
+            }
+        }
+
+        tryBuildXPOPs();
+    }
+    catch (std::exception const& e)
+    {
+        JLOG(journal_.warn())
+            << "MainnetWatcher: Failed to parse ledger header: "
+            << e.what();
+    }
+}
+
+// SHAMap wire type constants (last byte of node data)
+static constexpr unsigned char kWireTypeInner = 2;
+static constexpr unsigned char kWireTypeCompressedInner = 3;
+static constexpr unsigned char kWireTypeTransactionWithMeta = 4;
+
+// Get the nibble at a given depth from a 256-bit hash.
+// Even depths use the high nibble, odd depths use the low nibble.
+static unsigned int
+getNibble(uint256 const& hash, int depth)
+{
+    auto const byte = hash[depth / 2];
+    return (depth & 1) ? (byte & 0x0F) : (byte >> 4);
+}
+
+// Build a 33-byte SHAMapNodeID string (32-byte hash + 1-byte depth).
+static std::string
+makeNodeIDString(uint256 const& id, int depth)
+{
+    std::string result(33, '\0');
+    std::memcpy(result.data(), id.data(), 32);
+    result[32] = static_cast<char>(depth);
+    return result;
+}
+
+// Parse branch hashes from an inner node's wire data (excluding type byte).
+// Returns true if parsed successfully, fills branches[16].
+static bool
+parseInnerNode(Slice innerData, unsigned char typeByte, uint256 branches[16])
+{
+    std::memset(branches, 0, 16 * sizeof(uint256));
+
+    if (typeByte == kWireTypeInner)
+    {
+        // Full inner: 16 x 32-byte hashes = 512 bytes
+        if (innerData.size() != 512)
+            return false;
+        for (int b = 0; b < 16; ++b)
+            std::memcpy(branches[b].data(), innerData.data() + b * 32, 32);
+        return true;
+    }
+    else if (typeByte == kWireTypeCompressedInner)
+    {
+        // Compressed: pairs of [32-byte hash][1-byte position]
+        if (innerData.size() % 33 != 0)
+            return false;
+        for (std::size_t off = 0; off < innerData.size(); off += 33)
+        {
+            auto const pos =
+                static_cast<unsigned char>(innerData[off + 32]);
+            if (pos >= 16)
+                return false;
+            std::memcpy(
+                branches[pos].data(), innerData.data() + off, 32);
+        }
+        return true;
+    }
+    return false;
+}
+
+void
+MainnetWatcher::processTxNodes(protocol::TMLedgerData const& m)
+{
+    auto const seq = m.ledgerseq();
+
+    uint256 ledgerHash;
+    if (m.has_ledgerhash() && m.ledgerhash().size() == 32)
+        std::memcpy(ledgerHash.data(), m.ledgerhash().data(), 32);
+
+    JLOG(journal_.trace())
+        << "MainnetWatcher: Received " << m.nodes_size()
+        << " tx node(s) for ledger " << seq;
+
+    std::lock_guard lock(mutex_);
+
+    // Collect nodes that need deeper requests
+    struct NextRequest
+    {
+        uint256 nodeId;
+        int depth;
+    };
+    std::vector<NextRequest> needMore;
+
+    for (int i = 0; i < m.nodes_size(); ++i)
+    {
+        auto const& node = m.nodes(i);
+        auto const& data = node.nodedata();
+
+        if (data.size() < 2)
+            continue;
+
+        auto const typeByte =
+            static_cast<unsigned char>(data[data.size() - 1]);
+
+        // Parse the 33-byte nodeid if present
+        int nodeDepth = -1;
+        if (node.has_nodeid() && node.nodeid().size() == 33)
+        {
+            nodeDepth = static_cast<unsigned char>(
+                node.nodeid()[32]);
+        }
+
+        if (typeByte == kWireTypeTransactionWithMeta)
+        {
+            // Leaf: [VL tx][VL meta][32-byte key][0x04]
+            if (data.size() < 34)
+                continue;
+
+            // Extract the 32-byte key (tx hash) — last 33 bytes
+            // are [32-byte key][1-byte type]
+            uint256 leafKey;
+            std::memcpy(
+                leafKey.data(), data.data() + data.size() - 33, 32);
+
+            // Check if this matches a mempool-detected tx
+            auto mit = mempoolDetected_.find(leafKey);
+            if (mit == mempoolDetected_.end())
+                continue;
+
+            // Extract tx + metadata from the VL-encoded item data
+            auto const itemLen = data.size() - 33;  // strip key + type
+
+            try
+            {
+                SerialIter sit(
+                    reinterpret_cast<std::uint8_t const*>(data.data()),
+                    itemLen);
+
+                auto const txBytes = sit.getVLBuffer();
+                auto const metaBytes = sit.getVLBuffer();
+
+                PendingTx ptx;
+                ptx.txHash = leafKey;
+                ptx.ledgerIndex = seq;
+                ptx.txBlob = strHex(Slice(txBytes.data(), txBytes.size()));
+                ptx.txMeta =
+                    strHex(Slice(metaBytes.data(), metaBytes.size()));
+
+                // Build proof from traversal path
+                auto tit = activeTraversals_.find(leafKey);
+                if (tit != activeTraversals_.end())
+                {
+                    Json::Value proof(Json::arrayValue);
+                    for (auto const& p : tit->second.proofPath)
+                        proof.append(
+                            strHex(Slice(p.data(), p.size())));
+                    ptx.txProof = proof;
+                    activeTraversals_.erase(tit);
+                }
+
+                pendingTxs_[leafKey] = std::move(ptx);
+                mempoolDetected_.erase(mit);
+
+                JLOG(journal_.info())
+                    << "MainnetWatcher: Found tx leaf in SHAMap: "
+                    << leafKey;
+
+                tryBuildXPOPs();
+            }
+            catch (std::exception const& e)
+            {
+                JLOG(journal_.warn())
+                    << "MainnetWatcher: Failed to parse tx leaf: "
+                    << e.what();
+            }
+        }
+        else if (
+            typeByte == kWireTypeInner ||
+            typeByte == kWireTypeCompressedInner)
+        {
+            if (nodeDepth < 0)
+                continue;
+
+            // Parse branch hashes
+            uint256 branches[16];
+            auto const innerData = Slice(data.data(), data.size() - 1);
+
+            if (!parseInnerNode(innerData, typeByte, branches))
+                continue;
+
+            // For each active traversal at this ledger, follow the
+            // branch matching the tx hash nibble at this depth
+            for (auto& [txHash, traversal] : activeTraversals_)
+            {
+                if (traversal.ledgerSeq != seq)
+                    continue;
+
+                auto const nibble = getNibble(txHash, nodeDepth);
+
+                if (branches[nibble] == beast::zero)
+                {
+                    JLOG(journal_.trace())
+                        << "MainnetWatcher: Tx " << txHash
+                        << " not found at depth " << nodeDepth;
+                    continue;
+                }
+
+                // Store inner node data as proof path element
+                traversal.proofPath.push_back(
+                    std::string(data.begin(), data.end()));
+                traversal.depth = nodeDepth + 1;
+
+                // Build child nodeID: encode nibbles up to depth+1
+                uint256 childId;
+                // Copy nibbles from txHash up to this depth
+                for (int d = 0; d <= nodeDepth; ++d)
+                {
+                    auto const n = getNibble(txHash, d);
+                    if (d & 1)
+                        childId.begin()[d / 2] |= n;
+                    else
+                        childId.begin()[d / 2] |=
+                            static_cast<unsigned char>(n << 4);
+                }
+
+                needMore.push_back({childId, nodeDepth + 1});
+            }
+        }
+    }
+
+    // Request deeper nodes for unresolved traversals
+    if (!needMore.empty() && peerClient_)
+    {
+        std::vector<std::string> nodeIDs;
+        for (auto const& req : needMore)
+            nodeIDs.push_back(makeNodeIDString(req.nodeId, req.depth));
+
+        peerClient_->requestTxNodes(ledgerHash, seq, nodeIDs, 3);
+
+        JLOG(journal_.trace())
+            << "MainnetWatcher: Requesting " << nodeIDs.size()
+            << " deeper tx node(s) for ledger " << seq;
+    }
+}
+
+bool
+MainnetWatcher::isVaultPaymentRaw(Slice txData) const
+{
+    try
+    {
+        SerialIter sit(txData);
+        auto stx = std::make_shared<STTx const>(sit);
+
+        if (stx->getTxnType() != ttPAYMENT)
+            return false;
+
+        if (stx->getAccountID(sfDestination) != vaultAddress_)
+            return false;
+
+        if (!stx->isFieldPresent(sfOperationLimit))
+            return false;
+
+        return stx->getFieldU32(sfOperationLimit) == networkID_;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+void
+MainnetWatcher::onPeerValidatorList(protocol::TMValidatorList const& m)
+{
+    try
+    {
+        auto const& manifestBytes = m.manifest();
+        auto const& blobBytes = m.blob();
+        auto const& sigBytes = m.signature();
+        auto const version = m.version();
+
+        if (manifestBytes.empty() || blobBytes.empty() || sigBytes.empty())
+            return;
+
+        // Deserialize manifest to extract master public key
+        auto const manifest = deserializeManifest(
+            std::string(manifestBytes.begin(), manifestBytes.end()));
+        if (!manifest)
+        {
+            JLOG(journal_.trace())
+                << "MainnetWatcher: Failed to deserialize UNL manifest";
+            return;
+        }
+
+        auto const masterKeyHex =
+            strHex(manifest->masterKey.slice());
+
+        // Filter: only store UNL from publishers in our import_vl_keys
+        auto const& vlKeys = app_.config().IMPORT_VL_KEYS;
+        bool trusted = vlKeys.empty();  // accept all if none configured
+        for (auto const& [hexKey, pk] : vlKeys)
+        {
+            if (hexKey == masterKeyHex || pk == manifest->masterKey)
+            {
+                trusted = true;
+                break;
+            }
+        }
+
+        if (!trusted)
+        {
+            JLOG(journal_.trace())
+                << "MainnetWatcher: UNL from untrusted publisher, ignoring";
+            return;
+        }
+
+        StoredUNL unl;
+        unl.publicKey = masterKeyHex;
+        unl.manifest = base64_encode(
+            reinterpret_cast<unsigned char const*>(manifestBytes.data()),
+            manifestBytes.size());
+        unl.blob = base64_encode(
+            reinterpret_cast<unsigned char const*>(blobBytes.data()),
+            blobBytes.size());
+        unl.signature = strHex(
+            Slice(sigBytes.data(), sigBytes.size()));
+        unl.version = version;
+
+        std::lock_guard lock(mutex_);
+
+        // Replace existing UNL from same publisher or add new
+        bool replaced = false;
+        for (auto& existing : storedUNLs_)
+        {
+            if (existing.publicKey == unl.publicKey)
+            {
+                existing = std::move(unl);
+                replaced = true;
+                break;
+            }
+        }
+        if (!replaced)
+            storedUNLs_.push_back(std::move(unl));
+
+        JLOG(journal_.info())
+            << "MainnetWatcher: Stored UNL from publisher "
+            << masterKeyHex.substr(0, 16) << "...";
+    }
+    catch (std::exception const& e)
+    {
+        JLOG(journal_.warn())
+            << "MainnetWatcher: Failed to process TMValidatorList: "
+            << e.what();
+    }
+}
+
+void
+MainnetWatcher::onPeerValidatorListCollection(
+    protocol::TMValidatorListCollection const& m)
+{
+    // TMValidatorListCollection v2: has manifest at top level,
+    // blobs is a repeated field with per-blob manifest/blob/signature.
+    // We process the first blob entry as if it were a TMValidatorList.
+    try
+    {
+        auto const& manifestBytes = m.manifest();
+        if (manifestBytes.empty() || m.blobs_size() == 0)
+            return;
+
+        auto const version = m.version();
+
+        for (int i = 0; i < m.blobs_size(); ++i)
+        {
+            auto const& entry = m.blobs(i);
+            if (!entry.has_blob() || !entry.has_signature())
+                continue;
+
+            // Use per-blob manifest if present, else top-level manifest
+            auto const& mfBytes = entry.has_manifest()
+                ? entry.manifest()
+                : manifestBytes;
+
+            protocol::TMValidatorList vl;
+            vl.set_manifest(mfBytes);
+            vl.set_blob(entry.blob());
+            vl.set_signature(entry.signature());
+            vl.set_version(version);
+
+            onPeerValidatorList(vl);
+        }
+    }
+    catch (std::exception const& e)
+    {
+        JLOG(journal_.warn())
+            << "MainnetWatcher: Failed to process "
+               "TMValidatorListCollection: "
+            << e.what();
+    }
+}
 
 }  // namespace xrpl

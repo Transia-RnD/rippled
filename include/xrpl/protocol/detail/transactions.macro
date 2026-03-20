@@ -1082,6 +1082,7 @@ TRANSACTION(ttOPTION_PAIR_CREATE, 85, OptionPairCreate,
     ({
     {sfAsset, soeREQUIRED},
     {sfAsset2, soeREQUIRED},
+    {sfOracleEntries, soeREQUIRED},
     {sfTradingFeeBps, soeOPTIONAL},
 }))
 
@@ -1153,7 +1154,6 @@ TRANSACTION(ttMARGIN_ACCOUNT_SET, 90, MarginAccountSet,
     noPriv,
     ({
     {sfCollateralAsset, soeREQUIRED},
-    {sfMarginMode, soeREQUIRED},
 }))
 
 /** This transaction deposits collateral into a margin account */
@@ -1231,18 +1231,6 @@ TRANSACTION(ttINSURANCE_WITHDRAW, 96, InsuranceWithdraw,
     ({
     {sfInsuranceVaultID, soeREQUIRED},
     {sfAmount, soeREQUIRED, soeMPTSupported},
-}))
-
-/** This transaction collects funding rate payments on margin positions */
-#if TRANSACTION_INCLUDE
-#   include <xrpl/tx/transactors/Option/FundingRateCollect.h>
-#endif
-TRANSACTION(ttFUNDING_RATE_COLLECT, 97, FundingRateCollect,
-    Delegation::delegable,
-    featureOptions,
-    noPriv,
-    ({
-    {sfMarginPositionID, soeREQUIRED},
 }))
 
 /** This transaction imports value from XRPL mainnet via XPop proof. */

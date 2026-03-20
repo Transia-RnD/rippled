@@ -63,6 +63,32 @@ InsuranceDeposit::preclaim(PreclaimContext const& ctx)
         return tecNO_ENTRY;
     }
 
+    // Verify deposit asset matches one of the vault's pair assets
+    STAmount const amount = ctx.tx[sfAmount];
+    auto const vaultAsset =
+        sleVault->getFieldIssue(sfAsset).get<Issue>();
+    auto const vaultAsset2 =
+        sleVault->getFieldIssue(sfAsset2).get<Issue>();
+
+    if (isXRP(amount))
+    {
+        if (!isXRP(vaultAsset) && !isXRP(vaultAsset2))
+        {
+            JLOG(ctx.j.debug())
+                << "InsuranceDeposit: XRP deposit not valid for this vault.";
+            return tecNO_PERMISSION;
+        }
+    }
+    else
+    {
+        if (amount.issue() != vaultAsset && amount.issue() != vaultAsset2)
+        {
+            JLOG(ctx.j.debug())
+                << "InsuranceDeposit: deposit asset does not match vault assets.";
+            return tecNO_PERMISSION;
+        }
+    }
+
     return tesSUCCESS;
 }
 

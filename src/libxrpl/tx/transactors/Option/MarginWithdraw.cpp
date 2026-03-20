@@ -166,10 +166,10 @@ MarginWithdraw::doApply()
             if (sle->getFieldH256(sfMarginAccountID) != marginAccountID)
                 continue;
 
-            Issue const posIssue =
-                sle->getFieldIssue(sfAsset).get<Issue>();
-            markPrice =
-                margin::getMarkPrice(sb, posIssue, collateralIssue);
+            auto const slePair = sb.read(
+                Keylet{ltOPTION_PAIR, sle->getFieldH256(sfOptionPairID)});
+            if (slePair)
+                markPrice = margin::getMarkPrice(sb, slePair);
             if (markPrice > Number(0))
                 break;
         }

@@ -281,6 +281,12 @@ public:
     // Mainnet WebSocket URLs for the embedded MainnetWatcher
     std::vector<std::string> MAINNET_NODES;
 
+    // Mainnet peer endpoints (host:port) for native peer protocol connections
+    std::vector<std::string> MAINNET_PEERS;
+
+    // Mainnet network ID for peer protocol handshake (default 0 = XRPL mainnet)
+    std::uint32_t MAINNET_NETWORK_ID{0};
+
     // Base fee in drops for mainnet multisig transactions.
     // Fee formula: (signerCount + 1) * MAINNET_BASE_FEE
     // Default 15 drops.  Should be queried from mainnet and set higher

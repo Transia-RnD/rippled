@@ -74,15 +74,13 @@ struct OptionMargin_test : public beast::unit_test::suite
     Json::Value
     marginAccountSet(
         jtx::Account const& account,
-        STIssue const& collateralAsset,
-        std::uint32_t marginMode)
+        STIssue const& collateralAsset)
     {
         Json::Value jv;
         jv[jss::TransactionType] = jss::MarginAccountSet;
         jv[jss::Account] = account.human();
         jv[sfCollateralAsset.jsonName] =
             collateralAsset.getJson(JsonOptions::none);
-        jv[sfMarginMode.jsonName] = marginMode;
         return jv;
     }
 
@@ -196,8 +194,7 @@ struct OptionMargin_test : public beast::unit_test::suite
         // Step 3: Create margin account for alice (isolated mode)
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -296,8 +293,7 @@ struct OptionMargin_test : public beast::unit_test::suite
         // Create margin account and deposit
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -371,8 +367,7 @@ struct OptionMargin_test : public beast::unit_test::suite
         // Create margin account with very small deposit
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -501,8 +496,7 @@ struct OptionMargin_test : public beast::unit_test::suite
         // Create margin account and deposit
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -557,8 +551,7 @@ struct OptionMargin_test : public beast::unit_test::suite
         // Create margin account
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -623,8 +616,7 @@ struct OptionMargin_test : public beast::unit_test::suite
         // Create margin account
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 

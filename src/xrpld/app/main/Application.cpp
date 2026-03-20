@@ -1543,12 +1543,14 @@ ApplicationImp::start(bool withTimers)
     ledgerCleaner_->start();
     perfLog_->start();
 
-    // Start MainnetWatcher if mainnet nodes are configured
-    if (!config_->MAINNET_NODES.empty())
+    // Start MainnetWatcher if mainnet connectivity is configured
+    if (!config_->MAINNET_NODES.empty() || !config_->MAINNET_PEERS.empty())
     {
         mainnetWatcher_ = std::make_unique<MainnetWatcher>(
             *this,
             config_->MAINNET_NODES,
+            config_->MAINNET_PEERS,
+            config_->MAINNET_NETWORK_ID,
             logs_->journal("MainnetWatcher"));
         mainnetWatcher_->start();
 

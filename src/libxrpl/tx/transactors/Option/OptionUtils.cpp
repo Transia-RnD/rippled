@@ -504,18 +504,22 @@ closeOffer(
         auto slePosition = sb.peek(Keylet{ltMARGIN_POSITION, positionID});
         if (slePosition)
         {
-            // Release allocated margin back to margin account
+            // Deduct accumulated funding and get net margin
+            std::uint32_t const now =
+                sb.parentCloseTime().time_since_epoch().count();
+            Number const netMargin =
+                margin::deductFundingAndRelease(sb, slePosition, now);
+
+            // Release net margin back to margin account
             uint256 const marginAccountID =
                 slePosition->getFieldH256(sfMarginAccountID);
             auto sleMarginAcct =
                 sb.peek(Keylet{ltMARGIN_ACCOUNT, marginAccountID});
             if (sleMarginAcct)
             {
-                Number allocatedMargin =
-                    slePosition->at(~sfAllocatedMargin).value_or(Number(0));
                 Number collateralBalance =
                     sleMarginAcct->at(~sfCollateralBalance).value_or(Number(0));
-                collateralBalance = collateralBalance + allocatedMargin;
+                collateralBalance = collateralBalance + netMargin;
                 sleMarginAcct->at(sfCollateralBalance) =
                     STNumber{sfCollateralBalance, collateralBalance};
                 sb.update(sleMarginAcct);
@@ -964,9 +968,10 @@ exerciseOffer(
     STArray const& sealedOptions,
     beast::Journal j)
 {
-    // Get mark price from oracle
+    // Get mark price from oracle via OptionPair
+    auto const slePair = sb.read(keylet::optionPair(issue, quoteIssue));
     Number const markPrice =
-        margin::getMarkPrice(sb, issue, quoteIssue);
+        slePair ? margin::getMarkPrice(sb, slePair) : Number(0);
     if (markPrice == Number(0))
     {
         JLOG(j.warn()) << "OptionUtils: Cannot get mark price for exercise.";
@@ -1031,15 +1036,18 @@ exerciseOffer(
                         sb.peek(Keylet{ltMARGIN_ACCOUNT, sellerMarginAcctID});
                     if (sleSellerMargin)
                     {
+                        // Deduct accumulated funding and get net margin
+                        std::uint32_t const nowExercise =
+                            sb.parentCloseTime().time_since_epoch().count();
+                        Number const netMargin =
+                            margin::deductFundingAndRelease(
+                                sb, sleSellerPos, nowExercise);
+
                         Number sellerBalance =
                             sleSellerMargin->at(~sfCollateralBalance)
                                 .value_or(Number(0));
-                        // Also return allocated margin before deducting
-                        Number allocatedMargin =
-                            sleSellerPos->at(~sfAllocatedMargin)
-                                .value_or(Number(0));
                         sellerBalance =
-                            sellerBalance + allocatedMargin - settlement;
+                            sellerBalance + netMargin - settlement;
                         // Clamp to zero (insurance fund covers deficit)
                         if (sellerBalance < Number(0))
                             sellerBalance = Number(0);
@@ -1151,18 +1159,22 @@ expireOffer(ApplyView& view, std::shared_ptr<SLE> const& sle, beast::Journal j)
         auto slePosition = view.peek(Keylet{ltMARGIN_POSITION, positionID});
         if (slePosition)
         {
-            // Release allocated margin back to margin account
+            // Deduct accumulated funding and get net margin
+            std::uint32_t const nowExpire =
+                view.parentCloseTime().time_since_epoch().count();
+            Number const netMargin =
+                margin::deductFundingAndRelease(view, slePosition, nowExpire);
+
+            // Release net margin back to margin account
             uint256 const marginAccountID =
                 slePosition->getFieldH256(sfMarginAccountID);
             auto sleMarginAcct =
                 view.peek(Keylet{ltMARGIN_ACCOUNT, marginAccountID});
             if (sleMarginAcct)
             {
-                Number allocatedMargin =
-                    slePosition->at(~sfAllocatedMargin).value_or(Number(0));
                 Number collateralBalance =
                     sleMarginAcct->at(~sfCollateralBalance).value_or(Number(0));
-                collateralBalance = collateralBalance + allocatedMargin;
+                collateralBalance = collateralBalance + netMargin;
                 sleMarginAcct->at(sfCollateralBalance) =
                     STNumber{sfCollateralBalance, collateralBalance};
                 view.update(sleMarginAcct);

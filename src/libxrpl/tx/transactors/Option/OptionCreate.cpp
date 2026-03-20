@@ -327,6 +327,7 @@ OptionCreate::doApply()
             STNumber{sfNotionalValue, notional};
         slePosition->at(sfLiquidationPrice) =
             STNumber{sfLiquidationPrice, liquidationPrice};
+        slePosition->setFieldU32(sfLastFundingTime, now);
 
         // Add to owner directory
         auto const posPage = sb.dirInsert(

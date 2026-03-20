@@ -247,15 +247,13 @@ struct OptionFunctionality_test : public beast::unit_test::suite
     Json::Value
     marginAccountSet(
         jtx::Account const& account,
-        STIssue const& collateralAsset,
-        std::uint32_t marginMode)
+        STIssue const& collateralAsset)
     {
         Json::Value jv;
         jv[jss::TransactionType] = jss::MarginAccountSet;
         jv[jss::Account] = account.human();
         jv[sfCollateralAsset.jsonName] =
             collateralAsset.getJson(JsonOptions::none);
-        jv[sfMarginMode.jsonName] = marginMode;
         return jv;
     }
 
@@ -306,8 +304,7 @@ struct OptionFunctionality_test : public beast::unit_test::suite
         using namespace test::jtx;
         env(marginAccountSet(
                 account,
-                STIssue(sfCollateralAsset, collateralIssue),
-                0),
+                STIssue(sfCollateralAsset, collateralIssue)),
             ter(tesSUCCESS));
         env.close();
 

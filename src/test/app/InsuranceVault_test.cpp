@@ -366,6 +366,68 @@ struct InsuranceVault_test : public beast::unit_test::suite
     }
 
     void
+    testDepositWrongAsset(FeatureBitset features)
+    {
+        testcase("Deposit Wrong Asset to Vault");
+
+        using namespace test::jtx;
+        Env env{*this, features};
+
+        auto const gw = Account("gateway");
+        auto const alice = Account("alice");
+        auto const GME = gw["GME"];
+        auto const USD = gw["USD"];
+        auto const EUR = gw["EUR"];
+
+        env.fund(XRP(100000), gw, alice);
+        env.close();
+
+        env.trust(USD(100000), alice);
+        env.trust(EUR(100000), alice);
+        env.close();
+
+        env(pay(gw, alice, USD(10000)));
+        env(pay(gw, alice, EUR(10000)));
+        env.close();
+
+        // Create OptionPair for GME/USD
+        env(optionPairCreate(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue())),
+            fee(env.current()->fees().increment),
+            ter(tesSUCCESS));
+        env.close();
+
+        // Create insurance vault
+        env(insuranceVaultCreate(
+                gw,
+                STIssue(sfAsset, GME.issue()),
+                STIssue(sfAsset2, USD.issue())),
+            fee(env.current()->fees().increment),
+            ter(tesSUCCESS));
+        env.close();
+
+        auto const vaultID =
+            keylet::insuranceVault(GME.issue(), USD.issue()).key;
+
+        // Deposit USD should succeed (matches vault asset)
+        env(insuranceDeposit(alice, vaultID, USD(100)),
+            ter(tesSUCCESS));
+        env.close();
+
+        // Deposit EUR should fail (does not match either vault asset)
+        env(insuranceDeposit(alice, vaultID, EUR(100)),
+            ter(tecNO_PERMISSION));
+        env.close();
+
+        // Deposit XRP should fail (XRP not in this vault's pair)
+        env(insuranceDeposit(alice, vaultID, XRP(100)),
+            ter(tecNO_PERMISSION));
+        env.close();
+    }
+
+    void
     run() override
     {
         using namespace test::jtx;
@@ -377,6 +439,7 @@ struct InsuranceVault_test : public beast::unit_test::suite
         testWithdrawFromVault(all);
         testWithdrawExceedsBalance(all);
         testDepositNonexistentVault(all);
+        testDepositWrongAsset(all);
     }
 };
 

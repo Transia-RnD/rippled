@@ -789,7 +789,7 @@ Transactor::checkBatchSign(PreclaimContext const& ctx)
                 if (idAccount != idSigner)
                     return tefBAD_AUTH;
 
-                return tesSUCCESS;
+                continue;
             }
 
             if (ret = checkSingleSign(ctx.view, idSigner, idAccount, sleAccount, ctx.j);

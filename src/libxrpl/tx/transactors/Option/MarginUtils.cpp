@@ -104,169 +104,100 @@ isMarginHealthy(
     std::shared_ptr<SLE const> const& marginAccount,
     Number markPrice)
 {
-    std::uint32_t const marginMode = marginAccount->getFieldU32(sfMarginMode);
     AccountID const account = marginAccount->getAccountID(sfAccount);
 
-    if (marginMode == 1)  // Cross-margin
-    {
-        Number equity =
-            calculateAccountEquity(view, account, marginAccount, markPrice);
-
-        // Sum total maintenance margin across all positions
-        Number totalMaintenance(0);
-        Dir const ownerDir(view, keylet::ownerDir(account));
-        for (auto const& sle : ownerDir)
-        {
-            if (sle->getType() != ltMARGIN_POSITION)
-                continue;
-            if (sle->getFieldH256(sfMarginAccountID) != marginAccount->key())
-                continue;
-
-            Number notional =
-                sle->at(~sfNotionalValue).value_or(Number(0));
-            // Read maintenance margin from leverage tier (default 5%)
-            std::uint32_t maintenanceBps = 5000;
-            Issue const posIssue =
-                sle->getFieldIssue(sfAsset).get<Issue>();
-            Issue const quoteIssue =
-                marginAccount->getFieldIssue(sfCollateralAsset).get<Issue>();
-            auto const sleTier =
-                view.read(keylet::leverageTier(posIssue, quoteIssue));
-            if (sleTier && sleTier->isFieldPresent(sfMaintenanceMarginBps))
-                maintenanceBps =
-                    sleTier->getFieldU32(sfMaintenanceMarginBps);
-            totalMaintenance = totalMaintenance +
-                calculateMaintenanceMargin(notional, maintenanceBps);
-        }
-
-        return equity >= totalMaintenance;
-    }
-    else  // Isolated margin - check per-position
-    {
-        // For isolated, the caller should check individual positions
-        // This is a fallback that checks all positions
-        Dir const ownerDir(view, keylet::ownerDir(account));
-        for (auto const& sle : ownerDir)
-        {
-            if (sle->getType() != ltMARGIN_POSITION)
-                continue;
-            if (sle->getFieldH256(sfMarginAccountID) != marginAccount->key())
-                continue;
-
-            Number allocatedMargin =
-                sle->at(~sfAllocatedMargin).value_or(Number(0));
-            Number pnl = calculateUnrealizedPnl(sle, markPrice);
-            Number positionEquity = allocatedMargin + pnl;
-
-            Number notional =
-                sle->at(~sfNotionalValue).value_or(Number(0));
-            // Read maintenance margin from leverage tier
-            std::uint32_t isolatedBps = 5000;
-            Issue const posIssue =
-                sle->getFieldIssue(sfAsset).get<Issue>();
-            Issue const quoteIssue =
-                marginAccount->getFieldIssue(sfCollateralAsset).get<Issue>();
-            auto const sleTier =
-                view.read(keylet::leverageTier(posIssue, quoteIssue));
-            if (sleTier && sleTier->isFieldPresent(sfMaintenanceMarginBps))
-                isolatedBps =
-                    sleTier->getFieldU32(sfMaintenanceMarginBps);
-            Number maintenance =
-                calculateMaintenanceMargin(notional, isolatedBps);
-
-            if (positionEquity < maintenance)
-                return false;
-        }
-        return true;
-    }
-}
-
-Number
-calculateAccountEquity(
-    ReadView const& view,
-    AccountID const& account,
-    std::shared_ptr<SLE const> const& marginAccount,
-    Number markPrice)
-{
-    Number equity =
-        marginAccount->at(~sfCollateralBalance).value_or(Number(0));
-
-    // Iterate all margin positions linked to this margin account
+    // Check each position individually (isolated margin)
+    std::uint32_t const now =
+        view.parentCloseTime().time_since_epoch().count();
     Dir const ownerDir(view, keylet::ownerDir(account));
     for (auto const& sle : ownerDir)
     {
         if (sle->getType() != ltMARGIN_POSITION)
             continue;
-
-        // Only include positions linked to this margin account
         if (sle->getFieldH256(sfMarginAccountID) != marginAccount->key())
             continue;
 
-        equity = equity + calculateUnrealizedPnl(sle, markPrice);
-    }
+        Number allocatedMargin =
+            sle->at(~sfAllocatedMargin).value_or(Number(0));
+        Number pnl = calculateUnrealizedPnl(sle, markPrice);
 
-    return equity;
+        // Deduct accumulated funding
+        Issue const posIssue =
+            sle->getFieldIssue(sfAsset).get<Issue>();
+        Issue const quoteIssue =
+            marginAccount->getFieldIssue(sfCollateralAsset).get<Issue>();
+        Number accFunding = calculateAccumulatedFunding(
+            sle, now, getFundingRateBps(view, posIssue, quoteIssue));
+        Number positionEquity = (allocatedMargin - accFunding) + pnl;
+
+        Number notional =
+            sle->at(~sfNotionalValue).value_or(Number(0));
+        // Read maintenance margin from leverage tier (default 5%)
+        std::uint32_t maintenanceBps = 5000;
+        auto const sleTier =
+            view.read(keylet::leverageTier(posIssue, quoteIssue));
+        if (sleTier && sleTier->isFieldPresent(sfMaintenanceMarginBps))
+            maintenanceBps =
+                sleTier->getFieldU32(sfMaintenanceMarginBps);
+        Number maintenance =
+            calculateMaintenanceMargin(notional, maintenanceBps);
+
+        if (positionEquity < maintenance)
+            return false;
+    }
+    return true;
 }
 
 Number
 getMarkPrice(
     ReadView const& view,
-    Asset const& baseAsset,
-    Asset const& quoteAsset)
+    std::shared_ptr<SLE const> const& slePair)
 {
-    // Get the currencies to match against oracle price data
-    Issue const baseIssue = baseAsset.get<Issue>();
-    Issue const quoteIssue = quoteAsset.get<Issue>();
+    if (!slePair || !slePair->isFieldPresent(sfOracleEntries))
+        return Number(0);
 
-    // Collect prices from oracle entries owned by the asset issuers.
-    // We scan the owner directories of both issuers for ltORACLE entries
-    // that contain price data for our asset pair.
+    // Read base/quote assets from the OptionPair
+    Issue const baseIssue = slePair->getFieldIssue(sfAsset).get<Issue>();
+    Issue const quoteIssue = slePair->getFieldIssue(sfAsset2).get<Issue>();
+
+    // Collect prices via direct O(1) oracle lookups
     std::vector<STAmount> prices;
 
-    auto collectFromIssuer = [&](AccountID const& issuer) {
-        Dir const ownerDir(view, keylet::ownerDir(issuer));
-        for (auto const& sle : ownerDir)
+    auto const& oracleEntries = slePair->getFieldArray(sfOracleEntries);
+    for (auto const& oracleRef : oracleEntries)
+    {
+        auto const account = oracleRef.getAccountID(sfAccount);
+        auto const docID = oracleRef.getFieldU32(sfOracleDocumentID);
+
+        auto const sleOracle = view.read(keylet::oracle(account, docID));
+        if (!sleOracle || !sleOracle->isFieldPresent(sfPriceDataSeries))
+            continue;
+
+        auto const& series = sleOracle->getFieldArray(sfPriceDataSeries);
+        for (auto const& entry : series)
         {
-            if (sle->getType() != ltORACLE)
+            if (!entry.isFieldPresent(sfBaseAsset) ||
+                !entry.isFieldPresent(sfQuoteAsset) ||
+                !entry.isFieldPresent(sfAssetPrice))
                 continue;
 
-            // Check the price data series for our asset pair
-            if (!sle->isFieldPresent(sfPriceDataSeries))
+            Currency const entryBase =
+                entry.getFieldCurrency(sfBaseAsset).value();
+            Currency const entryQuote =
+                entry.getFieldCurrency(sfQuoteAsset).value();
+
+            if (entryBase != baseIssue.currency ||
+                entryQuote != quoteIssue.currency)
                 continue;
 
-            auto const& series = sle->getFieldArray(sfPriceDataSeries);
-            for (auto const& entry : series)
-            {
-                if (!entry.isFieldPresent(sfBaseAsset) ||
-                    !entry.isFieldPresent(sfQuoteAsset) ||
-                    !entry.isFieldPresent(sfAssetPrice))
-                    continue;
+            auto const price = entry.getFieldU64(sfAssetPrice);
+            int const scale = entry.isFieldPresent(sfScale)
+                ? -static_cast<int>(entry.getFieldU8(sfScale))
+                : 0;
 
-                Currency const entryBase =
-                    entry.getFieldCurrency(sfBaseAsset).value();
-                Currency const entryQuote =
-                    entry.getFieldCurrency(sfQuoteAsset).value();
-
-                if (entryBase != baseIssue.currency ||
-                    entryQuote != quoteIssue.currency)
-                    continue;
-
-                // Extract price with scale
-                auto const price = entry.getFieldU64(sfAssetPrice);
-                int const scale = entry.isFieldPresent(sfScale)
-                    ? -static_cast<int>(entry.getFieldU8(sfScale))
-                    : 0;
-
-                prices.push_back(STAmount{noIssue(), price, scale});
-            }
+            prices.push_back(STAmount{noIssue(), price, scale});
         }
-    };
-
-    // Scan both asset issuers for oracle entries
-    if (!isXRP(baseIssue))
-        collectFromIssuer(baseIssue.account);
-    if (!isXRP(quoteIssue) && quoteIssue.account != baseIssue.account)
-        collectFromIssuer(quoteIssue.account);
+    }
 
     if (prices.empty())
         return Number(0);
@@ -283,11 +214,106 @@ getMarkPrice(
     }
     else
     {
-        // Average of two middle values
         STAmount const two{noIssue(), 2, 0};
         STAmount const sum = prices[middle - 1] + prices[middle];
         return Number(divide(sum, two, noIssue()));
     }
+}
+
+std::uint32_t
+getFundingRateBps(
+    ReadView const& view,
+    Issue const& base,
+    Issue const& quote)
+{
+    std::uint32_t fundingRateBps = 100;  // default 0.01%/hr
+    auto const sleTier = view.read(keylet::leverageTier(base, quote));
+    if (sleTier && sleTier->isFieldPresent(sfFundingRateBps))
+        fundingRateBps = sleTier->getFieldU32(sfFundingRateBps);
+    return fundingRateBps;
+}
+
+Number
+calculateAccumulatedFunding(
+    std::shared_ptr<SLE const> const& position,
+    std::uint32_t currentTime,
+    std::uint32_t fundingRateBps)
+{
+    std::uint32_t const lastFunding =
+        position->at(~sfLastFundingTime).value_or(0);
+
+    // Legacy positions (lastFundingTime=0) or clock edge case
+    if (lastFunding == 0 || currentTime <= lastFunding)
+        return Number(0);
+
+    std::uint32_t const elapsed = currentTime - lastFunding;
+    std::uint32_t const hoursElapsed = elapsed / 3600;
+
+    if (hoursElapsed == 0)
+        return Number(0);
+
+    Number const notional =
+        position->at(~sfNotionalValue).value_or(Number(0));
+    Number const funding =
+        notional * Number(fundingRateBps) * Number(hoursElapsed) / Number(100000);
+
+    // Cap at allocated margin
+    Number const allocatedMargin =
+        position->at(~sfAllocatedMargin).value_or(Number(0));
+    return std::min(funding, allocatedMargin);
+}
+
+Number
+deductFundingAndRelease(
+    ApplyView& view,
+    std::shared_ptr<SLE> const& position,
+    std::uint32_t currentTime)
+{
+    Number const allocatedMargin =
+        position->at(~sfAllocatedMargin).value_or(Number(0));
+
+    // Look up funding rate
+    Issue const issue = position->getFieldIssue(sfAsset).get<Issue>();
+    uint256 const optionPairID = position->getFieldH256(sfOptionPairID);
+    auto const slePair = view.read(Keylet{ltOPTION_PAIR, optionPairID});
+    if (!slePair)
+    {
+        // No pair found — return full margin without funding deduction
+        position->at(sfAllocatedMargin) =
+            STNumber{sfAllocatedMargin, Number(0)};
+        view.update(position);
+        return allocatedMargin;
+    }
+
+    Issue const quoteIssue = slePair->getFieldIssue(sfAsset2).get<Issue>();
+    std::uint32_t const fundingRateBps =
+        getFundingRateBps(view, issue, quoteIssue);
+
+    Number const funding =
+        calculateAccumulatedFunding(position, currentTime, fundingRateBps);
+    Number const netMargin = allocatedMargin - funding;
+
+    // Zero out allocated margin on position (satisfies deletion invariant)
+    position->at(sfAllocatedMargin) =
+        STNumber{sfAllocatedMargin, Number(0)};
+    view.update(position);
+
+    // Route funding to OptionPair accumulated fees
+    if (funding > Number(0))
+    {
+        auto slePairMut = view.peek(Keylet{ltOPTION_PAIR, optionPairID});
+        if (slePairMut)
+        {
+            Number currentFees =
+                slePairMut->at(~sfAccumulatedFees).value_or(Number(0));
+            currentFees = currentFees + funding;
+            slePairMut->at(sfAccumulatedFees) =
+                STNumber{sfAccumulatedFees, currentFees};
+            view.update(slePairMut);
+        }
+    }
+
+    return netMargin;
 }
 
 }  // namespace margin

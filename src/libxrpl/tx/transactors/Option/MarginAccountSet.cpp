@@ -38,15 +38,6 @@ MarginAccountSet::preflight(PreflightContext const& ctx)
         return temINVALID_FLAG;
     }
 
-    // Validate margin mode: 0 = isolated, 1 = cross
-    std::uint32_t const marginMode = ctx.tx[sfMarginMode];
-    if (marginMode > 1)
-    {
-        JLOG(ctx.j.debug())
-            << "MarginAccountSet: marginMode must be 0 (isolated) or 1 (cross).";
-        return temMALFORMED;
-    }
-
     return tesSUCCESS;
 }
 
@@ -62,9 +53,6 @@ MarginAccountSet::preclaim(PreclaimContext const& ctx)
 
     if (existingAccount)
     {
-        // If modifying existing account, verify no open positions
-        // (cannot switch margin mode with open positions)
-        // TODO: In Phase 6, add position count check here
         JLOG(ctx.j.debug())
             << "MarginAccountSet: margin account already exists, updating.";
     }
@@ -79,7 +67,6 @@ MarginAccountSet::doApply()
 
     Asset const collateralAsset = ctx_.tx[sfCollateralAsset].get<Issue>();
     Issue const collateralIssue = collateralAsset.get<Issue>();
-    std::uint32_t const marginMode = ctx_.tx[sfMarginMode];
 
     auto const marginAcctKeylet =
         keylet::marginAccount(account_, collateralAsset);
@@ -108,9 +95,6 @@ MarginAccountSet::doApply()
         }
         sleMarginAcct->setFieldU64(sfOwnerNode, *page);
     }
-
-    // Set/update margin mode
-    sleMarginAcct->setFieldU32(sfMarginMode, marginMode);
 
     if (isCreate)
     {

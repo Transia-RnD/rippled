@@ -19,6 +19,7 @@
 
 #include <xrpl/tx/transactors/Option/OptionSettle.h>
 #include <xrpl/tx/transactors/Option/OptionUtils.h>
+#include <xrpl/tx/transactors/Option/MarginUtils.h>
 #include <xrpl/ledger/Sandbox.h>
 #include <xrpl/ledger/View.h>
 
@@ -213,18 +214,22 @@ OptionSettle::doApply()
         auto slePosition = sb.peek(Keylet{ltMARGIN_POSITION, positionID});
         if (slePosition)
         {
-            // Release allocated margin back to margin account
+            // Deduct accumulated funding and get net margin
+            std::uint32_t const nowSettle =
+                sb.parentCloseTime().time_since_epoch().count();
+            Number const netMargin =
+                margin::deductFundingAndRelease(sb, slePosition, nowSettle);
+
+            // Release net margin back to margin account
             uint256 const marginAccountID =
                 slePosition->getFieldH256(sfMarginAccountID);
             auto sleMarginAcct =
                 sb.peek(Keylet{ltMARGIN_ACCOUNT, marginAccountID});
             if (sleMarginAcct)
             {
-                Number allocatedMargin =
-                    slePosition->at(~sfAllocatedMargin).value_or(Number(0));
                 Number collateralBalance =
                     sleMarginAcct->at(~sfCollateralBalance).value_or(Number(0));
-                collateralBalance = collateralBalance + allocatedMargin;
+                collateralBalance = collateralBalance + netMargin;
                 sleMarginAcct->at(sfCollateralBalance) =
                     STNumber{sfCollateralBalance, collateralBalance};
                 sb.update(sleMarginAcct);

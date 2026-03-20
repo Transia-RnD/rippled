@@ -72,15 +72,13 @@ struct OptionLiquidate_test : public beast::unit_test::suite
     Json::Value
     marginAccountSet(
         jtx::Account const& account,
-        STIssue const& collateralAsset,
-        std::uint32_t marginMode)
+        STIssue const& collateralAsset)
     {
         Json::Value jv;
         jv[jss::TransactionType] = jss::MarginAccountSet;
         jv[jss::Account] = account.human();
         jv[sfCollateralAsset.jsonName] =
             collateralAsset.getJson(JsonOptions::none);
-        jv[sfMarginMode.jsonName] = marginMode;
         return jv;
     }
 
@@ -195,8 +193,7 @@ struct OptionLiquidate_test : public beast::unit_test::suite
         // Create margin account and deposit
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
@@ -296,8 +293,7 @@ struct OptionLiquidate_test : public beast::unit_test::suite
 
         env(marginAccountSet(
                 alice,
-                STIssue(sfCollateralAsset, USD.issue()),
-                0),
+                STIssue(sfCollateralAsset, USD.issue())),
             ter(tesSUCCESS));
         env.close();
 
