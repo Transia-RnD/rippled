@@ -43,6 +43,9 @@
 #include <xrpld/app/misc/TxQ.h>
 #include <xrpld/app/misc/ValidatorKeys.h>
 #include <xrpld/app/misc/ValidatorSite.h>
+#include <xrpld/app/misc/DEXFeedEmitter.h>
+#include <xrpld/app/misc/DEXTimeSeriesReader.h>
+#include <xrpld/app/misc/DEXTimeSeriesWriter.h>
 #include <xrpld/app/paths/PathRequests.h>
 #include <xrpld/app/rdb/RelationalDatabase.h>
 #include <xrpld/app/rdb/Wallet.h>
@@ -236,6 +239,10 @@ public:
     io_latency_sampler m_io_latency_sampler;
 
     std::unique_ptr<GRPCServer> grpcServer_;
+
+    std::unique_ptr<DEXFeedEmitter> dexFeedEmitter_;
+    std::unique_ptr<DEXTimeSeriesWriter> dexTimeSeriesWriter_;
+    std::unique_ptr<DEXTimeSeriesReader> dexTimeSeriesReader_;
 
     //--------------------------------------------------------------------------
 
@@ -1143,6 +1150,24 @@ public:
         return trapTxID_;
     }
 
+    DEXFeedEmitter&
+    getDEXFeedEmitter() override
+    {
+        return *dexFeedEmitter_;
+    }
+
+    DEXTimeSeriesReader&
+    getDEXTimeSeriesReader() override
+    {
+        return *dexTimeSeriesReader_;
+    }
+
+    DEXTimeSeriesWriter&
+    getDEXTimeSeriesWriter() override
+    {
+        return *dexTimeSeriesWriter_;
+    }
+
 private:
     // For a newly-started validator, this is the greatest persisted ledger
     // and new validations must be greater than this.
@@ -1322,6 +1347,25 @@ ApplicationImp::setup(boost::program_options::variables_map const& cmdline)
     }
 
     m_orderBookDB.setup(getLedgerMaster().getCurrentLedger());
+
+    {
+        auto const cfg =
+            parseDEXFeedConfig(config_->section(SECTION_DEX_FEED));
+        dexFeedEmitter_ =
+            make_DEXFeedEmitter(cfg, *this, logs_->journal("DEXFeed"));
+
+        auto const tsCfg =
+            parseDEXTimeSeriesConfig(config_->section(SECTION_DEX_TIMESERIES));
+        dexTimeSeriesWriter_ =
+            make_DEXTimeSeriesWriter(tsCfg, *this, logs_->journal("DEXTimeSeries"));
+
+        dexTimeSeriesWriter_->open(config_->legacy("database_path"));
+
+        dexTimeSeriesReader_ =
+            make_DEXTimeSeriesReader(
+                dexTimeSeriesWriter_->getStore(),
+                logs_->journal("DEXTimeSeries"));
+    }
 
     nodeIdentity_ = getNodeIdentity(*this, cmdline);
 
@@ -1547,6 +1591,8 @@ ApplicationImp::start(bool withTimers)
 
     ledgerCleaner_->start();
     perfLog_->start();
+    dexFeedEmitter_->start();
+    dexTimeSeriesWriter_->start();
 }
 
 void
@@ -1632,6 +1678,10 @@ ApplicationImp::run()
     if (overlay_)
         overlay_->stop();
     grpcServer_->stop();
+    dexFeedEmitter_->stop();
+    dexTimeSeriesWriter_->stop();
+    dexTimeSeriesWriter_->flush();
+    dexTimeSeriesWriter_->close();
     m_networkOPs->stop();
     serverHandler_->stop();
     m_ledgerReplayer->stop();

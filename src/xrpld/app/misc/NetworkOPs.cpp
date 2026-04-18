@@ -46,6 +46,8 @@
 #include <xrpld/overlay/Cluster.h>
 #include <xrpld/overlay/Overlay.h>
 #include <xrpld/overlay/predicates.h>
+#include <xrpld/app/misc/DEXFeedEmitter.h>
+#include <xrpld/app/misc/DEXTimeSeriesWriter.h>
 #include <xrpld/perflog/PerfLog.h>
 #include <xrpld/rpc/BookChanges.h>
 #include <xrpld/rpc/CTID.h>
@@ -3201,6 +3203,9 @@ NetworkOPsImp::pubLedger(std::shared_ptr<ReadView const> const& lpAccepted)
             }
         }
     }
+
+    app_.getDEXFeedEmitter().emit(lpAccepted);
+    app_.getDEXTimeSeriesWriter().index(lpAccepted);
 
     // Don't lock since pubAcceptedTransaction is locking.
     for (auto const& accTx : *alpAccepted)

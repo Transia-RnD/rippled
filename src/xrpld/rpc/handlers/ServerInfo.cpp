@@ -17,6 +17,9 @@
 */
 //==============================================================================
 
+#include <xrpld/app/misc/DEXTimeSeriesReader.h>
+#include <xrpld/app/misc/DEXTimeSeriesStore.h>
+#include <xrpld/app/misc/DEXTimeSeriesWriter.h>
 #include <xrpld/app/misc/NetworkOPs.h>
 #include <xrpld/rpc/Context.h>
 #include <xrpld/rpc/Role.h>
@@ -328,6 +331,39 @@ doServerInfo(RPC::JsonContext& context)
         context.role == Role::ADMIN,
         context.params.isMember(jss::counters) &&
             context.params[jss::counters].asBool());
+
+    auto* store = context.app.getDEXTimeSeriesWriter().getStore();
+    if (store && store->isOpen())
+    {
+        Json::Value ts(Json::objectValue);
+        ts["enabled"] = true;
+
+        auto& reader = context.app.getDEXTimeSeriesReader();
+        auto const lastSeq = reader.getLastIndexedSeq();
+        if (lastSeq)
+            ts["last_indexed_seq"] = *lastSeq;
+
+        auto backfillStatus = store->getMeta("backfill_status");
+        if (backfillStatus)
+        {
+            Json::Value backfill(Json::objectValue);
+            backfill["status"] = *backfillStatus;
+
+            auto startSeq = store->getMeta("backfill_start_seq");
+            if (startSeq)
+                backfill["start_seq"] =
+                    static_cast<uint32_t>(std::stoul(*startSeq));
+
+            auto targetSeq = store->getMeta("backfill_target_seq");
+            if (targetSeq)
+                backfill["target_seq"] =
+                    static_cast<uint32_t>(std::stoul(*targetSeq));
+
+            ts["backfill"] = std::move(backfill);
+        }
+
+        ret[jss::info]["dex_timeseries"] = std::move(ts);
+    }
 
     return ret;
 }

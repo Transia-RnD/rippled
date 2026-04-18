@@ -19,6 +19,9 @@
 
 #include <xrpld/app/ledger/LedgerMaster.h>
 #include <xrpld/app/misc/AMMUtils.h>
+#include <xrpld/app/misc/DEXTimeSeriesReader.h>
+#include <xrpld/app/misc/DEXTimeSeriesStore.h>
+#include <xrpld/app/misc/DEXTimeSeriesWriter.h>
 #include <xrpld/rpc/Context.h>
 #include <xrpld/rpc/detail/RPCHelpers.h>
 
@@ -72,10 +75,91 @@ to_iso8601(NetClock::time_point tp)
             system_clock::time_point{tp.time_since_epoch() + epoch_offset}));
 }
 
+static bool
+timeseriesEnabled(Application& app)
+{
+    auto* store = app.getDEXTimeSeriesWriter().getStore();
+    return store && store->isOpen();
+}
+
+static Json::Value
+doAMMInfoList(RPC::JsonContext& context)
+{
+    auto const& params = context.params;
+
+    std::string sort = "tvl";
+    uint32_t limit = 50;
+
+    if (params.isMember("sort"))
+    {
+        if (!params["sort"].isString())
+            return RPC::make_error(rpcINVALID_PARAMS);
+        sort = params["sort"].asString();
+        if (sort != "tvl" && sort != "volume" && sort != "apr" &&
+            sort != "fees")
+            return RPC::make_error(rpcINVALID_PARAMS);
+    }
+
+    if (params.isMember("limit"))
+    {
+        if (!params["limit"].isUInt() &&
+            !(params["limit"].isInt() && params["limit"].asInt() >= 0))
+            return RPC::make_error(rpcINVALID_PARAMS);
+        limit = params["limit"].asUInt();
+        if (limit == 0 || limit > 200)
+            limit = 200;
+    }
+
+    auto& reader = context.app.getDEXTimeSeriesReader();
+    auto pools = reader.getPools(sort, limit);
+
+    Json::Value result(Json::objectValue);
+    Json::Value& arr = (result["amm_pools"] = Json::arrayValue);
+    for (auto const& p : pools)
+    {
+        Json::Value entry(Json::objectValue);
+        entry["account"] = p.account;
+        if (!p.asset1.empty())
+            entry["asset1"] = p.asset1;
+        if (!p.asset2.empty())
+            entry["asset2"] = p.asset2;
+        entry["asset1_balance"] = p.asset1Balance;
+        entry["asset2_balance"] = p.asset2Balance;
+        entry["lpt_balance"] = p.lptBalance;
+        entry[jss::trading_fee] = p.tradingFee;
+        entry["curve_type"] = p.curveType;
+
+        Json::Value analytics(Json::objectValue);
+        analytics["tvl_xrp"] = p.tvlXrp;
+        analytics["volume_24h_xrp"] = p.volume24hXrp;
+        analytics["fees_24h_xrp"] = p.fees24hXrp;
+        analytics["apr"] = p.apr;
+        entry["analytics"] = std::move(analytics);
+
+        entry["ledger_seq"] = p.ledgerSeq;
+        entry["timestamp"] = p.timestamp;
+        arr.append(entry);
+    }
+
+    auto const lastSeq = reader.getLastIndexedSeq();
+    if (lastSeq)
+        result["last_indexed_seq"] = *lastSeq;
+
+    return result;
+}
+
 Json::Value
 doAMMInfo(RPC::JsonContext& context)
 {
     auto const& params(context.params);
+
+    bool const hasAsset = params.isMember(jss::asset);
+    bool const hasAsset2 = params.isMember(jss::asset2);
+    bool const hasAmmAccount = params.isMember(jss::amm_account);
+
+    if (!hasAsset && !hasAsset2 && !hasAmmAccount)
+        return doAMMInfoList(context);
+
     Json::Value result;
 
     std::shared_ptr<ReadView const> ledger;
@@ -260,6 +344,30 @@ doAMMInfo(RPC::JsonContext& context)
     if (!isXRP(asset2Balance))
         ammResult[jss::asset2_frozen] =
             isFrozen(*ledger, ammAccountID, issue2.currency, issue2.account);
+
+    if (timeseriesEnabled(context.app))
+    {
+        auto& reader = context.app.getDEXTimeSeriesReader();
+        auto pools =
+            reader.getPools(std::string("tvl"), uint32_t(1));
+        auto const ammAccStr = to_string(ammAccountID);
+        for (auto const& p : pools)
+        {
+            if (p.account == ammAccStr)
+            {
+                Json::Value analytics(Json::objectValue);
+                analytics["tvl_xrp"] = p.tvlXrp;
+                analytics["volume_24h_xrp"] = p.volume24hXrp;
+                analytics["fees_24h_xrp"] = p.fees24hXrp;
+                analytics["apr"] = p.apr;
+                auto const lastSeq = reader.getLastIndexedSeq();
+                if (lastSeq)
+                    analytics["last_indexed_seq"] = *lastSeq;
+                ammResult["analytics"] = std::move(analytics);
+                break;
+            }
+        }
+    }
 
     result[jss::amm] = std::move(ammResult);
     if (!result.isMember(jss::ledger_index) &&

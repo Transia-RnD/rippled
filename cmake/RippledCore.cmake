@@ -176,6 +176,7 @@ if(xrpld)
     Ripple::opts
     Ripple::libs
     xrpl.libxrpl
+    NIH::lmdb
   )
   exclude_if_included(rippled)
   # define a macro for tests that might need to

@@ -135,6 +135,67 @@ inline constexpr std::array<char const*, 6> WalletDBInit{
 
      "END TRANSACTION;"}};
 
+////////////////////////////////////////////////////////////////////////////////
+
+// DEX timeseries database holds OHLCV candles, ticks, and AMM snapshots
+inline constexpr auto DexTimeSeriesDBName{"dex_timeseries.db"};
+
+inline constexpr std::array<char const*, 10> DexTimeSeriesDBInit{
+    {"BEGIN TRANSACTION;",
+
+     "CREATE TABLE IF NOT EXISTS DexTicks (              \
+        book_key    TEXT NOT NULL,                      \
+        ledger_seq  INTEGER NOT NULL,                   \
+        tx_index    INTEGER NOT NULL,                   \
+        rate        REAL NOT NULL,                      \
+        volume_a    REAL NOT NULL,                      \
+        volume_b    REAL NOT NULL,                      \
+        timestamp   INTEGER NOT NULL,                   \
+        PRIMARY KEY (book_key, ledger_seq, tx_index)    \
+    );",
+     "CREATE INDEX IF NOT EXISTS DexTicks_Time ON        \
+        DexTicks(book_key, timestamp);",
+
+     "CREATE TABLE IF NOT EXISTS DexCandles (            \
+        book_key    TEXT NOT NULL,                      \
+        interval    INTEGER NOT NULL,                   \
+        bucket_ts   INTEGER NOT NULL,                   \
+        open        REAL NOT NULL,                      \
+        high        REAL NOT NULL,                      \
+        low         REAL NOT NULL,                      \
+        close       REAL NOT NULL,                      \
+        volume_a    REAL NOT NULL,                      \
+        volume_b    REAL NOT NULL,                      \
+        tx_count    INTEGER NOT NULL,                   \
+        PRIMARY KEY (book_key, interval, bucket_ts)     \
+    );",
+
+     "CREATE TABLE IF NOT EXISTS DexAMMState (           \
+        account        TEXT NOT NULL,                   \
+        ledger_seq     INTEGER NOT NULL,                \
+        asset1_balance TEXT NOT NULL,                   \
+        asset2_balance TEXT NOT NULL,                   \
+        lpt_balance    TEXT NOT NULL,                   \
+        trading_fee    INTEGER NOT NULL,                \
+        timestamp      INTEGER NOT NULL,                \
+        PRIMARY KEY (account, ledger_seq)               \
+    );",
+     "CREATE INDEX IF NOT EXISTS DexAMM_Time ON          \
+        DexAMMState(account, timestamp);",
+
+     "CREATE TABLE IF NOT EXISTS DexMeta (               \
+        key   TEXT PRIMARY KEY,                         \
+        value TEXT NOT NULL                             \
+    );",
+
+     "INSERT OR IGNORE INTO DexMeta (key, value)         \
+        VALUES ('last_indexed_seq', '0');",
+
+     "INSERT OR IGNORE INTO DexMeta (key, value)         \
+        VALUES ('schema_version', '1');",
+
+     "END TRANSACTION;"}};
+
 }  // namespace ripple
 
 #endif

@@ -66,6 +66,9 @@ using SLE = STLedgerEntry;
 using CachedSLEs = TaggedCache<uint256, SLE const>;
 
 class CollectorManager;
+class DEXFeedEmitter;
+class DEXTimeSeriesReader;
+class DEXTimeSeriesWriter;
 class Family;
 class HashRouter;
 class Logs;
@@ -275,6 +278,15 @@ public:
 
     virtual std::optional<uint256> const&
     trapTxID() const = 0;
+
+    virtual DEXFeedEmitter&
+    getDEXFeedEmitter() = 0;
+
+    virtual DEXTimeSeriesReader&
+    getDEXTimeSeriesReader() = 0;
+
+    virtual DEXTimeSeriesWriter&
+    getDEXTimeSeriesWriter() = 0;
 };
 
 std::unique_ptr<Application>
