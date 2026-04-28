@@ -3204,8 +3204,8 @@ NetworkOPsImp::pubLedger(std::shared_ptr<ReadView const> const& lpAccepted)
         }
     }
 
-    app_.getDEXFeedEmitter().emit(lpAccepted);
-    app_.getDEXTimeSeriesWriter().index(lpAccepted);
+    registry_.get().getApp().getDEXFeedEmitter().emit(lpAccepted);
+    registry_.get().getApp().getDEXTimeSeriesWriter().index(lpAccepted);
 
     // Don't lock since pubAcceptedTransaction is locking.
     for (auto const& accTx : *alpAccepted)

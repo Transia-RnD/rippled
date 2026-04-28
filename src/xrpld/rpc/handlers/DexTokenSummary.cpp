@@ -2,6 +2,7 @@
 #include <xrpld/app/misc/DEXTimeSeriesReader.h>
 #include <xrpld/rpc/Context.h>
 
+#include <xrpl/basics/Log.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/protocol/ErrorCodes.h>
 #include <xrpl/protocol/jss.h>
@@ -11,6 +12,7 @@ namespace xrpl {
 Json::Value
 doDexTokenSummary(RPC::JsonContext& context)
 {
+    JLOG(context.j.debug()) << "RPC dex_token_summary called";
     auto const& params = context.params;
 
     bool const hasBooksArray =
@@ -38,6 +40,9 @@ doDexTokenSummary(RPC::JsonContext& context)
     {
         bookKeys.push_back(params["book"].asString());
     }
+
+    JLOG(context.j.debug())
+        << "RPC dex_token_summary: " << bookKeys.size() << " books requested";
 
     auto& reader = context.app.getDEXTimeSeriesReader();
 

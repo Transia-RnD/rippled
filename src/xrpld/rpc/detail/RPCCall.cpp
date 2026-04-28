@@ -1259,6 +1259,7 @@ public:
             {"dex_amm_history", &RPCParser::parseAsIs, 1, 4},
             {"dex_candles", &RPCParser::parseAsIs, 1, 5},
             {"dex_ticks", &RPCParser::parseAsIs, 1, 4},
+            {"dex_token_info", &RPCParser::parseAsIs, 2, 3},
             {"can_delete", &RPCParser::parseCanDelete, 0, 1},
             {"channel_authorize", &RPCParser::parseChannelAuthorize, 3, 4},
             {"channel_verify", &RPCParser::parseChannelVerify, 4, 4},

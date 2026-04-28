@@ -2,6 +2,7 @@
 #include <xrpld/app/misc/DEXTimeSeriesReader.h>
 #include <xrpld/rpc/Context.h>
 
+#include <xrpl/basics/Log.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/protocol/ErrorCodes.h>
 #include <xrpl/protocol/jss.h>
@@ -11,6 +12,7 @@ namespace xrpl {
 Json::Value
 doDexAMMHistory(RPC::JsonContext& context)
 {
+    JLOG(context.j.debug()) << "RPC dex_amm_history called";
     auto const& params = context.params;
 
     if (!params.isMember("account") || !params["account"].isString())
@@ -56,8 +58,18 @@ doDexAMMHistory(RPC::JsonContext& context)
     if (startVal > endVal)
         return RPC::make_error(rpcINVALID_PARAMS);
 
+    JLOG(context.j.debug())
+        << "RPC dex_amm_history: account=" << account
+        << " start=" << startVal << " end=" << endVal
+        << " limit=" << limit
+        << " mode=" << (useTime ? "time" : "seq");
+
     auto& reader = context.app.getDEXTimeSeriesReader();
     auto snapshots = reader.getAMMHistory(account, startVal, endVal, limit);
+
+    JLOG(context.j.debug())
+        << "RPC dex_amm_history: returning " << snapshots.size()
+        << " snapshots";
 
     Json::Value result(Json::objectValue);
     result["account"] = account;

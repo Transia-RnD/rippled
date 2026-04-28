@@ -90,6 +90,16 @@ struct DEXPoolInfo
     uint32_t timestamp = 0;
 };
 
+struct DEXTokenInfo
+{
+    double supply = 0.0;
+    double frozenSupply = 0.0;
+    double lockedSupply = 0.0;
+    uint32_t holders = 0;
+    uint32_t trustLines = 0;
+    uint32_t ledgerSeq = 0;
+};
+
 enum class DEXInterval : uint8_t
 {
     OneMinute = 0,
@@ -136,6 +146,9 @@ public:
 
     virtual std::vector<DEXPoolInfo>
     getPools(std::string const& sort, uint32_t limit) = 0;
+
+    virtual std::optional<DEXTokenInfo>
+    getTokenInfo(std::string const& tokenKey) = 0;
 };
 
 std::unique_ptr<DEXTimeSeriesReader>

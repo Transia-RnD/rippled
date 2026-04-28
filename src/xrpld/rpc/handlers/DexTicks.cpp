@@ -2,6 +2,7 @@
 #include <xrpld/app/misc/DEXTimeSeriesReader.h>
 #include <xrpld/rpc/Context.h>
 
+#include <xrpl/basics/Log.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/protocol/ErrorCodes.h>
 #include <xrpl/protocol/jss.h>
@@ -11,6 +12,8 @@ namespace xrpl {
 Json::Value
 doDexTicks(RPC::JsonContext& context)
 {
+    JLOG(context.j.debug()) << "RPC dex_ticks called";
+
     auto const& params = context.params;
 
     if (!params.isMember("book") || !params["book"].isString())
@@ -49,8 +52,16 @@ doDexTicks(RPC::JsonContext& context)
     if (startTime > endTime)
         return RPC::make_error(rpcINVALID_PARAMS);
 
+    JLOG(context.j.debug())
+        << "RPC dex_ticks: book=" << bookKey
+        << " start=" << startTime << " end=" << endTime
+        << " limit=" << limit;
+
     auto& reader = context.app.getDEXTimeSeriesReader();
     auto trades = reader.getTrades(bookKey, startTime, endTime, limit);
+
+    JLOG(context.j.debug())
+        << "RPC dex_ticks: returning " << trades.size() << " ticks";
 
     Json::Value result(Json::objectValue);
     result["book"] = bookKey;

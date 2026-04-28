@@ -2,6 +2,7 @@
 #include <xrpld/app/misc/DEXTimeSeriesReader.h>
 #include <xrpld/rpc/Context.h>
 
+#include <xrpl/basics/Log.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/protocol/ErrorCodes.h>
 #include <xrpl/protocol/jss.h>
@@ -11,6 +12,8 @@ namespace xrpl {
 Json::Value
 doDexPairs(RPC::JsonContext& context)
 {
+    JLOG(context.j.debug()) << "RPC dex_pairs called";
+
     auto const& params = context.params;
 
     std::string sort = "volume";
@@ -35,8 +38,14 @@ doDexPairs(RPC::JsonContext& context)
             limit = 10000;
     }
 
+    JLOG(context.j.debug())
+        << "RPC dex_pairs: sort=" << sort << " limit=" << limit;
+
     auto& reader = context.app.getDEXTimeSeriesReader();
     auto pairs = reader.getPairs(sort, limit);
+
+    JLOG(context.j.debug())
+        << "RPC dex_pairs: returning " << pairs.size() << " pairs";
 
     Json::Value result(Json::objectValue);
 

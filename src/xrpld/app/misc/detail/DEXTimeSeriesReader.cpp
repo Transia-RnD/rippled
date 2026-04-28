@@ -19,7 +19,7 @@ using namespace dex;
 class DEXTimeSeriesReaderImpl final : public DEXTimeSeriesReader
 {
     DEXTimeSeriesStore* store_;
-    [[maybe_unused]] beast::Journal journal_;
+    beast::Journal journal_;
 
 public:
     DEXTimeSeriesReaderImpl(DEXTimeSeriesStore* store, beast::Journal journal)
@@ -31,12 +31,26 @@ public:
     getLastIndexedSeq() override
     {
         if (!store_ || !store_->isOpen())
+        {
+            JLOG(journal_.trace())
+                << "DEXReader: getLastIndexedSeq — store not open";
             return std::nullopt;
+        }
 
         auto val = store_->getMeta("last_indexed_seq");
         if (!val || val->empty())
             return std::nullopt;
-        return static_cast<uint32_t>(std::stoul(*val));
+        try
+        {
+            return static_cast<uint32_t>(std::stoul(*val));
+        }
+        catch (std::exception const& e)
+        {
+            JLOG(journal_.warn())
+                << "DEXReader: getLastIndexedSeq parse error: " << e.what()
+                << " val=" << *val;
+            return std::nullopt;
+        }
     }
 
     std::vector<DEXCandle>
@@ -57,13 +71,25 @@ public:
 
         uint8_t const interval = static_cast<uint8_t>(iv);
 
+        JLOG(journal_.debug())
+            << "DEXReader: getCandles book=" << bookKey
+            << " interval=" << int(interval)
+            << " start=" << startTime << " end=" << endTime
+            << " limit=" << limit;
+
         MDB_txn* txn = nullptr;
         if (store_->beginTxn(&txn, MDB_RDONLY) != 0)
+        {
+            JLOG(journal_.warn())
+                << "DEXReader: getCandles failed to begin txn";
             return result;
+        }
 
         MDB_cursor* cursor = nullptr;
         if (mdb_cursor_open(txn, store_->dbi(DexDB::Candles), &cursor) != 0)
         {
+            JLOG(journal_.warn())
+                << "DEXReader: getCandles failed to open cursor";
             mdb_txn_abort(txn);
             return result;
         }
@@ -117,6 +143,11 @@ public:
 
         mdb_cursor_close(cursor);
         mdb_txn_abort(txn);
+
+        JLOG(journal_.debug())
+            << "DEXReader: getCandles returning " << result.size()
+            << " candles for book=" << bookKey;
+
         return result;
     }
 
@@ -135,13 +166,24 @@ public:
         if (limit == 0)
             return result;
 
+        JLOG(journal_.debug())
+            << "DEXReader: getTrades book=" << bookKey
+            << " start=" << startTime << " end=" << endTime
+            << " limit=" << limit;
+
         MDB_txn* txn = nullptr;
         if (store_->beginTxn(&txn, MDB_RDONLY) != 0)
+        {
+            JLOG(journal_.warn())
+                << "DEXReader: getTrades failed to begin txn";
             return result;
+        }
 
         MDB_cursor* cursor = nullptr;
         if (mdb_cursor_open(txn, store_->dbi(DexDB::Trades), &cursor) != 0)
         {
+            JLOG(journal_.warn())
+                << "DEXReader: getTrades failed to open cursor";
             mdb_txn_abort(txn);
             return result;
         }
@@ -191,6 +233,11 @@ public:
 
         mdb_cursor_close(cursor);
         mdb_txn_abort(txn);
+
+        JLOG(journal_.debug())
+            << "DEXReader: getTrades returning " << result.size()
+            << " trades for book=" << bookKey;
+
         return result;
     }
 
@@ -209,14 +256,25 @@ public:
         if (limit == 0)
             return result;
 
+        JLOG(journal_.debug())
+            << "DEXReader: getAMMHistory account=" << account
+            << " start=" << startSeq << " end=" << endSeq
+            << " limit=" << limit;
+
         MDB_txn* txn = nullptr;
         if (store_->beginTxn(&txn, MDB_RDONLY) != 0)
+        {
+            JLOG(journal_.warn())
+                << "DEXReader: getAMMHistory failed to begin txn";
             return result;
+        }
 
         MDB_cursor* cursor = nullptr;
         if (mdb_cursor_open(
                 txn, store_->dbi(DexDB::AMMSnapshots), &cursor) != 0)
         {
+            JLOG(journal_.warn())
+                << "DEXReader: getAMMHistory failed to open cursor";
             mdb_txn_abort(txn);
             return result;
         }
@@ -270,6 +328,11 @@ public:
 
         mdb_cursor_close(cursor);
         mdb_txn_abort(txn);
+
+        JLOG(journal_.debug())
+            << "DEXReader: getAMMHistory returning " << result.size()
+            << " snapshots for account=" << account;
+
         return result;
     }
 
@@ -279,9 +342,16 @@ public:
         if (!store_ || !store_->isOpen())
             return std::nullopt;
 
+        JLOG(journal_.debug())
+            << "DEXReader: getTokenSummary book=" << bookKey;
+
         MDB_txn* txn = nullptr;
         if (store_->beginTxn(&txn, MDB_RDONLY) != 0)
+        {
+            JLOG(journal_.warn())
+                << "DEXReader: getTokenSummary failed to begin txn";
             return std::nullopt;
+        }
 
         MDB_val key = {
             bookKey.size(), const_cast<char*>(bookKey.data())};
@@ -310,6 +380,11 @@ public:
         }
 
         mdb_txn_abort(txn);
+
+        JLOG(journal_.debug())
+            << "DEXReader: getTokenSummary book=" << bookKey
+            << " found=" << result.has_value();
+
         return result;
     }
 
@@ -324,13 +399,22 @@ public:
         if (limit == 0)
             return result;
 
+        JLOG(journal_.debug())
+            << "DEXReader: getPairs sort=" << sort << " limit=" << limit;
+
         MDB_txn* txn = nullptr;
         if (store_->beginTxn(&txn, MDB_RDONLY) != 0)
+        {
+            JLOG(journal_.warn())
+                << "DEXReader: getPairs failed to begin txn";
             return result;
+        }
 
         MDB_cursor* cursor = nullptr;
         if (mdb_cursor_open(txn, store_->dbi(DexDB::Summaries), &cursor) != 0)
         {
+            JLOG(journal_.warn())
+                << "DEXReader: getPairs failed to open cursor";
             mdb_txn_abort(txn);
             return result;
         }
@@ -386,6 +470,9 @@ public:
         if (result.size() > limit)
             result.resize(limit);
 
+        JLOG(journal_.debug())
+            << "DEXReader: getPairs returning " << result.size() << " pairs";
+
         return result;
     }
 
@@ -400,13 +487,22 @@ public:
         if (limit == 0)
             return result;
 
+        JLOG(journal_.debug())
+            << "DEXReader: getPools sort=" << sort << " limit=" << limit;
+
         MDB_txn* txn = nullptr;
         if (store_->beginTxn(&txn, MDB_RDONLY) != 0)
+        {
+            JLOG(journal_.warn())
+                << "DEXReader: getPools failed to begin txn";
             return result;
+        }
 
         MDB_cursor* cursor = nullptr;
         if (mdb_cursor_open(txn, store_->dbi(DexDB::AMMPools), &cursor) != 0)
         {
+            JLOG(journal_.warn())
+                << "DEXReader: getPools failed to open cursor";
             mdb_txn_abort(txn);
             return result;
         }
@@ -465,6 +561,43 @@ public:
         if (result.size() > limit)
             result.resize(limit);
 
+        JLOG(journal_.debug())
+            << "DEXReader: getPools returning " << result.size() << " pools";
+
+        return result;
+    }
+
+    std::optional<DEXTokenInfo>
+    getTokenInfo(std::string const& tokenKey) override
+    {
+        if (!store_ || !store_->isOpen())
+            return std::nullopt;
+
+        MDB_txn* txn = nullptr;
+        if (store_->beginTxn(&txn, MDB_RDONLY) != 0)
+            return std::nullopt;
+
+        MDB_val key = {
+            tokenKey.size(), const_cast<char*>(tokenKey.data())};
+        MDB_val data;
+
+        int rc = store_->get(txn, DexDB::TokenInfo, &key, &data);
+        std::optional<DEXTokenInfo> result;
+
+        if (rc == 0 && data.mv_size == dex::TokenInfoValue::kSize)
+        {
+            auto tv = dex::TokenInfoValue::fromData(data.mv_data);
+            DEXTokenInfo ti;
+            ti.supply = tv.supply();
+            ti.frozenSupply = tv.frozenSupply();
+            ti.lockedSupply = tv.lockedSupply();
+            ti.holders = tv.holders();
+            ti.trustLines = tv.trustLines();
+            ti.ledgerSeq = tv.ledgerSeq();
+            result = ti;
+        }
+
+        mdb_txn_abort(txn);
         return result;
     }
 };
@@ -517,6 +650,12 @@ public:
     getPools(std::string const&, uint32_t) override
     {
         return {};
+    }
+
+    std::optional<DEXTokenInfo>
+    getTokenInfo(std::string const&) override
+    {
+        return std::nullopt;
     }
 };
 

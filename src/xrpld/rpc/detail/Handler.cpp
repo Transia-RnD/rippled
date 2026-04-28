@@ -109,6 +109,7 @@ Handler const handlerArray[]{
     {"dex_pools", byRef(&doDexPools), Role::USER, NO_CONDITION},
     {"dex_status", byRef(&doDexStatus), Role::USER, NO_CONDITION},
     {"dex_ticks", byRef(&doDexTicks), Role::USER, NO_CONDITION},
+    {"dex_token_info", byRef(&doDexTokenInfo), Role::USER, NO_CONDITION},
     {"dex_token_summary", byRef(&doDexTokenSummary), Role::USER, NO_CONDITION},
     {"dex_trades", byRef(&doDexTrades), Role::USER, NO_CONDITION},
     {"deposit_authorized",

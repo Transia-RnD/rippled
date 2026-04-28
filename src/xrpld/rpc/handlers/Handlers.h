@@ -75,6 +75,8 @@ doDexTicks(RPC::JsonContext&);
 Json::Value
 doDexAMMHistory(RPC::JsonContext&);
 Json::Value
+doDexTokenInfo(RPC::JsonContext&);
+Json::Value
 doDepositAuthorized(RPC::JsonContext&);
 Json::Value
 doFeature(RPC::JsonContext&);

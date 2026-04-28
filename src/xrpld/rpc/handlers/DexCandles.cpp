@@ -2,15 +2,88 @@
 #include <xrpld/app/misc/DEXTimeSeriesReader.h>
 #include <xrpld/rpc/Context.h>
 
+#include <xrpl/basics/Log.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/protocol/ErrorCodes.h>
 #include <xrpl/protocol/jss.h>
 
+#include <algorithm>
+
 namespace xrpl {
+
+namespace {
+
+struct IntervalInfo
+{
+    DEXInterval baseInterval;
+    uint32_t derivedSeconds;
+    uint32_t baseSeconds;
+    bool isNative;
+};
+
+std::optional<IntervalInfo>
+parseInterval(std::string const& s)
+{
+    if (s == "1m")  return IntervalInfo{DEXInterval::OneMinute,     60,    60, true};
+    if (s == "5m")  return IntervalInfo{DEXInterval::FiveMinute,   300,   300, true};
+    if (s == "15m") return IntervalInfo{DEXInterval::FiveMinute,   900,   300, false};
+    if (s == "30m") return IntervalInfo{DEXInterval::FiveMinute,  1800,   300, false};
+    if (s == "1h")  return IntervalInfo{DEXInterval::OneHour,     3600,  3600, true};
+    if (s == "4h")  return IntervalInfo{DEXInterval::OneHour,    14400,  3600, false};
+    if (s == "1d")  return IntervalInfo{DEXInterval::OneDay,     86400, 86400, true};
+    if (s == "1w")  return IntervalInfo{DEXInterval::OneDay,    604800, 86400, false};
+    return std::nullopt;
+}
+
+std::vector<DEXCandle>
+aggregateCandles(
+    std::vector<DEXCandle> const& base,
+    uint32_t derivedSeconds)
+{
+    std::vector<DEXCandle> result;
+    if (base.empty())
+        return result;
+
+    DEXCandle current{};
+    uint32_t currentBucket = 0;
+
+    for (auto const& c : base)
+    {
+        uint32_t bucket = (c.timestamp / derivedSeconds) * derivedSeconds;
+        if (bucket != currentBucket)
+        {
+            if (currentBucket != 0)
+                result.push_back(current);
+
+            current = c;
+            current.timestamp = bucket;
+            currentBucket = bucket;
+        }
+        else
+        {
+            current.high = std::max(current.high, c.high);
+            current.low = std::min(current.low, c.low);
+            current.close = c.close;
+            current.volumeBase += c.volumeBase;
+            current.volumeQuote += c.volumeQuote;
+            current.txCount += c.txCount;
+            current.buyVolumeBase += c.buyVolumeBase;
+            current.sellVolumeBase += c.sellVolumeBase;
+        }
+    }
+    if (currentBucket != 0)
+        result.push_back(current);
+
+    return result;
+}
+
+}  // namespace
 
 Json::Value
 doDexCandles(RPC::JsonContext& context)
 {
+    JLOG(context.j.debug()) << "RPC dex_candles called";
+
     auto const& params = context.params;
 
     if (!params.isMember("book") || !params["book"].isString())
@@ -18,21 +91,17 @@ doDexCandles(RPC::JsonContext& context)
 
     std::string const bookKey = params["book"].asString();
 
-    DEXInterval iv = DEXInterval::OneMinute;
+    std::string ivStr = "1m";
     if (params.isMember("interval"))
     {
         if (!params["interval"].isString())
             return RPC::make_error(rpcINVALID_PARAMS);
-        auto const ivStr = params["interval"].asString();
-        if (ivStr == "5m")
-            iv = DEXInterval::FiveMinute;
-        else if (ivStr == "1h")
-            iv = DEXInterval::OneHour;
-        else if (ivStr == "1d")
-            iv = DEXInterval::OneDay;
-        else if (ivStr != "1m")
-            return RPC::make_error(rpcINVALID_PARAMS);
+        ivStr = params["interval"].asString();
     }
+
+    auto const ivInfo = parseInterval(ivStr);
+    if (!ivInfo)
+        return RPC::make_error(rpcINVALID_PARAMS);
 
     uint32_t startTime = 0;
     uint32_t endTime = UINT32_MAX;
@@ -66,14 +135,36 @@ doDexCandles(RPC::JsonContext& context)
     if (startTime > endTime)
         return RPC::make_error(rpcINVALID_PARAMS);
 
+    JLOG(context.j.debug())
+        << "RPC dex_candles: book=" << bookKey
+        << " interval=" << ivStr
+        << " start=" << startTime << " end=" << endTime
+        << " limit=" << limit;
+
     auto& reader = context.app.getDEXTimeSeriesReader();
-    auto candles = reader.getCandles(bookKey, iv, startTime, endTime, limit);
+
+    std::vector<DEXCandle> candles;
+    if (ivInfo->isNative)
+    {
+        candles = reader.getCandles(
+            bookKey, ivInfo->baseInterval, startTime, endTime, limit);
+    }
+    else
+    {
+        uint32_t const mult = ivInfo->derivedSeconds / ivInfo->baseSeconds;
+        auto base = reader.getCandles(
+            bookKey, ivInfo->baseInterval, startTime, endTime, limit * mult);
+        candles = aggregateCandles(base, ivInfo->derivedSeconds);
+        if (candles.size() > limit)
+            candles.resize(limit);
+    }
+
+    JLOG(context.j.debug())
+        << "RPC dex_candles: returning " << candles.size() << " candles";
 
     Json::Value result(Json::objectValue);
     result["book"] = bookKey;
-    result["interval"] = params.isMember("interval")
-        ? params["interval"].asString()
-        : "1m";
+    result["interval"] = ivStr;
 
     Json::Value& arr = (result["candles"] = Json::arrayValue);
     for (auto const& c : candles)

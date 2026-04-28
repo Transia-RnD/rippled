@@ -504,6 +504,51 @@ struct SummaryValue
     }
 };
 
+struct TokenInfoValue
+{
+    static constexpr size_t kSize = 36;
+    uint8_t data[kSize];
+
+    TokenInfoValue() { std::memset(data, 0, kSize); }
+
+    double supply() const { return decodeDouble(data); }
+    double frozenSupply() const { return decodeDouble(data + 8); }
+    double lockedSupply() const { return decodeDouble(data + 16); }
+    uint32_t holders() const { return decodeBE(data + 24); }
+    uint32_t trustLines() const { return decodeBE(data + 28); }
+    uint32_t ledgerSeq() const { return decodeBE(data + 32); }
+
+    void
+    set(double supply,
+        double frozenSupply,
+        double lockedSupply,
+        uint32_t holders,
+        uint32_t trustLines,
+        uint32_t ledgerSeq)
+    {
+        encodeDouble(supply, data);
+        encodeDouble(frozenSupply, data + 8);
+        encodeDouble(lockedSupply, data + 16);
+        encodeBE(holders, data + 24);
+        encodeBE(trustLines, data + 28);
+        encodeBE(ledgerSeq, data + 32);
+    }
+
+    static TokenInfoValue
+    fromData(void const* ptr)
+    {
+        TokenInfoValue v;
+        std::memcpy(v.data, ptr, kSize);
+        return v;
+    }
+
+    MDB_val
+    val()
+    {
+        return {kSize, data};
+    }
+};
+
 }  // namespace dex
 
 enum class DexDB : int
@@ -514,7 +559,8 @@ enum class DexDB : int
     AMMPools = 3,
     Summaries = 4,
     Meta = 5,
-    Count = 6
+    TokenInfo = 6,
+    Count = 7
 };
 
 class DEXTimeSeriesStore
@@ -589,7 +635,8 @@ public:
             "DexAMMSnapshots",
             "DexAMMPools",
             "DexSummaries",
-            "DexMeta"};
+            "DexMeta",
+            "DexTokenInfo"};
 
         for (int i = 0; i < static_cast<int>(DexDB::Count); ++i)
         {
@@ -626,6 +673,7 @@ public:
     {
         if (env_)
         {
+            JLOG(journal_.info()) << "DEXStore: closing database";
             mdb_env_close(env_);
             env_ = nullptr;
             open_ = false;
@@ -653,13 +701,26 @@ public:
     int
     beginTxn(MDB_txn** txn, unsigned int flags = 0)
     {
-        return mdb_txn_begin(env_, nullptr, flags, txn);
+        int rc = mdb_txn_begin(env_, nullptr, flags, txn);
+        if (rc != 0)
+        {
+            JLOG(journal_.error())
+                << "DEXStore: beginTxn failed: " << mdb_strerror(rc);
+        }
+        return rc;
     }
 
     int
     put(MDB_txn* txn, DexDB db, MDB_val* key, MDB_val* data, unsigned int flags = 0)
     {
-        return mdb_put(txn, dbi(db), key, data, flags);
+        int rc = mdb_put(txn, dbi(db), key, data, flags);
+        if (rc != 0)
+        {
+            JLOG(journal_.warn())
+                << "DEXStore: put failed on db " << static_cast<int>(db)
+                << ": " << mdb_strerror(rc);
+        }
+        return rc;
     }
 
     int
@@ -671,7 +732,14 @@ public:
     int
     del(MDB_txn* txn, DexDB db, MDB_val* key)
     {
-        return mdb_del(txn, dbi(db), key, nullptr);
+        int rc = mdb_del(txn, dbi(db), key, nullptr);
+        if (rc != 0 && rc != MDB_NOTFOUND)
+        {
+            JLOG(journal_.warn())
+                << "DEXStore: del failed on db " << static_cast<int>(db)
+                << ": " << mdb_strerror(rc);
+        }
+        return rc;
     }
 
     std::optional<std::string>
@@ -679,7 +747,11 @@ public:
     {
         MDB_txn* txn = nullptr;
         if (beginTxn(&txn, MDB_RDONLY) != 0)
+        {
+            JLOG(journal_.warn())
+                << "DEXStore: getMeta failed to begin txn for key=" << key;
             return std::nullopt;
+        }
 
         MDB_val k = {key.size(), const_cast<char*>(key.data())};
         MDB_val v;
@@ -687,6 +759,12 @@ public:
         std::optional<std::string> result;
         if (rc == 0)
             result = std::string(static_cast<char*>(v.mv_data), v.mv_size);
+        else if (rc != MDB_NOTFOUND)
+        {
+            JLOG(journal_.warn())
+                << "DEXStore: getMeta error for key=" << key
+                << ": " << mdb_strerror(rc);
+        }
         mdb_txn_abort(txn);
         return result;
     }
@@ -696,7 +774,14 @@ public:
     {
         MDB_val k = {key.size(), const_cast<char*>(key.data())};
         MDB_val v = {value.size(), const_cast<char*>(value.data())};
-        return mdb_put(txn, dbi(DexDB::Meta), &k, &v, 0) == 0;
+        int rc = mdb_put(txn, dbi(DexDB::Meta), &k, &v, 0);
+        if (rc != 0)
+        {
+            JLOG(journal_.warn())
+                << "DEXStore: setMeta failed for key=" << key
+                << ": " << mdb_strerror(rc);
+        }
+        return rc == 0;
     }
 };
 

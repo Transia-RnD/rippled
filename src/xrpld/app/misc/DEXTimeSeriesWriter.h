@@ -28,6 +28,7 @@ struct DEXTimeSeriesConfig
     uint32_t purgeIntervalLedgers = 1000;
     uint64_t mapSizeGB = 40;
     std::string dbPath = "dex_timeseries";
+    std::string bootstrapUrl;  // e.g. "https://xrpldata.inftf.org"
 };
 
 DEXTimeSeriesConfig
