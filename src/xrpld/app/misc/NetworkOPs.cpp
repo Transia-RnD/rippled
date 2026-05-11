@@ -1,6 +1,7 @@
 #include <xrpl/server/NetworkOPs.h>
 
 #include <xrpld/app/consensus/RCLConsensus.h>
+#include <xrpld/app/inner/InnerChainEngine.h>
 #include <xrpld/app/consensus/RCLCxPeerPos.h>
 #include <xrpld/app/consensus/RCLValidations.h>
 #include <xrpld/app/ledger/AcceptedLedger.h>
@@ -2985,6 +2986,13 @@ NetworkOPsImp::getServerInfo(bool human, bool admin, bool counters)
             }
         }
         info[jss::ports] = std::move(ports);
+    }
+
+    if (auto const* registry =
+            registry_.get().getApp().getInnerChainRegistry();
+        registry && !registry->empty())
+    {
+        info["inner_chains"] = registry->getJson(false);
     }
 
     return info;

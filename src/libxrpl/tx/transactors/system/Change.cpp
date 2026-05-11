@@ -127,6 +127,11 @@ Change::preclaim(PreclaimContext const& ctx)
         case ttAMENDMENT:
         case ttUNL_MODIFY:
             return tesSUCCESS;
+        case ttINNER_CHAIN_COMMIT:
+        case ttINNER_CHAIN_WITHDRAW:
+            if (!ctx.view.rules().enabled(featureInnerChain))
+                return temDISABLED;
+            return tesSUCCESS;
         default:
             return temUNKNOWN;
     }
@@ -143,6 +148,10 @@ Change::doApply()
             return applyFee();
         case ttUNL_MODIFY:
             return applyUNLModify();
+        case ttINNER_CHAIN_COMMIT:
+            return applyInnerChainCommit();
+        case ttINNER_CHAIN_WITHDRAW:
+            return applyInnerChainWithdraw();
         // LCOV_EXCL_START
         default:
             UNREACHABLE("xrpl::Change::doApply : invalid transaction type");
@@ -424,6 +433,63 @@ Change::finalizeInvariants(STTx const&, TER, XRPAmount, ReadView const&, beast::
 {
     // No transaction-specific invariants yet (future work).
     return true;
+}
+
+TER
+Change::applyInnerChainCommit()
+{
+    auto const innerStateRoot = ctx_.tx.getFieldH256(sfInnerStateRoot);
+    auto const innerChainSeq = ctx_.tx.getFieldU32(sfInnerChainSeq);
+    auto const innerChainId = ctx_.tx.getFieldU32(sfInnerChainId);
+
+    JLOG(j_.info()) << "InnerChainCommit: chainId=" << innerChainId
+                    << " seq=" << innerChainSeq
+                    << " root=" << to_string(innerStateRoot);
+
+    // The pseudo-tx in the ledger's transaction set is the on-chain record.
+    // A proper ltINNER_CHAIN_STATE ledger object can be added later for O(1)
+    // lookups; for now the tx history serves as proof.
+    return tesSUCCESS;
+}
+
+TER
+Change::applyInnerChainWithdraw()
+{
+    auto const dest = ctx_.tx.getAccountID(sfDestination);
+    auto const amount = ctx_.tx.getFieldAmount(sfAmount);
+    auto const innerSeq = ctx_.tx.getFieldU32(sfInnerChainSeq);
+    auto const chainId = ctx_.tx.getFieldU32(sfInnerChainId);
+
+    JLOG(j_.info()) << "InnerChainWithdraw: chainId=" << chainId
+                    << " innerSeq=" << innerSeq
+                    << " dest=" << toBase58(dest)
+                    << " amount=" << amount;
+
+    auto const k = keylet::account(dest);
+    auto sle = view().peek(k);
+
+    if (!sle)
+    {
+        // PoC: destination not found on outer chain. Funds are lost.
+        // Production: create account or hold withdrawal for retry.
+        JLOG(j_.warn())
+            << "InnerChainWithdraw: destination not found on outer chain"
+            << ", dest=" << toBase58(dest)
+            << ". Withdrawal cannot be applied.";
+        return tesSUCCESS;
+    }
+
+    // PoC: directly credit XRP. Production would release from escrow/lock.
+    auto const prev = sle->getFieldAmount(sfBalance);
+    sle->setFieldAmount(sfBalance, prev + amount);
+    view().update(sle);
+
+    JLOG(j_.info()) << "InnerChainWithdraw: credited " << amount
+                    << " to " << toBase58(dest)
+                    << " (prev=" << prev
+                    << ", new=" << prev + amount << ")";
+
+    return tesSUCCESS;
 }
 
 }  // namespace xrpl

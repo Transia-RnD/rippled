@@ -50,10 +50,18 @@ private:
 
     TER
     applyUNLModify();
+
+    TER
+    applyInnerChainCommit();
+
+    TER
+    applyInnerChainWithdraw();
 };
 
 using EnableAmendment = Change;
 using SetFee = Change;
 using UNLModify = Change;
+using InnerChainCommit = Change;
+using InnerChainWithdraw = Change;
 
 }  // namespace xrpl

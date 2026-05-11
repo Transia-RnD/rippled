@@ -814,7 +814,8 @@ isPseudoTx(STObject const& tx)
 
     auto const tt = safeCast<TxType>(*t);
 
-    return tt == ttAMENDMENT || tt == ttFEE || tt == ttUNL_MODIFY;
+    return tt == ttAMENDMENT || tt == ttFEE || tt == ttUNL_MODIFY ||
+        tt == ttINNER_CHAIN_COMMIT || tt == ttINNER_CHAIN_WITHDRAW;
 }
 
 }  // namespace xrpl

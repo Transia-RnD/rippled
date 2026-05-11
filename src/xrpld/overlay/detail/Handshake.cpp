@@ -1,5 +1,6 @@
 #include <xrpld/overlay/detail/Handshake.h>
 
+#include <xrpld/app/inner/InnerChainEngine.h>
 #include <xrpld/app/ledger/LedgerMaster.h>
 #include <xrpld/app/main/Application.h>
 #include <xrpld/overlay/detail/ProtocolVersion.h>
@@ -195,6 +196,13 @@ buildHandshake(
         // what network we intend to connect to and detect if the remote
         // end connects to the same network.
         h.insert("Network-ID", std::to_string(*networkID));
+    }
+
+    if (auto* inner = app.getInnerChainEngine())
+    {
+        h.insert(
+            "Inner-Chain-ID",
+            std::to_string(inner->config().networkId));
     }
 
     h.insert("Network-Time", std::to_string(app.getTimeKeeper().now().time_since_epoch().count()));

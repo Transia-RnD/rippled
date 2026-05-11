@@ -59,10 +59,10 @@ struct ConsensusParms
     std::size_t const minCONSENSUS_PCT = 80;
 
     //! The duration a ledger may remain idle before closing
-    std::chrono::milliseconds const ledgerIDLE_INTERVAL = std::chrono::seconds{15};
+    std::chrono::milliseconds ledgerIDLE_INTERVAL = std::chrono::seconds{15};
 
     //! The number of seconds we wait minimum to ensure participation
-    std::chrono::milliseconds const ledgerMIN_CONSENSUS = std::chrono::milliseconds{1950};
+    std::chrono::milliseconds ledgerMIN_CONSENSUS = std::chrono::milliseconds{1950};
 
     /** The maximum amount of time to spend pausing for laggards.
      *
@@ -70,13 +70,13 @@ struct ConsensusParms
      *  validators don't appear to be offline that are merely waiting for
      *  laggards.
      */
-    std::chrono::milliseconds const ledgerMAX_CONSENSUS = std::chrono::seconds{15};
+    std::chrono::milliseconds ledgerMAX_CONSENSUS = std::chrono::seconds{15};
 
     //! Minimum number of seconds to wait to ensure others have computed the LCL
-    std::chrono::milliseconds const ledgerMIN_CLOSE = std::chrono::seconds{2};
+    std::chrono::milliseconds ledgerMIN_CLOSE = std::chrono::seconds{2};
 
     //! How often we check state or change positions
-    std::chrono::milliseconds const ledgerGRANULARITY = std::chrono::seconds{1};
+    std::chrono::milliseconds ledgerGRANULARITY = std::chrono::seconds{1};
 
     //! How long to wait before completely abandoning consensus
     std::size_t const ledgerABANDON_CONSENSUS_FACTOR = 10;
@@ -99,7 +99,7 @@ struct ConsensusParms
         twice the interval between proposals (0.7s) divided by
         the interval between mid and late consensus ([85-50]/100).
     */
-    std::chrono::milliseconds const avMIN_CONSENSUS_TIME = std::chrono::seconds{5};
+    std::chrono::milliseconds avMIN_CONSENSUS_TIME = std::chrono::seconds{5};
 
     //------------------------------------------------------------------------------
     // Avalanche tuning

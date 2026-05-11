@@ -16,6 +16,11 @@
 
 namespace xrpl {
 
+namespace inner {
+class InnerChainEngine;
+class InnerChainRegistry;
+}  // namespace inner
+
 namespace perf {
 class PerfLog;
 }  // namespace perf
@@ -152,6 +157,24 @@ public:
     /** Returns the number of io_context (I/O worker) threads used by the application. */
     [[nodiscard]] virtual size_t
     getNumberOfThreads() const = 0;
+
+    virtual inner::InnerChainEngine*
+    getInnerChainEngine()
+    {
+        return nullptr;
+    }
+
+    virtual inner::InnerChainEngine*
+    getInnerChainEngine(std::uint32_t /*networkId*/)
+    {
+        return nullptr;
+    }
+
+    virtual inner::InnerChainRegistry*
+    getInnerChainRegistry()
+    {
+        return nullptr;
+    }
 };
 
 std::unique_ptr<Application>

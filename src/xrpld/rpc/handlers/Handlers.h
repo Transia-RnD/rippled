@@ -148,4 +148,16 @@ json::Value
 doValidatorInfo(RPC::JsonContext&);
 json::Value
 doVaultInfo(RPC::JsonContext&);
+
+// Inner chain RPCs
+json::Value
+doInnerChainInfo(RPC::JsonContext&);
+json::Value
+doInnerAccountInfo(RPC::JsonContext&);
+json::Value
+doInnerDeposit(RPC::JsonContext&);
+json::Value
+doInnerSubmit(RPC::JsonContext&);
+json::Value
+doInnerLedger(RPC::JsonContext&);
 }  // namespace xrpl

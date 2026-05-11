@@ -1125,3 +1125,31 @@ TRANSACTION(ttUNL_MODIFY, 102, UNLModify,
     {sfLedgerSequence, SoeRequired},
     {sfUNLModifyValidator, SoeRequired},
 }))
+
+/** This system-generated transaction type commits an inner chain state root
+    to the outer ledger for finality anchoring.
+ */
+TRANSACTION(ttINNER_CHAIN_COMMIT, 103, InnerChainCommit,
+    Delegation::NotDelegable,
+    uint256{},
+    NoPriv,
+    ({
+    {sfLedgerSequence, SoeRequired},
+    {sfInnerStateRoot, SoeRequired},
+    {sfInnerChainSeq, SoeRequired},
+    {sfInnerChainId, SoeRequired},
+}))
+
+/** This system-generated transaction type credits an outer-chain account
+    for a withdrawal processed on an inner chain.
+ */
+TRANSACTION(ttINNER_CHAIN_WITHDRAW, 104, InnerChainWithdraw,
+    Delegation::NotDelegable,
+    uint256{},
+    NoPriv,
+    ({
+    {sfDestination, SoeRequired},
+    {sfAmount, SoeRequired},
+    {sfInnerChainSeq, SoeRequired},
+    {sfInnerChainId, SoeRequired},
+}))

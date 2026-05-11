@@ -1,6 +1,7 @@
 #include <xrpld/app/consensus/RCLConsensus.h>
 
 #include <xrpld/app/consensus/RCLCensorshipDetector.h>
+#include <xrpld/app/inner/InnerChainEngine.h>
 #include <xrpld/app/consensus/RCLCxLedger.h>
 #include <xrpld/app/consensus/RCLCxPeerPos.h>
 #include <xrpld/app/consensus/RCLCxTx.h>
@@ -380,6 +381,83 @@ RCLConsensus::Adaptor::onClose(
                 app_.getValidators().getTrustedMasterKeys(),
                 app_.getValidations(),
                 initialSet);
+        }
+    }
+
+    // Inner chain state root commitments (one per running inner chain)
+    if ((app_.config().standalone() || (proposing && !wrongLCL)) &&
+        (app_.config().standalone() ||
+         prevLedger->rules().enabled(featureInnerChain)))
+    {
+        if (auto* registry = app_.getInnerChainRegistry())
+        {
+            auto const outerSeq = prevLedger->seq() + 1;
+            registry->forEach([&](inner::InnerChainEngine& engine) {
+                auto info = engine.getStateRootForCommit(outerSeq);
+                if (!info)
+                    return;
+
+                STTx innerCommitTx(ttINNER_CHAIN_COMMIT, [&](auto& obj) {
+                    obj.setAccountID(sfAccount, AccountID());
+                    obj.setFieldH256(sfInnerStateRoot, info->stateRoot);
+                    obj.setFieldU32(sfInnerChainSeq, info->innerSeq);
+                    obj.setFieldU32(sfInnerChainId, info->chainId);
+                    obj.setFieldU32(sfLedgerSequence, outerSeq);
+                });
+                uint256 txID = innerCommitTx.getTransactionID();
+                Serializer s;
+                innerCommitTx.add(s);
+                initialSet->addItem(
+                    SHAMapNodeType::TnTransactionNm,
+                    makeShamapitem(txID, s.slice()));
+                JLOG(j_.info())
+                    << "InnerChainCommit[" << info->chainId << "]:"
+                    << " injected state root"
+                    << ", inner_seq=" << info->innerSeq
+                    << ", outer_seq=" << outerSeq
+                    << ", state_root=" << to_string(info->stateRoot);
+            });
+        }
+    }
+
+    // Inner chain withdrawal pseudo-transactions
+    if ((app_.config().standalone() || (proposing && !wrongLCL)) &&
+        prevLedger->rules().enabled(featureInnerChain))
+    {
+        if (auto* registry = app_.getInnerChainRegistry())
+        {
+            auto const outerSeq = prevLedger->seq() + 1;
+            registry->forEach([&](inner::InnerChainEngine& engine) {
+                auto withdrawals =
+                    engine.drainWithdrawalsForCommit(outerSeq);
+                for (auto const& wd : withdrawals)
+                {
+                    STTx withdrawTx(
+                        ttINNER_CHAIN_WITHDRAW, [&](auto& obj) {
+                            obj.setAccountID(sfAccount, AccountID());
+                            obj.setAccountID(sfDestination, wd.destination);
+                            obj.setFieldAmount(
+                                sfAmount, STAmount(wd.amount));
+                            obj.setFieldU32(
+                                sfInnerChainSeq, wd.innerSeq);
+                            obj.setFieldU32(
+                                sfInnerChainId, wd.chainId);
+                        });
+                    uint256 txID = withdrawTx.getTransactionID();
+                    Serializer s;
+                    withdrawTx.add(s);
+                    initialSet->addItem(
+                        SHAMapNodeType::TnTransactionNm,
+                        makeShamapitem(txID, s.slice()));
+                    JLOG(j_.info())
+                        << "InnerChainWithdraw[" << wd.chainId
+                        << "]: injected withdrawal"
+                        << ", dest=" << toBase58(wd.destination)
+                        << ", amount=" << wd.amount
+                        << ", inner_seq=" << wd.innerSeq
+                        << ", outer_seq=" << outerSeq;
+                }
+            });
         }
     }
 

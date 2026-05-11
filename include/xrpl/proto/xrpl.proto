@@ -101,6 +101,7 @@ message TMTransaction {
   required TransactionStatus status = 2;
   optional uint64 receiveTimestamp = 3;
   optional bool deferred = 4;  // not applied to open ledger
+  optional uint32 chainId = 20;  // 0 = outer (default), >0 = inner chain
 }
 
 message TMTransactions {
@@ -149,6 +150,8 @@ message TMProposeSet {
 
   // Number of hops traveled
   optional uint32 hops = 12 [deprecated = true];
+
+  optional uint32 chainId = 20;  // 0 = outer (default), >0 = inner chain
 }
 
 enum TxSetStatus {
@@ -194,6 +197,8 @@ message TMValidation {
 
   // Number of hops traveled
   optional uint32 hops = 3 [deprecated = true];
+
+  optional uint32 chainId = 20;  // 0 = outer (default), >0 = inner chain
 }
 
 // An array of Endpoint messages

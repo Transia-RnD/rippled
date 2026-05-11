@@ -114,6 +114,9 @@ makeResponse(
 // X-Protocol-Ctl: feature1=value1[,value2]*[\s*;\s*feature2=value1[,value2]*]*
 // value: \S+
 
+// inner chain capability
+static constexpr char kFEATURE_INNER_CHAIN[] = "innerchain";
+
 // compression feature
 static constexpr char kFEATURE_COMPR[] = "compr";
 // validation/proposal reduce-relay base squelch feature

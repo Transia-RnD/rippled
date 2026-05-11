@@ -1,5 +1,6 @@
 #include <xrpld/overlay/detail/PeerImp.h>
 
+#include <xrpld/app/inner/InnerChainEngine.h>
 #include <xrpld/app/consensus/RCLCxPeerPos.h>
 #include <xrpld/app/consensus/RCLValidations.h>
 #include <xrpld/app/ledger/InboundLedgers.h>
@@ -1412,6 +1413,27 @@ PeerImp::onMessage(std::shared_ptr<protocol::TMEndpoints> const& m)
 void
 PeerImp::onMessage(std::shared_ptr<protocol::TMTransaction> const& m)
 {
+    if (m->has_chainid() && m->chainid() > 0)
+    {
+        JLOG(pJournal_.debug())
+            << "PeerImp::onMessage(TMTransaction): inner chain dispatch"
+            << ", chainid=" << m->chainid()
+            << ", raw_size=" << m->rawtransaction().size()
+            << ", from=" << remoteAddress_.address();
+        if (auto* inner = app_.getInnerChainEngine(m->chainid()))
+        {
+            JLOG(pJournal_.debug())
+                << "PeerImp: dispatching to InnerChainEngine";
+            inner->onPeerTransaction(m);
+        }
+        else
+        {
+            JLOG(pJournal_.warn())
+                << "PeerImp: no InnerChainEngine for chainid="
+                << m->chainid();
+        }
+        return;
+    }
     handleTransaction(m, true, false);
 }
 
@@ -1853,6 +1875,14 @@ PeerImp::onMessage(std::shared_ptr<protocol::TMLedgerData> const& m)
 void
 PeerImp::onMessage(std::shared_ptr<protocol::TMProposeSet> const& m)
 {
+    if (m->has_chainid() && m->chainid() > 0)
+    {
+        if (auto* inner = app_.getInnerChainEngine(m->chainid()))
+            inner->onPeerProposal(
+                app_.getTimeKeeper().closeTime(), m);
+        return;
+    }
+
     protocol::TMProposeSet const& set = *m;
 
     auto const sig = makeSlice(set.signature());
@@ -2449,6 +2479,13 @@ PeerImp::onMessage(std::shared_ptr<protocol::TMValidatorListCollection> const& m
 void
 PeerImp::onMessage(std::shared_ptr<protocol::TMValidation> const& m)
 {
+    if (m->has_chainid() && m->chainid() > 0)
+    {
+        if (auto* inner = app_.getInnerChainEngine(m->chainid()))
+            inner->onPeerValidation(m);
+        return;
+    }
+
     if (m->validation().size() < 50)
     {
         JLOG(pJournal_.warn()) << "Validation: Too small";

@@ -245,6 +245,7 @@ private:
     bool txReduceRelayEnabled_ = false;
 
     bool ledgerReplayEnabled_ = false;
+    std::uint32_t innerChainId_ = 0;
     LedgerReplayMsgHandler ledgerReplayMsgHandler_;
 
     friend class OverlayImpl;
@@ -850,6 +851,20 @@ PeerImp::PeerImp(
 {
     readBuffer_.commit(
         boost::asio::buffer_copy(readBuffer_.prepare(boost::asio::buffer_size(buffers)), buffers));
+
+    if (auto const iter = headers_.find("Inner-Chain-ID");
+        iter != headers_.end())
+    {
+        try
+        {
+            innerChainId_ = static_cast<std::uint32_t>(
+                std::stoul(std::string(iter->value())));
+        }
+        catch (...)
+        {
+        }
+    }
+
     JLOG(journal_.info()) << "compression enabled " << (compressionEnabled_ == Compressed::On)
                           << " vp reduce-relay base squelch enabled "
                           << peerFeatureEnabled(

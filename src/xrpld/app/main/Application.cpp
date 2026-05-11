@@ -1,6 +1,7 @@
 #include <xrpld/app/main/Application.h>
 
 #include <xrpld/app/consensus/RCLValidations.h>
+#include <xrpld/app/inner/InnerChainEngine.h>
 #include <xrpld/app/ledger/InboundLedger.h>
 #include <xrpld/app/ledger/InboundLedgers.h>
 #include <xrpld/app/ledger/InboundTransactions.h>
@@ -275,6 +276,9 @@ public:
     IOLatencySampler io_latency_sampler_;
 
     std::unique_ptr<GRPCServer> grpcServer_;
+
+    // Inner chain(s) (consensus-within-consensus rollup)
+    inner::InnerChainRegistry innerChainRegistry_;
     // NOLINTEND(readability-identifier-naming)
 
     //--------------------------------------------------------------------------
@@ -1108,6 +1112,24 @@ public:
         return BasicApp::getNumberOfThreads();
     }
 
+    inner::InnerChainEngine*
+    getInnerChainEngine() override
+    {
+        return innerChainRegistry_.first();
+    }
+
+    inner::InnerChainEngine*
+    getInnerChainEngine(std::uint32_t networkId) override
+    {
+        return innerChainRegistry_.get(networkId);
+    }
+
+    inner::InnerChainRegistry*
+    getInnerChainRegistry() override
+    {
+        return &innerChainRegistry_;
+    }
+
 private:
     // For a newly-started validator, this is the greatest persisted ledger
     // and new validations must be greater than this.
@@ -1477,6 +1499,33 @@ ApplicationImp::setup(boost::program_options::variables_map const& cmdline)
 
     validatorSites_->start();
 
+    // Initialize inner chain(s) if configured
+    {
+        auto innerConfigs = inner::parseInnerChainConfigs(*config_);
+        for (auto& cfg : innerConfigs)
+        {
+            JLOG(journal_.info())
+                << "Initializing inner chain: name=" << cfg.name
+                << ", network_id=" << cfg.networkId;
+
+            auto engine = std::make_unique<inner::InnerChainEngine>(
+                *this,
+                std::move(cfg),
+                stopwatch(),
+                validatorKeys_,
+                logs_->journal("InnerChain"));
+
+            innerChainRegistry_.add(std::move(engine));
+        }
+
+        if (!innerChainRegistry_.empty())
+        {
+            JLOG(journal_.info())
+                << "Inner chain registry: "
+                << innerChainRegistry_.size() << " chain(s) configured";
+        }
+    }
+
     return true;
 }
 
@@ -1503,6 +1552,15 @@ ApplicationImp::start(bool withTimers)
 
     ledgerCleaner_->start();
     perfLog_->start();
+
+    if (!innerChainRegistry_.empty())
+    {
+        if (!innerChainRegistry_.startAll())
+        {
+            JLOG(journal_.error())
+                << "One or more inner chain engines failed to start";
+        }
+    }
 }
 
 void
@@ -1576,6 +1634,9 @@ ApplicationImp::run()
     publisherManifests_->save(getWalletDB(), "PublisherManifests", [this](PublicKey const& pubKey) {
         return getValidators().trustedPublisher(pubKey);
     });
+
+    // Stop inner chains before the rest of the shutdown sequence
+    innerChainRegistry_.stopAll();
 
     // The order of these stop calls is delicate.
     // Re-ordering them risks undefined behavior.
