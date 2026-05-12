@@ -1152,4 +1152,5 @@ TRANSACTION(ttINNER_CHAIN_WITHDRAW, 104, InnerChainWithdraw,
     {sfAmount, SoeRequired},
     {sfInnerChainSeq, SoeRequired},
     {sfInnerChainId, SoeRequired},
+    {sfInnerBridgeAccount, SoeRequired},
 }))

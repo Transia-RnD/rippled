@@ -455,6 +455,7 @@ Change::applyInnerChainCommit()
 TER
 Change::applyInnerChainWithdraw()
 {
+    auto const bridgeId = ctx_.tx.getAccountID(sfInnerBridgeAccount);
     auto const dest = ctx_.tx.getAccountID(sfDestination);
     auto const amount = ctx_.tx.getFieldAmount(sfAmount);
     auto const innerSeq = ctx_.tx.getFieldU32(sfInnerChainSeq);
@@ -463,31 +464,48 @@ Change::applyInnerChainWithdraw()
     JLOG(j_.info()) << "InnerChainWithdraw: chainId=" << chainId
                     << " innerSeq=" << innerSeq
                     << " dest=" << toBase58(dest)
+                    << " bridge=" << toBase58(bridgeId)
                     << " amount=" << amount;
 
-    auto const k = keylet::account(dest);
-    auto sle = view().peek(k);
-
-    if (!sle)
+    auto bridgeSle = view().peek(keylet::account(bridgeId));
+    if (!bridgeSle)
     {
-        // PoC: destination not found on outer chain. Funds are lost.
-        // Production: create account or hold withdrawal for retry.
-        JLOG(j_.warn())
-            << "InnerChainWithdraw: destination not found on outer chain"
-            << ", dest=" << toBase58(dest)
-            << ". Withdrawal cannot be applied.";
-        return tesSUCCESS;
+        JLOG(j_.warn()) << "InnerChainWithdraw: bridge account not found"
+                        << ", bridge=" << toBase58(bridgeId);
+        return tefINTERNAL;
     }
 
-    // PoC: directly credit XRP. Production would release from escrow/lock.
-    auto const prev = sle->getFieldAmount(sfBalance);
-    sle->setFieldAmount(sfBalance, prev + amount);
-    view().update(sle);
+    auto destSle = view().peek(keylet::account(dest));
+    if (!destSle)
+    {
+        JLOG(j_.warn()) << "InnerChainWithdraw: destination not found"
+                        << ", dest=" << toBase58(dest);
+        return tecNO_DST;
+    }
 
-    JLOG(j_.info()) << "InnerChainWithdraw: credited " << amount
+    auto const bridgeBal = bridgeSle->getFieldAmount(sfBalance);
+    if (bridgeBal < amount)
+    {
+        JLOG(j_.warn()) << "InnerChainWithdraw: bridge underfunded"
+                        << ", bridge_balance=" << bridgeBal
+                        << ", withdraw_amount=" << amount;
+        return tecINSUFFICIENT_FUNDS;
+    }
+
+    bridgeSle->setFieldAmount(sfBalance, bridgeBal - amount);
+    view().update(bridgeSle);
+
+    auto const destBal = destSle->getFieldAmount(sfBalance);
+    destSle->setFieldAmount(sfBalance, destBal + amount);
+    view().update(destSle);
+
+    JLOG(j_.info()) << "InnerChainWithdraw: released " << amount
+                    << " from bridge=" << toBase58(bridgeId)
+                    << " (bridge: " << bridgeBal << " -> "
+                    << bridgeBal - amount << ")"
                     << " to " << toBase58(dest)
-                    << " (prev=" << prev
-                    << ", new=" << prev + amount << ")";
+                    << " (dest: " << destBal << " -> "
+                    << destBal + amount << ")";
 
     return tesSUCCESS;
 }

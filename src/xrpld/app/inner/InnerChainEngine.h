@@ -39,6 +39,7 @@ struct InnerChainConfig
     std::chrono::milliseconds granularity{500};
     std::uint32_t stateRootInterval{10};
     std::string nodeDbPath;
+    AccountID bridgeAccount{};
 
     std::vector<std::string> validatorKeys;
     std::vector<std::string> validatorListKeys;

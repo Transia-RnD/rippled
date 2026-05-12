@@ -315,6 +315,7 @@ TYPED_SFIELD(sfNFTokenMinter,            ACCOUNT,    9)
 TYPED_SFIELD(sfEmitCallback,             ACCOUNT,   10)
 TYPED_SFIELD(sfHolder,                   ACCOUNT,   11)
 TYPED_SFIELD(sfDelegate,                 ACCOUNT,   12)
+TYPED_SFIELD(sfInnerBridgeAccount,       ACCOUNT,   13)
 
 // account (uncommon)
 TYPED_SFIELD(sfHookAccount,              ACCOUNT,   16)

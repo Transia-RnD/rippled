@@ -436,6 +436,9 @@ RCLConsensus::Adaptor::onClose(
                         ttINNER_CHAIN_WITHDRAW, [&](auto& obj) {
                             obj.setAccountID(sfAccount, AccountID());
                             obj.setAccountID(sfDestination, wd.destination);
+                            obj.setAccountID(
+                                sfInnerBridgeAccount,
+                                engine.config().bridgeAccount);
                             obj.setFieldAmount(
                                 sfAmount, STAmount(wd.amount));
                             obj.setFieldU32(
@@ -606,6 +609,48 @@ RCLConsensus::Adaptor::doAccept(
 
     auto const newLCLHash = built.id();
     JLOG(j_.debug()) << "Built ledger #" << built.seq() << ": " << newLCLHash;
+
+    // Auto-detect deposits: scan applied txs for Payments to bridge accounts
+    if (auto* registry = app_.getInnerChainRegistry())
+    {
+        for (auto const& item : *result.txns.map)
+        {
+            if (failed.contains(item.key()))
+                continue;
+            try
+            {
+                auto tx = std::make_shared<STTx const>(
+                    SerialIter{item.slice()});
+                if (tx->getTxnType() != ttPAYMENT)
+                    continue;
+                if (!tx->isFieldPresent(sfAmount))
+                    continue;
+                auto const amt = tx->getFieldAmount(sfAmount);
+                if (!amt.native() || amt.xrp().drops() <= 0)
+                    continue;
+
+                auto const dest = tx->getAccountID(sfDestination);
+                auto const src = tx->getAccountID(sfAccount);
+
+                registry->forEach(
+                    [&](inner::InnerChainEngine& engine) {
+                        if (dest != engine.config().bridgeAccount)
+                            return;
+                        auto const drops = amt.xrp().drops();
+                        engine.creditAccount(src, drops);
+                        JLOG(j_.info())
+                            << "BridgeDeposit[" << engine.networkId()
+                            << "]: Payment to bridge detected"
+                            << ", from=" << toBase58(src)
+                            << ", amount=" << drops
+                            << ", L2 credit queued";
+                    });
+            }
+            catch (std::exception const&)
+            {
+            }
+        }
+    }
 
     // Tell directly connected peers that we have a new LCL
     notify(protocol::neACCEPTED_LEDGER, built, haveCorrectLCL);

@@ -58,6 +58,14 @@ parseInnerChainConfigs(Config const& config)
             c.stateRootInterval =
                 section.valueOr<std::uint32_t>("state_root_interval", 10);
 
+            auto const bridgeStr =
+                section.valueOr<std::string>("bridge_account", "");
+            if (!bridgeStr.empty())
+            {
+                if (auto id = parseBase58<AccountID>(bridgeStr))
+                    c.bridgeAccount = *id;
+            }
+
             auto const dbSection = name + ".node_db";
             if (config.exists(dbSection))
             {
@@ -96,6 +104,14 @@ parseInnerChainConfigs(Config const& config)
             section.valueOr<std::uint32_t>("granularity", 500)};
         c.stateRootInterval =
             section.valueOr<std::uint32_t>("state_root_interval", 10);
+
+        auto const bridgeStr =
+            section.valueOr<std::string>("bridge_account", "");
+        if (!bridgeStr.empty())
+        {
+            if (auto id = parseBase58<AccountID>(bridgeStr))
+                c.bridgeAccount = *id;
+        }
 
         if (config.exists("inner_node_db"))
         {
@@ -662,12 +678,6 @@ std::vector<InnerChainEngine::WithdrawalRecord>
 InnerChainEngine::drainWithdrawalsForCommit(std::uint32_t outerSeq)
 {
     if (!running_)
-        return {};
-
-    if (config_.stateRootInterval == 0)
-        return {};
-
-    if (outerSeq % config_.stateRootInterval != 0)
         return {};
 
     std::lock_guard lock(withdrawalMutex_);
