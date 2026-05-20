@@ -167,6 +167,22 @@ PeerImp::PeerImp(
           peerFeatureEnabled(headers_, kFeatureLedgerReplay, app_.config().LEDGER_REPLAY))
     , ledgerReplayMsgHandler_(app, app.getLedgerReplayer())
 {
+    // Increase TCP buffer sizes for quantum signature support
+    // Default macOS buffers are only 128KB, which can cause "stream truncated"
+    // errors when multiple validators send large quantum signatures simultaneously
+    try
+    {
+        constexpr int bufferSize = 1024 * 1024;  // 1 MB
+        socket_.set_option(
+            boost::asio::socket_base::send_buffer_size(bufferSize));
+        socket_.set_option(
+            boost::asio::socket_base::receive_buffer_size(bufferSize));
+    }
+    catch (std::exception const& e)
+    {
+        JLOG(journal_.warn()) << "Failed to set socket buffer sizes: " << e.what();
+    }
+
     JLOG(journal_.info()) << "compression enabled " << (compressionEnabled_ == Compressed::On)
                           << " vp reduce-relay base squelch enabled "
                           << peerFeatureEnabled(
@@ -1856,14 +1872,21 @@ PeerImp::onMessage(std::shared_ptr<protocol::TMProposeSet> const& m)
     protocol::TMProposeSet const& set = *m;
 
     auto const sig = makeSlice(set.signature());
+    auto const keyType = publicKeyType(makeSlice(set.nodepubkey()));
 
-    // Preliminary check for the validity of the signature: A DER encoded
-    // signature can't be longer than 72 bytes.
-    if ((std::clamp<std::size_t>(sig.size(), 64, 72) != sig.size()) ||
-        (publicKeyType(makeSlice(set.nodepubkey())) != KeyType::Secp256k1))
+    // Validate signature size based on key type:
+    // dilithium (ML-DSA-44): up to 2420 bytes
+    // secp256k1/ed25519: up to 72 bytes (DER encoded)
+    if (!keyType ||
+        (keyType == KeyType::dilithium &&
+         std::clamp<std::size_t>(sig.size(), 64, 2420) != sig.size()) ||
+        (keyType != KeyType::dilithium &&
+         std::clamp<std::size_t>(sig.size(), 64, 72) != sig.size()))
     {
         JLOG(pJournal_.warn()) << "Proposal: malformed";
-        fee_.update(Resource::kFeeInvalidSignature, " signature can't be longer than 72 bytes");
+        fee_.update(
+            Resource::kFeeInvalidSignature,
+            " invalid signature size for key type");
         return;
     }
 

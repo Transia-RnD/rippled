@@ -1045,6 +1045,12 @@ Config::loadFromString(std::string const& fileContents)
             if (valListThreshold != nullptr)
                 section(SECTION_VALIDATOR_LIST_THRESHOLD).append(*valListThreshold);
 
+            auto valKeyType =
+                getIniFileSection(iniFile, SECTION_VALIDATOR_KEY_TYPE);
+
+            if (valKeyType)
+                section(SECTION_VALIDATOR_KEY_TYPE).append(*valKeyType);
+
             if ((entries == nullptr) && (valKeyEntries == nullptr) && (valListKeys == nullptr))
             {
                 Throw<std::runtime_error>(

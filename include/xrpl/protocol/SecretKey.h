@@ -20,7 +20,10 @@ public:
     static constexpr std::size_t kSize = 32;
 
 private:
-    std::uint8_t buf_[kSize]{};
+    // Dilithium secret keys are 2528 bytes; ed25519/secp256k1 are 32.
+    // Buffer sized for the largest supported key; actual length in size_.
+    std::uint8_t buf_[2560]{};
+    std::size_t size_ = 0;
 
 public:
     using const_iterator = std::uint8_t const*;
@@ -38,6 +41,7 @@ public:
     ~SecretKey();
 
     SecretKey(std::array<std::uint8_t, kSize> const& data);
+    SecretKey(std::array<std::uint8_t, 2560> const& data);
     SecretKey(Slice const& slice);
 
     [[nodiscard]] std::uint8_t const*
@@ -49,7 +53,7 @@ public:
     [[nodiscard]] std::size_t
     size() const
     {
-        return sizeof(buf_);
+        return size_;
     }
 
     /** Convert the secret key to a hexadecimal string.
@@ -75,13 +79,13 @@ public:
     [[nodiscard]] const_iterator
     end() const noexcept
     {
-        return buf_ + sizeof(buf_);
+        return buf_ + size_;
     }
 
     [[nodiscard]] const_iterator
     cend() const noexcept
     {
-        return buf_ + sizeof(buf_);
+        return buf_ + size_;
     }
 };
 
@@ -107,6 +111,10 @@ toBase58(TokenType type, SecretKey const& sk)
 /** Create a secret key using secure random numbers. */
 SecretKey
 randomSecretKey();
+
+/** Create a secret key using secure random numbers. */
+SecretKey
+randomSecretKey(KeyType type);
 
 /** Generate a new secret key deterministically. */
 SecretKey

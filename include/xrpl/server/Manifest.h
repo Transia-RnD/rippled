@@ -323,7 +323,7 @@ public:
 
         @param m Manifest to add
 
-        @return `ManifestDisposition::accepted` if successful, or
+        @return `ManifestDisposition::Accepted` if successful, or
                 `stale` or `invalid` otherwise
 
         @par Thread Safety

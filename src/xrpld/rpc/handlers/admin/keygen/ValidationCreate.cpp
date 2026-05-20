@@ -39,10 +39,10 @@ doValidationCreate(RPC::JsonContext& context)
     if (!seed)
         return rpcError(RpcBadSeed);
 
-    auto const privateKey = generateSecretKey(KeyType::Secp256k1, *seed);
+    auto const privateKey = generateSecretKey(KeyType::dilithium, *seed);
 
     obj[jss::validation_public_key] =
-        toBase58(TokenType::NodePublic, derivePublicKey(KeyType::Secp256k1, privateKey));
+        toBase58(TokenType::NodePublic, derivePublicKey(KeyType::dilithium, privateKey));
 
     obj[jss::validation_private_key] = toBase58(TokenType::NodePrivate, privateKey);
 

@@ -734,8 +734,10 @@ class NegativeUNLVoteInternal_test : public beast::unit_test::Suite
 
         // one add, one remove
         auto txSet = std::make_shared<SHAMap>(SHAMapType::TRANSACTION, env.app().getNodeFamily());
-        PublicKey const toDisableKey(derivePublicKey(KeyType::Ed25519, randomSecretKey()));
-        PublicKey const toReEnableKey(derivePublicKey(KeyType::Ed25519, randomSecretKey()));
+        PublicKey const toDisableKey(
+            derivePublicKey(KeyType::dilithium, randomSecretKey(KeyType::dilithium)));
+        PublicKey const toReEnableKey(
+            derivePublicKey(KeyType::dilithium, randomSecretKey(KeyType::dilithium)));
         LedgerIndex const seq(1234);
         BEAST_EXPECT(countTx(txSet) == 0);
         vote.addTx(seq, toDisableKey, NegativeUNLVote::NegativeUNLModify::ToDisable, txSet);

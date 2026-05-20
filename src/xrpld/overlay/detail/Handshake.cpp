@@ -291,7 +291,7 @@ verifyHandshake(
 
             if (pk)
             {
-                if (publicKeyType(*pk) != KeyType::Secp256k1)
+                if (publicKeyType(*pk) != KeyType::dilithium)
                     throw std::runtime_error("Unsupported public key type");
 
                 return *pk;
@@ -315,7 +315,7 @@ verifyHandshake(
 
         auto sig = base64Decode(iter->value());
 
-        if (!verifyDigest(publicKey, sharedValue, makeSlice(sig), false))
+        if (!xrpl::verifyDigest(publicKey, sharedValue, makeSlice(sig), false))
             throw std::runtime_error("Failed to verify session");
     }
 
