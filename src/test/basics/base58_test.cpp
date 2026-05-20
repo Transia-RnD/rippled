@@ -425,10 +425,40 @@ class base58_test : public beast::unit_test::Suite
     }
 
     void
+    testLengthCeiling()
+    {
+        // Regression: the reference base58 decoder must reject pathological
+        // inputs to bound the O(n^2) decode loop. The ceiling has to be
+        // large enough for the longest legitimate token (a dilithium
+        // NodePublic — 1317 binary bytes, ~1806 base58 chars) but reject
+        // anything that could be used as a CPU/memory amplification vector.
+        testcase("length_ceiling");
+
+        // A 1-MB base58 input must be rejected (DoS guard).
+        std::string huge(1u << 20, 'r');  // 'r' is in the base58 alphabet
+        BEAST_EXPECT(b58_ref::detail::decodeBase58(huge).empty());
+
+        // Length just above the ceiling is rejected.
+        std::string overCeiling(5000, 'r');
+        BEAST_EXPECT(b58_ref::detail::decodeBase58(overCeiling).empty());
+
+        // A dilithium-sized token (~1806 chars) must still decode.
+        // We don't care about the exact bytes — only that the decoder
+        // produced non-empty output for an input in the legitimate range.
+        std::string dilithiumSized(1806, 'r');
+        BEAST_EXPECT(!b58_ref::detail::decodeBase58(dilithiumSized).empty());
+
+        // A short token (the legacy 33-byte NodePublic at ~44 chars) still works.
+        std::string legacySized(44, 'r');
+        BEAST_EXPECT(!b58_ref::detail::decodeBase58(legacySized).empty());
+    }
+
+    void
     run() override
     {
         testMultiprecision();
         testFastMatchesRef();
+        testLengthCeiling();
     }
 };
 

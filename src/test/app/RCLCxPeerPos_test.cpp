@@ -11,7 +11,7 @@
 namespace xrpl {
 namespace test {
 
-class RCLCxPeerPos_test : public beast::unit_test::suite
+class RCLCxPeerPos_test : public beast::unit_test::Suite
 {
     void
     testDilithiumProposalSignature()
@@ -37,7 +37,7 @@ class RCLCxPeerPos_test : public beast::unit_test::suite
 
         // Calculate signing hash (same as ConsensusProposal::signingHash())
         uint256 const signingHash = sha512Half(
-            HashPrefix::proposal,
+            HashPrefix::Proposal,
             std::uint32_t(proposal.proposeSeq()),
             proposal.closeTime().time_since_epoch().count(),
             proposal.prevLedger(),
@@ -88,7 +88,7 @@ class RCLCxPeerPos_test : public beast::unit_test::suite
 
         // Calculate signing hash
         uint256 const signingHash = sha512Half(
-            HashPrefix::proposal,
+            HashPrefix::Proposal,
             std::uint32_t(proposal.proposeSeq()),
             proposal.closeTime().time_since_epoch().count(),
             proposal.prevLedger(),
@@ -145,7 +145,7 @@ class RCLCxPeerPos_test : public beast::unit_test::suite
 
         // Calculate signing hash
         uint256 const signingHash = sha512Half(
-            HashPrefix::proposal,
+            HashPrefix::Proposal,
             std::uint32_t(proposal.proposeSeq()),
             proposal.closeTime().time_since_epoch().count(),
             proposal.prevLedger(),
@@ -200,7 +200,7 @@ class RCLCxPeerPos_test : public beast::unit_test::suite
 
         // Calculate signing hash
         uint256 const signingHash = sha512Half(
-            HashPrefix::proposal,
+            HashPrefix::Proposal,
             std::uint32_t(proposal.proposeSeq()),
             proposal.closeTime().time_since_epoch().count(),
             proposal.prevLedger(),

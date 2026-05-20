@@ -3,8 +3,13 @@ include(FetchContent)
 ExternalProject_Add(
   dilithium_src
   PREFIX ${nih_cache_path}
+  # Pin to an explicit commit, not a moving branch ref. Bumping this SHA
+  # is a supply-chain decision that must be reviewed; never revert to a
+  # branch tag here. Upstream:
+  #   https://github.com/Transia-RnD/dilithium/commit/3032292cfd4d94e0df9bd49a0098669ca9166aa1
   GIT_REPOSITORY https://github.com/Transia-RnD/dilithium.git
-  GIT_TAG master
+  GIT_TAG 3032292cfd4d94e0df9bd49a0098669ca9166aa1
+  GIT_SHALLOW FALSE
   CONFIGURE_COMMAND ""
   LOG_BUILD ON
   BUILD_IN_SOURCE 0

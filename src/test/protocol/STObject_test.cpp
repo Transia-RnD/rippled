@@ -36,9 +36,9 @@ public:
     {
         testcase("serialization");
 
-        unexpected(kSfGeneric.isUseful(), "sfGeneric must not be useful");
+        unexpected(kSfGeneric.isUseful(), "kSfGeneric must not be useful");
         {
-            // Try to put sfGeneric in an SOTemplate.
+            // Try to put kSfGeneric in an SOTemplate.
             except<std::runtime_error>(
                 [&]() { SOTemplate const elements{{kSfGeneric, SoeRequired}}; });
         }

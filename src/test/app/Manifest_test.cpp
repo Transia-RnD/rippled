@@ -925,40 +925,40 @@ public:
             auto const s_b2 = makeManifest(
                 sk_b, KeyType::dilithium, kp_b2.second, KeyType::dilithium, 2);
 
-            auto const fake = sB2.serialized + '\0';
+            auto const fake = s_b2.serialized + '\0';
 
             // applyManifest should accept new manifests with
             // higher sequence numbers
             auto const seq0 = cache.sequence();
-            BEAST_EXPECT(cache.applyManifest(clone(sA0)) == ManifestDisposition::Accepted);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a0)) == ManifestDisposition::Accepted);
             BEAST_EXPECT(cache.sequence() > seq0);
 
             auto const seq1 = cache.sequence();
-            BEAST_EXPECT(cache.applyManifest(clone(sA0)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a0)) == ManifestDisposition::Stale);
             BEAST_EXPECT(cache.sequence() == seq1);
 
-            BEAST_EXPECT(cache.applyManifest(clone(sA1)) == ManifestDisposition::Accepted);
-            BEAST_EXPECT(cache.applyManifest(clone(sA1)) == ManifestDisposition::Stale);
-            BEAST_EXPECT(cache.applyManifest(clone(sA0)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a1)) == ManifestDisposition::Accepted);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a1)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a0)) == ManifestDisposition::Stale);
 
-            BEAST_EXPECT(cache.applyManifest(clone(sA2)) == ManifestDisposition::BadEphemeralKey);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a2)) == ManifestDisposition::BadEphemeralKey);
 
             // applyManifest should accept manifests with max sequence numbers
             // that revoke the master public key
-            BEAST_EXPECT(!cache.revoked(pkA));
-            BEAST_EXPECT(sAMax.revoked());
-            BEAST_EXPECT(cache.applyManifest(clone(sAMax)) == ManifestDisposition::Accepted);
-            BEAST_EXPECT(cache.applyManifest(clone(sAMax)) == ManifestDisposition::Stale);
-            BEAST_EXPECT(cache.applyManifest(clone(sA1)) == ManifestDisposition::Stale);
-            BEAST_EXPECT(cache.applyManifest(clone(sA0)) == ManifestDisposition::Stale);
-            BEAST_EXPECT(cache.revoked(pkA));
+            BEAST_EXPECT(!cache.revoked(pk_a));
+            BEAST_EXPECT(s_aMax.revoked());
+            BEAST_EXPECT(cache.applyManifest(clone(s_aMax)) == ManifestDisposition::Accepted);
+            BEAST_EXPECT(cache.applyManifest(clone(s_aMax)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a1)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a0)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.revoked(pk_a));
 
             // applyManifest should reject manifests with invalid signatures
-            BEAST_EXPECT(cache.applyManifest(clone(sB0)) == ManifestDisposition::Accepted);
-            BEAST_EXPECT(cache.applyManifest(clone(sB0)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_b0)) == ManifestDisposition::Accepted);
+            BEAST_EXPECT(cache.applyManifest(clone(s_b0)) == ManifestDisposition::Stale);
             BEAST_EXPECT(!deserializeManifest(fake));
-            BEAST_EXPECT(cache.applyManifest(clone(sB1)) == ManifestDisposition::Invalid);
-            BEAST_EXPECT(cache.applyManifest(clone(sB2)) == ManifestDisposition::Accepted);
+            BEAST_EXPECT(cache.applyManifest(clone(s_b1)) == ManifestDisposition::Invalid);
+            BEAST_EXPECT(cache.applyManifest(clone(s_b2)) == ManifestDisposition::Accepted);
 
             auto const s_c0 = makeManifest(
                 kp_b2.second,
@@ -968,7 +968,7 @@ public:
                 47);
             BEAST_EXPECT(
                 cache.applyManifest(clone(s_c0)) ==
-                ManifestDisposition::badMasterKey);
+                ManifestDisposition::BadMasterKey);
         }
 
         testLoadStore(cache);

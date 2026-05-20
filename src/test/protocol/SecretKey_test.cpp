@@ -403,7 +403,12 @@ public:
                 Seed{makeSlice(test.seed)});
 
             BEAST_EXPECT(kp.first == PublicKey{makeSlice(test.pubkey)});
-            BEAST_EXPECT(kp.second == SecretKey{makeSlice(test.seckey)});
+            {
+                auto const expectedSec = SecretKey{makeSlice(test.seckey)};
+                BEAST_EXPECT(
+                    Slice(kp.second.data(), kp.second.size()) ==
+                    Slice(expectedSec.data(), expectedSec.size()));
+            }
             BEAST_EXPECT(calcAccountID(kp.first) == *id);
         }
     }

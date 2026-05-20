@@ -259,7 +259,13 @@ decodeBase58(std::string const& s)
         --remain;
     }
 
-    // *** Removed the 64-char limit here ***
+    // Cap input length to bound CPU (decode loop is O(n^2)) and memory.
+    // The largest legitimate token is a dilithium NodePublic
+    // (1 type byte + 1312 key bytes + 4 checksum = 1317 bytes), which
+    // encodes to ~1806 base58 characters. 4096 leaves a comfortable
+    // margin while still rejecting pathological inputs.
+    if (remain > 4096)
+        return {};
 
     // Allocate enough space in big-endian base256 representation.
     // log(58) / log(256), rounded up.

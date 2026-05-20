@@ -101,7 +101,8 @@ STValidation::isValid() const noexcept
     if (!valid_)
     {
         XRPL_ASSERT(
-            publicKeyType(getSignerPublic()) == KeyType::dilithium,
+            (publicKeyType(getSignerPublic()) == KeyType::Secp256k1 ||
+             publicKeyType(getSignerPublic()) == KeyType::dilithium),
             "xrpl::STValidation::isValid : valid key type");
 
         valid_ = verifyDigest(

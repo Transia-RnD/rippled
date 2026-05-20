@@ -23,7 +23,7 @@
 
 namespace xrpl {
 namespace test {
-class Wildcard_test : public beast::unit_test::suite
+class Wildcard_test : public beast::unit_test::Suite
 {
     std::unique_ptr<Config>
     makeNetworkConfig(uint32_t networkID)
@@ -36,7 +36,7 @@ class Wildcard_test : public beast::unit_test::suite
                 {"reference_fee = 10",
                  "account_reserve = 1000000",
                  "owner_reserve = 200000"});
-            auto setup = setup_FeeVote(config);
+            auto setup = setupFeeVote(config);
             cfg->FEES = setup;
             return cfg;
         });
@@ -60,7 +60,7 @@ class Wildcard_test : public beast::unit_test::suite
             env.fund(XRP(1000), alice, bob, carol, dave);
             env.close();
 
-            Json::Value jv;
+            json::Value jv;
             jv[jss::Account] = alice.human();
             jv[jss::Destination] = bob.human();
             jv[jss::TransactionType] = "Payment";
@@ -68,14 +68,14 @@ class Wildcard_test : public beast::unit_test::suite
 
             // lambda that submits an STTx and returns the resulting JSON.
             auto submitSTTx = [&env](STTx const& stx) {
-                Json::Value jvResult;
+                json::Value jvResult;
                 jvResult[jss::tx_blob] = strHex(stx.getSerializer().slice());
                 return env.rpc("json", "submit", to_string(jvResult));
             };
 
             // Account/RegularKey Sign
             {
-                JTx tx = env.jt(jv, sig(bob));
+                JTx tx = env.jt(jv, Sig(bob));
                 STTx local = *(tx.stx);
                 auto const info = submitSTTx(local);
                 auto const tecResult =
@@ -89,7 +89,7 @@ class Wildcard_test : public beast::unit_test::suite
                 env(signers(alice, 1, {{bob, 1}, {carol, 1}}));
                 env.close();
 
-                JTx tx = env.jt(jv, msig(dave), fee(XRP(1)));
+                JTx tx = env.jt(jv, Msig(dave), Fee(XRP(1)));
                 STTx local = *(tx.stx);
                 auto const info = submitSTTx(local);
                 auto const tecResult =
@@ -118,7 +118,7 @@ class Wildcard_test : public beast::unit_test::suite
         env(pay(dave, bob, XRP(100)));
         env.close();
 
-        Json::Value params;
+        json::Value params;
         params[jss::ledger_index] = env.current()->seq() - 1;
         params[jss::transactions] = true;
         params[jss::expand] = true;
@@ -138,7 +138,7 @@ public:
     run() override
     {
         using namespace test::jtx;
-        auto const sa = testable_amendments();
+        auto const sa = testableAmendments();
         testWithFeats(sa);
     }
 };

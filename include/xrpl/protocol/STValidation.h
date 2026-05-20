@@ -151,7 +151,13 @@ STValidation::STValidation(SerialIter& sit, LookupNodeID&& lookupNodeID, bool ch
     , signingPubKey_([this]() {
         auto const spk = getFieldVL(sfSigningPubKey);
 
-        if (publicKeyType(makeSlice(spk)) != KeyType::dilithium)
+        // Validations are signed with either the legacy secp256k1 key
+        // (pre-amendment) or the new dilithium key (post-amendment). Mixed
+        // sets are expected during the rolling upgrade. Ed25519 has never
+        // been valid for validations and is still rejected. verifyDigest()
+        // dispatches per keytype.
+        auto const kt = publicKeyType(makeSlice(spk));
+        if (kt != KeyType::Secp256k1 && kt != KeyType::dilithium)
             Throw<std::runtime_error>("Invalid public key in validation");
 
         return PublicKey{makeSlice(spk)};
@@ -193,9 +199,12 @@ STValidation::STValidation(
         "xrpl::STValidation::STValidation(PublicKey, SecretKey) : nonzero "
         "node");
 
-    // First, set our own public key:
-    if (publicKeyType(pk) != KeyType::dilithium)
-        logicError("We can only use dilithium keys for signing validations");
+    // First, set our own public key. Only secp256k1 (legacy) and dilithium
+    // (post-quantum) are valid for signing validations; Ed25519 has never
+    // been supported here.
+    if (auto const kt = publicKeyType(pk);
+        kt != KeyType::Secp256k1 && kt != KeyType::dilithium)
+        logicError("Validation signing requires secp256k1 or dilithium key");
 
     setFieldVL(sfSigningPubKey, pk.slice());
     setFieldU32(sfSigningTime, signTime.time_since_epoch().count());

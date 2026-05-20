@@ -16,7 +16,7 @@
 namespace xrpl {
 namespace test {
 
-class SignatureVerification_test : public beast::unit_test::suite
+class SignatureVerification_test : public beast::unit_test::Suite
 {
 public:
     void 
@@ -49,7 +49,7 @@ public:
         });
         
         tx.sign(keypair.first, keypair.second);
-        std::unordered_set<uint256, beast::uhash<>> const presets;
+        std::unordered_set<uint256, beast::Uhash<>> const presets;
         Rules const defaultRules{presets};
         auto start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < iterations; ++i)

@@ -291,7 +291,11 @@ verifyHandshake(
 
             if (pk)
             {
-                if (publicKeyType(*pk) != KeyType::dilithium)
+                // Peers identify with either a legacy secp256k1 node key
+                // (pre-amendment) or a dilithium node key (post-amendment).
+                // Ed25519 has never been valid for node identity.
+                auto const kt = publicKeyType(*pk);
+                if (kt != KeyType::Secp256k1 && kt != KeyType::dilithium)
                     throw std::runtime_error("Unsupported public key type");
 
                 return *pk;

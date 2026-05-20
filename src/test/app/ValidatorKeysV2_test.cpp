@@ -1,7 +1,7 @@
 #include <test/jtx/Env.h>
 
-#include <xrpld/app/misc/Manifest.h>
 #include <xrpld/app/misc/ValidatorKeys.h>
+#include <xrpl/server/Manifest.h>
 #include <xrpld/core/Config.h>
 #include <xrpld/core/ConfigSections.h>
 
@@ -13,7 +13,7 @@
 namespace xrpl {
 namespace test {
 
-class ValidatorKeysV2_test : public beast::unit_test::suite
+class ValidatorKeysV2_test : public beast::unit_test::Suite
 {
     struct KeyTypeTestData
     {
@@ -650,7 +650,9 @@ class ValidatorKeysV2_test : public beast::unit_test::suite
             if (BEAST_EXPECT(k.keys))
             {
                 BEAST_EXPECT(k.keys->publicKey == seedPublicKey);
-                BEAST_EXPECT(k.keys->secretKey == seedSecretKey);
+                BEAST_EXPECT(
+                    Slice(k.keys->secretKey.data(), k.keys->secretKey.size()) ==
+                    Slice(seedSecretKey.data(), seedSecretKey.size()));
             }
             BEAST_EXPECT(k.nodeID == seedNodeID);
             BEAST_EXPECT(k.manifest.empty());
@@ -678,7 +680,9 @@ class ValidatorKeysV2_test : public beast::unit_test::suite
             if (BEAST_EXPECT(k.keys))
             {
                 BEAST_EXPECT(k.keys->publicKey == tokenPublicKey);
-                BEAST_EXPECT(k.keys->secretKey == tokenSecretKey);
+                BEAST_EXPECT(
+                    Slice(k.keys->secretKey.data(), k.keys->secretKey.size()) ==
+                    Slice(tokenSecretKey.data(), tokenSecretKey.size()));
             }
             BEAST_EXPECT(k.nodeID == tokenNodeID);
             BEAST_EXPECT(k.manifest == testData.tokenManifest);
@@ -731,8 +735,8 @@ public:
             *this,
             test::jtx::envconfig(),
             nullptr,
-            beast::severities::kDisabled};
-        beast::Journal journal{env.app().journal("ValidatorKeys_test")};
+            beast::Severity::Disabled};
+        beast::Journal journal{env.app().getJournal("ValidatorKeys_test")};
 
         // Test both secp256k1 and dilithium key types
         // testKeyType(secpData, journal);

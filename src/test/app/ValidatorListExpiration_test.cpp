@@ -1,7 +1,7 @@
 #include <test/jtx.h>
 
 #include <xrpld/app/misc/ValidatorList.h>
-#include <xrpld/app/misc/Manifest.h>
+#include <xrpl/server/Manifest.h>
 #include <xrpl/basics/base64.h>
 #include <xrpl/basics/chrono.h>
 #include <xrpl/protocol/PublicKey.h>
@@ -24,7 +24,7 @@ namespace test {
  *   if (!when || *when < now)
  *       validating_ = false;  // Bow out of consensus!
  */
-class ValidatorListExpiration_test : public beast::unit_test::suite
+class ValidatorListExpiration_test : public beast::unit_test::Suite
 {
 private:
     // Helper: create a manifest string (from ValidatorList_test.cpp)
@@ -36,7 +36,7 @@ private:
         SecretKey const& ssk,
         int seq)
     {
-        STObject st(sfGeneric);
+        STObject st(kSfGeneric);
         st[sfSequence] = seq;
         st[sfPublicKey] = pk;
 
@@ -73,13 +73,13 @@ private:
             if (m)
                 data += "{\"validation_public_key\":\"" +
                     strHex(m->masterKey) + "\",\"manifest\":\"" +
-                    base64_encode(manifest) + "\"},";
+                    base64Encode(manifest) + "\"},";
         }
 
         if (!validatorManifests.empty())
             data.pop_back();  // Remove trailing comma
         data += "]}";
-        return base64_encode(data);
+        return base64Encode(data);
     }
 
     // Helper: sign validator list blob
@@ -101,7 +101,7 @@ private:
 
         // Scenario: No validator list loaded at all
         // Expected: expires() should return nullopt
-        auto expiration = env.app().validators().expires();
+        auto expiration = env.app().getValidators().expires();
 
         BEAST_EXPECT(!expiration.has_value());
         log << "With no VL loaded, expires() = nullopt" << std::endl;
@@ -240,22 +240,22 @@ private:
             << std::endl;
 
         // Build the blob content
-        Json::Value blobContent;
+        json::Value blobContent;
         blobContent["sequence"] = 1;
         blobContent["effective"] = effectiveRipple;
         blobContent["expiration"] = expirationRipple;
 
         // Add validator
-        Json::Value validators(Json::arrayValue);
-        Json::Value val;
+        json::Value validators(json::ValueType::Array);
+        json::Value val;
         val["validation_public_key"] = strHex(validatorPubKey);
         val["manifest"] = "";
         validators.append(val);
         blobContent["validators"] = validators;
 
         // Encode blob
-        std::string blobJson = Json::FastWriter().write(blobContent);
-        std::string blob = base64_encode(blobJson);
+        std::string blobJson = json::FastWriter().write(blobContent);
+        std::string blob = base64Encode(blobJson);
 
         // Sign the blob
         auto blobHash = sha512Half(makeSlice(blob));
@@ -352,20 +352,20 @@ private:
             (now + std::chrono::seconds(31536000)).time_since_epoch().count();
 
         // Build blob
-        Json::Value blobContent;
+        json::Value blobContent;
         blobContent["sequence"] = 1;
         blobContent["effective"] = effectiveRipple;
         blobContent["expiration"] = expirationRipple;
 
-        Json::Value validators(Json::arrayValue);
-        Json::Value val;
+        json::Value validators(json::ValueType::Array);
+        json::Value val;
         val["validation_public_key"] = strHex(validatorPubKey);
         val["manifest"] = "";
         validators.append(val);
         blobContent["validators"] = validators;
 
-        std::string blobJson = Json::FastWriter().write(blobContent);
-        std::string blob = base64_encode(blobJson);
+        std::string blobJson = json::FastWriter().write(blobContent);
+        std::string blob = base64Encode(blobJson);
 
         auto blobHash = sha512Half(makeSlice(blob));
         auto signature = signDigest(publisherPubKey, publisherSecKey, blobHash);

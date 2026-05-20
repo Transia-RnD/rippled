@@ -49,14 +49,14 @@ getNodeIdentity(Application& app, boost::program_options::variables_map const& c
             auto const keyTypeStr =
                 app.config().section(SECTION_VALIDATOR_KEY_TYPE).lines().front();
             auto const parsedKeyType = keyTypeFromString(keyTypeStr);
-            if (parsedKeyType)
+            if (!parsedKeyType)
             {
-                keyType = *parsedKeyType;
+                Throw<std::runtime_error>(
+                    "Invalid key type specified in [" SECTION_VALIDATOR_KEY_TYPE
+                    "]: " +
+                    keyTypeStr);
             }
-            throw std::runtime_error(
-                "Invalid key type specified in [" SECTION_VALIDATOR_KEY_TYPE
-                "]: " +
-                keyTypeStr);
+            keyType = *parsedKeyType;
         }
 
         auto secretKey = generateSecretKey(keyType, *seed);

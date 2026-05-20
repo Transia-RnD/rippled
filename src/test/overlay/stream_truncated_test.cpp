@@ -29,7 +29,7 @@ namespace test {
  * 3. The receiving peer's onReadMessage gets an incomplete message
  */
 
-class stream_truncated_test : public beast::unit_test::suite
+class stream_truncated_test : public beast::unit_test::Suite
 {
 private:
     using io_context_type = boost::asio::io_context;
@@ -348,7 +348,7 @@ public:
             beast::setCurrentThreadName("io_context");
             this->io_context_.run();
         }))
-        , context_(make_SSLContext(""))
+        , context_(makeSslContext(""))
     {
     }
 

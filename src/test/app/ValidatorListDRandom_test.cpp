@@ -1,6 +1,6 @@
 #include <test/jtx.h>
 
-#include <xrpld/app/misc/Manifest.h>
+#include <xrpl/server/Manifest.h>
 #include <xrpld/app/misc/ValidatorList.h>
 #include <xrpl/basics/Slice.h>
 #include <xrpl/basics/base64.h>
@@ -51,21 +51,21 @@ namespace test {
  *   ]
  * }
  */
-class ValidatorList_Dilithium_test : public beast::unit_test::suite
+class ValidatorList_Dilithium_test : public beast::unit_test::Suite
 {
 private:
     /**
      * Load and parse the validator list JSON file
      */
-    std::optional<Json::Value>
+    std::optional<json::Value>
     loadValidatorList(std::string const& path)
     {
         std::ifstream file(path);
         if (!file.is_open())
             return std::nullopt;
 
-        Json::Value vl;
-        Json::Reader reader;
+        json::Value vl;
+        json::Reader reader;
         if (!reader.parse(file, vl))
             return std::nullopt;
 
@@ -75,15 +75,15 @@ private:
     /**
      * Decode and parse the base64-encoded blob
      */
-    std::optional<Json::Value>
+    std::optional<json::Value>
     decodeBlob(std::string const& blob)
     {
         auto decoded = base64Decode(blob);
         if (decoded.empty())
             return std::nullopt;
 
-        Json::Value data;
-        Json::Reader reader;
+        json::Value data;
+        json::Reader reader;
         if (!reader.parse(decoded, data))
             return std::nullopt;
 
@@ -140,7 +140,7 @@ private:
         // Set the test environment time to current real time
         // This allows us to test a live vl.json with real timestamps
         std::time_t nowUnix = std::time(nullptr);
-        NetClock::time_point nowRipple{NetClock::duration{nowUnix - epoch_offset.count()}};
+        NetClock::time_point nowRipple{NetClock::duration{nowUnix - kEpochOffset.count()}};
         env.timeKeeper().set(nowRipple);
         log << "Set test time to now: " << env.timeKeeper().now().time_since_epoch().count()
             << " (Ripple), " << nowUnix << " (Unix)" << std::endl;
@@ -197,8 +197,8 @@ private:
                 log << "Blob expiration (Ripple time): " << expirationRipple << std::endl;
 
                 // Convert to Unix time for human readability
-                std::time_t effectiveUnix = effectiveRipple + epoch_offset.count();
-                std::time_t expirationUnix = expirationRipple + epoch_offset.count();
+                std::time_t effectiveUnix = effectiveRipple + kEpochOffset.count();
+                std::time_t expirationUnix = expirationRipple + kEpochOffset.count();
                 std::time_t nowUnix = std::time(nullptr);
 
                 log << "Blob effective (Unix): " << effectiveUnix << " vs now: " << nowUnix << std::endl;
@@ -224,12 +224,12 @@ private:
 
             // Configure the publisher key as trusted in the app's validators
             std::vector<std::string> publisherKeys = {publisherKeyHex};
-            BEAST_EXPECT(env.app().validators().load({}, {}, publisherKeys));
+            BEAST_EXPECT(env.app().getValidators().load({}, {}, publisherKeys));
 
             ValidatorBlobInfo blobInfo{blob, signature, manifest};
 
-            // Apply the list using the PRODUCTION code path - env.app().validators()
-            auto result = env.app().validators().applyLists(
+            // Apply the list using the PRODUCTION code path - env.app().getValidators()
+            auto result = env.app().getValidators().applyLists(
                 manifest,
                 version,
                 {blobInfo},
@@ -237,13 +237,13 @@ private:
 
             log << "applyLists disposition: " << to_string(result.bestDisposition()) << std::endl;
 
-            // Test the EXACT PRODUCTION code path: env.app().validators().expires()
+            // Test the EXACT PRODUCTION code path: env.app().getValidators().expires()
             // This is what RCLConsensus checks at RCLConsensus.cpp:991:
             //   auto const when = app_.validators().expires();
             //   if (!when || *when < now)
             //       validating_ = false;  // Bow out of consensus!
 
-            auto when = env.app().validators().expires();
+            auto when = env.app().getValidators().expires();
             auto now = env.timeKeeper().now();
 
             log << "Current time (NetClock): " << now.time_since_epoch().count() << std::endl;
@@ -277,12 +277,12 @@ private:
             }
 
             // Test other production code paths
-            auto count = env.app().validators().count();
+            auto count = env.app().getValidators().count();
             log << "Trusted validator count: " << count << std::endl;
             BEAST_EXPECT(count > 0);
 
             // Test getTrustedMasterKeys production code path
-            auto trustedMasterKeys = env.app().validators().getTrustedMasterKeys();
+            auto trustedMasterKeys = env.app().getValidators().getTrustedMasterKeys();
             log << "Trusted master keys: " << trustedMasterKeys.size() << std::endl;
         }
     }
@@ -378,7 +378,7 @@ private:
 
         // Try to load these keys using the ValidatorList.load() method
         // This mimics loading from [validators] config section
-        bool loaded = env.app().validators().load(
+        bool loaded = env.app().getValidators().load(
             std::nullopt,  // no local signing key
             hexKeys,       // validator keys from [validators] section
             {},            // no publisher keys
@@ -401,7 +401,7 @@ private:
             log << "✓ Successfully loaded " << hexKeys.size() << " Dilithium validator keys" << std::endl;
 
             // Verify the keys were actually loaded
-            auto trustedKeys = env.app().validators().getTrustedMasterKeys();
+            auto trustedKeys = env.app().getValidators().getTrustedMasterKeys();
             log << "Trusted master keys count: " << trustedKeys.size() << std::endl;
 
             // Check that our keys are in the trusted set

@@ -6,7 +6,7 @@
 namespace xrpl {
 namespace test {
 
-class socket_buffer_test : public beast::unit_test::suite
+class socket_buffer_test : public beast::unit_test::Suite
 {
 public:
     void

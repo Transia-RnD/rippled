@@ -2,11 +2,13 @@
 
 #include <xrpld/overlay/detail/Handshake.h>
 
+#include <xrpl/basics/base64.h>
+#include <xrpl/basics/random.h>
 #include <xrpl/beast/unit_test/suite.h>
 
 namespace xrpl::test {
 
-class handshake_test : public beast::unit_test::Suite
+class Handshake_test : public beast::unit_test::Suite
 {
 public:
     void
@@ -43,7 +45,7 @@ public:
         // Create a shared value (simulating SSL session data)
         uint256 sharedValue;
         for (size_t i = 0; i < sharedValue.size(); ++i)
-            sharedValue.data()[i] = rand_int<std::uint8_t>(0, 255);
+            sharedValue.data()[i] = randInt<std::uint8_t>(0, 255);
 
         // Build handshake headers
         boost::beast::http::fields headers;
@@ -84,7 +86,7 @@ public:
 
         uint256 sharedValue;
         for (size_t i = 0; i < sharedValue.size(); ++i)
-            sharedValue.data()[i] = rand_int<std::uint8_t>(0, 255);
+            sharedValue.data()[i] = randInt<std::uint8_t>(0, 255);
 
         boost::beast::http::fields headers;
         auto localIP = boost::asio::ip::make_address("127.0.0.1");
@@ -118,7 +120,7 @@ public:
 
         uint256 sharedValue;
         for (size_t i = 0; i < sharedValue.size(); ++i)
-            sharedValue.data()[i] = rand_int<std::uint8_t>(0, 255);
+            sharedValue.data()[i] = randInt<std::uint8_t>(0, 255);
 
         auto localIP = boost::asio::ip::make_address("127.0.0.1");
         auto remoteIP = boost::asio::ip::make_address("192.168.1.100");
@@ -188,7 +190,7 @@ public:
         // Build handshake with dilithium keys
         uint256 sharedValue;
         for (size_t i = 0; i < sharedValue.size(); ++i)
-            sharedValue.data()[i] = rand_int<std::uint8_t>(0, 255);
+            sharedValue.data()[i] = randInt<std::uint8_t>(0, 255);
 
         boost::beast::http::fields headers;
         auto localIP = boost::asio::ip::make_address("127.0.0.1");

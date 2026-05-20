@@ -456,7 +456,7 @@ public:
     {
         testcase("Message Size Limit");
 
-        auto thresh = beast::severities::Severity::kInfo;
+        auto thresh = beast::Severity::Info;
         auto logs = std::make_unique<Logs>(thresh);
 
         // Test message just under 64MB limit (close to 64MB)
@@ -468,7 +468,7 @@ public:
             auto const msgSize = Message::messageSize(*ledgerData);
 
             // Verify message is under limit
-            BEAST_EXPECT(msgSize < maximiumMessageSize);
+            BEAST_EXPECT(msgSize < kMaximumMessageSize);
 
             auto& buffer = m.getBuffer(Compressed::On);
             boost::beast::multi_buffer buffers;
@@ -484,8 +484,8 @@ public:
             BEAST_EXPECT(header);
             if (header)
             {
-                BEAST_EXPECT(header->payload_wire_size <= maximiumMessageSize);
-                BEAST_EXPECT(header->uncompressed_size <= maximiumMessageSize);
+                BEAST_EXPECT(header->payload_wire_size <= kMaximumMessageSize);
+                BEAST_EXPECT(header->uncompressed_size <= kMaximumMessageSize);
             }
         }
 

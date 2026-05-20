@@ -37,7 +37,7 @@ auto constexpr default_effective_overlap = std::chrono::seconds{30};
 }  // namespace detail
 
 namespace test {
-class ValidatorSiteV2_test : public beast::unit_test::suite
+class ValidatorSiteV2_test : public beast::unit_test::Suite
 {
 private:
     using Validator = TrustedPublisherServer::Validator;
@@ -51,7 +51,7 @@ private:
 
         using namespace jtx;
 
-        Env env(*this, envconfig(), nullptr, beast::severities::kDisabled);
+        Env env(*this, envconfig(), nullptr, beast::Severity::Disabled);
         auto trustedSites =
             std::make_unique<ValidatorSite>(env.app(), env.journal);
 
@@ -149,7 +149,7 @@ private:
             p->legacy("database_path", good.subdir().string());
             return p;
         }());
-        auto& trustedKeys = env.app().validators();
+        auto& trustedKeys = env.app().getValidators();
         env.timeKeeper().set(env.timeKeeper().now() + 30s);
 
         test::StreamSink sink;
@@ -187,7 +187,7 @@ private:
                 expires - cfg.effectiveOverlap;
             NetClock::time_point const expires2 =
                 effective2 + cfg.expiresFromNow;
-            item.server = make_TrustedPublisherServer(
+            item.server = makeTrustedPublisherServer(
                 env.app().getIOContext(),
                 item.list,
                 expires,
@@ -207,7 +207,7 @@ private:
 
             std::stringstream uri;
             uri << (cfg.ssl ? "https://" : "http://")
-                << item.server->local_endpoint() << cfg.path;
+                << item.server->localEndpoint() << cfg.path;
             item.uri = uri.str();
         }
 
@@ -239,7 +239,7 @@ private:
                     trustedKeys.listed(val.signingPublic) != u.cfg.failApply);
             }
 
-            Json::Value myStatus;
+            json::Value myStatus;
             for (auto const& vs : jv[jss::validator_sites])
                 if (vs[jss::uri].asString().find(u.uri) != std::string::npos)
                     myStatus = vs;
@@ -324,7 +324,7 @@ private:
         for (auto const& u : servers)
         {
             auto const jv = sites->getJson();
-            Json::Value myStatus;
+            json::Value myStatus;
             for (auto const& vs : jv[jss::validator_sites])
                 if (vs[jss::uri].asString().find(u.uri) != std::string::npos)
                     myStatus = vs;
@@ -574,7 +574,7 @@ public:
                   false,
                   true,
                   1,
-                  std::chrono::seconds{Json::Value::minInt}}});
+                  std::chrono::seconds{json::Value::kMinInt}}});
             // force an out-of-range validUntil value on the future list
             // The first list is accepted. The second fails. The parser
             // returns the "best" result, so this looks like a success.
@@ -586,7 +586,7 @@ public:
                   false,
                   false,
                   1,
-                  std::chrono::seconds{Json::Value::maxInt - 300},
+                  std::chrono::seconds{json::Value::kMaxInt - 300},
                   299s}});
             // force an out-of-range validFrom value
             // The first list is accepted. The second fails. The parser
@@ -599,7 +599,7 @@ public:
                   false,
                   false,
                   1,
-                  std::chrono::seconds{Json::Value::maxInt - 300},
+                  std::chrono::seconds{json::Value::kMaxInt - 300},
                   301s}});
             // force an out-of-range validUntil value on _both_ lists
             testFetchList(
@@ -610,8 +610,8 @@ public:
                   false,
                   true,
                   1,
-                  std::chrono::seconds{Json::Value::minInt},
-                  std::chrono::seconds{Json::Value::maxInt - 6000}}});
+                  std::chrono::seconds{json::Value::kMinInt},
+                  std::chrono::seconds{json::Value::kMaxInt - 6000}}});
             // verify refresh intervals are properly clamped
             testFetchList(
                 good,
