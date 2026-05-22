@@ -110,6 +110,7 @@ JSS(accounts);                    // in: LedgerEntry, Subscribe, handlers/Ledger
 JSS(accounts_proposed);           // in: Subscribe, Unsubscribe
 JSS(action);                      //
 JSS(active);                      // out: OverlayImpl
+JSS(active_liquidity);            // out: amm_info
 JSS(acquiring);                   // out: LedgerRequest
 JSS(address);                     // out: PeerImp
 JSS(affected);                    // out: AcceptedLedgerTx
@@ -117,6 +118,9 @@ JSS(age);                         // out: NetworkOPs, Peers
 JSS(alternatives);                // out: PathRequest, RipplePathFind
 JSS(amendment_blocked);           // out: NetworkOPs
 JSS(amm_account);                 // in: amm_info
+JSS(amplification);               // out: amm_info
+JSS(amplification_target);        // out: amm_info
+JSS(amplification_time);          // out: amm_info
 JSS(amount);                      // out: AccountChannels, amm_info
 JSS(amount2);                     // out: amm_info
 JSS(api_version);                 // in: many, out: Version
@@ -194,7 +198,8 @@ JSS(counters);                    // in/out: retrieve counters
 JSS(credentials);                 // in: deposit_authorized
 JSS(credential_type);             // in: LedgerEntry DepositPreauth
 JSS(ctid);                        // in/out: Tx RPC
-JSS(curve_type);                  // in: amm_info
+JSS(curve_type);                  // in/out: amm_info
+JSS(current_tick);                // out: amm_info
 JSS(currency_a);                  // out: BookChanges
 JSS(currency_b);                  // out: BookChanges
 JSS(currency);                    // in: paths/PathRequest, STAmount
@@ -255,9 +260,12 @@ JSS(feature);                     // in: Feature
 JSS(features);                    // out: Feature
 JSS(fee_base);                    // out: NetworkOPs
 JSS(fee_div_max);                 // in: TransactionSign
+JSS(fee_growth_global_0);         // out: amm_info
+JSS(fee_growth_global_1);         // out: amm_info
 JSS(fee_level);                   // out: AccountInfo
 JSS(fee_mult_max);                // in: TransactionSign
 JSS(fee_ref);                     // out: NetworkOPs, DEPRECATED
+JSS(fee_tier);                    // out: amm_info
 JSS(fetch_pack);                  // out: NetworkOPs
 JSS(FIELDS);                      // out: RPC server_definitions
                                   // matches definitions.json format
@@ -553,6 +561,7 @@ JSS(source_account);              // in: PathRequest, RipplePathFind
 JSS(source_amount);               // in: PathRequest, RipplePathFind
 JSS(source_currencies);           // in: PathRequest, RipplePathFind
 JSS(source_tag);                  // out: AccountChannels
+JSS(sqrt_price_x96);              // out: amm_info
 JSS(stand_alone);                 // out: NetworkOPs
 JSS(standard_deviation);          // out: get_aggregate_price
 JSS(start);                       // in: TxHistory
@@ -580,6 +589,7 @@ JSS(taker_pays_funded);           // out: NetworkOPs
 JSS(threshold);                   // in: Blacklist
 JSS(ticket_count);                // out: AccountInfo
 JSS(ticket_seq);                  // in: LedgerEntry
+JSS(tick_spacing);                // out: amm_info
 JSS(time);                        //
 JSS(timeouts);                    // out: InboundLedger
 JSS(time_threshold);              // in/out: Oracle aggregate

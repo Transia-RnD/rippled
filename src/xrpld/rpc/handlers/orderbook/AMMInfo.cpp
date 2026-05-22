@@ -200,6 +200,32 @@ doAMMInfo(RPC::JsonContext& context)
     lptAMMBalance.setJson(ammResult[jss::lp_token]);
     ammResult[jss::trading_fee] = (*amm)[sfTradingFee];
     ammResult[jss::account] = to_string(ammAccountID);
+
+    // Curve-specific fields (XLS-AMMCurves).
+    // sfCurveType is SoeDefault, so it is always readable (0 for legacy CP pools).
+    ammResult[jss::curve_type] = (*amm)[sfCurveType];
+    if (amm->isFieldPresent(sfFeeTier))
+        ammResult[jss::fee_tier] = (*amm)[sfFeeTier];
+    if (amm->isFieldPresent(sfTickSpacing))
+        ammResult[jss::tick_spacing] = (*amm)[sfTickSpacing];
+    if (amm->isFieldPresent(sfCurrentTick))
+        ammResult[jss::current_tick] = amm->getFieldI32(sfCurrentTick);
+    if (amm->isFieldPresent(sfActiveLiquidity))
+        ammResult[jss::active_liquidity] =
+            std::to_string(amm->getFieldU64(sfActiveLiquidity));
+    if (amm->isFieldPresent(sfSqrtPriceX96))
+        ammResult[jss::sqrt_price_x96] = to_string(amm->getFieldH256(sfSqrtPriceX96));
+    if (amm->isFieldPresent(sfFeeGrowthGlobal0))
+        ammResult[jss::fee_growth_global_0] =
+            to_string(amm->getFieldH256(sfFeeGrowthGlobal0));
+    if (amm->isFieldPresent(sfFeeGrowthGlobal1))
+        ammResult[jss::fee_growth_global_1] =
+            to_string(amm->getFieldH256(sfFeeGrowthGlobal1));
+    if (amm->isFieldPresent(sfAmplification))
+        ammResult[jss::amplification] = amm->getFieldU32(sfAmplification);
+    if (amm->isFieldPresent(sfAmplificationTime))
+        ammResult[jss::amplification_time] = amm->getFieldU32(sfAmplificationTime);
+
     json::Value voteSlots(json::ValueType::Array);
     if (amm->isFieldPresent(sfVoteSlots))
     {

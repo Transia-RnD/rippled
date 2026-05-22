@@ -10,6 +10,7 @@
 #include <xrpl/basics/Number.h>
 #include <xrpl/beast/unit_test/suite.h>
 #include <xrpl/json/json_value.h>
+#include <xrpl/json/to_string.h>
 #include <xrpl/ledger/helpers/AMMCurve.h>
 #include <xrpl/ledger/helpers/AMMHelpers.h>
 #include <xrpl/ledger/helpers/AMMTickMath.h>
@@ -2192,6 +2193,117 @@ private:
     }
 
     void
+    testAmmInfoCurveFields(FeatureBitset features)
+    {
+        testcase("amm_info curve fields");
+
+        using namespace jtx;
+
+        auto ammInfoRpc = [](Env& env,
+                             IOU const& a1,
+                             IOU const& a2,
+                             std::optional<std::uint8_t> ct) -> json::Value {
+            json::Value req;
+            req[jss::asset] = STIssue(sfAsset, a1.asset()).getJson(JsonOptions::Values::None);
+            req[jss::asset2] = STIssue(sfAsset2, a2.asset()).getJson(JsonOptions::Values::None);
+            if (ct)
+                req[jss::curve_type] = *ct;
+            auto const jr = env.rpc("json", "amm_info", to_string(req));
+            if (jr.isObject() && jr.isMember(jss::result))
+                return jr[jss::result];
+            return json::Value();
+        };
+
+        // CP pool: curve_type=0, no curve-specific fields
+        {
+            Env env(*this, features | featureAMMCurves);
+            Account const al("alice");
+            Account const gw2("gateway");
+            auto const usd = gw2["USD"];
+            auto const eur = gw2["EUR"];
+            fundForAMMCreate(env, gw2, al, usd, eur);
+
+            auto jv = ammCreateJV(env, al, usd, eur, usd(1000), eur(1000));
+            env(jv);
+            env.close();
+
+            auto const info = ammInfoRpc(env, usd, eur, std::nullopt);
+            BEAST_EXPECT(info.isMember(jss::amm));
+            auto const& amm = info[jss::amm];
+            BEAST_EXPECT(amm.isMember(jss::curve_type));
+            BEAST_EXPECT(amm[jss::curve_type].asUInt() == CtConstantProduct);
+            BEAST_EXPECT(!amm.isMember(jss::fee_tier));
+            BEAST_EXPECT(!amm.isMember(jss::tick_spacing));
+            BEAST_EXPECT(!amm.isMember(jss::current_tick));
+            BEAST_EXPECT(!amm.isMember(jss::active_liquidity));
+            BEAST_EXPECT(!amm.isMember(jss::sqrt_price_x96));
+            BEAST_EXPECT(!amm.isMember(jss::fee_growth_global_0));
+            BEAST_EXPECT(!amm.isMember(jss::fee_growth_global_1));
+            BEAST_EXPECT(!amm.isMember(jss::amplification));
+        }
+
+        // StableSwap pool: curve_type=2, amplification=100
+        {
+            Env env(*this, features | featureAMMCurves);
+            Account const al("alice");
+            Account const gw2("gateway");
+            auto const usd = gw2["USD"];
+            auto const eur = gw2["EUR"];
+            fundForAMMCreate(env, gw2, al, usd, eur);
+
+            auto jv = ammCreateJV(env, al, usd, eur, usd(1000), eur(1000));
+            jv[sfCurveType.jsonName] = CtStableSwap;
+            jv[sfAmplification.jsonName] = 100;
+            env(jv);
+            env.close();
+
+            auto const info = ammInfoRpc(env, usd, eur, CtStableSwap);
+            BEAST_EXPECT(info.isMember(jss::amm));
+            auto const& amm = info[jss::amm];
+            BEAST_EXPECT(amm.isMember(jss::curve_type));
+            BEAST_EXPECT(amm[jss::curve_type].asUInt() == CtStableSwap);
+            BEAST_EXPECT(amm.isMember(jss::amplification));
+            BEAST_EXPECT(amm[jss::amplification].asUInt() == 100);
+            BEAST_EXPECT(!amm.isMember(jss::fee_tier));
+            BEAST_EXPECT(!amm.isMember(jss::current_tick));
+        }
+
+        // ConcentratedLiquidity pool: curve_type=1, fee_tier, tick_spacing,
+        // current_tick, active_liquidity, sqrt_price_x96, fee_growth_global_*
+        {
+            Env env(*this, features | featureAMMCurves);
+            Account const al("alice");
+            Account const gw2("gateway");
+            auto const usd = gw2["USD"];
+            auto const eur = gw2["EUR"];
+            fundForAMMCreate(env, gw2, al, usd, eur);
+
+            auto jv = ammCreateJV(env, al, usd, eur, usd(1000), eur(1000));
+            jv[sfCurveType.jsonName] = CtConcentratedLiquidity;
+            jv[sfFeeTier.jsonName] = FtMedium;
+            env(jv);
+            env.close();
+
+            auto const info = ammInfoRpc(env, usd, eur, CtConcentratedLiquidity);
+            BEAST_EXPECT(info.isMember(jss::amm));
+            auto const& amm = info[jss::amm];
+            BEAST_EXPECT(amm.isMember(jss::curve_type));
+            BEAST_EXPECT(amm[jss::curve_type].asUInt() == CtConcentratedLiquidity);
+            BEAST_EXPECT(amm.isMember(jss::fee_tier));
+            BEAST_EXPECT(amm[jss::fee_tier].asUInt() == FtMedium);
+            BEAST_EXPECT(amm.isMember(jss::tick_spacing));
+            BEAST_EXPECT(amm[jss::tick_spacing].asUInt() == 60u);
+            BEAST_EXPECT(amm.isMember(jss::current_tick));
+            BEAST_EXPECT(amm[jss::current_tick].asInt() == 0);
+            BEAST_EXPECT(amm.isMember(jss::active_liquidity));
+            BEAST_EXPECT(amm.isMember(jss::sqrt_price_x96));
+            BEAST_EXPECT(amm.isMember(jss::fee_growth_global_0));
+            BEAST_EXPECT(amm.isMember(jss::fee_growth_global_1));
+            BEAST_EXPECT(!amm.isMember(jss::amplification));
+        }
+    }
+
+    void
     testWithFeats(FeatureBitset features)
     {
         testTickMath();
@@ -2217,6 +2329,7 @@ private:
         testSwapInvariants(features);
         testFeeExtraction(features);
         testConservation(features);
+        testAmmInfoCurveFields(features);
     }
 
 public:
