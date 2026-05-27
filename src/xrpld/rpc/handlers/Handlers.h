@@ -23,6 +23,8 @@ doAccountTx(RPC::JsonContext&);
 json::Value
 doAMMInfo(RPC::JsonContext&);
 json::Value
+doAMMTicks(RPC::JsonContext&);
+json::Value
 doBookOffers(RPC::JsonContext&);
 json::Value
 doBookChanges(RPC::JsonContext&);

@@ -106,6 +106,7 @@ transResults()
         MAKE_ERROR(tecLIMIT_EXCEEDED,                "Limit exceeded."),
         MAKE_ERROR(tecPSEUDO_ACCOUNT,                "This operation is not allowed against a pseudo-account."),
         MAKE_ERROR(tecPRECISION_LOSS,                "The amounts used by the transaction cannot interact."),
+        MAKE_ERROR(tecAMM_TICK_CAP_HIT,              "AMM swap hit the per-swap tick-crossing cap (defensive; not reachable via normal Payment routing)."),
 
         MAKE_ERROR(tefALREADY,                     "The exact transaction was already in this ledger."),
         MAKE_ERROR(tefBAD_ADD_AUTH,                "Not authorized to add account."),
