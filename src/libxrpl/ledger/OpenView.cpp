@@ -170,7 +170,7 @@ OpenView::pred(key_type const& key, std::optional<key_type> const& first) const
     return items_.pred(*base_, key, first);
 }
 
-std::shared_ptr<SLE const>
+SLE::const_pointer
 OpenView::read(Keylet const& k) const
 {
     return items_.read(*base_, k);
@@ -235,19 +235,19 @@ OpenView::txRead(key_type const& key) const -> tx_type
 //---
 
 void
-OpenView::rawErase(std::shared_ptr<SLE> const& sle)
+OpenView::rawErase(SLE::ref sle)
 {
     items_.erase(sle);
 }
 
 void
-OpenView::rawInsert(std::shared_ptr<SLE> const& sle)
+OpenView::rawInsert(SLE::ref sle)
 {
     items_.insert(sle);
 }
 
 void
-OpenView::rawReplace(std::shared_ptr<SLE> const& sle)
+OpenView::rawReplace(SLE::ref sle)
 {
     items_.replace(sle);
 }

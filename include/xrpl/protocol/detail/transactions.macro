@@ -395,7 +395,7 @@ TRANSACTION(ttNFTOKEN_ACCEPT_OFFER, 29, NFTokenAcceptOffer,
 #endif
 TRANSACTION(ttCLAWBACK, 30, Clawback,
     Delegation::Delegable,
-    featureClawback,
+    uint256{},
     NoPriv,
     ({
     {sfAmount, SoeRequired, SoeMptSupported},
@@ -531,7 +531,7 @@ TRANSACTION(ttAMM_DELETE, 40, AMMDelete,
 #if TRANSACTION_INCLUDE
 #   include <xrpl/tx/transactors/dex/AMMCollectFees.h>
 #endif
-TRANSACTION(ttAMM_COLLECT_FEES, 85, AMMCollectFees,
+TRANSACTION(ttAMM_COLLECT_FEES, 90, AMMCollectFees,
     Delegation::Delegable,
     featureAMMCurves,
     NoPriv,
@@ -547,7 +547,7 @@ TRANSACTION(ttAMM_COLLECT_FEES, 85, AMMCollectFees,
 #if TRANSACTION_INCLUDE
 #   include <xrpl/tx/transactors/dex/AMMPositionTransfer.h>
 #endif
-TRANSACTION(ttAMM_POSITION_TRANSFER, 86, AMMPositionTransfer,
+TRANSACTION(ttAMM_POSITION_TRANSFER, 91, AMMPositionTransfer,
     Delegation::Delegable,
     featureAMMCurves,
     NoPriv,
@@ -560,7 +560,7 @@ TRANSACTION(ttAMM_POSITION_TRANSFER, 86, AMMPositionTransfer,
 #if TRANSACTION_INCLUDE
 #   include <xrpl/tx/transactors/dex/AMMBinCreate.h>
 #endif
-TRANSACTION(ttAMM_BIN_CREATE, 87, AMMBinCreate,
+TRANSACTION(ttAMM_BIN_CREATE, 92, AMMBinCreate,
     Delegation::Delegable,
     featureAMMCurves,
     CreateMptIssuance,
@@ -575,7 +575,7 @@ TRANSACTION(ttAMM_BIN_CREATE, 87, AMMBinCreate,
 #if TRANSACTION_INCLUDE
 #   include <xrpl/tx/transactors/dex/AMMBinDestroy.h>
 #endif
-TRANSACTION(ttAMM_BIN_DESTROY, 88, AMMBinDestroy,
+TRANSACTION(ttAMM_BIN_DESTROY, 93, AMMBinDestroy,
     Delegation::Delegable,
     featureAMMCurves,
     DestroyMptIssuance,
@@ -811,6 +811,8 @@ TRANSACTION(ttMPTOKEN_ISSUANCE_SET, 56, MPTokenIssuanceSet,
     {sfMPTokenMetadata, SoeOptional},
     {sfTransferFee, SoeOptional},
     {sfMutableFlags, SoeOptional},
+    {sfIssuerEncryptionKey, SoeOptional},
+    {sfAuditorEncryptionKey, SoeOptional},
 }))
 
 /** This transaction type authorizes a MPToken instance */
@@ -963,6 +965,7 @@ TRANSACTION(ttVAULT_DELETE, 67, VaultDelete,
     MustDeleteAcct | DestroyMptIssuance | MustModifyVault,
     ({
     {sfVaultID, SoeRequired},
+    {sfMemoData, SoeOptional},
 }))
 
 /** This transaction trades assets for shares with a vault. */
@@ -1013,7 +1016,7 @@ TRANSACTION(ttVAULT_CLAWBACK, 70, VaultClawback,
 #endif
 TRANSACTION(ttBATCH, 71, Batch,
     Delegation::NotDelegable,
-    featureBatch,
+    featureBatchV1_1,
     NoPriv,
     ({
     {sfRawTransactions, SoeRequired},
@@ -1151,6 +1154,91 @@ TRANSACTION(ttLOAN_PAY, 84, LoanPay,
     MayAuthorizeMpt | MustModifyVault, ({
     {sfLoanID, SoeRequired},
     {sfAmount, SoeRequired, SoeMptSupported},
+}))
+
+/** This transaction type converts into confidential MPT balance. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/token/ConfidentialMPTConvert.h>
+#endif
+TRANSACTION(ttCONFIDENTIAL_MPT_CONVERT, 85, ConfidentialMPTConvert,
+    Delegation::Delegable,
+    featureConfidentialTransfer,
+    NoPriv,
+    ({
+    {sfMPTokenIssuanceID, SoeRequired},
+    {sfMPTAmount, SoeRequired},
+    {sfHolderEncryptionKey, SoeOptional},
+    {sfHolderEncryptedAmount, SoeRequired},
+    {sfIssuerEncryptedAmount, SoeRequired},
+    {sfAuditorEncryptedAmount, SoeOptional},
+    {sfBlindingFactor, SoeRequired},
+    {sfZKProof, SoeOptional},
+}))
+
+/** This transaction type merges MPT inbox. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/token/ConfidentialMPTMergeInbox.h>
+#endif
+TRANSACTION(ttCONFIDENTIAL_MPT_MERGE_INBOX, 86, ConfidentialMPTMergeInbox,
+    Delegation::Delegable,
+    featureConfidentialTransfer,
+    NoPriv,
+    ({
+    {sfMPTokenIssuanceID, SoeRequired},
+}))
+
+/** This transaction type converts back into public MPT balance. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/token/ConfidentialMPTConvertBack.h>
+#endif
+TRANSACTION(ttCONFIDENTIAL_MPT_CONVERT_BACK, 87, ConfidentialMPTConvertBack,
+    Delegation::Delegable,
+    featureConfidentialTransfer,
+    NoPriv,
+    ({
+    {sfMPTokenIssuanceID, SoeRequired},
+    {sfMPTAmount, SoeRequired},
+    {sfHolderEncryptedAmount, SoeRequired},
+    {sfIssuerEncryptedAmount, SoeRequired},
+    {sfAuditorEncryptedAmount, SoeOptional},
+    {sfBlindingFactor, SoeRequired},
+    {sfZKProof, SoeRequired},
+    {sfBalanceCommitment, SoeRequired},
+}))
+
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/token/ConfidentialMPTSend.h>
+#endif
+TRANSACTION(ttCONFIDENTIAL_MPT_SEND, 88, ConfidentialMPTSend,
+    Delegation::Delegable,
+    featureConfidentialTransfer,
+    NoPriv,
+    ({
+    {sfMPTokenIssuanceID, SoeRequired},
+    {sfDestination, SoeRequired},
+    {sfDestinationTag, SoeOptional},
+    {sfSenderEncryptedAmount, SoeRequired},
+    {sfDestinationEncryptedAmount, SoeRequired},
+    {sfIssuerEncryptedAmount, SoeRequired},
+    {sfAuditorEncryptedAmount, SoeOptional},
+    {sfZKProof, SoeRequired},
+    {sfAmountCommitment, SoeRequired},
+    {sfBalanceCommitment, SoeRequired},
+    {sfCredentialIDs, SoeOptional},
+}))
+
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/token/ConfidentialMPTClawback.h>
+#endif
+TRANSACTION(ttCONFIDENTIAL_MPT_CLAWBACK, 89, ConfidentialMPTClawback,
+    Delegation::Delegable,
+    featureConfidentialTransfer,
+    NoPriv,
+    ({
+    {sfMPTokenIssuanceID, SoeRequired},
+    {sfHolder, SoeRequired},
+    {sfMPTAmount, SoeRequired},
+    {sfZKProof, SoeRequired},
 }))
 
 /** This system-generated transaction type is used to update the status of the various amendments.

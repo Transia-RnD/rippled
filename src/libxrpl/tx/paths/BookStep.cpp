@@ -966,6 +966,12 @@ BookStep<TIn, TOut, TDerived>::getAMMOffer(
     ReadView const& view,
     std::optional<Quality> const& clobQuality) const
 {
+    // AMM doesn't support domain books. When fixCleanup3_3_0 is enabled, exclude
+    // AMM liquidity so quality estimation matches actual crossing (tryAMM skips
+    // AMM for domain books).
+    if (book_.domain && view.rules().enabled(fixCleanup3_3_0))
+        return std::nullopt;
+
     // Pick the candidate by realized offer quality (amount.out / amount.in),
     // not marginal spot quality (balances.out / balances.in). Spot
     // quality ignores depth and bakes fee into the metric; realized
@@ -1434,7 +1440,7 @@ BookStep<TIn, TOut, TDerived>::check(StrandContext const& ctx) const
 
             auto const err = book_.in.visit(
                 [&](Issue const& issue) -> std::optional<TER> {
-                    auto sle = view.read(keylet::line(*prev, cur, issue.currency));
+                    auto sle = view.read(keylet::trustLine(*prev, cur, issue.currency));
                     if (!sle)
                         return terNO_LINE;
                     if (sle->isFlag((cur > *prev) ? lsfHighNoRipple : lsfLowNoRipple))
@@ -1552,8 +1558,8 @@ bookStepEqual(Step const& step, xrpl::Book const& book)
 {
     return std::visit(
         [&]<typename TIn, typename TOut>(TIn const&, TOut const&) {
-            using TIn_ = typename TIn::amount_type;
-            using TOut_ = typename TOut::amount_type;
+            using TIn_ = TIn::amount_type;
+            using TOut_ = TOut::amount_type;
 
             if constexpr (ValidTaker<TIn_, TOut_>)
             {

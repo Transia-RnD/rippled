@@ -122,10 +122,11 @@ TYPED_SFIELD(sfInterestRate,             UINT32,    65) // 1/10 basis points (bi
 TYPED_SFIELD(sfLateInterestRate,         UINT32,    66) // 1/10 basis points (bips)
 TYPED_SFIELD(sfCloseInterestRate,        UINT32,    67) // 1/10 basis points (bips)
 TYPED_SFIELD(sfOverpaymentInterestRate,  UINT32,    68) // 1/10 basis points (bips)
-TYPED_SFIELD(sfAmplification,           UINT32,    69)
-TYPED_SFIELD(sfAmplificationTarget,     UINT32,    70)
-TYPED_SFIELD(sfAmplificationTime,       UINT32,    71)
-TYPED_SFIELD(sfPositionCount,           UINT32,    72)
+TYPED_SFIELD(sfConfidentialBalanceVersion, UINT32,  69)
+TYPED_SFIELD(sfAmplification,           UINT32,    70)
+TYPED_SFIELD(sfAmplificationTarget,     UINT32,    71)
+TYPED_SFIELD(sfAmplificationTime,       UINT32,    72)
+TYPED_SFIELD(sfPositionCount,           UINT32,    73)
 
 // 64-bit integers (common)
 TYPED_SFIELD(sfIndexNext,                UINT64,     1)
@@ -159,13 +160,14 @@ TYPED_SFIELD(sfSubjectNode,              UINT64,    28)
 TYPED_SFIELD(sfLockedAmount,             UINT64,    29, SField::kSmdBaseTen|SField::kSmdDefault)
 TYPED_SFIELD(sfVaultNode,                UINT64,    30)
 TYPED_SFIELD(sfLoanBrokerNode,           UINT64,    31)
-TYPED_SFIELD(sfActiveLiquidity,         UINT64,    32)
-TYPED_SFIELD(sfPositionLiquidity,       UINT64,    33)
-TYPED_SFIELD(sfLiquidityGross,          UINT64,    34)
-TYPED_SFIELD(sfLiquidityNet,           UINT64,    35)
+TYPED_SFIELD(sfConfidentialOutstandingAmount, UINT64, 32, SField::kSmdBaseTen|SField::kSmdDefault)
+TYPED_SFIELD(sfActiveLiquidity,         UINT64,    33)
+TYPED_SFIELD(sfPositionLiquidity,       UINT64,    34)
+TYPED_SFIELD(sfLiquidityGross,          UINT64,    35)
+TYPED_SFIELD(sfLiquidityNet,            UINT64,    36)
 // Binned-curve: an LP's proportional claim on a bin's aggregate
 // liquidity. Sum of all holders' sfShares == bin's sfOutstandingAmount.
-TYPED_SFIELD(sfShares,                  UINT64,    36)
+TYPED_SFIELD(sfShares,                  UINT64,    37)
 
 // 128-bit
 TYPED_SFIELD(sfEmailHash,                UINT128,    1)
@@ -226,16 +228,17 @@ TYPED_SFIELD(sfLoanBrokerID,             UINT256,   37,
     SField::kSmdPseudoAccount | SField::kSmdDefault)
 TYPED_SFIELD(sfLoanID,                   UINT256,   38)
 TYPED_SFIELD(sfReferenceHolding,         UINT256,   39)
-TYPED_SFIELD(sfSqrtPriceX96,             UINT256,   40)
+TYPED_SFIELD(sfBlindingFactor,           UINT256,   40)
+TYPED_SFIELD(sfSqrtPriceX96,             UINT256,   41)
 // 256-bit bitmap of initialised-tick presence within a single 256-tick window
 // of a CL pool. Bit i (0-indexed from least-significant) set => tick
 // (wordIndex * 256 + i - 887272) is initialised. Read via byte order:
 // least-significant 32-bit lane first. See findNextInitTickBitmap.
-TYPED_SFIELD(sfBitmapBits,               UINT256,   41)
+TYPED_SFIELD(sfBitmapBits,               UINT256,   42)
 // Position keylet hash: addresses a specific ltAMM_POSITION SLE owned by the
 // transactor. Used as a tx-input field on AMMWithdraw, AMMCollectFees, and
 // AMMPositionTransfer to identify which of the LP's positions to operate on.
-TYPED_SFIELD(sfPositionID,               UINT256,   42)
+TYPED_SFIELD(sfPositionID,               UINT256,   43)
 
 // number (common)
 TYPED_SFIELD(sfNumber,                   NUMBER,     1)
@@ -356,6 +359,21 @@ TYPED_SFIELD(sfAssetClass,               VL,        28)
 TYPED_SFIELD(sfProvider,                 VL,        29)
 TYPED_SFIELD(sfMPTokenMetadata,          VL,        30)
 TYPED_SFIELD(sfCredentialType,           VL,        31)
+TYPED_SFIELD(sfConfidentialBalanceInbox,    VL,     32)
+TYPED_SFIELD(sfConfidentialBalanceSpending, VL,     33)
+TYPED_SFIELD(sfIssuerEncryptedBalance,      VL,     34)
+TYPED_SFIELD(sfIssuerEncryptionKey,         VL,     35)
+TYPED_SFIELD(sfHolderEncryptionKey,         VL,     36)
+TYPED_SFIELD(sfZKProof,                     VL,     37)
+TYPED_SFIELD(sfHolderEncryptedAmount,       VL,     38)
+TYPED_SFIELD(sfIssuerEncryptedAmount,       VL,     39)
+TYPED_SFIELD(sfSenderEncryptedAmount,       VL,     40)
+TYPED_SFIELD(sfDestinationEncryptedAmount,  VL,     41)
+TYPED_SFIELD(sfAuditorEncryptedBalance,     VL,     42)
+TYPED_SFIELD(sfAuditorEncryptedAmount,      VL,     43)
+TYPED_SFIELD(sfAuditorEncryptionKey,        VL,     44)
+TYPED_SFIELD(sfAmountCommitment,            VL,     45)
+TYPED_SFIELD(sfBalanceCommitment,           VL,     46)
 
 // account (common)
 TYPED_SFIELD(sfAccount,                  ACCOUNT,    1)
