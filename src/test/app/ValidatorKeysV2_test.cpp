@@ -3,7 +3,7 @@
 #include <xrpld/app/misc/ValidatorKeys.h>
 #include <xrpl/server/Manifest.h>
 #include <xrpld/core/Config.h>
-#include <xrpld/core/ConfigSections.h>
+#include <xrpl/config/Constants.h>
 
 #include <xrpl/basics/base64.h>
 #include <xrpl/beast/unit_test.h>
@@ -53,7 +53,7 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
 
     // Test data for Dilithium
     KeyTypeTestData const dilithiumData{
-        KeyType::dilithium,
+        KeyType::Dilithium,
         "dilithium",
         "shUwVw52ofnCUX5m7kPTKzJdr4HEH",
         "aDDsbp1MYUqz6cLofvTRaG9fWpLux5Q6Pw5PNQQyLcUMubi6vZAGBXRXhVThd9GpLbLZtX"
@@ -643,8 +643,8 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
         {
             // validation seed section -> empty manifest and valid seeds
             Config c;
-            c.section(SECTION_VALIDATION_SEED).append(testData.seed);
-            c.section(SECTION_VALIDATOR_KEY_TYPE).append(testData.name);
+            c.section(Sections::kValidationSeed).append(testData.seed);
+            c.section(Sections::kValidatorKeyType).append(testData.name);
 
             ValidatorKeys k{c, journal};
             if (BEAST_EXPECT(k.keys))
@@ -662,7 +662,7 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
         {
             // validation seed bad seed -> invalid
             Config c;
-            c.section(SECTION_VALIDATION_SEED).append("badseed");
+            c.section(Sections::kValidationSeed).append("badseed");
 
             ValidatorKeys k{c, journal};
             BEAST_EXPECT(k.configInvalid());
@@ -673,8 +673,8 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
         {
             // validator token
             Config c;
-            c.section(SECTION_VALIDATOR_TOKEN).append(testData.tokenBlob);
-            c.section(SECTION_VALIDATOR_KEY_TYPE).append(testData.name);
+            c.section(Sections::kValidatorToken).append(testData.tokenBlob);
+            c.section(Sections::kValidatorKeyType).append(testData.name);
             ValidatorKeys k{c, journal};
 
             if (BEAST_EXPECT(k.keys))
@@ -691,8 +691,8 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
         {
             // invalid validator token
             Config c;
-            c.section(SECTION_VALIDATOR_TOKEN).append("badtoken");
-            c.section(SECTION_VALIDATOR_KEY_TYPE).append(testData.name);
+            c.section(Sections::kValidatorToken).append("badtoken");
+            c.section(Sections::kValidatorKeyType).append(testData.name);
             ValidatorKeys k{c, journal};
             BEAST_EXPECT(k.configInvalid());
             BEAST_EXPECT(!k.keys);
@@ -702,8 +702,8 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
         {
             // Cannot specify both
             Config c;
-            c.section(SECTION_VALIDATION_SEED).append(testData.seed);
-            c.section(SECTION_VALIDATOR_TOKEN).append(testData.tokenBlob);
+            c.section(Sections::kValidationSeed).append(testData.seed);
+            c.section(Sections::kValidatorToken).append(testData.tokenBlob);
             ValidatorKeys k{c, journal};
 
             BEAST_EXPECT(k.configInvalid());
@@ -714,9 +714,9 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
         {
             // Token manifest and private key must match
             Config c;
-            c.section(SECTION_VALIDATOR_TOKEN)
+            c.section(Sections::kValidatorToken)
                 .append(testData.invalidTokenBlob);
-            c.section(SECTION_VALIDATOR_KEY_TYPE).append(testData.name);
+            c.section(Sections::kValidatorKeyType).append(testData.name);
             ValidatorKeys k{c, journal};
 
             BEAST_EXPECT(k.configInvalid());

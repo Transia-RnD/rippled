@@ -19,7 +19,9 @@
 #include <boost/format/free_funcs.hpp>
 #include <boost/optional/optional.hpp>  // IWYU pragma: keep
 
+#include <soci/blob-exchange.h>  // IWYU pragma: keep
 #include <soci/blob.h>
+#include <soci/boost-optional.h>  // IWYU pragma: keep
 #include <soci/into.h>
 #include <soci/session.h>
 #include <soci/statement.h>
@@ -163,7 +165,7 @@ getNodeIdentity(soci::session& session)
                 // node identity (the handshake rejects it). Accepting only
                 // these two keeps Wallet consistent with the wire protocol.
                 auto const kt = publicKeyType(pk->slice());
-                if ((kt == KeyType::Secp256k1 || kt == KeyType::dilithium) &&
+                if ((kt == KeyType::Secp256k1 || kt == KeyType::Dilithium) &&
                     (*pk == derivePublicKey(*kt, *sk)))
                 {
                     return {*pk, *sk};
@@ -175,7 +177,7 @@ getNodeIdentity(soci::session& session)
     // If a valid identity wasn't found, we randomly generate a new one.
     // New identities are dilithium; existing identities (handled above)
     // keep their original keytype.
-    auto [newpublicKey, newsecretKey] = randomKeyPair(KeyType::dilithium);
+    auto [newpublicKey, newsecretKey] = randomKeyPair(KeyType::Dilithium);
 
     session << str(
         boost::format(

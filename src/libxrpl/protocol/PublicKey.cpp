@@ -5,6 +5,7 @@
 #include <xrpl/basics/contract.h>
 #include <xrpl/basics/strHex.h>
 #include <xrpl/protocol/KeyType.h>
+#include <xrpl/protocol/Protocol.h>
 #include <xrpl/protocol/UintTypes.h>
 #include <xrpl/protocol/detail/secp256k1.h>
 #include <xrpl/protocol/digest.h>
@@ -27,11 +28,11 @@ extern "C" {
 }
 
 #ifndef CRYPTO_PUBLICKEYBYTES
-#define CRYPTO_PUBLICKEYBYTES pqcrystals_dilithium2_PUBLICKEYBYTES 
+#define CRYPTO_PUBLICKEYBYTES pqcrystals_dilithium2_PUBLICKEYBYTES
 #endif
 
 #ifndef crypto_sign_verify
-#define crypto_sign_verify pqcrystals_dilithium2_ref_verify 
+#define crypto_sign_verify pqcrystals_dilithium2_ref_verify
 #endif
 
 namespace xrpl {
@@ -98,11 +99,11 @@ sliceToHex(Slice const& slice)
         s.reserve(2 * (slice.size() + 1));
         s = "0x";
     }
-    for (int i = 0; i < slice.size(); ++i)
+    for (std::uint8_t const byte : slice)
     {
         static constexpr char kHex[] = "0123456789ABCDEF";
-        s += kHex[((slice[i] & 0xf0) >> 4)];
-        s += kHex[((slice[i] & 0x0f) >> 0)];
+        s += kHex[((byte & 0xf0) >> 4)];
+        s += kHex[((byte & 0x0f) >> 0)];
     }
     return s;
 }
@@ -227,12 +228,12 @@ publicKeyType(Slice const& slice)
         if (slice[0] == 0xED)
             return KeyType::Ed25519;
 
-        if (slice[0] == 0x02 || slice[0] == 0x03)
+        if (slice[0] == kEcCompressedPrefixEvenY || slice[0] == kEcCompressedPrefixOddY)
             return KeyType::Secp256k1;
     }
     else if (slice.size() == CRYPTO_PUBLICKEYBYTES)
     {
-        return KeyType::dilithium;
+        return KeyType::Dilithium;
     }
 
     return std::nullopt;
@@ -292,7 +293,7 @@ verifyDigest(
                        reinterpret_cast<unsigned char const*>(digest.data()),
                        &pubkeyImp) == 1;
         }
-        case KeyType::dilithium: {
+        case KeyType::Dilithium: {
             uint8_t ctx[] = {};
             size_t ctxlen = 0;
             // Verify the digest data directly
@@ -330,7 +331,7 @@ verify(PublicKey const& publicKey, Slice const& m, Slice const& sig) noexcept
             // first strip that prefix.
             return ed25519_sign_open(m.data(), m.size(), publicKey.data() + 1, sig.data()) == 0;
         }
-        else if (*type == KeyType::dilithium)
+        else if (*type == KeyType::Dilithium)
         {
             uint8_t ctx[] = {};
             size_t ctxlen = 0;

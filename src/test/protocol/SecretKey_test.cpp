@@ -221,7 +221,7 @@ public:
         // TODO: DA
         // {
         //     auto const sk1 = generateSecretKey(
-        //         KeyType::dilithium, generateSeed("masterpassphrase"));
+        //         KeyType::Dilithium, generateSeed("masterpassphrase"));
 
         //     auto const sk2 = parseBase58<SecretKey>(
         //         TokenType::NodePrivate,
@@ -364,8 +364,8 @@ public:
         // From Seed
         {
             auto const sk = generateSecretKey(
-                KeyType::dilithium, generateSeed("masterpassphrase"));
-            auto const pk = derivePublicKey(KeyType::dilithium, sk);
+                KeyType::Dilithium, generateSeed("masterpassphrase"));
+            auto const pk = derivePublicKey(KeyType::Dilithium, sk);
             // auto const accId = calcAccountID(pk);
             auto sig = sign(pk, sk, makeSlice(data));
             BEAST_EXPECT(sig.size() != 0);
@@ -375,8 +375,8 @@ public:
         // From Random Seed
         {
             auto const seed = randomSeed();
-            auto const sk = generateSecretKey(KeyType::dilithium, seed);
-            auto const pk = derivePublicKey(KeyType::dilithium, sk);
+            auto const sk = generateSecretKey(KeyType::Dilithium, seed);
+            auto const pk = derivePublicKey(KeyType::Dilithium, sk);
             // auto const accId = calcAccountID(pk);
             auto sig = sign(pk, sk, makeSlice(data));
             BEAST_EXPECT(sig.size() != 0);
@@ -386,7 +386,7 @@ public:
         // From Random KP
         {
             std::pair<PublicKey, SecretKey> const kp =
-                randomKeyPair(KeyType::dilithium);
+                randomKeyPair(KeyType::Dilithium);
             // auto const accId = calcAccountID(kp.first);
             auto sig = sign(kp.first, kp.second, makeSlice(data));
             BEAST_EXPECT(sig.size() != 0);
@@ -399,7 +399,7 @@ public:
             BEAST_EXPECT(id);
 
             auto kp =
-                generateKeyPair(KeyType::dilithium,
+                generateKeyPair(KeyType::Dilithium,
                 Seed{makeSlice(test.seed)});
 
             BEAST_EXPECT(kp.first == PublicKey{makeSlice(test.pubkey)});
@@ -430,8 +430,8 @@ public:
 
         // dilithium
         testKeyDerivationDilithium();
-        testSigning(KeyType::dilithium);
-        testDigestSigning(KeyType::dilithium);
+        testSigning(KeyType::Dilithium);
+        testDigestSigning(KeyType::Dilithium);
     }
 
 private:

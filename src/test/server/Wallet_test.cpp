@@ -49,7 +49,7 @@ class Wallet_test : public beast::unit_test::Suite
     // Regression: getNodeIdentity() must return the stored keypair
     // unchanged when the stored pubkey was generated with a legacy keytype
     // (secp256k1 or ed25519). A prior version of this function hard-coded
-    // KeyType::dilithium when re-deriving the pubkey to compare against the
+    // KeyType::Dilithium when re-deriving the pubkey to compare against the
     // stored one, which silently rotated every upgrading operator's node
     // identity — orphaning peer reservations and any UNL pin on that node.
     void
@@ -104,7 +104,7 @@ class Wallet_test : public beast::unit_test::Suite
 
         auto session = dbCon->checkoutDb();
         auto const [pk1, sk1] = getNodeIdentity(*session);
-        BEAST_EXPECT(publicKeyType(pk1.slice()) == KeyType::dilithium);
+        BEAST_EXPECT(publicKeyType(pk1.slice()) == KeyType::Dilithium);
 
         // A second call must return the same keypair (persistence).
         auto const [pk2, sk2] = getNodeIdentity(*session);
@@ -189,7 +189,7 @@ class Wallet_test : public beast::unit_test::Suite
         auto const [returnedPk, returnedSk] = getNodeIdentity(*session);
 
         BEAST_EXPECT(returnedPk != pk);
-        BEAST_EXPECT(publicKeyType(returnedPk.slice()) == KeyType::dilithium);
+        BEAST_EXPECT(publicKeyType(returnedPk.slice()) == KeyType::Dilithium);
 
         boost::filesystem::remove(dbDir() / dbName);
     }

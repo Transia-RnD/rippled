@@ -4,14 +4,14 @@
 
 #include <xrpld/app/main/Application.h>
 #include <xrpld/core/Config.h>
-#include <xrpld/core/ConfigSections.h>
 
-#include <xrpl/basics/BasicConfig.h>
 #include <xrpl/basics/UnorderedContainers.h>
 #include <xrpl/basics/base_uint.h>
 #include <xrpl/basics/chrono.h>
 #include <xrpl/basics/contract.h>
 #include <xrpl/beast/unit_test/suite.h>
+#include <xrpl/config/BasicConfig.h>
+#include <xrpl/config/Constants.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/ledger/AmendmentTable.h>
 #include <xrpl/ledger/View.h>
@@ -83,8 +83,8 @@ private:
     makeConfig()
     {
         auto cfg = test::jtx::envconfig();
-        cfg->section(SECTION_AMENDMENTS) = makeSection(SECTION_AMENDMENTS, enabled_);
-        cfg->section(SECTION_VETO_AMENDMENTS) = makeSection(SECTION_VETO_AMENDMENTS, vetoed_);
+        cfg->section(Sections::kAmendments) = makeSection(Sections::kAmendments, enabled_);
+        cfg->section(Sections::kVetoAmendments) = makeSection(Sections::kVetoAmendments, vetoed_);
         return cfg;
     }
 
@@ -140,7 +140,7 @@ private:
     combineArg(std::vector<Arg>& dest, std::vector<Arg> const& src, Args const&... args)
     {
         assert(dest.capacity() >= dest.size() + src.size());
-        std::copy(src.begin(), src.end(), std::back_inserter(dest));
+        std::ranges::copy(src, std::back_inserter(dest));
         if constexpr (sizeof...(args) > 0)
             combineArg(dest, args...);
     }
@@ -471,7 +471,7 @@ public:
         trustedValidators.reserve(num);
         for (int i = 0; i < num; ++i)
         {
-            auto const& back = ret.emplace_back(randomKeyPair(KeyType::dilithium));
+            auto const& back = ret.emplace_back(randomKeyPair(KeyType::Dilithium));
             trustedValidators.insert(back.first);
         }
         table->trustChanged(trustedValidators);
@@ -968,7 +968,7 @@ public:
         }
 
         // Add one new validator to the UNL.
-        validators.emplace_back(randomKeyPair(KeyType::dilithium));
+        validators.emplace_back(randomKeyPair(KeyType::Dilithium));
 
         // A lambda that updates the AmendmentTable with the latest
         // trusted validators.

@@ -209,8 +209,8 @@ buildHandshake(
 
     h.insert("Instance-Cookie", std::to_string(app.instanceID()));
 
-    if (!app.config().SERVER_DOMAIN.empty())
-        h.insert("Server-Domain", app.config().SERVER_DOMAIN);
+    if (!app.config().serverDomain.empty())
+        h.insert("Server-Domain", app.config().serverDomain);
 
     if (beast::IP::isPublic(remoteIp))
         h.insert("Remote-IP", remoteIp.to_string());
@@ -295,7 +295,7 @@ verifyHandshake(
                 // (pre-amendment) or a dilithium node key (post-amendment).
                 // Ed25519 has never been valid for node identity.
                 auto const kt = publicKeyType(*pk);
-                if (kt != KeyType::Secp256k1 && kt != KeyType::dilithium)
+                if (kt != KeyType::Secp256k1 && kt != KeyType::Dilithium)
                     throw std::runtime_error("Unsupported public key type");
 
                 return *pk;
@@ -412,10 +412,10 @@ makeResponse(
         "X-Protocol-Ctl",
         makeFeaturesResponseHeader(
             req,
-            app.config().COMPRESSION,
-            app.config().LEDGER_REPLAY,
-            app.config().TX_REDUCE_RELAY_ENABLE,
-            app.config().VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE));
+            app.config().compression,
+            app.config().ledgerReplay,
+            app.config().txReduceRelayEnable,
+            app.config().vpReduceRelayBaseSquelchEnable));
 
     buildHandshake(resp, sharedValue, networkID, publicIp, remoteIp, app);
 

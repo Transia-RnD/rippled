@@ -1,4 +1,4 @@
-#include <test/jtx.h>
+#include <test/jtx/Env.h>
 
 #include <xrpl/server/Manifest.h>
 #include <xrpld/app/misc/ValidatorList.h>
@@ -126,7 +126,7 @@ private:
     PublicKey
     randomNode()
     {
-        return derivePublicKey(KeyType::dilithium, randomSecretKey(KeyType::dilithium));
+        return derivePublicKey(KeyType::Dilithium, randomSecretKey(KeyType::Dilithium));
     }
 
     void

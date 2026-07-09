@@ -71,7 +71,7 @@ class PeerPartial : public Peer
 {
 public:
     PeerPartial()
-        : nodePublicKey(derivePublicKey(KeyType::dilithium, randomSecretKey(KeyType::dilithium)))
+        : nodePublicKey(derivePublicKey(KeyType::Dilithium, randomSecretKey(KeyType::Dilithium)))
     {
     }
 
@@ -324,12 +324,11 @@ class Validator
     using Links = std::unordered_map<Peer::id_t, LinkSPtr>;
 
 public:
-    Validator() : pkey_(std::get<0>(randomKeyPair(KeyType::dilithium)))
+    Validator() : pkey_(std::get<0>(randomKeyPair(KeyType::Dilithium))), id_(sid++)
     {
         protocol::TMValidation v;
         v.set_validation("validation");
         message_ = std::make_shared<Message>(v, protocol::mtVALIDATION, pkey_);
-        id_ = sid++;
     }
     Validator(Validator const&) = default;
     Validator(Validator&&) = default;
@@ -458,7 +457,6 @@ public:
     using id_t = Peer::id_t;
     PeerSim(Overlay& overlay, beast::Journal journal) : overlay_(overlay), squelch_(journal)
     {
-        id_ = sid++;
     }
 
     ~PeerSim() override = default;
@@ -513,7 +511,7 @@ public:
 private:
     inline static id_t sid = 0;
     std::string fingerprint_;
-    id_t id_;
+    id_t id_{sid++};
     Overlay& overlay_;
     reduce_relay::Squelch<ManualClock> squelch_;
 };
@@ -807,7 +805,7 @@ public:
     {
         auto size = max - min;
         std::vector<std::uint32_t> s(size);
-        std::iota(s.begin(), s.end(), min);
+        std::iota(s.begin(), s.end(), min);  // NOLINT(modernize-use-ranges)
         std::random_device d;
         std::mt19937 g(d());
         std::shuffle(s.begin(), s.end(), g);
@@ -974,8 +972,7 @@ protected:
                 auto countingState = network_.overlay().isCountingState(validator);
                 BEAST_EXPECT(
                     countingState == false &&
-                    selected.size() ==
-                        env_.app().config().VP_REDUCE_RELAY_SQUELCH_MAX_SELECTED_PEERS);
+                    selected.size() == env_.app().config().vpReduceRelaySquelchMaxSelectedPeers);
             }
 
             // Trigger Link Down or Peer Disconnect event
@@ -1164,7 +1161,7 @@ protected:
                 {
                     BEAST_EXPECT(
                         squelched ==
-                        kMaxPeers - env_.app().config().VP_REDUCE_RELAY_SQUELCH_MAX_SELECTED_PEERS);
+                        kMaxPeers - env_.app().config().vpReduceRelaySquelchMaxSelectedPeers);
                     n++;
                 }
             },
@@ -1173,8 +1170,7 @@ protected:
             purge,
             resetClock);
         auto selected = network_.overlay().getSelected(network_.validator(0));
-        BEAST_EXPECT(
-            selected.size() == env_.app().config().VP_REDUCE_RELAY_SQUELCH_MAX_SELECTED_PEERS);
+        BEAST_EXPECT(selected.size() == env_.app().config().vpReduceRelaySquelchMaxSelectedPeers);
         BEAST_EXPECT(n == 1);  // only one selection round
         auto res = checkCounting(network_.validator(0), false);
         BEAST_EXPECT(res);
@@ -1235,7 +1231,7 @@ protected:
                 id, [&](PublicKey const& key, PeerWPtr const& peer) { unsquelched++; });
             BEAST_EXPECT(
                 unsquelched ==
-                kMaxPeers - env_.app().config().VP_REDUCE_RELAY_SQUELCH_MAX_SELECTED_PEERS);
+                kMaxPeers - env_.app().config().vpReduceRelaySquelchMaxSelectedPeers);
             BEAST_EXPECT(checkCounting(network_.validator(0), true));
         });
     }
@@ -1255,7 +1251,7 @@ protected:
             auto peers = network_.overlay().getPeers(network_.validator(0));
             BEAST_EXPECT(
                 unsquelched ==
-                kMaxPeers - env_.app().config().VP_REDUCE_RELAY_SQUELCH_MAX_SELECTED_PEERS);
+                kMaxPeers - env_.app().config().vpReduceRelaySquelchMaxSelectedPeers);
             BEAST_EXPECT(checkCounting(network_.validator(0), true));
         });
     }
@@ -1294,7 +1290,7 @@ vp_enable=1
 )xrpldConfig");
 
             c.loadFromString(toLoad);
-            BEAST_EXPECT(c.VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE == true);
+            BEAST_EXPECT(c.vpReduceRelayBaseSquelchEnable == true);
         });
 
         doTest("Test Config - squelch disabled (legacy)", log, [&](bool log) {
@@ -1306,7 +1302,7 @@ vp_enable=0
 )xrpldConfig");
 
             c.loadFromString(toLoad);
-            BEAST_EXPECT(c.VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE == false);
+            BEAST_EXPECT(c.vpReduceRelayBaseSquelchEnable == false);
 
             Config c1;
 
@@ -1315,7 +1311,7 @@ vp_enable=0
 )xrpldConfig";
 
             c1.loadFromString(toLoad);
-            BEAST_EXPECT(c1.VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE == false);
+            BEAST_EXPECT(c1.vpReduceRelayBaseSquelchEnable == false);
         });
 
         doTest("Test Config - squelch enabled", log, [&](bool log) {
@@ -1327,7 +1323,7 @@ vp_base_squelch_enable=1
 )xrpldConfig");
 
             c.loadFromString(toLoad);
-            BEAST_EXPECT(c.VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE == true);
+            BEAST_EXPECT(c.vpReduceRelayBaseSquelchEnable == true);
         });
 
         doTest("Test Config - squelch disabled", log, [&](bool log) {
@@ -1339,7 +1335,7 @@ vp_base_squelch_enable=0
 )xrpldConfig");
 
             c.loadFromString(toLoad);
-            BEAST_EXPECT(c.VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE == false);
+            BEAST_EXPECT(c.vpReduceRelayBaseSquelchEnable == false);
         });
 
         doTest("Test Config - legacy and new", log, [&](bool log) {
@@ -1379,7 +1375,7 @@ vp_enable=0
 )xrpldConfig");
 
             c.loadFromString(toLoad);
-            BEAST_EXPECT(c.VP_REDUCE_RELAY_SQUELCH_MAX_SELECTED_PEERS == 5);
+            BEAST_EXPECT(c.vpReduceRelaySquelchMaxSelectedPeers == 5);
 
             Config c1;
 
@@ -1389,7 +1385,7 @@ vp_base_squelch_max_selected_peers=6
 )xrpldConfig";
 
             c1.loadFromString(toLoad);
-            BEAST_EXPECT(c1.VP_REDUCE_RELAY_SQUELCH_MAX_SELECTED_PEERS == 6);
+            BEAST_EXPECT(c1.vpReduceRelaySquelchMaxSelectedPeers == 6);
 
             Config c2;
 
@@ -1422,7 +1418,7 @@ vp_base_squelch_max_selected_peers=2
         doTest("BaseSquelchReady", log, [&](bool log) {
             ManualClock::reset();
             auto createSlots = [&](bool baseSquelchEnabled) -> reduce_relay::Slots<ManualClock> {
-                env_.app().config().VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE = baseSquelchEnabled;
+                env_.app().config().vpReduceRelayBaseSquelchEnable = baseSquelchEnabled;
                 return reduce_relay::Slots<ManualClock>(
                     env_.app(), network_.overlay(), env_.app().config());
             };
@@ -1498,7 +1494,7 @@ vp_base_squelch_max_selected_peers=2
     testRandomSquelch(bool l)
     {
         doTest("Random Squelch", l, [&](bool l) {
-            PublicKey validator = std::get<0>(randomKeyPair(KeyType::dilithium));
+            PublicKey validator = std::get<0>(randomKeyPair(KeyType::Dilithium));
             Handler handler;
 
             auto run = [&](int npeers) {
@@ -1578,10 +1574,10 @@ vp_base_squelch_max_selected_peers=2
                     << "[compression]\n"
                     << "1\n";
                 c.loadFromString(str.str());
-                env_.app().config().VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE =
-                    c.VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE;
+                env_.app().config().vpReduceRelayBaseSquelchEnable =
+                    c.vpReduceRelayBaseSquelchEnable;
 
-                env_.app().config().COMPRESSION = c.COMPRESSION;
+                env_.app().config().compression = c.compression;
             };
             auto handshake = [&](int outboundEnable, int inboundEnable) {
                 beast::IP::Address const addr = boost::asio::ip::make_address("172.1.1.100");
@@ -1589,10 +1585,10 @@ vp_base_squelch_max_selected_peers=2
                 setEnv(outboundEnable);
                 auto request = xrpl::makeRequest(
                     true,
-                    env_.app().config().COMPRESSION,
+                    env_.app().config().compression,
                     false,
-                    env_.app().config().TX_REDUCE_RELAY_ENABLE,
-                    env_.app().config().VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE);
+                    env_.app().config().txReduceRelayEnable,
+                    env_.app().config().vpReduceRelayBaseSquelchEnable);
                 http_request_type httpRequest;
                 httpRequest.version(request.version());
                 httpRequest.base() = request.base();
@@ -1627,8 +1623,8 @@ vp_base_squelch_max_selected_peers=2
 public:
     reduce_relay_test()
         : env_(*this, jtx::envconfig([](std::unique_ptr<Config> cfg) {
-            cfg->VP_REDUCE_RELAY_BASE_SQUELCH_ENABLE = true;
-            cfg->VP_REDUCE_RELAY_SQUELCH_MAX_SELECTED_PEERS = 6;
+            cfg->vpReduceRelayBaseSquelchEnable = true;
+            cfg->vpReduceRelaySquelchMaxSelectedPeers = 6;
             return cfg;
         }))
         , network_(env_.app())

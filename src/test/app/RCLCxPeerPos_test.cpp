@@ -19,10 +19,10 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
         testcase("Dilithium proposal signature verification");
 
         // Generate dilithium keypair
-        auto const [publicKey, secretKey] = randomKeyPair(KeyType::dilithium);
+        auto const [publicKey, secretKey] = randomKeyPair(KeyType::Dilithium);
 
         // Verify key type
-        BEAST_EXPECT(*publicKeyType(publicKey) == KeyType::dilithium);
+        BEAST_EXPECT(*publicKeyType(publicKey) == KeyType::Dilithium);
 
         // Create a proposal with test data
         uint256 const prevLedger{42};
@@ -73,7 +73,7 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
         testcase("Invalid dilithium proposal signature");
 
         // Generate dilithium keypair
-        auto const [publicKey, secretKey] = randomKeyPair(KeyType::dilithium);
+        auto const [publicKey, secretKey] = randomKeyPair(KeyType::Dilithium);
 
         // Create a proposal
         uint256 const prevLedger{42};
@@ -128,9 +128,9 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
 
         // Generate two different dilithium keypairs
         auto const [publicKey1, secretKey1] =
-            randomKeyPair(KeyType::dilithium);
+            randomKeyPair(KeyType::Dilithium);
         auto const [publicKey2, secretKey2] =
-            randomKeyPair(KeyType::dilithium);
+            randomKeyPair(KeyType::Dilithium);
 
         // Create a proposal
         uint256 const prevLedger{42};

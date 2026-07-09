@@ -424,9 +424,9 @@ public:
 
         {
             auto const pk1 = derivePublicKey(
-                KeyType::dilithium,
+                KeyType::Dilithium,
                 generateSecretKey(
-                    KeyType::dilithium, generateSeed("masterpassphrase")));
+                    KeyType::Dilithium, generateSeed("masterpassphrase")));
 
             auto const pk2 = parseBase58<PublicKey>(
                 TokenType::NodePublic,
@@ -466,7 +466,7 @@ public:
             BEAST_EXPECT(pk1 == *pk2);
         }
 
-        // testBase58(KeyType::dilithium);
+        // testBase58(KeyType::Dilithium);
     }
 
     void

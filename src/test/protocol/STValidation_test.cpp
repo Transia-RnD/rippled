@@ -336,7 +336,7 @@ public:
         };
 
         roundTrip(KeyType::Secp256k1);
-        roundTrip(KeyType::dilithium);
+        roundTrip(KeyType::Dilithium);
     }
 
     void

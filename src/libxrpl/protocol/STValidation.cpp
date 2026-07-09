@@ -6,7 +6,7 @@
 #include <xrpl/basics/chrono.h>
 #include <xrpl/beast/utility/instrumentation.h>
 #include <xrpl/protocol/HashPrefix.h>
-#include <xrpl/protocol/KeyType.h>
+#include <xrpl/protocol/KeyType.h>  // IWYU pragma: keep
 #include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/SField.h>
 #include <xrpl/protocol/SOTemplate.h>
@@ -102,7 +102,7 @@ STValidation::isValid() const noexcept
     {
         XRPL_ASSERT(
             (publicKeyType(getSignerPublic()) == KeyType::Secp256k1 ||
-             publicKeyType(getSignerPublic()) == KeyType::dilithium),
+             publicKeyType(getSignerPublic()) == KeyType::Dilithium),
             "xrpl::STValidation::isValid : valid key type");
 
         valid_ = verifyDigest(

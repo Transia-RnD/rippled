@@ -17,9 +17,17 @@
 */
 //==============================================================================
 
+#include <test/jtx/Account.h>
+#include <test/jtx/Env.h>
+#include <test/jtx/JTx.h>
+#include <test/jtx/amount.h>
+#include <test/jtx/envconfig.h>
+#include <test/jtx/fee.h>
+#include <test/jtx/multisign.h>
+#include <test/jtx/pay.h>
+
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/jss.h>
-#include <test/jtx.h>
 
 namespace xrpl {
 namespace test {
@@ -30,14 +38,14 @@ class Wildcard_test : public beast::unit_test::Suite
     {
         using namespace jtx;
         return envconfig([&](std::unique_ptr<Config> cfg) {
-            cfg->NETWORK_ID = networkID;
+            cfg->networkId = networkID;
             Section config;
             config.append(
                 {"reference_fee = 10",
                  "account_reserve = 1000000",
                  "owner_reserve = 200000"});
             auto setup = setupFeeVote(config);
-            cfg->FEES = setup;
+            cfg->fees = setup;
             return cfg;
         });
     }
@@ -111,7 +119,7 @@ class Wildcard_test : public beast::unit_test::Suite
         Account const alice{"alice"};
         Account const bob{"bob"};
         Account const carol{"carol"};
-        Account const dave{"dave", KeyType::dilithium};
+        Account const dave{"dave", KeyType::Dilithium};
         env.fund(XRP(1000), alice, bob, carol, dave);
         env.close();
 
@@ -143,6 +151,6 @@ public:
     }
 };
 
-BEAST_DEFINE_TESTSUITE(Wildcard, app, ripple);
+BEAST_DEFINE_TESTSUITE(Wildcard, app, xrpl);
 }  // namespace test
 }  // namespace xrpl

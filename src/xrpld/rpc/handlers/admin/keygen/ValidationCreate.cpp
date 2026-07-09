@@ -42,7 +42,7 @@ doValidationCreate(RPC::JsonContext& context)
 
     // Default to dilithium for new validator keys, but allow callers to
     // request a legacy keytype during the rolling-upgrade transition.
-    KeyType keyType = KeyType::dilithium;
+    KeyType keyType = KeyType::Dilithium;
     if (context.params.isMember(jss::key_type))
     {
         auto const parsed =

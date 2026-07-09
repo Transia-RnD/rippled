@@ -296,7 +296,7 @@ signDigest(PublicKey const& pk, SecretKey const& sk, uint256 const& digest)
 
             return Buffer{sig, len};
         }
-        case KeyType::dilithium: {
+        case KeyType::Dilithium: {
             uint8_t sig[CRYPTO_BYTES];
             size_t len = 0;
             uint8_t ctx[] = {};
@@ -365,7 +365,7 @@ sign(PublicKey const& pk, SecretKey const& sk, Slice const& m)
 
             return Buffer{sig, len};
         }
-        case KeyType::dilithium: {
+        case KeyType::Dilithium: {
             uint8_t sig[CRYPTO_BYTES];
             size_t len = 0;
             uint8_t ctx[] = {};
@@ -397,7 +397,7 @@ randomSecretKey(KeyType type)
             secureErase(buf, sizeof(buf));
             return sk;
         }
-        case KeyType::dilithium: {
+        case KeyType::Dilithium: {
             uint8_t pk[CRYPTO_PUBLICKEYBYTES];
             uint8_t buf[CRYPTO_SECRETKEYBYTES];
             crypto_sign_keypair(pk, buf);
@@ -541,7 +541,7 @@ generateSecretKey(KeyType type, Seed const& seed)
         return sk;
     }
 
-    if (type == KeyType::dilithium)
+    if (type == KeyType::Dilithium)
     {
         uint8_t pk[CRYPTO_PUBLICKEYBYTES];
         uint8_t buf[CRYPTO_SECRETKEYBYTES];
@@ -582,7 +582,7 @@ derivePublicKey(KeyType type, SecretKey const& sk)
             ed25519_publickey(sk.data(), &buf[1]);
             return PublicKey(Slice{buf, sizeof(buf)});
         }
-        case KeyType::dilithium: {
+        case KeyType::Dilithium: {
             uint8_t pk_data[CRYPTO_PUBLICKEYBYTES];
             if (pqcrystals_dilithium2_ref_publickey(pk_data, sk.data()) != 1)
                 logicError(
@@ -608,7 +608,7 @@ generateKeyPair(KeyType type, Seed const& seed)
             auto const sk = generateSecretKey(type, seed);
             return {derivePublicKey(type, sk), sk};
         }
-        case KeyType::dilithium: {
+        case KeyType::Dilithium: {
             auto const sk = generateSecretKey(type, seed);
             return {derivePublicKey(type, sk), sk};
         }

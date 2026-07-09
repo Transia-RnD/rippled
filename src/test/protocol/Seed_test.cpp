@@ -198,9 +198,9 @@ public:
             testcase("Node keypair generation & signing (dilithium)");
 
             auto const secretKey = generateSecretKey(
-                KeyType::dilithium, generateSeed("masterpassphrase"));
+                KeyType::Dilithium, generateSeed("masterpassphrase"));
             auto const publicKey =
-                derivePublicKey(KeyType::dilithium, secretKey);
+                derivePublicKey(KeyType::Dilithium, secretKey);
 
             BEAST_EXPECT(
                 toBase58(TokenType::NodePublic, publicKey) ==
@@ -405,7 +405,7 @@ public:
             testcase("Account keypair generation & signing (dilithium)");
 
             auto const [pk, sk] = generateKeyPair(
-                KeyType::dilithium, generateSeed("masterpassphrase"));
+                KeyType::Dilithium, generateSeed("masterpassphrase"));
 
             BEAST_EXPECT(
                 to_string(calcAccountID(pk)) ==

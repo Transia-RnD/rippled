@@ -1,4 +1,5 @@
-#include <test/jtx.h>
+#include <test/jtx/Env.h>
+#include <test/jtx/envconfig.h>
 #include <test/jtx/TrustedPublisherServer.h>
 #include <test/unit_test/FileDirGuard.h>
 
@@ -42,7 +43,7 @@ class ValidatorSiteV2_test : public beast::unit_test::Suite
 private:
     using Validator = TrustedPublisherServer::Validator;
     // Test with dilithium (original ValidatorSite_test covers secp256k1/ed25519)
-    KeyType currentKeyType_ = KeyType::dilithium;
+    KeyType currentKeyType_ = KeyType::Dilithium;
 
     void
     testConfigLoad()

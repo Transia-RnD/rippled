@@ -1,4 +1,4 @@
-#include <test/jtx.h>
+#include <test/jtx/Env.h>
 
 #include <xrpld/app/misc/ValidatorList.h>
 #include <xrpl/server/Manifest.h>
@@ -125,13 +125,13 @@ private:
 
         // Generate dilithium publisher keypair
         auto const [publisherPubKey, publisherSecKey] =
-            randomKeyPair(KeyType::dilithium);
+            randomKeyPair(KeyType::Dilithium);
 
         // Generate dilithium validator keypairs (master + signing)
-        auto const valMasterSec = randomSecretKey(KeyType::dilithium);
-        auto const valMasterPub = derivePublicKey(KeyType::dilithium, valMasterSec);
+        auto const valMasterSec = randomSecretKey(KeyType::Dilithium);
+        auto const valMasterPub = derivePublicKey(KeyType::Dilithium, valMasterSec);
         auto const [valSigningPub, valSigningSec] =
-            randomKeyPair(KeyType::dilithium);
+            randomKeyPair(KeyType::Dilithium);
 
         // Create manifest for validator
         std::string manifest = makeManifestString(
@@ -221,11 +221,11 @@ private:
 
         // Generate dilithium publisher keypair
         auto const [publisherPubKey, publisherSecKey] =
-            randomKeyPair(KeyType::dilithium);
+            randomKeyPair(KeyType::Dilithium);
 
         // Generate dilithium validator keypair
         auto const [validatorPubKey, validatorSecKey] =
-            randomKeyPair(KeyType::dilithium);
+            randomKeyPair(KeyType::Dilithium);
 
         // Set times: effective=now-2 years, expiration=now-1 year (EXPIRED!)
         auto now = env.timeKeeper().now();

@@ -1,4 +1,5 @@
-#include <test/jtx.h>
+#include <test/jtx/Env.h>
+#include <test/jtx/envconfig.h>
 
 #include <xrpld/app/misc/ValidatorList.h>
 #include <xrpld/overlay/detail/ProtocolMessage.h>
@@ -23,7 +24,7 @@ class ValidatorListV2_test : public beast::unit_test::Suite
 {
 private:
     // Test with dilithium (original ValidatorList_test covers secp256k1/ed25519)
-    KeyType currentKeyType_ = KeyType::dilithium;
+    KeyType currentKeyType_ = KeyType::Dilithium;
 
     struct Validator
     {

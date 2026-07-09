@@ -185,7 +185,7 @@ public:
         auto keyType = publicKeyType(nodeKey);
 
         BEAST_EXPECT(keyType.has_value());
-        BEAST_EXPECT(*keyType == KeyType::dilithium);
+        BEAST_EXPECT(*keyType == KeyType::Dilithium);
 
         // Build handshake with dilithium keys
         uint256 sharedValue;
@@ -213,7 +213,7 @@ public:
         BEAST_EXPECT(pkOpt.has_value());
         if (pkOpt)
         {
-            BEAST_EXPECT(publicKeyType(*pkOpt) == KeyType::dilithium);
+            BEAST_EXPECT(publicKeyType(*pkOpt) == KeyType::Dilithium);
         }
     }
 
