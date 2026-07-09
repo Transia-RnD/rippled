@@ -17,14 +17,24 @@
 */
 //==============================================================================
 
+#include <test/jtx/Account.h>
+#include <test/jtx/Env.h>
+#include <test/jtx/amount.h>
+#include <test/jtx/envconfig.h>
+#include <test/jtx/pay.h>
+
+#include <xrpl/basics/Slice.h>
+#include <xrpl/beast/unit_test/suite.h>
 #include <xrpl/protocol/Feature.h>
+#include <xrpl/protocol/KeyType.h>
 #include <xrpl/protocol/PublicKey.h>
-#include <xrpl/protocol/jss.h>
-#include <test/jtx.h>
+
+#include <array>
+#include <cstdint>
 
 namespace xrpl {
-namespace test {
-class PassKey_test : public beast::unit_test::suite
+
+class PassKey_test : public beast::unit_test::Suite
 {
     void
     testP256KeyTypeDetection()
@@ -34,10 +44,10 @@ class PassKey_test : public beast::unit_test::suite
         using namespace test::jtx;
 
         // Valid P-256 key from the test framework
-        Account const p256acct{"p256acct", KeyType::p256};
+        Account const p256acct{"p256acct", KeyType::P256};
         auto const keyType = publicKeyType(p256acct.pk());
         BEAST_EXPECT(keyType.has_value());
-        BEAST_EXPECT(*keyType == KeyType::p256);
+        BEAST_EXPECT(*keyType == KeyType::P256);
 
         // A 65-byte buffer with 0x04 prefix (standard uncompressed EC)
         // must NOT be accepted as P-256 on XRPL
@@ -51,13 +61,13 @@ class PassKey_test : public beast::unit_test::suite
         goodKey[0] = 0xF6;
         auto const goodType = publicKeyType(makeSlice(goodKey));
         BEAST_EXPECT(goodType.has_value());
-        BEAST_EXPECT(*goodType == KeyType::p256);
+        BEAST_EXPECT(*goodType == KeyType::P256);
 
         // Wrong size keys should not be detected as P-256
         std::array<uint8_t, 33> shortKey{};
         shortKey[0] = 0xF6;
         auto const shortType = publicKeyType(makeSlice(shortKey));
-        BEAST_EXPECT(!shortType.has_value() || *shortType != KeyType::p256);
+        BEAST_EXPECT(!shortType.has_value() || *shortType != KeyType::P256);
 
         std::array<uint8_t, 66> longKey{};
         longKey[0] = 0xF6;
@@ -73,7 +83,7 @@ class PassKey_test : public beast::unit_test::suite
         testcase("P256 single sign");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice", KeyType::p256};
+        Account const alice{"alice", KeyType::P256};
         Account const bob{"bob"};
         env.fund(XRP(1000), alice, bob);
         env.close();
@@ -93,9 +103,9 @@ class PassKey_test : public beast::unit_test::suite
         testcase("P256 alongside other key types");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice", KeyType::p256};
+        Account const alice{"alice", KeyType::P256};
         Account const bob{"bob"};  // secp256k1
-        Account const carol{"carol", KeyType::ed25519};
+        Account const carol{"carol", KeyType::Ed25519};
         env.fund(XRP(1000), alice, bob, carol);
         env.close();
 
@@ -118,7 +128,7 @@ public:
     run() override
     {
         using namespace test::jtx;
-        auto const sa = testable_amendments();
+        auto const sa = testableAmendments();
 
         // Protocol-level tests (no env needed)
         testP256KeyTypeDetection();
@@ -129,5 +139,5 @@ public:
 };
 
 BEAST_DEFINE_TESTSUITE(PassKey, protocol, xrpl);
-}  // namespace test
+
 }  // namespace xrpl

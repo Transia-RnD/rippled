@@ -5,6 +5,8 @@
 #include <xrpl/protocol/SecretKey.h>
 #include <xrpl/protocol/UintTypes.h>
 
+#include <cstdint>
+#include <optional>
 #include <string>
 
 namespace xrpl {
@@ -25,8 +27,8 @@ public:
         SecretKey secretKey;
 
         Keys() = delete;
-        Keys(PublicKey const& masterPublic_, PublicKey const& public_, SecretKey const& secret_)
-            : masterPublicKey(masterPublic_), publicKey(public_), secretKey(secret_)
+        Keys(PublicKey const& masterPublic, PublicKey const& pub, SecretKey const& secret)
+            : masterPublicKey(masterPublic), publicKey(pub), secretKey(secret)
         {
         }
     };
@@ -43,7 +45,7 @@ public:
     ValidatorKeys() = delete;
     ValidatorKeys(Config const& config, beast::Journal j);
 
-    bool
+    [[nodiscard]] bool
     configInvalid() const
     {
         return configInvalid_;

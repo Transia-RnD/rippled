@@ -34,27 +34,29 @@
 
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 namespace xrpl {
 
 std::string
-base64_encode(std::uint8_t const* data, std::size_t len);
+base64Encode(std::uint8_t const* data, std::size_t len);
 
 inline std::string
-base64_encode(std::string const& s)
+base64Encode(std::string_view s)
 {
-    return base64_encode(reinterpret_cast<std::uint8_t const*>(s.data()), s.size());
+    return base64Encode(reinterpret_cast<std::uint8_t const*>(s.data()), s.size());
 }
 
 std::string
-base64_decode(std::string_view data);
+base64Decode(std::string_view data);
 
 /** Decode a base64url-encoded string (RFC 4648 S5).
     Converts '-' to '+' and '_' to '/', adds padding, then decodes.
 */
 std::string
-base64url_decode(std::string_view data);
+base64urlDecode(std::string_view data);
 
 }  // namespace xrpl

@@ -3,24 +3,46 @@
 #include <xrpl/basics/LocalValue.h>
 #include <xrpl/core/ClosureCounter.h>
 #include <xrpl/core/JobTypeData.h>
-#include <xrpl/core/JobTypes.h>
 #include <xrpl/core/detail/Workers.h>
 #include <xrpl/json/json_value.h>
 
-#include <boost/coroutine/all.hpp>
+// Include only the specific Boost.Coroutine2 headers actually used here.
+// Avoid `boost/coroutine2/all.hpp` because it transitively pulls in
+// `boost/context/pooled_fixedsize_stack.hpp`, whose `.malloc()` / `.free()`
+// member calls on `boost::pool` collide with MSVC's `_CRTDBG_MAP_ALLOC` macros
+// in Debug builds (see cmake/XrplCompiler.cmake).
+#include <xrpl/beast/insight/Collector.h>
+#include <xrpl/beast/insight/Gauge.h>
+#include <xrpl/beast/insight/Hook.h>
+#include <xrpl/beast/utility/Journal.h>
+#include <xrpl/core/Job.h>
+#include <xrpl/core/LoadEvent.h>
 
+#include <boost/context/protected_fixedsize_stack.hpp>
+#include <boost/coroutine2/coroutine.hpp>
+
+#include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <cstdint>
+#include <functional>
+#include <map>
+#include <memory>
+#include <mutex>
 #include <set>
+#include <string>
+#include <type_traits>
 
 namespace xrpl {
 
 namespace perf {
 class PerfLog;
-}
+}  // namespace perf
 
 class Logs;
-struct Coro_create_t
+struct CoroCreateT
 {
-    explicit Coro_create_t() = default;
+    explicit CoroCreateT() = default;
 };
 
 /** A pool of threads to perform work.
@@ -44,20 +66,19 @@ public:
         JobQueue& jq_;
         JobType type_;
         std::string name_;
-        bool running_;
+        bool running_{false};
         std::mutex mutex_;
-        std::mutex mutex_run_;
+        std::mutex mutexRun_;
         std::condition_variable cv_;
-        boost::coroutines::asymmetric_coroutine<void>::pull_type coro_;
-        boost::coroutines::asymmetric_coroutine<void>::push_type* yield_;
+        boost::coroutines2::coroutine<void>::push_type* yield_{};
+        boost::coroutines2::coroutine<void>::pull_type coro_;
 #ifndef NDEBUG
         bool finished_ = false;
 #endif
 
     public:
-        // Private: Used in the implementation
         template <class F>
-        Coro(Coro_create_t, JobQueue&, JobType, std::string const&, F&&);
+        Coro(CoroCreateT, JobQueue&, JobType, std::string, F&&);
 
         // Not copy-constructible or assignable
         Coro(Coro const&) = delete;
@@ -98,8 +119,8 @@ public:
             Effects:
                The coroutine continues execution from where it last left off
                  using this same thread.
-            Undefined behavior if called after the coroutine has completed
-              with a return (as opposed to a yield()).
+               If the coroutine has already completed, returns immediately
+                 (handles the documented post-before-yield race condition).
             Undefined behavior if resume() or post() called consecutively
               without a corresponding yield.
         */
@@ -107,7 +128,7 @@ public:
         resume();
 
         /** Returns true if the Coro is still runnable (has not returned). */
-        bool
+        [[nodiscard]] bool
         runnable() const;
 
         /** Once called, the Coro allows early exit without an assert. */
@@ -127,23 +148,20 @@ public:
         beast::Journal journal,
         Logs& logs,
         perf::PerfLog& perfLog);
-    ~JobQueue();
+    ~JobQueue() override;
 
     /** Adds a job to the JobQueue.
 
         @param type The type of job.
         @param name Name of the job.
-        @param jobHandler Lambda with signature void (Job&).  Called when the
-       job is executed.
+        @param jobHandler Callable with signature void(). Called when the job is executed.
 
         @return true if jobHandler added to queue.
     */
-    template <
-        typename JobHandler,
-        typename =
-            std::enable_if_t<std::is_same<decltype(std::declval<JobHandler&&>()()), void>::value>>
+    template <typename JobHandler>
     bool
     addJob(JobType type, std::string const& name, JobHandler&& jobHandler)
+        requires(std::is_void_v<std::invoke_result_t<JobHandler>>)
     {
         if (auto optionalCountedJob = jobCounter_.wrap(std::forward<JobHandler>(jobHandler)))
         {
@@ -195,7 +213,7 @@ public:
     isOverloaded();
 
     // Cannot be const because LoadMonitor has no const methods.
-    Json::Value
+    json::Value
     getJson(int c = 0);
 
     /** Block until no jobs running. */
@@ -221,29 +239,29 @@ private:
 
     using JobDataMap = std::map<JobType, JobTypeData>;
 
-    beast::Journal m_journal;
-    mutable std::mutex m_mutex;
-    std::uint64_t m_lastJob;
-    std::set<Job> m_jobSet;
+    beast::Journal journal_;
+    mutable std::mutex mutex_;
+    std::uint64_t lastJob_{0};
+    std::set<Job> jobSet_;
     JobCounter jobCounter_;
     std::atomic_bool stopping_{false};
     std::atomic_bool stopped_{false};
-    JobDataMap m_jobData;
-    JobTypeData m_invalidJobData;
+    JobDataMap jobData_;
+    JobTypeData invalidJobData_;
 
     // The number of jobs currently in processTask()
-    int m_processCount;
+    int processCount_{0};
 
     // The number of suspended coroutines
     int nSuspend_ = 0;
 
-    Workers m_workers;
+    Workers workers_;
 
     // Statistics tracking
     perf::PerfLog& perfLog_;
-    beast::insight::Collector::ptr m_collector;
-    beast::insight::Gauge job_count;
-    beast::insight::Hook hook;
+    beast::insight::Collector::ptr collector_;
+    beast::insight::Gauge jobCount_;
+    beast::insight::Hook hook_;
 
     std::condition_variable cv_;
 
@@ -269,12 +287,12 @@ private:
     //  A Job in the JobSet whose slots count for its type is greater than zero.
     //
     // Pre-conditions:
-    //  mJobSet must not be empty.
-    //  mJobSet holds at least one RunnableJob
+    //  jobSet_ must not be empty.
+    //  jobSet_ holds at least one RunnableJob
     //
     // Post-conditions:
     //  job is a valid Job object.
-    //  job is removed from mJobQueue.
+    //  job is removed from jobQueue_.
     //  Waiting job count of its type is decremented
     //  Running job count of its type is incremented
     //
@@ -286,7 +304,7 @@ private:
     // Indicates that a running Job has completed its task.
     //
     // Pre-conditions:
-    //  Job must not exist in mJobSet.
+    //  Job must not exist in jobSet_.
     //  The JobType must not be invalid.
     //
     // Post-conditions:
@@ -315,7 +333,7 @@ private:
     // Returns the limit of running jobs for the given job type.
     // For jobs with no limit, we return the largest int. Hopefully that
     // will be enough.
-    int
+    static int
     getJobLimit(JobType type);
 };
 
@@ -356,8 +374,10 @@ private:
     If the post() job were to be executed before yield(), undefined behavior
     would occur. The lock ensures that coro_ is not called again until we exit
     the coroutine. At which point a scheduled resume() job waiting on the lock
-    would gain entry, harmlessly call coro_ and immediately return as we have
-    already completed the coroutine.
+    would gain entry. resume() checks if the coroutine has already completed
+    (coro_ converts to false) and, if so, skips invoking operator() since
+    calling operator() on a completed boost::coroutine2 pull_type is undefined
+    behavior.
 
     The race condition occurs as follows:
 
@@ -378,7 +398,7 @@ private:
 
 }  // namespace xrpl
 
-#include <xrpl/core/Coro.ipp>
+#include <xrpl/core/Coro.ipp>  // IWYU pragma: keep
 
 namespace xrpl {
 
@@ -390,7 +410,7 @@ JobQueue::postCoro(JobType t, std::string const& name, F&& f)
         Last param is the function the coroutine runs. Signature of
         void(std::shared_ptr<Coro>).
     */
-    auto coro = std::make_shared<Coro>(Coro_create_t{}, *this, t, name, std::forward<F>(f));
+    auto coro = std::make_shared<Coro>(CoroCreateT{}, *this, t, name, std::forward<F>(f));
     if (!coro->post())
     {
         // The Coro was not successfully posted.  Disable it so it's destructor

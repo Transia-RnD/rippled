@@ -6,6 +6,7 @@
 #include <boost/icl/closed_interval.hpp>
 #include <boost/icl/interval_set.hpp>
 
+#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -101,7 +102,7 @@ to_string(RangeSet<T> const& rs)
 */
 template <class T>
 [[nodiscard]] bool
-from_string(RangeSet<T>& rs, std::string const& s)
+fromString(RangeSet<T>& rs, std::string const& s)
 {
     std::vector<std::string> intervals;
     std::vector<std::string> tokens;
@@ -117,22 +118,32 @@ from_string(RangeSet<T>& rs, std::string const& s)
             case 1: {
                 T front;
                 if (!beast::lexicalCastChecked(front, intervals.front()))
+                {
                     result = false;
+                }
                 else
+                {
                     rs.insert(front);
+                }
                 break;
             }
             case 2: {
                 T front;
                 if (!beast::lexicalCastChecked(front, intervals.front()))
+                {
                     result = false;
+                }
                 else
                 {
                     T back;
                     if (!beast::lexicalCastChecked(back, intervals.back()))
+                    {
                         result = false;
+                    }
                     else
+                    {
                         rs.insert(range(front, back));
+                    }
                 }
                 break;
             }

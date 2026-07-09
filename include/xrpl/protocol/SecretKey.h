@@ -2,22 +2,29 @@
 
 #include <xrpl/basics/Buffer.h>
 #include <xrpl/basics/Slice.h>
+#include <xrpl/basics/base_uint.h>
 #include <xrpl/protocol/KeyType.h>
 #include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/Seed.h>
 #include <xrpl/protocol/tokens.h>
 
 #include <array>
+#include <cstdint>
 #include <cstring>
+#include <optional>
 #include <string>
+#include <utility>
 
 namespace xrpl {
 
 /** A secret key. */
 class SecretKey
 {
+public:
+    static constexpr std::size_t kSize = 32;
+
 private:
-    std::uint8_t buf_[32];
+    std::uint8_t buf_[kSize]{};
 
 public:
     using const_iterator = std::uint8_t const*;
@@ -27,18 +34,23 @@ public:
     SecretKey&
     operator=(SecretKey const&) = default;
 
+    bool
+    operator==(SecretKey const&) = delete;
+    bool
+    operator!=(SecretKey const&) = delete;
+
     ~SecretKey();
 
-    SecretKey(std::array<std::uint8_t, 32> const& data);
+    SecretKey(std::array<std::uint8_t, kSize> const& data);
     SecretKey(Slice const& slice);
 
-    std::uint8_t const*
+    [[nodiscard]] std::uint8_t const*
     data() const
     {
         return buf_;
     }
 
-    std::size_t
+    [[nodiscard]] std::size_t
     size() const
     {
         return sizeof(buf_);
@@ -49,45 +61,39 @@ public:
         @note The operator<< function is deliberately omitted
         to avoid accidental exposure of secret key material.
     */
-    std::string
-    to_string() const;
+    [[nodiscard]] std::string
+    toString() const;
 
-    const_iterator
+    [[nodiscard]] const_iterator
     begin() const noexcept
     {
         return buf_;
     }
 
-    const_iterator
+    [[nodiscard]] const_iterator
     cbegin() const noexcept
     {
         return buf_;
     }
 
-    const_iterator
+    [[nodiscard]] const_iterator
     end() const noexcept
     {
         return buf_ + sizeof(buf_);
     }
 
-    const_iterator
+    [[nodiscard]] const_iterator
     cend() const noexcept
     {
         return buf_ + sizeof(buf_);
     }
 };
 
-inline bool
-operator==(SecretKey const& lhs, SecretKey const& rhs)
-{
-    return lhs.size() == rhs.size() && std::memcmp(lhs.data(), rhs.data(), rhs.size()) == 0;
-}
+bool
+operator==(SecretKey const& lhs, SecretKey const& rhs) = delete;
 
-inline bool
-operator!=(SecretKey const& lhs, SecretKey const& rhs)
-{
-    return !(lhs == rhs);
-}
+bool
+operator!=(SecretKey const& lhs, SecretKey const& rhs) = delete;
 
 //------------------------------------------------------------------------------
 
@@ -106,9 +112,6 @@ toBase58(TokenType type, SecretKey const& sk)
 SecretKey
 randomSecretKey();
 
-// SecretKey
-// randomSecretKey(KeyType type);
-
 /** Generate a new secret key deterministically. */
 SecretKey
 generateSecretKey(KeyType type, Seed const& seed);
@@ -119,7 +122,7 @@ derivePublicKey(KeyType type, SecretKey const& sk);
 
 /** Generate a key pair deterministically.
 
-    This algorithm is specific to Ripple:
+    This algorithm is specific to the XRPL:
 
     For secp256k1 key pairs, the seed is converted
     to a Generator and used to compute the key pair

@@ -1,11 +1,16 @@
 #pragma once
 
-#include <xrpl/basics/Log.h>
+#include <xrpl/basics/base_uint.h>
+#include <xrpl/core/ServiceRegistry.h>
 #include <xrpl/ledger/PaymentSandbox.h>
+#include <xrpl/protocol/AccountID.h>
 #include <xrpl/protocol/STAmount.h>
+#include <xrpl/protocol/STPathSet.h>
 #include <xrpl/protocol/TER.h>
 
 #include <boost/container/flat_set.hpp>
+
+#include <optional>
 
 namespace xrpl {
 class Config;
@@ -13,7 +18,7 @@ namespace path {
 
 namespace detail {
 struct FlowDebugInfo;
-}
+}  // namespace detail
 
 /** RippleCalc calculates the quality of a payment path.
 
@@ -53,7 +58,7 @@ public:
         TER calculationResult_ = temUNKNOWN;
 
     public:
-        TER
+        [[nodiscard]] TER
         result() const
         {
             return calculationResult_;
@@ -92,7 +97,7 @@ public:
         STPathSet const& spsPaths,
 
         std::optional<uint256> const& domainID,
-        Logs& l,
+        ServiceRegistry& registry,
         Input const* const pInputs = nullptr);
 
     // The view we are currently working on
@@ -102,7 +107,7 @@ public:
     // unfunded offers in a deterministic order (hence the ordered container).
     //
     // Offers that were found unfunded.
-    boost::container::flat_set<uint256> permanentlyUnfundedOffers_;
+    boost::container::flat_set<uint256> permanentlyUnfundedOffers;
 };
 
 }  // namespace path

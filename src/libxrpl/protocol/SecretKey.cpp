@@ -1,3 +1,5 @@
+#include <xrpl/protocol/SecretKey.h>
+
 #include <xrpl/basics/Buffer.h>
 #include <xrpl/basics/Slice.h>
 #include <xrpl/basics/base_uint.h>
@@ -8,7 +10,6 @@
 #include <xrpl/crypto/secure_erase.h>
 #include <xrpl/protocol/KeyType.h>
 #include <xrpl/protocol/PublicKey.h>
-#include <xrpl/protocol/SecretKey.h>
 #include <xrpl/protocol/Seed.h>
 #include <xrpl/protocol/detail/secp256k1.h>
 #include <xrpl/protocol/digest.h>
@@ -16,7 +17,13 @@
 
 #include <boost/utility/string_view.hpp>
 
+#include <openssl/bn.h>
+#include <openssl/ec.h>
+#include <openssl/ecdsa.h>
+#include <openssl/obj_mac.h>
+
 #include <ed25519.h>
+#include <secp256k1.h>
 
 #include <algorithm>
 #include <array>
@@ -26,16 +33,11 @@
 #include <stdexcept>
 #include <utility>
 
-#include <openssl/bn.h>
-#include <openssl/ec.h>
-#include <openssl/ecdsa.h>
-#include <openssl/obj_mac.h>
-
 namespace xrpl {
 
 SecretKey::~SecretKey()
 {
-    secure_erase(buf_, sizeof(buf_));
+    secureErase(buf_, sizeof(buf_));
 }
 
 SecretKey::SecretKey(std::array<std::uint8_t, 32> const& key)
@@ -46,12 +48,12 @@ SecretKey::SecretKey(std::array<std::uint8_t, 32> const& key)
 SecretKey::SecretKey(Slice const& slice)
 {
     if (slice.size() != sizeof(buf_))
-        LogicError("SecretKey::SecretKey: invalid size");
+        logicError("SecretKey::SecretKey: invalid size");
     std::memcpy(buf_, slice.data(), sizeof(buf_));
 }
 
 std::string
-SecretKey::to_string() const
+SecretKey::toString() const
 {
     return strHex(*this);
 }
@@ -59,7 +61,7 @@ SecretKey::to_string() const
 namespace detail {
 
 void
-copy_uint32(std::uint8_t* out, std::uint32_t v)
+copyUInt32(std::uint8_t* out, std::uint32_t v)
 {
     *out++ = v >> 24;
     *out++ = (v >> 16) & 0xff;
@@ -79,21 +81,21 @@ deriveDeterministicRootKey(Seed const& seed)
     // buf  |----------------|----|
     //      |      seed      | seq|
 
-    std::array<std::uint8_t, 20> buf;
-    std::copy(seed.begin(), seed.end(), buf.begin());
+    std::array<std::uint8_t, 20> buf{};
+    std::ranges::copy(seed, buf.begin());
 
     // The odds that this loop executes more than once are negligible
     // but *just* in case someone managed to generate a key that required
     // more iterations loop a few times.
     for (std::uint32_t seq = 0; seq != 128; ++seq)
     {
-        copy_uint32(buf.data() + 16, seq);
+        copyUInt32(buf.data() + 16, seq);
 
         auto const ret = sha512Half(buf);
 
         if (secp256k1_ec_seckey_verify(secp256k1Context(), ret.data()) == 1)
         {
-            secure_erase(buf.data(), buf.size());
+            secureErase(buf.data(), buf.size());
             return ret;
         }
     }
@@ -124,9 +126,9 @@ class Generator
 {
 private:
     uint256 root_;
-    std::array<std::uint8_t, 33> generator_;
+    std::array<std::uint8_t, 33> generator_{};
 
-    uint256
+    [[nodiscard]] uint256
     calculateTweak(std::uint32_t seq) const
     {
         // We fill the buffer with the generator, the provided sequence
@@ -138,21 +140,21 @@ private:
         // buf  |---------------------------------|----|----|
         //      |            generator            | seq| cnt|
 
-        std::array<std::uint8_t, 41> buf;
-        std::copy(generator_.begin(), generator_.end(), buf.begin());
-        copy_uint32(buf.data() + 33, seq);
+        std::array<std::uint8_t, 41> buf{};
+        std::ranges::copy(generator_, buf.begin());
+        copyUInt32(buf.data() + 33, seq);
 
         // The odds that this loop executes more than once are negligible
         // but we impose a maximum limit just in case.
         for (std::uint32_t subseq = 0; subseq != 128; ++subseq)
         {
-            copy_uint32(buf.data() + 37, subseq);
+            copyUInt32(buf.data() + 37, subseq);
 
-            auto const ret = sha512Half_s(buf);
+            auto const ret = sha512HalfS(buf);
 
             if (secp256k1_ec_seckey_verify(secp256k1Context(), ret.data()) == 1)
             {
-                secure_erase(buf.data(), buf.size());
+                secureErase(buf.data(), buf.size());
                 return ret;
             }
         }
@@ -165,19 +167,19 @@ public:
     {
         secp256k1_pubkey pubkey;
         if (secp256k1_ec_pubkey_create(secp256k1Context(), &pubkey, root_.data()) != 1)
-            LogicError("derivePublicKey: secp256k1_ec_pubkey_create failed");
+            logicError("derivePublicKey: secp256k1_ec_pubkey_create failed");
 
         auto len = generator_.size();
 
         if (secp256k1_ec_pubkey_serialize(
                 secp256k1Context(), generator_.data(), &len, &pubkey, SECP256K1_EC_COMPRESSED) != 1)
-            LogicError("derivePublicKey: secp256k1_ec_pubkey_serialize failed");
+            logicError("derivePublicKey: secp256k1_ec_pubkey_serialize failed");
     }
 
     ~Generator()
     {
-        secure_erase(root_.data(), root_.size());
-        secure_erase(generator_.data(), generator_.size());
+        secureErase(root_.data(), root_.size());
+        secureErase(generator_.data(), generator_.size());
     }
 
     /** Generate the nth key pair. */
@@ -190,15 +192,15 @@ public:
 
             if (secp256k1_ec_seckey_tweak_add(secp256k1Context(), rpk.data(), tweak.data()) == 1)
             {
-                SecretKey sk{Slice{rpk.data(), rpk.size()}};
-                secure_erase(rpk.data(), rpk.size());
+                SecretKey const sk{Slice{rpk.data(), rpk.size()}};
+                secureErase(rpk.data(), rpk.size());
                 return sk;
             }
 
-            LogicError("Unable to add a tweak!");
+            logicError("Unable to add a tweak!");
         }();
 
-        return {derivePublicKey(KeyType::secp256k1, gsk), gsk};
+        return {derivePublicKey(KeyType::Secp256k1, gsk), gsk};
     }
 };
 
@@ -207,24 +209,24 @@ public:
 Buffer
 signDigest(PublicKey const& pk, SecretKey const& sk, uint256 const& digest)
 {
-    if (publicKeyType(pk.slice()) != KeyType::secp256k1)
-        LogicError("sign: secp256k1 required for digest signing");
+    if (publicKeyType(pk.slice()) != KeyType::Secp256k1)
+        logicError("sign: secp256k1 required for digest signing");
 
     BOOST_ASSERT(sk.size() == 32);
-    secp256k1_ecdsa_signature sig_imp;
+    secp256k1_ecdsa_signature sigImp;
     if (secp256k1_ecdsa_sign(
             secp256k1Context(),
-            &sig_imp,
+            &sigImp,
             reinterpret_cast<unsigned char const*>(digest.data()),
             reinterpret_cast<unsigned char const*>(sk.data()),
             secp256k1_nonce_function_rfc6979,
             nullptr) != 1)
-        LogicError("sign: secp256k1_ecdsa_sign failed");
+        logicError("sign: secp256k1_ecdsa_sign failed");
 
     unsigned char sig[72];
     size_t len = sizeof(sig);
-    if (secp256k1_ecdsa_signature_serialize_der(secp256k1Context(), sig, &len, &sig_imp) != 1)
-        LogicError("sign: secp256k1_ecdsa_signature_serialize_der failed");
+    if (secp256k1_ecdsa_signature_serialize_der(secp256k1Context(), sig, &len, &sigImp) != 1)
+        logicError("sign: secp256k1_ecdsa_signature_serialize_der failed");
 
     return Buffer{sig, len};
 }
@@ -234,121 +236,117 @@ sign(PublicKey const& pk, SecretKey const& sk, Slice const& m)
 {
     auto const type = publicKeyType(pk.slice());
     if (!type)
-        LogicError("sign: invalid type");
+        logicError("sign: invalid type");
     switch (*type)
     {
-        case KeyType::ed25519: {
+        case KeyType::Ed25519: {
             Buffer b(64);
             ed25519_sign(m.data(), m.size(), sk.data(), pk.data() + 1, b.data());
             return b;
         }
-        case KeyType::secp256k1: {
+        case KeyType::Secp256k1: {
             sha512_half_hasher h;
             h(m.data(), m.size());
             auto const digest = sha512_half_hasher::result_type(h);
 
-            secp256k1_ecdsa_signature sig_imp;
+            secp256k1_ecdsa_signature sigImp;
             if (secp256k1_ecdsa_sign(
                     secp256k1Context(),
-                    &sig_imp,
+                    &sigImp,
                     reinterpret_cast<unsigned char const*>(digest.data()),
                     reinterpret_cast<unsigned char const*>(sk.data()),
                     secp256k1_nonce_function_rfc6979,
                     nullptr) != 1)
-                LogicError("sign: secp256k1_ecdsa_sign failed");
+                logicError("sign: secp256k1_ecdsa_sign failed");
 
             unsigned char sig[72];
             size_t len = sizeof(sig);
-            if (secp256k1_ecdsa_signature_serialize_der(secp256k1Context(), sig, &len, &sig_imp) !=
+            if (secp256k1_ecdsa_signature_serialize_der(secp256k1Context(), sig, &len, &sigImp) !=
                 1)
-                LogicError("sign: secp256k1_ecdsa_signature_serialize_der failed");
+                logicError("sign: secp256k1_ecdsa_signature_serialize_der failed");
 
             return Buffer{sig, len};
         }
-        case KeyType::p256: {
+        case KeyType::P256: {
             // Hash the message with SHA-256 (P-256 uses ECDSA-SHA256)
             auto digest = sha256(m);
 
             // Create curve object
             EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
             if (!group)
-                LogicError("sign: EC_GROUP_new_by_curve_name failed");
+                logicError("sign: EC_GROUP_new_by_curve_name failed");
 
             // Create EC_KEY and set the group
             EC_KEY* key = EC_KEY_new();
             if (!key)
             {
                 EC_GROUP_free(group);
-                LogicError("sign: EC_KEY_new failed");
+                logicError("sign: EC_KEY_new failed");
             }
-            
+
             if (EC_KEY_set_group(key, group) != 1)
             {
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("sign: EC_KEY_set_group failed");
+                logicError("sign: EC_KEY_set_group failed");
             }
 
             // Convert secret key to BIGNUM and set as private key
-            BIGNUM* priv_key = BN_bin2bn(
-                reinterpret_cast<const unsigned char*>(sk.data()),
-                sk.size(),
-                nullptr);
-            
-            if (!priv_key || EC_KEY_set_private_key(key, priv_key) != 1)
+            BIGNUM* privKey =
+                BN_bin2bn(reinterpret_cast<unsigned char const*>(sk.data()), sk.size(), nullptr);
+
+            if (!privKey || EC_KEY_set_private_key(key, privKey) != 1)
             {
-                BN_free(priv_key);
+                BN_free(privKey);
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("sign: failed to set private key");
+                logicError("sign: failed to set private key");
             }
 
             // Sign the digest
-            ECDSA_SIG* sig_obj = ECDSA_do_sign(
-                reinterpret_cast<const unsigned char*>(digest.data()),
-                digest.size(),
-                key);
+            ECDSA_SIG* sigObj = ECDSA_do_sign(
+                reinterpret_cast<unsigned char const*>(digest.data()), digest.size(), key);
 
-            if (!sig_obj)
+            if (!sigObj)
             {
-                BN_free(priv_key);
+                BN_free(privKey);
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("sign: ECDSA_do_sign failed");
+                logicError("sign: ECDSA_do_sign failed");
             }
 
             // Convert signature to DER format
             unsigned char sig[72];
-            int len = i2d_ECDSA_SIG(sig_obj, nullptr);
+            int len = i2d_ECDSA_SIG(sigObj, nullptr);
             if (len <= 0 || len > 72)
             {
-                ECDSA_SIG_free(sig_obj);
-                BN_free(priv_key);
+                ECDSA_SIG_free(sigObj);
+                BN_free(privKey);
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("sign: i2d_ECDSA_SIG length check failed");
+                logicError("sign: i2d_ECDSA_SIG length check failed");
             }
 
-            unsigned char* sig_ptr = sig;
-            if (i2d_ECDSA_SIG(sig_obj, &sig_ptr) != len)
+            unsigned char* sigPtr = sig;
+            if (i2d_ECDSA_SIG(sigObj, &sigPtr) != len)
             {
-                ECDSA_SIG_free(sig_obj);
-                BN_free(priv_key);
+                ECDSA_SIG_free(sigObj);
+                BN_free(privKey);
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("sign: i2d_ECDSA_SIG serialization failed");
+                logicError("sign: i2d_ECDSA_SIG serialization failed");
             }
 
             // Cleanup
-            ECDSA_SIG_free(sig_obj);
-            BN_free(priv_key);
+            ECDSA_SIG_free(sigObj);
+            BN_free(privKey);
             EC_KEY_free(key);
             EC_GROUP_free(group);
 
             return Buffer{sig, static_cast<size_t>(len)};
         }
         default:
-            LogicError("sign: invalid type");
+            logicError("sign: invalid type");
     }
 }
 
@@ -356,40 +354,40 @@ SecretKey
 randomSecretKey()
 {
     std::uint8_t buf[32];
-    beast::rngfill(buf, sizeof(buf), crypto_prng());
-    SecretKey sk(Slice{buf, sizeof(buf)});
-    secure_erase(buf, sizeof(buf));
+    beast::rngfill(buf, sizeof(buf), cryptoPrng());
+    SecretKey const sk(Slice{buf, sizeof(buf)});
+    secureErase(buf, sizeof(buf));
     return sk;
 }
 
 SecretKey
 generateSecretKey(KeyType type, Seed const& seed)
 {
-    if (type == KeyType::ed25519)
+    if (type == KeyType::Ed25519)
     {
-        auto key = sha512Half_s(Slice(seed.data(), seed.size()));
-        SecretKey sk{Slice{key.data(), key.size()}};
-        secure_erase(key.data(), key.size());
+        auto key = sha512HalfS(Slice(seed.data(), seed.size()));
+        SecretKey const sk{Slice{key.data(), key.size()}};
+        secureErase(key.data(), key.size());
         return sk;
     }
 
-    if (type == KeyType::secp256k1)
-    {
-        auto key = detail::deriveDeterministicRootKey(seed);
-        SecretKey sk{Slice{key.data(), key.size()}};
-        secure_erase(key.data(), key.size());
-        return sk;
-    }
-
-    if (type == KeyType::p256)
+    if (type == KeyType::Secp256k1)
     {
         auto key = detail::deriveDeterministicRootKey(seed);
-        SecretKey sk{Slice{key.data(), key.size()}};
-        secure_erase(key.data(), key.size());
+        SecretKey const sk{Slice{key.data(), key.size()}};
+        secureErase(key.data(), key.size());
         return sk;
     }
 
-    LogicError("generateSecretKey: unknown key type");
+    if (type == KeyType::P256)
+    {
+        auto key = detail::deriveDeterministicRootKey(seed);
+        SecretKey const sk{Slice{key.data(), key.size()}};
+        secureErase(key.data(), key.size());
+        return sk;
+    }
+
+    logicError("generateSecretKey: unknown key type");
 }
 
 PublicKey
@@ -397,149 +395,143 @@ derivePublicKey(KeyType type, SecretKey const& sk)
 {
     switch (type)
     {
-        case KeyType::secp256k1: {
-            secp256k1_pubkey pubkey_imp;
+        case KeyType::Secp256k1: {
+            secp256k1_pubkey pubkeyImp;
             if (secp256k1_ec_pubkey_create(
                     secp256k1Context(),
-                    &pubkey_imp,
+                    &pubkeyImp,
                     reinterpret_cast<unsigned char const*>(sk.data())) != 1)
-                LogicError("derivePublicKey: secp256k1_ec_pubkey_create failed");
+                logicError("derivePublicKey: secp256k1_ec_pubkey_create failed");
 
             unsigned char pubkey[33];
             std::size_t len = sizeof(pubkey);
             if (secp256k1_ec_pubkey_serialize(
-                    secp256k1Context(), pubkey, &len, &pubkey_imp, SECP256K1_EC_COMPRESSED) != 1)
-                LogicError("derivePublicKey: secp256k1_ec_pubkey_serialize failed");
+                    secp256k1Context(), pubkey, &len, &pubkeyImp, SECP256K1_EC_COMPRESSED) != 1)
+                logicError("derivePublicKey: secp256k1_ec_pubkey_serialize failed");
 
             return PublicKey{Slice{pubkey, len}};
         }
-        case KeyType::ed25519: {
+        case KeyType::Ed25519: {
             unsigned char buf[33];
             buf[0] = 0xED;
             ed25519_publickey(sk.data(), &buf[1]);
             return PublicKey(Slice{buf, sizeof(buf)});
         }
-        case KeyType::p256: {
+        case KeyType::P256: {
             // Create curve object
             EC_GROUP* group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
             if (!group)
-                LogicError("derivePublicKey: EC_GROUP_new_by_curve_name failed");
+                logicError("derivePublicKey: EC_GROUP_new_by_curve_name failed");
 
             // Create EC_KEY and set the group
             EC_KEY* key = EC_KEY_new();
             if (!key)
             {
                 EC_GROUP_free(group);
-                LogicError("derivePublicKey: EC_KEY_new failed");
+                logicError("derivePublicKey: EC_KEY_new failed");
             }
-            
+
             if (EC_KEY_set_group(key, group) != 1)
             {
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("derivePublicKey: EC_KEY_set_group failed");
+                logicError("derivePublicKey: EC_KEY_set_group failed");
             }
 
             // Convert secret key to BIGNUM
-            BIGNUM* priv_key = BN_bin2bn(
-                reinterpret_cast<const unsigned char*>(sk.data()),
-                sk.size(),
-                nullptr);
-            
-            if (!priv_key)
+            BIGNUM* privKey =
+                BN_bin2bn(reinterpret_cast<unsigned char const*>(sk.data()), sk.size(), nullptr);
+
+            if (!privKey)
             {
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("derivePublicKey: BN_bin2bn failed");
+                logicError("derivePublicKey: BN_bin2bn failed");
             }
 
             // Set the private key
-            if (EC_KEY_set_private_key(key, priv_key) != 1)
+            if (EC_KEY_set_private_key(key, privKey) != 1)
             {
-                BN_free(priv_key);
+                BN_free(privKey);
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("derivePublicKey: EC_KEY_set_private_key failed");
+                logicError("derivePublicKey: EC_KEY_set_private_key failed");
             }
 
             // Generate the public key from the private key
-            EC_POINT* pub_key_point = EC_POINT_new(group);
-            if (!pub_key_point)
+            EC_POINT* pubKeyPoint = EC_POINT_new(group);
+            if (!pubKeyPoint)
             {
-                BN_free(priv_key);
+                BN_free(privKey);
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("derivePublicKey: EC_POINT_new failed");
+                logicError("derivePublicKey: EC_POINT_new failed");
             }
 
-            if (EC_POINT_mul(group, pub_key_point, priv_key, nullptr, nullptr, nullptr) != 1)
+            if (EC_POINT_mul(group, pubKeyPoint, privKey, nullptr, nullptr, nullptr) != 1)
             {
-                EC_POINT_free(pub_key_point);
-                BN_free(priv_key);
+                EC_POINT_free(pubKeyPoint);
+                BN_free(privKey);
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("derivePublicKey: EC_POINT_mul failed");
+                logicError("derivePublicKey: EC_POINT_mul failed");
             }
 
             // Extract x and y coordinates
             BIGNUM* x = BN_new();
             BIGNUM* y = BN_new();
-            if (!x || !y || 
-                EC_POINT_get_affine_coordinates_GFp(group, pub_key_point, x, y, nullptr) != 1)
+            if (!x || !y ||
+                EC_POINT_get_affine_coordinates_GFp(group, pubKeyPoint, x, y, nullptr) != 1)
             {
                 BN_free(x);
                 BN_free(y);
-                EC_POINT_free(pub_key_point);
-                BN_free(priv_key);
+                EC_POINT_free(pubKeyPoint);
+                BN_free(privKey);
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("derivePublicKey: EC_POINT_get_affine_coordinates_GFp failed");
+                logicError("derivePublicKey: EC_POINT_get_affine_coordinates_GFp failed");
             }
 
             // Convert coordinates to bytes
-            unsigned char buf[65]; // 1 prefix + 32-byte x + 32-byte y
-            buf[0] = 0xF6; // P-256 prefix byte (choose your own prefix)
-            
+            unsigned char buf[65];  // 1 prefix + 32-byte x + 32-byte y
+            buf[0] = 0xF6;          // P-256 prefix byte
+
             // Convert x coordinate to 32 bytes
-            int x_len = BN_bn2binpad(x, &buf[1], 32);
-            if (x_len != 32)
+            if (BN_bn2binpad(x, &buf[1], 32) != 32)
             {
                 BN_free(x);
                 BN_free(y);
-                EC_POINT_free(pub_key_point);
-                BN_free(priv_key);
+                EC_POINT_free(pubKeyPoint);
+                BN_free(privKey);
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("derivePublicKey: BN_bn2binpad failed for x coordinate");
+                logicError("derivePublicKey: BN_bn2binpad failed for x coordinate");
             }
-            
+
             // Convert y coordinate to 32 bytes
-            int y_len = BN_bn2binpad(y, &buf[33], 32);
-            if (y_len != 32)
+            if (BN_bn2binpad(y, &buf[33], 32) != 32)
             {
                 BN_free(x);
                 BN_free(y);
-                EC_POINT_free(pub_key_point);
-                BN_free(priv_key);
+                EC_POINT_free(pubKeyPoint);
+                BN_free(privKey);
                 EC_KEY_free(key);
                 EC_GROUP_free(group);
-                LogicError("derivePublicKey: BN_bn2binpad failed for y coordinate");
+                logicError("derivePublicKey: BN_bn2binpad failed for y coordinate");
             }
 
             // Cleanup
             BN_free(x);
             BN_free(y);
-            EC_POINT_free(pub_key_point);
-            BN_free(priv_key);
+            EC_POINT_free(pubKeyPoint);
+            BN_free(privKey);
             EC_KEY_free(key);
             EC_GROUP_free(group);
 
             return PublicKey{Slice{buf, sizeof(buf)}};
-            
         }
-
         default:
-            LogicError("derivePublicKey: bad key type");
+            logicError("derivePublicKey: bad key type");
     };
 }
 
@@ -548,16 +540,16 @@ generateKeyPair(KeyType type, Seed const& seed)
 {
     switch (type)
     {
-        case KeyType::secp256k1: {
-            detail::Generator g(seed);
+        case KeyType::Secp256k1: {
+            detail::Generator const g(seed);
             return g(0);
         }
-        case KeyType::p256: {
+        case KeyType::P256: {
             auto const sk = generateSecretKey(type, seed);
             return {derivePublicKey(type, sk), sk};
         }
         default:
-        case KeyType::ed25519: {
+        case KeyType::Ed25519: {
             auto const sk = generateSecretKey(type, seed);
             return {derivePublicKey(type, sk), sk};
         }

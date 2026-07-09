@@ -1,11 +1,19 @@
 #pragma once
 
+#include <xrpl/basics/base_uint.h>
+#include <xrpl/basics/contract.h>
+#include <xrpl/nodestore/NodeObject.h>
 #include <xrpl/nodestore/Types.h>
 
+#include <cstddef>
 #include <cstdint>
+#include <functional>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
 
-namespace xrpl {
-namespace NodeStore {
+namespace xrpl::NodeStore {
 
 /** A backend used for the NodeStore.
 
@@ -35,7 +43,7 @@ public:
 
     /** Get the block size for backends that support it
      */
-    virtual std::optional<std::size_t>
+    [[nodiscard]] virtual std::optional<std::size_t>
     getBlockSize() const
     {
         return std::nullopt;
@@ -84,10 +92,6 @@ public:
     virtual Status
     fetch(uint256 const& hash, std::shared_ptr<NodeObject>* pObject) = 0;
 
-    /** Fetch a batch synchronously. */
-    virtual std::pair<std::vector<std::shared_ptr<NodeObject>>, Status>
-    fetchBatch(std::vector<uint256> const& hashes) = 0;
-
     /** Store a single object.
         Depending on the implementation this may happen immediately
         or deferred using a scheduled task.
@@ -114,7 +118,7 @@ public:
         @see import
     */
     virtual void
-    for_each(std::function<void(std::shared_ptr<NodeObject>)> f) = 0;
+    forEach(std::function<void(std::shared_ptr<NodeObject>)> f) = 0;
 
     /** Estimate the number of write operations pending. */
     virtual int
@@ -136,9 +140,8 @@ public:
     }
 
     /** Returns the number of file descriptors the backend expects to need. */
-    virtual int
+    [[nodiscard]] virtual int
     fdRequired() const = 0;
 };
 
-}  // namespace NodeStore
-}  // namespace xrpl
+}  // namespace xrpl::NodeStore

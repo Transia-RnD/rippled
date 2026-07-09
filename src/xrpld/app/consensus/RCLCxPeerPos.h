@@ -2,11 +2,14 @@
 
 #include <xrpld/consensus/ConsensusProposal.h>
 
+#include <xrpl/basics/Slice.h>
 #include <xrpl/basics/base_uint.h>
+#include <xrpl/basics/chrono.h>
 #include <xrpl/beast/hash/hash_append.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/protocol/HashPrefix.h>
 #include <xrpl/protocol/PublicKey.h>
+#include <xrpl/protocol/UintTypes.h>
 
 #include <boost/container/static_vector.hpp>
 
@@ -40,7 +43,7 @@ public:
         PublicKey const& publicKey,
         Slice const& signature,
         uint256 const& suppress,
-        Proposal&& proposal);
+        Proposal const& proposal);  // trivially copyable
 
     //! Verify the signing hash of the proposal
     bool
@@ -74,7 +77,7 @@ public:
     }
 
     //! JSON representation of proposal
-    Json::Value
+    json::Value
     getJson() const;
 
     std::string
@@ -91,11 +94,11 @@ private:
 
     template <class Hasher>
     void
-    hash_append(Hasher& h) const
+    hash_append(Hasher& h) const  // NOLINT(readability-identifier-naming)
     {
         using beast::hash_append;
-        hash_append(h, HashPrefix::proposal);
-        hash_append(h, std::uint32_t(proposal().proposeSeq()));
+        hash_append(h, HashPrefix::Proposal);
+        hash_append(h, proposal().proposeSeq());
         hash_append(h, proposal().closeTime());
         hash_append(h, proposal().prevLedger());
         hash_append(h, proposal().position());

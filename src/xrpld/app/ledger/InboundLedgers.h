@@ -1,8 +1,22 @@
 #pragma once
 
 #include <xrpld/app/ledger/InboundLedger.h>
+#include <xrpld/app/main/Application.h>
+#include <xrpld/overlay/Peer.h>
 
+#include <xrpl/basics/base_uint.h>
+#include <xrpl/beast/clock/abstract_clock.h>
+#include <xrpl/beast/insight/Collector.h>
+#include <xrpl/json/json_value.h>
+#include <xrpl/ledger/Ledger.h>
 #include <xrpl/protocol/RippleLedgerHash.h>
+
+#include <xrpl.pb.h>
+
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
 
 namespace xrpl {
 
@@ -13,7 +27,7 @@ namespace xrpl {
 class InboundLedgers
 {
 public:
-    using clock_type = beast::abstract_clock<std::chrono::steady_clock>;
+    using clock_type = beast::AbstractClock<std::chrono::steady_clock>;
 
     virtual ~InboundLedgers() = default;
 
@@ -51,7 +65,7 @@ public:
     virtual void
     clearFailures() = 0;
 
-    virtual Json::Value
+    virtual json::Value
     getInfo() = 0;
 
     /** Returns the rate of historical ledger fetches per minute. */
@@ -75,7 +89,7 @@ public:
 };
 
 std::unique_ptr<InboundLedgers>
-make_InboundLedgers(
+makeInboundLedgers(
     Application& app,
     InboundLedgers::clock_type& clock,
     beast::insight::Collector::ptr const& collector);

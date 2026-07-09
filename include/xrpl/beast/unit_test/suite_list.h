@@ -10,14 +10,14 @@
 #include <boost/assert.hpp>
 
 #include <set>
-#include <typeindex>
-#include <unordered_set>
+#include <string>         // IWYU pragma: keep
+#include <typeindex>      // IWYU pragma: keep
+#include <unordered_set>  // IWYU pragma: keep
 
-namespace beast {
-namespace unit_test {
+namespace beast::unit_test {
 
 /// A container of test suites.
-class suite_list : public detail::const_container<std::set<suite_info>>
+class SuiteList : public detail::ConstContainer<std::set<SuiteInfo>>
 {
 private:
 #ifndef NDEBUG
@@ -39,7 +39,7 @@ public:
 
 template <class Suite>
 void
-suite_list::insert(
+SuiteList::insert(
     char const* name,
     char const* module,
     char const* library,
@@ -59,8 +59,7 @@ suite_list::insert(
         BOOST_ASSERT(result.second);  // Duplicate type
     }
 #endif
-    cont().emplace(make_suite_info<Suite>(name, module, library, manual, priority));
+    cont().emplace(makeSuiteInfo<Suite>(name, module, library, manual, priority));
 }
 
-}  // namespace unit_test
-}  // namespace beast
+}  // namespace beast::unit_test

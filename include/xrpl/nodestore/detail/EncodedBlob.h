@@ -7,10 +7,12 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <cstdint>
+#include <memory>
+#include <stdexcept>
 
-namespace xrpl {
-namespace NodeStore {
+namespace xrpl::NodeStore {
 
 /** Convert a NodeObject from in-memory to database format.
 
@@ -35,7 +37,7 @@ namespace NodeStore {
 class EncodedBlob
 {
     /** The 32-byte key of the serialized object. */
-    std::array<std::uint8_t, 32> key_;
+    std::array<std::uint8_t, 32> key_{};
 
     /** A pre-allocated buffer for the serialized object.
 
@@ -43,7 +45,8 @@ class EncodedBlob
          1024 more bytes. The precise size is calculated automatically
          at compile time so as to avoid wasting space on padding bytes.
      */
-    std::array<std::uint8_t, boost::alignment::align_up(9 + 1024, alignof(std::uint32_t))> payload_;
+    std::array<std::uint8_t, boost::alignment::align_up(9 + 1024, alignof(std::uint32_t))>
+        payload_{};
 
     /** The size of the serialized data. */
     std::uint32_t size_;
@@ -104,5 +107,4 @@ public:
     }
 };
 
-}  // namespace NodeStore
-}  // namespace xrpl
+}  // namespace xrpl::NodeStore

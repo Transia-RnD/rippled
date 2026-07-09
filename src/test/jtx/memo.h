@@ -1,17 +1,19 @@
 #pragma once
 
 #include <test/jtx/Env.h>
+#include <test/jtx/JTx.h>
 
-namespace xrpl {
-namespace test {
-namespace jtx {
+#include <string>
+#include <utility>
+
+namespace xrpl::test::jtx {
 
 /** Add a memo to a JTx.
 
     If a memo already exists, the new
     memo is appended to the array.
 */
-class memo
+class Memo
 {
 private:
     std::string data_;
@@ -19,8 +21,8 @@ private:
     std::string type_;
 
 public:
-    memo(std::string const& data, std::string const& format, std::string const& type)
-        : data_(data), format_(format), type_(type)
+    Memo(std::string data, std::string format, std::string type)
+        : data_(std::move(data)), format_(std::move(format)), type_(std::move(type))
     {
     }
 
@@ -28,13 +30,13 @@ public:
     operator()(Env&, JTx& jt) const;
 };
 
-class memo_data
+class MemoData
 {
 private:
     std::string s_;
 
 public:
-    memo_data(std::string const& s) : s_(s)
+    MemoData(std::string s) : s_(std::move(s))
     {
     }
 
@@ -42,13 +44,13 @@ public:
     operator()(Env&, JTx& jt) const;
 };
 
-class memo_format
+class MemoFormat
 {
 private:
     std::string s_;
 
 public:
-    memo_format(std::string const& s) : s_(s)
+    MemoFormat(std::string s) : s_(std::move(s))
     {
     }
 
@@ -56,13 +58,13 @@ public:
     operator()(Env&, JTx& jt) const;
 };
 
-class memo_type
+class MemoType
 {
 private:
     std::string s_;
 
 public:
-    memo_type(std::string const& s) : s_(s)
+    MemoType(std::string s) : s_(std::move(s))
     {
     }
 
@@ -70,6 +72,4 @@ public:
     operator()(Env&, JTx& jt) const;
 };
 
-}  // namespace jtx
-}  // namespace test
-}  // namespace xrpl
+}  // namespace xrpl::test::jtx

@@ -6,22 +6,22 @@
 namespace xrpl {
 
 enum class KeyType {
-    secp256k1 = 0,
-    ed25519 = 1,
-    p256 = 2
+    Secp256k1 = 0,
+    Ed25519 = 1,
+    P256 = 2,
 };
 
 inline std::optional<KeyType>
 keyTypeFromString(std::string const& s)
 {
     if (s == "secp256k1")
-        return KeyType::secp256k1;
+        return KeyType::Secp256k1;
 
     if (s == "ed25519")
-        return KeyType::ed25519;
+        return KeyType::Ed25519;
 
     if (s == "p256")
-        return KeyType::p256;
+        return KeyType::P256;
 
     return {};
 }
@@ -29,13 +29,13 @@ keyTypeFromString(std::string const& s)
 inline char const*
 to_string(KeyType type)
 {
-    if (type == KeyType::secp256k1)
+    if (type == KeyType::Secp256k1)
         return "secp256k1";
 
-    if (type == KeyType::ed25519)
+    if (type == KeyType::Ed25519)
         return "ed25519";
 
-    if (type == KeyType::p256)
+    if (type == KeyType::P256)
         return "p256";
 
     return "INVALID";

@@ -1,7 +1,19 @@
 #pragma once
 
+#include <xrpl/basics/base_uint.h>
 #include <xrpl/beast/utility/Journal.h>
-#include <xrpl/ledger/ApplyViewImpl.h>
+#include <xrpl/ledger/ApplyView.h>
+#include <xrpl/ledger/OpenView.h>
+#include <xrpl/ledger/ReadView.h>
+#include <xrpl/protocol/Rules.h>
+#include <xrpl/protocol/SeqProxy.h>
+#include <xrpl/protocol/TER.h>
+#include <xrpl/protocol/TxMeta.h>
+#include <xrpl/protocol/XRPAmount.h>
+
+#include <cstdint>
+#include <optional>
+#include <utility>
 
 namespace xrpl {
 
@@ -27,7 +39,7 @@ struct ApplyResult
 inline bool
 isTecClaimHardFail(TER ter, ApplyFlags flags)
 {
-    return isTecClaim(ter) && !(flags & tapRETRY);
+    return isTecClaim(ter) && ((flags & TapRetry) == 0u);
 }
 
 /** Class describing the consequences to the account
@@ -39,12 +51,12 @@ class TxConsequences
 public:
     /// Describes how the transaction affects subsequent
     /// transactions
-    enum Category {
+    enum class Category {
         /// Moves currency around, creates offers, etc.
-        normal = 0,
+        Normal = 0,
         /// Affects the ability of subsequent transactions
         /// to claim a fee. Eg. `SetRegularKey`
-        blocker
+        Blocker
     };
 
 private:
@@ -89,42 +101,42 @@ public:
     operator=(TxConsequences&&) = default;
 
     /// Fee
-    XRPAmount
+    [[nodiscard]] XRPAmount
     fee() const
     {
         return fee_;
     }
 
     /// Potential Spend
-    XRPAmount const&
+    [[nodiscard]] XRPAmount const&
     potentialSpend() const
     {
         return potentialSpend_;
     }
 
     /// SeqProxy
-    SeqProxy
+    [[nodiscard]] SeqProxy
     seqProxy() const
     {
         return seqProx_;
     }
 
     /// Sequences consumed
-    std::uint32_t
+    [[nodiscard]] std::uint32_t
     sequencesConsumed() const
     {
         return sequencesConsumed_;
     }
 
     /// Returns true if the transaction is a blocker.
-    bool
+    [[nodiscard]] bool
     isBlocker() const
     {
         return isBlocker_;
     }
 
     // Return the SeqProxy that would follow this.
-    SeqProxy
+    [[nodiscard]] SeqProxy
     followingSeq() const
     {
         SeqProxy following = seqProx_;
@@ -160,13 +172,13 @@ public:
 
     /// Constructor
     template <class Context>
-    PreflightResult(Context const& ctx_, std::pair<NotTEC, TxConsequences> const& result)
-        : tx(ctx_.tx)
-        , parentBatchId(ctx_.parentBatchId)
-        , rules(ctx_.rules)
+    PreflightResult(Context const& ctx, std::pair<NotTEC, TxConsequences> const& result)
+        : tx(ctx.tx)
+        , parentBatchId(ctx.parentBatchId)
+        , rules(ctx.rules)
         , consequences(result.second)
-        , flags(ctx_.flags)
-        , j(ctx_.j)
+        , flags(ctx.flags)
+        , j(ctx.j)
         , ter(result.first)
     {
     }
@@ -202,18 +214,18 @@ public:
 
     /// Success flag - whether the transaction is likely to
     /// claim a fee
-    bool const likelyToClaimFee;
+    bool const likelyToClaimFee{};
 
     /// Constructor
     template <class Context>
-    PreclaimResult(Context const& ctx_, TER ter_)
-        : view(ctx_.view)
-        , tx(ctx_.tx)
-        , parentBatchId(ctx_.parentBatchId)
-        , flags(ctx_.flags)
-        , j(ctx_.j)
-        , ter(ter_)
-        , likelyToClaimFee(ter == tesSUCCESS || isTecClaimHardFail(ter, flags))
+    PreclaimResult(Context const& ctx, TER ter)
+        : view(ctx.view)
+        , tx(ctx.tx)
+        , parentBatchId(ctx.parentBatchId)
+        , flags(ctx.flags)
+        , j(ctx.j)
+        , ter(ter)
+        , likelyToClaimFee(isTesSuccess(ter) || isTecClaimHardFail(ter, flags))
     {
     }
 

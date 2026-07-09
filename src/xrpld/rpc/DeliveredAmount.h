@@ -3,12 +3,12 @@
 #include <xrpl/protocol/Protocol.h>
 #include <xrpl/protocol/STAmount.h>
 
-#include <functional>
 #include <memory>
+#include <optional>
 
-namespace Json {
+namespace json {
 class Value;
-}
+}  // namespace json
 
 namespace xrpl {
 
@@ -34,20 +34,20 @@ struct Context;
  */
 void
 insertDeliveredAmount(
-    Json::Value& meta,
+    json::Value& meta,
     ReadView const&,
     std::shared_ptr<STTx const> const& serializedTx,
     TxMeta const&);
 
 void
 insertDeliveredAmount(
-    Json::Value& meta,
+    json::Value& meta,
     RPC::JsonContext const&,
     std::shared_ptr<Transaction> const&,
     TxMeta const&);
 void
 insertDeliveredAmount(
-    Json::Value& meta,
+    json::Value& meta,
     RPC::JsonContext const&,
     std::shared_ptr<STTx const> const&,
     TxMeta const&);

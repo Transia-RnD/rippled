@@ -2,13 +2,15 @@
 
 #include <xrpl/basics/Number.h>
 #include <xrpl/basics/contract.h>
-#include <xrpl/basics/safe_cast.h>
 #include <xrpl/beast/utility/Zero.h>
 
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/operators.hpp>
 
 #include <cstdint>
+#include <limits>
+#include <ostream>
+#include <stdexcept>
 #include <string>
 
 namespace xrpl {
@@ -22,11 +24,12 @@ public:
     using value_type = std::int64_t;
 
 protected:
-    value_type value_;
+    value_type value_{};
 
 public:
     MPTAmount() = default;
     constexpr MPTAmount(MPTAmount const& other) = default;
+    constexpr MPTAmount(beast::Zero);
     constexpr MPTAmount&
     operator=(MPTAmount const& other) = default;
 
@@ -67,14 +70,14 @@ public:
     }
 
     /** Return the sign of the amount */
-    constexpr int
+    [[nodiscard]] constexpr int
     signum() const noexcept;
 
     /** Returns the underlying value. Code SHOULD NOT call this
         function unless the type has been abstracted away,
         e.g. in a templated function.
     */
-    constexpr value_type
+    [[nodiscard]] constexpr value_type
     value() const;
 
     static MPTAmount
@@ -83,6 +86,11 @@ public:
 
 constexpr MPTAmount::MPTAmount(value_type value) : value_(value)
 {
+}
+
+constexpr MPTAmount::MPTAmount(beast::Zero)
+{
+    *this = beast::kZero;
 }
 
 constexpr MPTAmount&
@@ -103,7 +111,9 @@ operator bool() const noexcept
 constexpr int
 MPTAmount::signum() const noexcept
 {
-    return (value_ < 0) ? -1 : (value_ ? 1 : 0);
+    if (value_ < 0)
+        return -1;
+    return (value_ != 0) ? 1 : 0;
 }
 
 /** Returns the underlying value. Code SHOULD NOT call this
@@ -114,6 +124,14 @@ constexpr MPTAmount::value_type
 MPTAmount::value() const
 {
     return value_;
+}
+
+// Output MPTAmount as just the value.
+template <class Char, class Traits>
+std::basic_ostream<Char, Traits>&
+operator<<(std::basic_ostream<Char, Traits>& os, MPTAmount const& q)
+{
+    return os << q.value();
 }
 
 inline std::string
@@ -127,7 +145,7 @@ mulRatio(MPTAmount const& amt, std::uint32_t num, std::uint32_t den, bool roundU
 {
     using namespace boost::multiprecision;
 
-    if (!den)
+    if (den == 0u)
         Throw<std::runtime_error>("division by zero");
 
     int128_t const amt128(amt.value());

@@ -4,10 +4,16 @@
 #include <xrpl/basics/UnorderedContainers.h>
 #include <xrpl/basics/base_uint.h>
 #include <xrpl/basics/chrono.h>
+#include <xrpl/basics/hardened_hash.h>
 #include <xrpl/beast/container/aged_unordered_map.h>
 
+#include <chrono>
+#include <cstdint>
+#include <mutex>
 #include <optional>
 #include <set>
+#include <type_traits>
+#include <utility>
 
 namespace xrpl {
 
@@ -19,12 +25,14 @@ enum class HashRouterFlags : std::uint16_t {
     HELD = 0x08,     // Held by LedgerMaster after potential processing failure
     TRUSTED = 0x10,  // Comes from a trusted source
 
-    // Private flags (used internally in apply.cpp)
-    // Do not attempt to read, set, or reuse.
+    // Private flags. Each group is owned by one file; do not read, set, or
+    // reuse a flag outside the file noted.
+    // Used in apply.cpp
     PRIVATE1 = 0x0100,
     PRIVATE2 = 0x0200,
     PRIVATE3 = 0x0400,
     PRIVATE4 = 0x0800,
+    // Used in EscrowFinish.cpp
     PRIVATE5 = 0x1000,
     PRIVATE6 = 0x2000
 };
@@ -109,9 +117,7 @@ private:
     class Entry : public CountedObject<Entry>
     {
     public:
-        Entry()
-        {
-        }
+        Entry() = default;
 
         void
         addPeer(PeerShortID peer)
@@ -120,8 +126,8 @@ private:
                 peers_.insert(peer);
         }
 
-        HashRouterFlags
-        getFlags(void) const
+        [[nodiscard]] HashRouterFlags
+        getFlags() const
         {
             return flags_;
         }
@@ -140,7 +146,7 @@ private:
         }
 
         /** Return seated relay time point if the message has been relayed */
-        std::optional<Stopwatch::time_point>
+        [[nodiscard]] std::optional<Stopwatch::time_point>
         relayed() const
         {
             return relayed_;
@@ -214,7 +220,7 @@ public:
         uint256 const& key,
         PeerShortID peer,
         HashRouterFlags& flags,
-        std::chrono::seconds tx_interval);
+        std::chrono::seconds txInterval);
 
     /** Set the flags on a hash.
 
@@ -252,7 +258,7 @@ private:
     Setup const setup_;
 
     // Stores all suppressed hashes and their expiration time
-    beast::aged_unordered_map<uint256, Entry, Stopwatch::clock_type, hardened_hash<strong_hash>>
+    beast::aged_unordered_map<uint256, Entry, Stopwatch::clock_type, HardenedHash<strong_hash>>
         suppressionMap_;
 };
 

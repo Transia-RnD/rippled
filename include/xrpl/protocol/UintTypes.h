@@ -1,9 +1,11 @@
 #pragma once
 
-#include <xrpl/basics/UnorderedContainers.h>
 #include <xrpl/basics/base_uint.h>
 #include <xrpl/beast/utility/Zero.h>
-#include <xrpl/protocol/AccountID.h>
+
+#include <functional>
+#include <ostream>
+#include <string>
 
 namespace xrpl {
 namespace detail {
@@ -30,21 +32,21 @@ public:
 
 /** Directory is an index into the directory of offer books.
     The last 64 bits of this are the quality. */
-using Directory = base_uint<256, detail::DirectoryTag>;
+using Directory = BaseUInt<256, detail::DirectoryTag>;
 
 /** Currency is a hash representing a specific currency. */
-using Currency = base_uint<160, detail::CurrencyTag>;
+using Currency = BaseUInt<160, detail::CurrencyTag>;
 
 /** NodeID is a 160-bit hash representing one node. */
-using NodeID = base_uint<160, detail::NodeIDTag>;
+using NodeID = BaseUInt<160, detail::NodeIDTag>;
 
 /** MPTID is a 192-bit value representing MPT Issuance ID,
  * which is a concatenation of a 32-bit sequence (big endian)
  * and a 160-bit account */
-using MPTID = base_uint<192>;
+using MPTID = BaseUInt<192>;
 
 /** Domain is a 256-bit hash representing a specific domain. */
-using Domain = base_uint<256>;
+using Domain = BaseUInt<256>;
 
 /** XRP currency. */
 Currency const&
@@ -62,7 +64,7 @@ badCurrency();
 inline bool
 isXRP(Currency const& c)
 {
-    return c == beast::zero;
+    return c == beast::kZero;
 }
 
 /** Returns "", "XRP", or three letter ISO code. */
@@ -77,7 +79,7 @@ to_string(Currency const& c);
           to rewrite some unit test code.
 */
 bool
-to_currency(Currency&, std::string const&);
+toCurrency(Currency&, std::string const&);
 
 /** Tries to convert a string to a Currency, returns noCurrency() on failure.
 
@@ -86,7 +88,7 @@ to_currency(Currency&, std::string const&);
           everywhere and may mean having to rewrite some unit test code.
 */
 Currency
-to_currency(std::string const&);
+toCurrency(std::string const&);
 
 inline std::ostream&
 operator<<(std::ostream& os, Currency const& x)

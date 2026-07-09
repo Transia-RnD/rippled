@@ -1,16 +1,21 @@
 #pragma once
 
+#include <xrpl/basics/base_uint.h>
+#include <xrpl/beast/utility/Journal.h>
+#include <xrpl/protocol/AccountID.h>
 #include <xrpl/protocol/Quality.h>
+#include <xrpl/protocol/STAmount.h>
+#include <xrpl/protocol/STPathSet.h>
 #include <xrpl/tx/paths/RippleCalc.h>
 #include <xrpl/tx/paths/detail/Steps.h>
 
+#include <optional>
+
 namespace xrpl {
 
-namespace path {
-namespace detail {
+namespace path::detail {
 struct FlowDebugInfo;
-}
-}  // namespace path
+}  // namespace path::detail
 
 /**
   Make a payment from the src account to the dst account

@@ -1,14 +1,15 @@
 #pragma once
 
-#include <xrpl/basics/Blob.h>
 #include <xrpl/basics/Buffer.h>
 #include <xrpl/basics/Slice.h>
 #include <xrpl/basics/contract.h>
 #include <xrpl/protocol/SField.h>
+#include <xrpl/protocol/STBase.h>
 #include <xrpl/protocol/STBlob.h>
 #include <xrpl/protocol/STInteger.h>
 #include <xrpl/protocol/STObject.h>
 
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -123,7 +124,7 @@ template <class U, class T>
 void
 set(STObject& st, TypedField<U> const& f, T&& t)
 {
-    st.set(STExchange<U, typename std::decay<T>::type>::set(f, std::forward<T>(t)));
+    st.set(STExchange<U, std::decay_t<T>>::set(f, std::forward<T>(t)));
 }
 
 /** Set a blob field using an init function. */

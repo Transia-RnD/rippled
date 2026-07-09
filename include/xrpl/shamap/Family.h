@@ -1,11 +1,13 @@
 #pragma once
 
+#include <xrpl/basics/base_uint.h>
 #include <xrpl/beast/utility/Journal.h>
 #include <xrpl/nodestore/Database.h>
 #include <xrpl/shamap/FullBelowCache.h>
 #include <xrpl/shamap/TreeNodeCache.h>
 
 #include <cstdint>
+#include <memory>
 
 namespace xrpl {
 
@@ -27,7 +29,7 @@ public:
     virtual NodeStore::Database&
     db() = 0;
 
-    virtual NodeStore::Database const&
+    [[nodiscard]] virtual NodeStore::Database const&
     db() const = 0;
 
     virtual beast::Journal const&

@@ -17,45 +17,62 @@
 */
 //==============================================================================
 
-#include <test/jtx.h>
+#include <test/jtx/Account.h>
+#include <test/jtx/Env.h>
+#include <test/jtx/amount.h>
+#include <test/jtx/envconfig.h>
+#include <test/jtx/fee.h>
+#include <test/jtx/multisign.h>
+#include <test/jtx/noop.h>
+#include <test/jtx/pay.h>
+#include <test/jtx/sig.h>
+#include <test/jtx/ter.h>
 
+#include <xrpl/basics/strHex.h>
+#include <xrpl/beast/unit_test/suite.h>
+#include <xrpl/json/json_value.h>
 #include <xrpl/protocol/Feature.h>
+#include <xrpl/protocol/KeyType.h>
 #include <xrpl/protocol/PublicKey.h>
+#include <xrpl/protocol/SField.h>
+#include <xrpl/protocol/TER.h>
 #include <xrpl/protocol/jss.h>
 
-namespace xrpl {
-namespace test {
+#include <string>
+#include <utility>
+#include <vector>
 
-class PasskeyListSet_test : public beast::unit_test::suite
+namespace xrpl {
+
+class PasskeyListSet_test : public beast::unit_test::Suite
 {
-    Json::Value
-    passkeyListSet(jtx::Account const& account)
+    json::Value
+    passkeyListSet(test::jtx::Account const& account)
     {
-        Json::Value jv;
+        json::Value jv;
         jv[sfAccount.jsonName] = account.human();
         jv[sfTransactionType.jsonName] = jss::PasskeyListSet;
-        jv[sfPasskeys] = Json::arrayValue;
-        jv[sfPasskeys][0u][sfPasskey.jsonName][sfPasskeyID.jsonName] =
-            "DEADBEEF";
-        jv[sfPasskeys][0u][sfPasskey.jsonName][sfPublicKey.jsonName] =
+        jv[sfPasskeys.jsonName] = json::arrayValue;
+        jv[sfPasskeys.jsonName][0u][sfPasskey.jsonName][sfPasskeyID.jsonName] = "DEADBEEF";
+        jv[sfPasskeys.jsonName][0u][sfPasskey.jsonName][sfPublicKey.jsonName] =
             strHex(account.pk());
         return jv;
     }
 
-    Json::Value
+    json::Value
     passkeyListSetMulti(
-        jtx::Account const& account,
+        test::jtx::Account const& account,
         std::vector<std::pair<std::string, std::string>> const& entries)
     {
-        Json::Value jv;
+        json::Value jv;
         jv[sfAccount.jsonName] = account.human();
         jv[sfTransactionType.jsonName] = jss::PasskeyListSet;
-        jv[sfPasskeys] = Json::arrayValue;
-        for (Json::UInt i = 0; i < entries.size(); ++i)
+        jv[sfPasskeys.jsonName] = json::arrayValue;
+        for (json::UInt i = 0; i < entries.size(); ++i)
         {
-            jv[sfPasskeys][i][sfPasskey.jsonName][sfPasskeyID.jsonName] =
+            jv[sfPasskeys.jsonName][i][sfPasskey.jsonName][sfPasskeyID.jsonName] =
                 entries[i].first;
-            jv[sfPasskeys][i][sfPasskey.jsonName][sfPublicKey.jsonName] =
+            jv[sfPasskeys.jsonName][i][sfPasskey.jsonName][sfPublicKey.jsonName] =
                 entries[i].second;
         }
         return jv;
@@ -70,7 +87,7 @@ public:
         testcase("basic passkey list set");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice", KeyType::p256};
+        Account const alice{"alice", KeyType::P256};
         env.fund(XRP(1000), alice);
         env.close();
 
@@ -86,16 +103,14 @@ public:
         testcase("valid multiple passkeys");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice", KeyType::p256};
-        Account const bob{"bob", KeyType::p256};
+        Account const alice{"alice", KeyType::P256};
+        Account const bob{"bob", KeyType::P256};
         env.fund(XRP(1000), alice, bob);
         env.close();
 
         // Two valid entries with different IDs and different PublicKeys
         auto jv = passkeyListSetMulti(
-            alice,
-            {{"DEADBEEF01", strHex(alice.pk())},
-             {"DEADBEEF02", strHex(bob.pk())}});
+            alice, {{"DEADBEEF01", strHex(alice.pk())}, {"DEADBEEF02", strHex(bob.pk())}});
         env(jv);
         env.close();
     }
@@ -108,15 +123,15 @@ public:
         testcase("empty passkey list rejected");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice", KeyType::p256};
+        Account const alice{"alice", KeyType::P256};
         env.fund(XRP(1000), alice);
         env.close();
 
-        Json::Value jv;
+        json::Value jv;
         jv[sfAccount.jsonName] = alice.human();
         jv[sfTransactionType.jsonName] = jss::PasskeyListSet;
-        jv[sfPasskeys] = Json::arrayValue;
-        env(jv, ter(temMALFORMED));
+        jv[sfPasskeys.jsonName] = json::arrayValue;
+        env(jv, Ter(temMALFORMED));
     }
 
     void
@@ -127,17 +142,15 @@ public:
         testcase("duplicate passkey ID rejected");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice", KeyType::p256};
-        Account const bob{"bob", KeyType::p256};
+        Account const alice{"alice", KeyType::P256};
+        Account const bob{"bob", KeyType::P256};
         env.fund(XRP(1000), alice, bob);
         env.close();
 
         // Two entries with the same PasskeyID but different PublicKeys
         auto jv = passkeyListSetMulti(
-            alice,
-            {{"DEADBEEF", strHex(alice.pk())},
-             {"DEADBEEF", strHex(bob.pk())}});
-        env(jv, ter(temMALFORMED));
+            alice, {{"DEADBEEF", strHex(alice.pk())}, {"DEADBEEF", strHex(bob.pk())}});
+        env(jv, Ter(temMALFORMED));
     }
 
     void
@@ -148,16 +161,14 @@ public:
         testcase("duplicate public key rejected");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice", KeyType::p256};
+        Account const alice{"alice", KeyType::P256};
         env.fund(XRP(1000), alice);
         env.close();
 
         // Two entries with different PasskeyIDs but the same PublicKey
         auto jv = passkeyListSetMulti(
-            alice,
-            {{"DEADBEEF01", strHex(alice.pk())},
-             {"DEADBEEF02", strHex(alice.pk())}});
-        env(jv, ter(temMALFORMED));
+            alice, {{"DEADBEEF01", strHex(alice.pk())}, {"DEADBEEF02", strHex(alice.pk())}});
+        env(jv, Ter(temMALFORMED));
     }
 
     void
@@ -168,15 +179,14 @@ public:
         testcase("non-P256 key rejected");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice", KeyType::p256};
+        Account const alice{"alice", KeyType::P256};
         Account const bob{"bob"};  // secp256k1
         env.fund(XRP(1000), alice, bob);
         env.close();
 
         // A secp256k1 key should be rejected
-        auto jv =
-            passkeyListSetMulti(alice, {{"DEADBEEF", strHex(bob.pk())}});
-        env(jv, ter(temMALFORMED));
+        auto jv = passkeyListSetMulti(alice, {{"DEADBEEF", strHex(bob.pk())}});
+        env(jv, Ter(temMALFORMED));
     }
 
     void
@@ -187,15 +197,14 @@ public:
         testcase("ed25519 key rejected");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice", KeyType::p256};
-        Account const carol{"carol", KeyType::ed25519};
+        Account const alice{"alice", KeyType::P256};
+        Account const carol{"carol", KeyType::Ed25519};
         env.fund(XRP(1000), alice, carol);
         env.close();
 
         // An ed25519 key should be rejected
-        auto jv =
-            passkeyListSetMulti(alice, {{"DEADBEEF", strHex(carol.pk())}});
-        env(jv, ter(temMALFORMED));
+        auto jv = passkeyListSetMulti(alice, {{"DEADBEEF", strHex(carol.pk())}});
+        env(jv, Ter(temMALFORMED));
     }
 
     void
@@ -206,7 +215,7 @@ public:
         testcase("invalid P256 prefix rejected");
 
         Env env{*this, envconfig(), features};
-        Account const alice{"alice", KeyType::p256};
+        Account const alice{"alice", KeyType::P256};
         env.fund(XRP(1000), alice);
         env.close();
 
@@ -216,7 +225,7 @@ public:
         pkHex[1] = '4';
 
         auto jv = passkeyListSetMulti(alice, {{"DEADBEEF", pkHex}});
-        env(jv, ter(temMALFORMED));
+        env(jv, Ter(temMALFORMED));
     }
 
     void
@@ -229,12 +238,13 @@ public:
         Env env{*this, envconfig(), features};
         Account const alice{"alice"};
         Account const bob{"bob"};
-        Account const dave{"dave", KeyType::p256};
+        Account const dave{"dave", KeyType::P256};
         env.fund(XRP(1000), alice, bob, dave);
         env.close();
 
-        env(passkeyListSet(alice));
-        env(pay(alice, bob, XRP(100)), sig(dave));
+        // Register dave's P-256 key as a passkey for alice's account.
+        env(passkeyListSetMulti(alice, {{"DEADBEEF", strHex(dave.pk())}}));
+        env(pay(alice, bob, XRP(100)), Sig(dave));
         env.close();
 
         BEAST_EXPECT(env.balance(bob) == XRP(1100));
@@ -249,8 +259,8 @@ public:
 
         Env env{*this, envconfig(), features};
         Account const alice{"alice"};
-        Account const bob{"bob", KeyType::p256};
-        Account const carol{"carol", KeyType::p256};
+        Account const bob{"bob", KeyType::P256};
+        Account const carol{"carol", KeyType::P256};
         env.fund(XRP(1000), alice, bob, carol);
         env.close();
 
@@ -261,11 +271,11 @@ public:
         auto const baseFee = env.current()->fees().base;
 
         // Multi-sign with one P-256 signer
-        env(noop(alice), msig(bob), fee(2 * baseFee));
+        env(noop(alice), Msig(bob), Fee(2 * baseFee));
         env.close();
 
         // Multi-sign with both P-256 signers
-        env(noop(alice), msig(bob, carol), fee(3 * baseFee));
+        env(noop(alice), Msig(bob, carol), Fee(3 * baseFee));
         env.close();
     }
 
@@ -279,8 +289,8 @@ public:
         Env env{*this, envconfig(), features};
         Account const alice{"alice"};
         Account const bob{"bob"};  // secp256k1
-        Account const carol{"carol", KeyType::ed25519};
-        Account const dave{"dave", KeyType::p256};
+        Account const carol{"carol", KeyType::Ed25519};
+        Account const dave{"dave", KeyType::P256};
         env.fund(XRP(1000), alice, bob, carol, dave);
         env.close();
 
@@ -291,15 +301,15 @@ public:
         auto const baseFee = env.current()->fees().base;
 
         // Multi-sign with secp256k1 + P-256
-        env(noop(alice), msig(bob, dave), fee(3 * baseFee));
+        env(noop(alice), Msig(bob, dave), Fee(3 * baseFee));
         env.close();
 
         // Multi-sign with ed25519 + P-256
-        env(noop(alice), msig(carol, dave), fee(3 * baseFee));
+        env(noop(alice), Msig(carol, dave), Fee(3 * baseFee));
         env.close();
 
         // Multi-sign with all three key types
-        env(noop(alice), msig(bob, carol, dave), fee(4 * baseFee));
+        env(noop(alice), Msig(bob, carol, dave), Fee(4 * baseFee));
         env.close();
     }
 
@@ -307,7 +317,7 @@ public:
     run() override
     {
         using namespace test::jtx;
-        auto const sa = testable_amendments();
+        auto const sa = testableAmendments();
 
         testBasicPasskeyListSet(sa);
         testValidMultiplePasskeys(sa);
@@ -325,5 +335,4 @@ public:
 
 BEAST_DEFINE_TESTSUITE(PasskeyListSet, app, xrpl);
 
-}  // namespace test
 }  // namespace xrpl

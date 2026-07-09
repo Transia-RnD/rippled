@@ -1,15 +1,26 @@
 #pragma once
 
+#include <xrpl/basics/ByteUtilities.h>
+#include <xrpl/basics/base_uint.h>
 #include <xrpl/ledger/RawView.h>
 #include <xrpl/ledger/ReadView.h>
 #include <xrpl/ledger/detail/RawStateTable.h>
-#include <xrpl/protocol/STArray.h>
+#include <xrpl/protocol/Fees.h>
+#include <xrpl/protocol/Keylet.h>
+#include <xrpl/protocol/LedgerHeader.h>
+#include <xrpl/protocol/Rules.h>
+#include <xrpl/protocol/STLedgerEntry.h>
+#include <xrpl/protocol/Serializer.h>
 #include <xrpl/protocol/XRPAmount.h>
 
 #include <boost/container/pmr/monotonic_buffer_resource.hpp>
 #include <boost/container/pmr/polymorphic_allocator.hpp>
 
+#include <cstddef>
 #include <functional>
+#include <map>
+#include <memory>
+#include <optional>
 #include <utility>
 
 namespace xrpl {
@@ -20,20 +31,20 @@ namespace xrpl {
     rules of open ledgers applied during transaction
     processing.
  */
-inline constexpr struct open_ledger_t
+inline constexpr struct OpenLedgerT
 {
-    explicit constexpr open_ledger_t() = default;
-} open_ledger{};
+    explicit constexpr OpenLedgerT() = default;
+} kOpenLedger{};
 
 /** Batch view construction tag.
 
     Views constructed with this tag are part of a stack of views
-    used during batch transaction applied.
+    used during batch transaction application.
  */
-inline constexpr struct batch_view_t
+inline constexpr struct BatchViewT
 {
-    explicit constexpr batch_view_t() = default;
-} batch_view{};
+    explicit constexpr BatchViewT() = default;
+} kBatchView{};
 
 //------------------------------------------------------------------------------
 
@@ -47,20 +58,20 @@ private:
     // Initial size for the monotonic_buffer_resource used for allocations
     // The size was chosen from the old `qalloc` code (which this replaces).
     // It is unclear how the size initially chosen in qalloc.
-    static constexpr size_t initialBufferSize = kilobytes(256);
+    static constexpr size_t kInitialBufferSize = kilobytes(256);
 
-    class txs_iter_impl;
+    class TxsIterImpl;
 
-    struct txData
+    struct TxData
     {
         std::shared_ptr<Serializer const> txn;
         std::shared_ptr<Serializer const> meta;
 
         // Constructor needed for emplacement in std::map
-        txData(
-            std::shared_ptr<Serializer const> const& txn_,
-            std::shared_ptr<Serializer const> const& meta_)
-            : txn(txn_), meta(meta_)
+        TxData(
+            std::shared_ptr<Serializer const> const& txn,
+            std::shared_ptr<Serializer const> const& meta)
+            : txn(txn), meta(meta)
         {
         }
     };
@@ -70,13 +81,13 @@ private:
     // functions b/c clang does not support pmr yet (as-of 9/2020)
     using txs_map = std::map<
         key_type,
-        txData,
-        std::less<key_type>,
-        boost::container::pmr::polymorphic_allocator<std::pair<key_type const, txData>>>;
+        TxData,
+        std::less<>,
+        boost::container::pmr::polymorphic_allocator<std::pair<key_type const, TxData>>>;
 
     // monotonic_resource_ must outlive `items_`. Make a pointer so it may be
     // easily moved.
-    std::unique_ptr<boost::container::pmr::monotonic_buffer_resource> monotonic_resource_;
+    std::unique_ptr<boost::container::pmr::monotonic_buffer_resource> monotonicResource_;
     txs_map txs_;
     Rules rules_;
     LedgerHeader header_;
@@ -133,17 +144,17 @@ public:
         all newly inserted tx.
     */
     OpenView(
-        open_ledger_t,
+        OpenLedgerT,
         ReadView const* base,
-        Rules const& rules,
+        Rules rules,
         std::shared_ptr<void const> hold = nullptr);
 
-    OpenView(open_ledger_t, Rules const& rules, std::shared_ptr<ReadView const> const& base)
-        : OpenView(open_ledger, &*base, rules, base)
+    OpenView(OpenLedgerT, Rules const& rules, std::shared_ptr<ReadView const> const& base)
+        : OpenView(kOpenLedger, &*base, rules, base)
     {
     }
 
-    OpenView(batch_view_t, OpenView& base) : OpenView(std::addressof(base))
+    OpenView(BatchViewT, OpenView& base) : OpenView(std::addressof(base))
     {
         baseTxCount_ = base.txCount();
     }
@@ -197,22 +208,22 @@ public:
     std::optional<key_type>
     succ(key_type const& key, std::optional<key_type> const& last = std::nullopt) const override;
 
-    std::shared_ptr<SLE const>
+    SLE::const_pointer
     read(Keylet const& k) const override;
 
-    std::unique_ptr<sles_type::iter_base>
+    std::unique_ptr<SlesType::iter_base>
     slesBegin() const override;
 
-    std::unique_ptr<sles_type::iter_base>
+    std::unique_ptr<SlesType::iter_base>
     slesEnd() const override;
 
-    std::unique_ptr<sles_type::iter_base>
+    std::unique_ptr<SlesType::iter_base>
     slesUpperBound(uint256 const& key) const override;
 
-    std::unique_ptr<txs_type::iter_base>
+    std::unique_ptr<TxsType::iter_base>
     txsBegin() const override;
 
-    std::unique_ptr<txs_type::iter_base>
+    std::unique_ptr<TxsType::iter_base>
     txsEnd() const override;
 
     bool
@@ -224,13 +235,13 @@ public:
     // RawView
 
     void
-    rawErase(std::shared_ptr<SLE> const& sle) override;
+    rawErase(SLE::ref sle) override;
 
     void
-    rawInsert(std::shared_ptr<SLE> const& sle) override;
+    rawInsert(SLE::ref sle) override;
 
     void
-    rawReplace(std::shared_ptr<SLE> const& sle) override;
+    rawReplace(SLE::ref sle) override;
 
     void
     rawDestroyXRP(XRPAmount const& fee) override;

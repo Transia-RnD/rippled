@@ -1,6 +1,8 @@
 #pragma once
 
 #include <xrpl/protocol/KnownFormats.h>
+#include <xrpl/protocol/SField.h>
+#include <xrpl/protocol/SOTemplate.h>
 
 namespace xrpl {
 
@@ -18,7 +20,7 @@ public:
     static InnerObjectFormats const&
     getInstance();
 
-    SOTemplate const*
+    [[nodiscard]] SOTemplate const*
     findSOTemplateBySField(SField const& sField) const;
 };
 

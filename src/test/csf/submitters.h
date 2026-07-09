@@ -1,15 +1,14 @@
 #pragma once
 
-#include <test/csf/Peer.h>
 #include <test/csf/Scheduler.h>
 #include <test/csf/SimTime.h>
 #include <test/csf/Tx.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <type_traits>
 
-namespace xrpl {
-namespace test {
-namespace csf {
+namespace xrpl::test::csf {
 
 // Submitters are classes for simulating submission of transactions to the
 // network
@@ -20,7 +19,7 @@ struct Rate
     std::size_t count;
     SimDuration duration;
 
-    double
+    [[nodiscard]] double
     inv() const
     {
         return duration.count() / double(count);
@@ -62,8 +61,9 @@ class Submitter
     }
 
     template <class T>
-    static std::enable_if_t<std::is_arithmetic<T>::value, SimDuration>
+    static SimDuration
     asDuration(T t)
+        requires(std::is_arithmetic_v<T>)
     {
         return SimDuration{static_cast<SimDuration::rep>(t)};
     }
@@ -105,6 +105,4 @@ makeSubmitter(
     return Submitter<Distribution, Generator, Selector>(dist, start, end, sel, s, g);
 }
 
-}  // namespace csf
-}  // namespace test
-}  // namespace xrpl
+}  // namespace xrpl::test::csf

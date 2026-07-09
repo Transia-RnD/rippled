@@ -1,12 +1,15 @@
 #pragma once
 
-#include <xrpl/basics/base_uint.h>
 #include <xrpl/beast/utility/Journal.h>
 #include <xrpl/ledger/ReadView.h>
+#include <xrpl/protocol/STLedgerEntry.h>
 #include <xrpl/protocol/STTx.h>
 #include <xrpl/protocol/TER.h>
+#include <xrpl/protocol/XRPAmount.h>
 #include <xrpl/tx/invariants/AMMInvariant.h>
+#include <xrpl/tx/invariants/DirectoryInvariant.h>
 #include <xrpl/tx/invariants/FreezeInvariant.h>
+#include <xrpl/tx/invariants/LoanBrokerInvariant.h>
 #include <xrpl/tx/invariants/LoanInvariant.h>
 #include <xrpl/tx/invariants/MPTInvariant.h>
 #include <xrpl/tx/invariants/NFTInvariant.h>
@@ -15,7 +18,11 @@
 #include <xrpl/tx/invariants/VaultInvariant.h>
 
 #include <cstdint>
+#include <set>
+#include <string>
 #include <tuple>
+#include <utility>
+#include <vector>
 
 namespace xrpl {
 
@@ -27,6 +34,33 @@ namespace xrpl {
  * communicate the interface required of any invariant checker. Any invariant
  * check implementation should implement the public methods documented here.
  *
+ * ## Rules for implementing `finalize`
+ *
+ * ### Invariants must run regardless of transaction result
+ *
+ * An invariant's `finalize` method MUST perform meaningful checks even when
+ * the transaction has failed (i.e., `!isTesSuccess(tec)`). The following
+ * pattern is almost certainly wrong and must never be used:
+ *
+ * @code
+ * // WRONG: skipping all checks on failure defeats the purpose of invariants
+ * if (!isTesSuccess(tec))
+ *     return true;
+ * @endcode
+ *
+ * The entire purpose of invariants is to detect and prevent the impossible.
+ * A bug or exploit could cause a failed transaction to mutate ledger state in
+ * unexpected ways. Invariants are the last line of defense against such
+ * scenarios.
+ *
+ * In general: an invariant that expects a domain-specific state change to
+ * occur (e.g., a new object being created) should only expect that change
+ * when the transaction succeeded. A failed VaultCreate must not have created
+ * a Vault. A failed LoanSet must not have created a Loan.
+ *
+ * Also be aware that failed transactions, regardless of type, carry no
+ * Privileges. Any privilege-gated checks must therefore also be applied to
+ * failed transactions.
  */
 class InvariantChecker_PROTOTYPE
 {
@@ -41,14 +75,15 @@ public:
      * @param after ledger entry after modification by the transaction
      */
     void
-    visitEntry(
-        bool isDelete,
-        std::shared_ptr<SLE const> const& before,
-        std::shared_ptr<SLE const> const& after);
+    visitEntry(bool isDelete, SLE::const_ref before, SLE::const_ref after);
 
     /**
      * @brief called after all ledger entries have been visited to determine
-     * the final status of the check
+     * the final status of the check.
+     *
+     * This method MUST perform meaningful checks even when `tec` indicates a
+     * failed transaction. See the class-level documentation for the rules
+     * governing how failed transactions must be handled.
      *
      * @param tx the transaction being applied
      * @param tec the current TER result of the transaction
@@ -78,9 +113,9 @@ class TransactionFeeCheck
 {
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
+    static bool
     finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
 };
 
@@ -98,10 +133,10 @@ class XRPNotCreated
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
-    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
 };
 
 /**
@@ -118,10 +153,10 @@ class AccountRootsNotDeleted
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
-    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
 };
 
 /**
@@ -141,11 +176,11 @@ class AccountRootsDeletedClean
     // deleted, it can still be found. After is used specifically for any checks
     // that are expected as part of the deletion, such as zeroing out the
     // balance.
-    std::vector<std::pair<std::shared_ptr<SLE const>, std::shared_ptr<SLE const>>> accountsDeleted_;
+    std::vector<std::pair<SLE::const_pointer, SLE::const_pointer>> accountsDeleted_;
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
     bool
     finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
@@ -164,10 +199,10 @@ class XRPBalanceChecks
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
-    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
 };
 
 /**
@@ -181,10 +216,10 @@ class LedgerEntryTypesMatch
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
-    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
 };
 
 /**
@@ -199,10 +234,10 @@ class NoXRPTrustLines
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
-    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
 };
 
 /**
@@ -218,10 +253,10 @@ class NoDeepFreezeTrustLinesWithoutFreeze
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
-    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
 };
 
 /**
@@ -237,10 +272,10 @@ class NoBadOffers
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
-    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
 };
 
 /**
@@ -253,10 +288,10 @@ class NoZeroEscrow
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
-    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
 };
 
 /**
@@ -273,10 +308,10 @@ class ValidNewAccountRoot
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
-    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
 };
 
 /**
@@ -289,15 +324,15 @@ public:
  */
 class ValidClawback
 {
-    std::uint32_t trustlinesChanged = 0;
-    std::uint32_t mptokensChanged = 0;
+    std::uint32_t trustlinesChanged_ = 0;
+    std::uint32_t mptokensChanged_ = 0;
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
-    bool
-    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
 };
 
 /**
@@ -314,7 +349,7 @@ class ValidPseudoAccounts
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
     bool
     finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
@@ -334,12 +369,46 @@ class NoModifiedUnmodifiableFields
 
 public:
     void
-    visitEntry(bool, std::shared_ptr<SLE const> const&, std::shared_ptr<SLE const> const&);
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
 
     bool
     finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&);
 };
 
+/** Verify that MPT/XRP STAmounts are canonical in any ledger entries left after the
+ * transaction applies.
+ */
+class ValidAmounts
+{
+    std::vector<SLE::const_pointer> afterEntries_;
+
+public:
+    void
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
+
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
+};
+
+/*
+ * Verify that when an object with an associated pseudo-account is deleted,
+ * its pseudo-account is also deleted.
+ *
+ * The reverse (pseudo-account deleted → object deleted) is enforced by
+ * AccountRootsDeletedClean via getPseudoAccountFields().
+ */
+class ObjectHasPseudoAccount
+{
+public:
+    void
+    visitEntry(bool, SLE::const_ref, SLE::const_ref);
+
+    [[nodiscard]] bool
+    finalize(STTx const&, TER const, XRPAmount const, ReadView const&, beast::Journal const&) const;
+
+private:
+    std::vector<SLE::const_pointer> deletedObjSles_;
+};
 // additional invariant checks can be declared above and then added to this
 // tuple
 using InvariantChecks = std::tuple<
@@ -361,12 +430,18 @@ using InvariantChecks = std::tuple<
     ValidMPTIssuance,
     ValidPermissionedDomain,
     ValidPermissionedDEX,
+    ValidBookDirectory,
     ValidAMM,
     NoModifiedUnmodifiableFields,
     ValidPseudoAccounts,
     ValidLoanBroker,
     ValidLoan,
-    ValidVault>;
+    ValidVault,
+    ValidConfidentialMPToken,
+    ValidMPTPayment,
+    ValidAmounts,
+    ValidMPTTransfer,
+    ObjectHasPseudoAccount>;
 
 /**
  * @brief get a tuple of all invariant checks

@@ -2,7 +2,6 @@
 
 #include <xrpl/server/Handoff.h>
 #include <xrpl/server/Port.h>
-#include <xrpl/server/Writer.h>
 
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -11,7 +10,9 @@
 #include <boost/logic/tribool.hpp>
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
+#include <iterator>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -96,14 +97,14 @@ struct WSSession
     virtual void
     run() = 0;
 
-    virtual Port const&
+    [[nodiscard]] virtual Port const&
     port() const = 0;
 
-    virtual http_request_type const&
+    [[nodiscard]] virtual http_request_type const&
     request() const = 0;
 
-    virtual boost::asio::ip::tcp::endpoint const&
-    remote_endpoint() const = 0;
+    [[nodiscard]] virtual boost::asio::ip::tcp::endpoint const&
+    remoteEndpoint() const = 0;
 
     /** Send a WebSockets message. */
     virtual void

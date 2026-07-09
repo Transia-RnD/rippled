@@ -14,9 +14,9 @@ The following branches exist in the main project repository:
 
 - `develop`: The latest set of unreleased features, and the most common
   starting point for contributions.
-- `release`: The latest beta release or release candidate.
-- `master`: The latest stable release.
-- `gh-pages`: The documentation for this project, built by Doxygen.
+- `release/*` (e.g. `release/3.2.x`): Release branches, one per release line,
+  holding the latest release candidate, or stable release for that line.
+  Stable releases are published as [tagged releases](https://github.com/XRPLF/rippled/releases).
 
 The tip of each branch must be signed. In order for GitHub to sign a
 squashed commit that it builds from your pull request, GitHub must know
@@ -127,34 +127,12 @@ tl;dr
 > 6. Wrap the body at 72 characters.
 > 7. Use the body to explain what and why vs. how.
 
-In addition to those guidelines, please add one of the following
-prefixes to the subject line if appropriate.
-
-- `fix:` - The primary purpose is to fix an existing bug.
-- `perf:` - The primary purpose is performance improvements.
-- `refactor:` - The changes refactor code without affecting
-  functionality.
-- `test:` - The changes _only_ affect unit tests.
-- `docs:` - The changes _only_ affect documentation. This can
-  include code comments in addition to `.md` files like this one.
-- `build:` - The changes _only_ affect the build process,
-  including CMake and/or Conan settings.
-- `chore:` - Other tasks that don't affect the binary, but don't fit
-  any of the other cases. e.g. formatting, git settings, updating
-  Github Actions jobs.
-
-Whenever possible, when updating commits after the PR is open, please
-add the PR number to the end of the subject line. e.g. `test: Add
-unit tests for Feature X (#1234)`.
-
 ## Pull requests
 
 In general, pull requests use `develop` as the base branch.
-The exceptions are
 
-- Fixes and improvements to a release candidate use `release` as the
-  base.
-- Hotfixes use `master` as the base.
+The exceptions are fixes, improvements, and hotfixes for an existing release,
+which use that release's branch (e.g. `release/3.2.x`) as the base.
 
 If your changes are not quite ready, but you want to make it easily available
 for preliminary examination or review, you can create a "Draft" pull request.
@@ -179,6 +157,23 @@ credibility of the existing approvals is insufficient.
 
 Pull requests must be merged by [squash-and-merge][squash]
 to preserve a linear history for the `develop` branch.
+
+### Type of Change
+
+In addition to those guidelines, please start your PR title with one of the following:
+
+- `build:` - The changes _only_ affect the build process, including CMake and/or Conan settings.
+- `feat`: New feature (change which adds functionality).
+- `fix:` - The primary purpose is to fix an existing bug.
+- `docs:` - The changes _only_ affect documentation.
+- `test:` - The changes _only_ affect unit tests.
+- `ci`: Continuous Integration (changes to our CI configuration files and scripts).
+- `style`: Code style (formatting).
+- `refactor:` - The changes refactor code without affecting functionality.
+- `perf:` - The primary purpose is performance improvements.
+- `chore:` - Other tasks that don't affect the binary, but don't fit any of the other cases. e.g. `git` settings, `clang-tidy`, removing dead code, dropping support for older tooling.
+
+First letter after the type prefix should be capitalized, and the type prefix should be followed by a colon and a space. e.g. `feat: Add support for Borrowing Protocol`.
 
 ### "Ready to merge"
 
@@ -219,7 +214,7 @@ coherent rather than a set of _thou shalt not_ commandments.
 
 ## Formatting
 
-All code must conform to `clang-format` version 21,
+All code must conform to `clang-format` version 22,
 according to the settings in [`.clang-format`](./.clang-format),
 unless the result would be unreasonably difficult to read or maintain.
 To demarcate lines that should be left as-is, surround them with comments like
@@ -262,17 +257,46 @@ There is a Continuous Integration job that runs clang-tidy on pull requests. The
 
 This ensures that configuration changes don't introduce new warnings across the codebase.
 
+### Installing clang-tidy
+
+See the [environment setup guide](./docs/build/environment.md#clang-tidy) for how to get clang-tidy.
+
 ### Running clang-tidy locally
 
 Before running clang-tidy, you must build the project to generate required files (particularly protobuf headers). Refer to [`BUILD.md`](./BUILD.md) for build instructions.
 
+#### Via pre-commit (recommended)
+
+If you have already installed the pre-commit hooks (see above), you can run clang-tidy on your staged files using:
+
+```
+TIDY=1 pre-commit run clang-tidy
+```
+
+This runs clang-tidy locally with the same configuration/flags as CI, scoped to your staged C++ files. The `TIDY=1` environment variable is required to opt in — without it the hook is skipped.
+
+You can also have clang-tidy run automatically on every `git commit` by setting `TIDY=1` in your shell environment:
+
+```
+export TIDY=1
+```
+
+With this set, the hook will run as part of `git commit` alongside the other pre-commit checks.
+
+#### Manually
+
 Then run clang-tidy on your local changes:
 
 ```
-run-clang-tidy -p build src tests
+run-clang-tidy -p build -allow-no-checks src tests
 ```
 
-This will check all source files in the `src` and `tests` directories using the compile commands from your `build` directory.
+This will check all source files in the `src`, `include` and `tests` directories using the compile commands from your `build` directory.
+If you wish to automatically fix whatever clang-tidy finds _and_ is capable of fixing, add `-fix` to the above command:
+
+```
+run-clang-tidy -p build -quiet -fix -allow-no-checks src tests
+```
 
 ## Contracts and instrumentation
 
@@ -322,8 +346,8 @@ For this reason:
 - Contract description for `UNREACHABLE` should describe the _unexpected_
   situation which caused the line to have been reached.
 - Example good name for an
-  `UNREACHABLE` macro `"Json::operator==(Value, Value) : invalid type"`; example
-  good name for an `XRPL_ASSERT` macro `"Json::Value::asCString : valid type"`.
+  `UNREACHABLE` macro `"json::operator==(Value, Value) : invalid type"`; example
+  good name for an `XRPL_ASSERT` macro `"json::Value::asCString : valid type"`.
 - Example **bad** name
   `"RFC1751::insert(char* s, int x, int start, int length) : length is greater than or equal zero"`
   (missing namespace, unnecessary full function signature, description too verbose).
@@ -527,7 +551,7 @@ All releases, including release candidates and betas, are handled
 differently from typical PRs. Most importantly, never use
 the Github UI to merge a release.
 
-Rippled uses a linear workflow model that can be summarized as:
+Xrpld uses a linear workflow model that can be summarized as:
 
 1. In between releases, developers work against the `develop` branch.
 2. Periodically, a maintainer will build and tag a beta version from

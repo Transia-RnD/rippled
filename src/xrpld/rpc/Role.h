@@ -1,7 +1,9 @@
 #pragma once
 
+#include <xrpl/beast/net/IPAddress.h>
 #include <xrpl/beast/net/IPEndpoint.h>
 #include <xrpl/json/json_value.h>
+#include <xrpl/resource/Consumer.h>
 #include <xrpl/resource/ResourceManager.h>
 #include <xrpl/server/Handoff.h>
 #include <xrpl/server/Port.h>
@@ -10,7 +12,7 @@
 #include <boost/asio/ip/network_v6.hpp>
 #include <boost/utility/string_view.hpp>
 
-#include <string>
+#include <string_view>
 #include <vector>
 
 namespace xrpl {
@@ -29,13 +31,13 @@ enum class Role { GUEST, USER, IDENTIFIED, ADMIN, PROXY, FORBID };
     which is an array with at least one object. Inside this object
     are the optional keys 'admin_user' and 'admin_password' used to
     validate the credentials. If user is non-blank, it's username
-    passed in the HTTP header by a secure_gateway proxy.
+    passed in the HTTP header by a secureGateway proxy.
 */
 Role
 requestRole(
     Role const& required,
     Port const& port,
-    Json::Value const& params,
+    json::Value const& params,
     beast::IP::Endpoint const& remoteIp,
     std::string_view user);
 

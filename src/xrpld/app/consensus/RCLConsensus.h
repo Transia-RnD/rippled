@@ -4,21 +4,37 @@
 #include <xrpld/app/consensus/RCLCxLedger.h>
 #include <xrpld/app/consensus/RCLCxPeerPos.h>
 #include <xrpld/app/consensus/RCLCxTx.h>
+#include <xrpld/app/main/Application.h>
 #include <xrpld/app/misc/FeeVote.h>
 #include <xrpld/app/misc/NegativeUNLVote.h>
 #include <xrpld/consensus/Consensus.h>
+#include <xrpld/consensus/ConsensusParms.h>
+#include <xrpld/consensus/ConsensusTypes.h>
 
+#include <xrpl/basics/UnorderedContainers.h>
+#include <xrpl/basics/base_uint.h>
+#include <xrpl/basics/chrono.h>
 #include <xrpl/beast/utility/Journal.h>
-#include <xrpl/core/JobQueue.h>
+#include <xrpl/json/json_value.h>
+#include <xrpl/ledger/CanonicalTXSet.h>
+#include <xrpl/protocol/Protocol.h>
+#include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/RippleLedgerHash.h>
-#include <xrpl/shamap/SHAMap.h>
+#include <xrpl/protocol/UintTypes.h>
+
+#include <xrpl.pb.h>
 
 #include <atomic>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 
 namespace xrpl {
 
@@ -33,7 +49,7 @@ class RCLConsensus
 {
     /** Warn for transactions that haven't been included every so many ledgers.
      */
-    constexpr static unsigned int censorshipWarnInternal = 15;
+    static constexpr unsigned int kCensorshipWarnInternal = 15;
 
     // Implements the Adaptor template interface required by Consensus.
     class Adaptor
@@ -63,7 +79,7 @@ class RCLConsensus
         std::atomic<bool> validating_{false};
         std::atomic<std::size_t> prevProposers_{0};
         std::atomic<std::chrono::milliseconds> prevRoundTime_{std::chrono::milliseconds{0}};
-        std::atomic<ConsensusMode> mode_{ConsensusMode::observing};
+        std::atomic<ConsensusMode> mode_{ConsensusMode::Observing};
 
         RCLCensorshipDetector<TxID, LedgerIndex> censorshipDetector_;
         NegativeUNLVote nUnlVote_;
@@ -300,7 +316,7 @@ class RCLConsensus
             NetClock::duration const& closeResolution,
             ConsensusCloseTimes const& rawCloseTimes,
             ConsensusMode const& mode,
-            Json::Value&& consensusJson,
+            json::Value&& consensusJson,
             bool const validating);
 
         /** Process the accepted ledger that was a result of simulation/force
@@ -315,7 +331,7 @@ class RCLConsensus
             NetClock::duration const& closeResolution,
             ConsensusCloseTimes const& rawCloseTimes,
             ConsensusMode const& mode,
-            Json::Value&& consensusJson);
+            json::Value&& consensusJson);
 
         /** Notify peers of a consensus state change
 
@@ -337,7 +353,7 @@ class RCLConsensus
             NetClock::duration closeResolution,
             ConsensusCloseTimes const& rawCloseTimes,
             ConsensusMode const& mode,
-            Json::Value&& consensusJson);
+            json::Value&& consensusJson);
 
         /** Build the new last closed ledger.
 
@@ -443,7 +459,7 @@ public:
     }
 
     //! @see Consensus::getJson
-    Json::Value
+    json::Value
     getJson(bool full) const;
 
     /** Adjust the set of trusted validators and kick-off the next round of
@@ -472,7 +488,7 @@ public:
     RCLCxLedger::ID
     prevLedgerID() const
     {
-        std::lock_guard _{mutex_};
+        std::scoped_lock const _{mutex_};
         return consensus_.prevLedgerID();
     }
 

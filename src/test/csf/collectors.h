@@ -2,18 +2,26 @@
 
 #include <test/csf/Histogram.h>
 #include <test/csf/SimTime.h>
+#include <test/csf/Tx.h>
+#include <test/csf/Validation.h>
 #include <test/csf/events.h>
 
 #include <xrpl/basics/UnorderedContainers.h>
 
+#include <algorithm>
+#include <cassert>
 #include <chrono>
+#include <cstddef>
+#include <iomanip>
+#include <ios>
+#include <map>
 #include <optional>
 #include <ostream>
 #include <tuple>
+#include <utility>
+#include <vector>
 
-namespace xrpl {
-namespace test {
-namespace csf {
+namespace xrpl::test::csf {
 
 //  A collector is any class that implements
 //
@@ -34,7 +42,7 @@ namespace csf {
 template <class... Cs>
 class Collectors
 {
-    std::tuple<Cs&...> cs;
+    std::tuple<Cs&...> cs_;
 
     template <class C, class E>
     static void
@@ -55,7 +63,7 @@ public:
 
         @param cs References to the collectors to call together
     */
-    Collectors(Cs&... cs_) : cs(std::tie(cs_...))
+    Collectors(Cs&... cs) : cs_(std::tie(cs...))
     {
     }
 
@@ -63,7 +71,7 @@ public:
     void
     on(PeerID who, SimTime when, E e)
     {
-        apply(cs, who, when, e, std::index_sequence_for<Cs...>{});
+        apply(cs_, who, when, e, std::index_sequence_for<Cs...>{});
     }
 };
 
@@ -134,7 +142,9 @@ struct SimDurationCollector
             init = true;
         }
         else
+        {
             stop = when;
+        }
     }
 };
 
@@ -161,7 +171,7 @@ struct TxCollector
         std::optional<SimTime> accepted;
         std::optional<SimTime> validated;
 
-        Tracker(Tx tx_, SimTime submitted_) : tx{tx_}, submitted{submitted_}
+        Tracker(Tx tx, SimTime submitted) : tx{tx}, submitted{submitted}
         {
         }
     };
@@ -226,7 +236,7 @@ struct TxCollector
     }
 
     // Returns the number of txs which were never accepted
-    std::size_t
+    [[nodiscard]] std::size_t
     orphaned() const
     {
         return std::count_if(
@@ -234,7 +244,7 @@ struct TxCollector
     }
 
     // Returns the number of txs which were never validated
-    std::size_t
+    [[nodiscard]] std::size_t
     unvalidated() const
     {
         return std::count_if(
@@ -387,12 +397,12 @@ struct LedgerCollector
         SimTime accepted;
         std::optional<SimTime> fullyValidated;
 
-        Tracker(SimTime accepted_) : accepted{accepted_}
+        Tracker(SimTime accepted) : accepted{accepted}
         {
         }
     };
 
-    hash_map<Ledger::ID, Tracker> ledgers_;
+    hash_map<Ledger::ID, Tracker> ledgers;
 
     using Hist = Histogram<SimTime::duration>;
     Hist acceptToFullyValid;
@@ -410,14 +420,14 @@ struct LedgerCollector
     on(PeerID who, SimTime when, AcceptLedger const& e)
     {
         // First time this ledger accepted
-        if (ledgers_.emplace(e.ledger.id(), Tracker{when}).second)
+        if (ledgers.emplace(e.ledger.id(), Tracker{when}).second)
         {
             ++accepted;
             // ignore jumps?
             if (e.prior.id() == e.ledger.parentID())
             {
-                auto const it = ledgers_.find(e.ledger.parentID());
-                if (it != ledgers_.end())
+                auto const it = ledgers.find(e.ledger.parentID());
+                if (it != ledgers.end())
                 {
                     acceptToAccept.insert(when - it->second.accepted);
                 }
@@ -431,8 +441,8 @@ struct LedgerCollector
         // ignore jumps
         if (e.prior.id() == e.ledger.parentID())
         {
-            auto const it = ledgers_.find(e.ledger.id());
-            assert(it != ledgers_.end());
+            auto const it = ledgers.find(e.ledger.id());
+            assert(it != ledgers.end());
             auto& tracker = it->second;
             // first time fully validated
             if (!tracker.fullyValidated)
@@ -441,8 +451,8 @@ struct LedgerCollector
                 tracker.fullyValidated = when;
                 acceptToFullyValid.insert(when - tracker.accepted);
 
-                auto const parentIt = ledgers_.find(e.ledger.parentID());
-                if (parentIt != ledgers_.end())
+                auto const parentIt = ledgers.find(e.ledger.parentID());
+                if (parentIt != ledgers.end())
                 {
                     auto& parentTracker = parentIt->second;
                     if (parentTracker.fullyValidated)
@@ -454,10 +464,10 @@ struct LedgerCollector
         }
     }
 
-    std::size_t
+    [[nodiscard]] std::size_t
     unvalidated() const
     {
-        return std::count_if(ledgers_.begin(), ledgers_.end(), [](auto const& it) {
+        return std::count_if(ledgers.begin(), ledgers.end(), [](auto const& it) {
             return !it.second.fullyValidated;
         });
     }
@@ -631,7 +641,7 @@ struct JumpCollector
     {
         // Not a direct child -> parent switch
         if (e.ledger.parentID() != e.prior.id())
-            closeJumps.emplace_back(Jump{who, when, e.prior, e.ledger});
+            closeJumps.emplace_back(Jump{.id = who, .when = when, .from = e.prior, .to = e.ledger});
     }
 
     void
@@ -639,10 +649,11 @@ struct JumpCollector
     {
         // Not a direct child -> parent switch
         if (e.ledger.parentID() != e.prior.id())
-            fullyValidatedJumps.emplace_back(Jump{who, when, e.prior, e.ledger});
+        {
+            fullyValidatedJumps.emplace_back(
+                Jump{.id = who, .when = when, .from = e.prior, .to = e.ledger});
+        }
     }
 };
 
-}  // namespace csf
-}  // namespace test
-}  // namespace xrpl
+}  // namespace xrpl::test::csf

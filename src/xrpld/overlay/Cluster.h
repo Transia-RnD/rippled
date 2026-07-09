@@ -2,14 +2,19 @@
 
 #include <xrpld/overlay/ClusterNode.h>
 
-#include <xrpl/basics/BasicConfig.h>
 #include <xrpl/basics/chrono.h>
 #include <xrpl/beast/utility/Journal.h>
+#include <xrpl/config/BasicConfig.h>
 #include <xrpl/protocol/PublicKey.h>
 
+#include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <mutex>
+#include <optional>
 #include <set>
+#include <string>
+#include <type_traits>
 
 namespace xrpl {
 
@@ -77,7 +82,7 @@ public:
               within the callback.
     */
     void
-    for_each(std::function<void(ClusterNode const&)> func) const;
+    forEach(std::function<void(ClusterNode const&)> func) const;
 
     /** Load the list of cluster nodes.
 

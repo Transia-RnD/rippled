@@ -1,15 +1,20 @@
 #pragma once
 
-#include <xrpl/basics/BasicConfig.h>
 #include <xrpl/beast/utility/Journal.h>
 #include <xrpl/nodestore/Backend.h>
 #include <xrpl/nodestore/Scheduler.h>
 
-#include <nudb/store.hpp>
+#include <nudb/context.hpp>
+
+#include <cstddef>
+#include <memory>
+#include <string>
 
 namespace xrpl {
+class Section;
+}  // namespace xrpl
 
-namespace NodeStore {
+namespace xrpl::NodeStore {
 
 /** Base class for backend factories. */
 class Factory
@@ -18,7 +23,7 @@ public:
     virtual ~Factory() = default;
 
     /** Retrieve the name of this factory. */
-    virtual std::string
+    [[nodiscard]] virtual std::string
     getName() const = 0;
 
     /** Create an instance of this factory's backend.
@@ -59,5 +64,4 @@ public:
     }
 };
 
-}  // namespace NodeStore
-}  // namespace xrpl
+}  // namespace xrpl::NodeStore

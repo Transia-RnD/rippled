@@ -2,9 +2,16 @@
 
 #include <xrpld/overlay/Peer.h>
 
+#include <xrpl/basics/base_uint.h>
 #include <xrpl/beast/clock/abstract_clock.h>
+#include <xrpl/beast/insight/Collector.h>
 #include <xrpl/shamap/SHAMap.h>
 
+#include <xrpl.pb.h>
+
+#include <chrono>
+#include <cstdint>
+#include <functional>
 #include <memory>
 
 namespace xrpl {
@@ -17,7 +24,7 @@ class Application;
 class InboundTransactions
 {
 public:
-    using clock_type = beast::abstract_clock<std::chrono::steady_clock>;
+    using clock_type = beast::AbstractClock<std::chrono::steady_clock>;
 
     InboundTransactions() = default;
     InboundTransactions(InboundTransactions const&) = delete;
@@ -69,7 +76,7 @@ public:
 };
 
 std::unique_ptr<InboundTransactions>
-make_InboundTransactions(
+makeInboundTransactions(
     Application& app,
     beast::insight::Collector::ptr const& collector,
     std::function<void(std::shared_ptr<SHAMap> const&, bool)> gotSet);

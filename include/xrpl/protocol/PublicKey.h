@@ -1,8 +1,15 @@
 #pragma once
 
 #include <xrpl/basics/Slice.h>
+#include <xrpl/basics/StringUtilities.h>
+#include <xrpl/basics/base_uint.h>
+#include <xrpl/basics/contract.h>
 #include <xrpl/beast/net/IPEndpoint.h>
+#include <xrpl/json/json_value.h>
+#include <xrpl/protocol/AccountID.h>
 #include <xrpl/protocol/KeyType.h>
+#include <xrpl/protocol/SField.h>
+#include <xrpl/protocol/STBlob.h>
 #include <xrpl/protocol/STExchange.h>
 #include <xrpl/protocol/UintTypes.h>
 #include <xrpl/protocol/json_get_or_throw.h>
@@ -11,8 +18,11 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <optional>
 #include <ostream>
+#include <sstream>
+#include <string>
 
 namespace xrpl {
 
@@ -21,7 +31,7 @@ namespace xrpl {
     Public keys are used in the public-key cryptography
     system used to verify signatures attached to messages.
 
-    The format of the public key is Ripple specific,
+    The format of the public key is XRPL specific,
     information needed to determine the cryptosystem
     parameters used is stored inside the key.
 
@@ -42,7 +52,11 @@ namespace xrpl {
 class PublicKey
 {
 protected:
-    std::uint8_t buf_[65];
+    // All the constructed public keys are valid and non-empty. secp256k1
+    // and ed25519 keys hold 33 bytes of data; uncompressed p256 keys hold
+    // 65 bytes.
+    static constexpr std::size_t kMaxSize = 65;
+    std::uint8_t buf_[kMaxSize]{};  // should be large enough
     std::size_t size_ = 0;
 
 public:
@@ -62,43 +76,43 @@ public:
     */
     explicit PublicKey(Slice const& slice);
 
-    std::uint8_t const*
+    [[nodiscard]] std::uint8_t const*
     data() const noexcept
     {
         return buf_;
     }
 
-    std::size_t
+    [[nodiscard]] std::size_t
     size() const noexcept
     {
         return size_;
     }
 
-    const_iterator
+    [[nodiscard]] const_iterator
     begin() const noexcept
     {
         return buf_;
     }
 
-    const_iterator
+    [[nodiscard]] const_iterator
     cbegin() const noexcept
     {
         return buf_;
     }
 
-    const_iterator
+    [[nodiscard]] const_iterator
     end() const noexcept
     {
         return buf_ + size_;
     }
 
-    const_iterator
+    [[nodiscard]] const_iterator
     cend() const noexcept
     {
         return buf_ + size_;
     }
 
-    Slice
+    [[nodiscard]] Slice
     slice() const noexcept
     {
         return {buf_, size_};
@@ -118,7 +132,7 @@ operator<<(std::ostream& os, PublicKey const& pk);
 inline bool
 operator==(PublicKey const& lhs, PublicKey const& rhs)
 {
-    return std::memcmp(lhs.data(), rhs.data(), rhs.size()) == 0;
+    return lhs.size() == rhs.size() && std::memcmp(lhs.data(), rhs.data(), rhs.size()) == 0;
 }
 
 inline bool
@@ -167,7 +181,7 @@ template <>
 std::optional<PublicKey>
 parseBase58(TokenType type, std::string const& s);
 
-enum class ECDSACanonicality { canonical, fullyCanonical };
+enum class ECDSACanonicality { Canonical, FullyCanonical };
 
 /** Determines the canonicality of a signature.
 
@@ -259,14 +273,15 @@ getFingerprint(
 
 //------------------------------------------------------------------------------
 
-namespace Json {
+namespace json {
 template <>
 inline xrpl::PublicKey
-getOrThrow(Json::Value const& v, xrpl::SField const& field)
+getOrThrow(json::Value const& v, xrpl::SField const& field)
 {
     using namespace xrpl;
     std::string const b58 = getOrThrow<std::string>(v, field);
-    if (auto pubKeyBlob = strUnHex(b58); publicKeyType(makeSlice(*pubKeyBlob)))
+    if (auto pubKeyBlob = strUnHex(b58);
+        pubKeyBlob.has_value() && publicKeyType(makeSlice(*pubKeyBlob)))
     {
         return PublicKey{makeSlice(*pubKeyBlob)};
     }
@@ -277,4 +292,4 @@ getOrThrow(Json::Value const& v, xrpl::SField const& field)
     }
     Throw<JsonTypeMismatchError>(field.getJsonName(), "PublicKey");
 }
-}  // namespace Json
+}  // namespace json

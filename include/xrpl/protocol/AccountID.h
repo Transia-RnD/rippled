@@ -2,14 +2,18 @@
 
 #include <xrpl/protocol/tokens.h>
 // VFALCO Uncomment when the header issues are resolved
-// #include <ripple/protocol/PublicKey.h>
-#include <xrpl/basics/UnorderedContainers.h>
+// #include <xrpl/protocol/PublicKey.h>
 #include <xrpl/basics/base_uint.h>
+#include <xrpl/basics/contract.h>
+#include <xrpl/beast/utility/Zero.h>
 #include <xrpl/json/json_value.h>
+#include <xrpl/protocol/SField.h>
 #include <xrpl/protocol/json_get_or_throw.h>
 
 #include <cstddef>
+#include <functional>
 #include <optional>
+#include <ostream>
 #include <string>
 
 namespace xrpl {
@@ -25,7 +29,7 @@ public:
 }  // namespace detail
 
 /** A 160-bit unsigned that uniquely identifies an account. */
-using AccountID = base_uint<160, detail::AccountIDTag>;
+using AccountID = BaseUInt<160, detail::AccountIDTag>;
 
 /** Convert AccountID to base58 checked string */
 std::string
@@ -63,13 +67,13 @@ noAccount();
 */
 // DEPRECATED
 bool
-to_issuer(AccountID&, std::string const&);
+toIssuer(AccountID&, std::string const&);
 
 // DEPRECATED Should be checking the currency or native flag
 inline bool
 isXRP(AccountID const& c)
 {
-    return c == beast::zero;
+    return c == beast::kZero;
 }
 
 // DEPRECATED
@@ -105,10 +109,10 @@ initAccountIdCache(std::size_t count);
 }  // namespace xrpl
 
 //------------------------------------------------------------------------------
-namespace Json {
+namespace json {
 template <>
 inline xrpl::AccountID
-getOrThrow(Json::Value const& v, xrpl::SField const& field)
+getOrThrow(json::Value const& v, xrpl::SField const& field)
 {
     using namespace xrpl;
 
@@ -117,7 +121,7 @@ getOrThrow(Json::Value const& v, xrpl::SField const& field)
         return *r;
     Throw<JsonTypeMismatchError>(field.getJsonName(), "AccountID");
 }
-}  // namespace Json
+}  // namespace json
 
 //------------------------------------------------------------------------------
 

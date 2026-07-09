@@ -4,14 +4,21 @@
 
 #include <xrpl/basics/ByteUtilities.h>
 #include <xrpl/protocol/PublicKey.h>
-#include <xrpl/protocol/messages.h>
 
-#include <algorithm>
+#include <google/protobuf/message.h>
+
+#include <xrpl.pb.h>
+
+#include <cstddef>
 #include <cstdint>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <vector>
 
 namespace xrpl {
 
-constexpr std::size_t maximumMessageSize = megabytes(64);
+constexpr std::size_t kMaximumMessageSize = megabytes(64);
 
 // VFALCO NOTE If we forward declare Message and write out shared_ptr
 //             instead of using the in-class type alias, we can remove the
@@ -80,7 +87,7 @@ private:
     std::vector<uint8_t> buffer_;
     std::vector<uint8_t> bufferCompressed_;
     std::size_t category_;
-    std::once_flag once_flag_;
+    std::once_flag onceFlag_;
     std::optional<PublicKey> validatorKey_;
 
     /** Set the payload header
@@ -91,7 +98,7 @@ private:
      *   currently LZ4 only. If None then the message is uncompressed.
      * @param uncompressedBytes Size of the uncompressed message
      */
-    void
+    static void
     setHeader(
         std::uint8_t* in,
         std::uint32_t payloadBytes,
@@ -112,8 +119,8 @@ private:
      * @param in Payload header pointer
      * @return Message type
      */
-    int
-    getType(std::uint8_t const* in) const;
+    static int
+    getType(std::uint8_t const* in);
 };
 
 }  // namespace xrpl

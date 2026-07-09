@@ -1,13 +1,15 @@
 #pragma once
 
-#include <xrpl/basics/ToString.h>
 #include <xrpl/basics/contract.h>
 #include <xrpl/json/Output.h>
 #include <xrpl/json/json_value.h>
 
+#include <cstddef>
 #include <memory>
+#include <stdexcept>
+#include <string>
 
-namespace Json {
+namespace json {
 
 /**
  *  Writer implements an O(1)-space, O(1)-granular output JSON writer.
@@ -107,7 +109,7 @@ namespace Json {
 class Writer
 {
 public:
-    enum CollectionType { array, object };
+    enum class CollectionType { Array, Object };
 
     explicit Writer(Output const& output);
     Writer(Writer&&) noexcept;
@@ -138,7 +140,7 @@ public:
     /** Append a value to an array.
      *
      *  Scalar must be a scalar - that is, a number, boolean, string, string
-     *  literal, nullptr or Json::Value
+     *  literal, nullptr or json::Value
      */
     template <typename Scalar>
     void
@@ -161,7 +163,7 @@ public:
      *  While the JSON spec doesn't explicitly disallow this, you should avoid
      *  calling this method twice with the same tag for the same object.
      *
-     *  If CHECK_JSON_WRITER is defined, this function throws an exception if if
+     *  If CHECK_JSON_WRITER is defined, this function throws an exception if
      *  the tag you use has already been used in this object.
      */
     template <typename Type>
@@ -188,9 +190,9 @@ public:
     void
     output(char const*);
 
-    /*** Output a Json::Value. */
+    /*** Output a json::Value. */
     void
-    output(Json::Value const&);
+    output(json::Value const&);
 
     /** Output a null. */
     void output(std::nullptr_t);
@@ -216,9 +218,9 @@ public:
     }
 
     void
-    output(Json::StaticString const& t)
+    output(json::StaticString const& t)
     {
-        output(t.c_str());
+        output(t.cStr());
     }
 
 private:
@@ -236,4 +238,4 @@ check(bool condition, std::string const& message)
         xrpl::Throw<std::logic_error>(message);
 }
 
-}  // namespace Json
+}  // namespace json

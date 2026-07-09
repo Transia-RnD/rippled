@@ -1,15 +1,10 @@
 #pragma once
 
-#include <test/csf/Proposal.h>
 #include <test/csf/Tx.h>
 #include <test/csf/Validation.h>
 #include <test/csf/ledgers.h>
 
-#include <chrono>
-
-namespace xrpl {
-namespace test {
-namespace csf {
+namespace xrpl::test::csf {
 
 // Events are emitted by peers at a variety of points during the simulation.
 // Each event is emitted by a particular peer at a particular time. Collectors
@@ -79,7 +74,7 @@ struct SubmitTx
 struct StartRound
 {
     //! The preferred ledger for the start of consensus
-    Ledger::ID bestLedger;
+    Ledger::ID bestLedger{};
 
     //! The prior ledger on hand
     Ledger prevLedger;
@@ -126,6 +121,4 @@ struct FullyValidateLedger
     Ledger prior;
 };
 
-}  // namespace csf
-}  // namespace test
-}  // namespace xrpl
+}  // namespace xrpl::test::csf

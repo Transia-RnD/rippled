@@ -1,12 +1,23 @@
 #pragma once
 
+#include <xrpl/basics/base_uint.h>
 #include <xrpl/beast/utility/Journal.h>
+#include <xrpl/beast/utility/instrumentation.h>
 #include <xrpl/core/ServiceRegistry.h>
+#include <xrpl/ledger/ApplyView.h>
 #include <xrpl/ledger/ApplyViewImpl.h>
+#include <xrpl/ledger/OpenView.h>
+#include <xrpl/ledger/RawView.h>
+#include <xrpl/protocol/STAmount.h>
 #include <xrpl/protocol/STTx.h>
+#include <xrpl/protocol/TER.h>
+#include <xrpl/protocol/TxMeta.h>
 #include <xrpl/protocol/XRPAmount.h>
 
+#include <cstddef>
+#include <functional>
 #include <optional>
+#include <utility>
 
 namespace xrpl {
 
@@ -24,6 +35,10 @@ public:
         ApplyFlags flags,
         beast::Journal journal = beast::Journal{beast::Journal::getNullSink()});
 
+    // Convenience constructor used only by tests that build an ApplyContext
+    // directly (e.g. invariant checks). Production always uses the parentBatchId
+    // constructor above; this one fixes parentBatchId to std::nullopt and so is
+    // never valid for a batch inner (hence the TapBatch assert).
     explicit ApplyContext(
         ServiceRegistry& registry,
         OpenView& base,
@@ -34,10 +49,10 @@ public:
         beast::Journal journal = beast::Journal{beast::Journal::getNullSink()})
         : ApplyContext(registry, base, std::nullopt, tx, preclaimResult, baseFee, flags, journal)
     {
-        XRPL_ASSERT((flags & tapBATCH) == 0, "Batch apply flag should not be set");
+        XRPL_ASSERT((flags & TapBatch) == 0, "Batch apply flag should not be set");
     }
 
-    ServiceRegistry& registry;
+    std::reference_wrapper<ServiceRegistry> registry;
     STTx const& tx;
     TER const preclaimResult;
     XRPAmount const baseFee;
@@ -46,23 +61,23 @@ public:
     ApplyView&
     view()
     {
-        return *view_;
+        return *view_;  // NOLINT(bugprone-unchecked-optional-access) view_ emplaced in constructor
     }
 
-    ApplyView const&
+    [[nodiscard]] ApplyView const&
     view() const
     {
-        return *view_;
+        return *view_;  // NOLINT(bugprone-unchecked-optional-access) view_ emplaced in constructor
     }
 
     // VFALCO Unfortunately this is necessary
     RawView&
     rawView()
     {
-        return *view_;
+        return *view_;  // NOLINT(bugprone-unchecked-optional-access) view_ emplaced in constructor
     }
 
-    ApplyFlags const&
+    [[nodiscard]] ApplyFlags const&
     flags() const
     {
         return flags_;
@@ -72,6 +87,7 @@ public:
     void
     deliver(STAmount const& amount)
     {
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access) view_ emplaced in constructor
         view_->deliver(amount);
     }
 
@@ -92,12 +108,13 @@ public:
         std::function<void(
             uint256 const& key,
             bool isDelete,
-            std::shared_ptr<SLE const> const& before,
-            std::shared_ptr<SLE const> const& after)> const& func);
+            SLE::const_ref before,
+            SLE::const_ref after)> const& func);
 
     void
     destroyXRP(XRPAmount const& fee)
     {
+        // NOLINTNEXTLINE(bugprone-unchecked-optional-access) view_ emplaced in constructor
         view_->rawDestroyXRP(fee);
     }
 
@@ -111,7 +128,7 @@ public:
     checkInvariants(TER const result, XRPAmount const fee);
 
 private:
-    TER
+    static TER
     failInvariantCheck(TER const result);
 
     template <std::size_t... Is>
@@ -122,7 +139,7 @@ private:
     ApplyFlags flags_;
     std::optional<ApplyViewImpl> view_;
 
-    // The ID of the batch transaction we are executing under, if seated.
+    // The ID of the batch transaction we are executing under, if set.
     std::optional<uint256 const> parentBatchId_;
 };
 

@@ -1,9 +1,15 @@
 #pragma once
 
+#include <xrpl/beast/utility/Journal.h>
+#include <xrpl/nodestore/Backend.h>
 #include <xrpl/nodestore/Database.h>
+#include <xrpl/nodestore/Scheduler.h>
 
-namespace xrpl {
-namespace NodeStore {
+#include <functional>
+#include <memory>
+#include <string>
+
+namespace xrpl::NodeStore {
 
 /* This class has two key-value store Backend objects for persisting SHAMap
  * records. This facilitates online deletion of data. New backends are
@@ -36,5 +42,4 @@ public:
             f) = 0;
 };
 
-}  // namespace NodeStore
-}  // namespace xrpl
+}  // namespace xrpl::NodeStore

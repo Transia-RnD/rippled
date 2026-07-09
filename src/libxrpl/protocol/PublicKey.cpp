@@ -1,15 +1,16 @@
+#include <xrpl/protocol/PublicKey.h>
+
 #include <xrpl/basics/Slice.h>
 #include <xrpl/basics/base_uint.h>
 #include <xrpl/basics/contract.h>
 #include <xrpl/basics/strHex.h>
 #include <xrpl/protocol/KeyType.h>
-#include <xrpl/protocol/PublicKey.h>
+#include <xrpl/protocol/Protocol.h>
 #include <xrpl/protocol/UintTypes.h>
 #include <xrpl/protocol/detail/secp256k1.h>
 #include <xrpl/protocol/digest.h>
 #include <xrpl/protocol/tokens.h>
 
-#include <boost/multiprecision/fwd.hpp>
 #include <boost/multiprecision/number.hpp>
 
 #include <openssl/bn.h>
@@ -18,8 +19,10 @@
 #include <openssl/obj_mac.h>
 
 #include <ed25519.h>
+#include <secp256k1.h>
 
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <cstring>
 #include <optional>
@@ -80,7 +83,7 @@ static std::string
 sliceToHex(Slice const& slice)
 {
     std::string s;
-    if (slice[0] & 0x80)
+    if ((slice[0] & 0x80) != 0)
     {
         s.reserve(2 * (slice.size() + 2));
         s = "0x00";
@@ -90,11 +93,11 @@ sliceToHex(Slice const& slice)
         s.reserve(2 * (slice.size() + 1));
         s = "0x";
     }
-    for (int i = 0; i < slice.size(); ++i)
+    for (std::uint8_t const byte : slice)
     {
-        constexpr char hex[] = "0123456789ABCDEF";
-        s += hex[((slice[i] & 0xf0) >> 4)];
-        s += hex[((slice[i] & 0x0f) >> 0)];
+        static constexpr char kHex[] = "0123456789ABCDEF";
+        s += kHex[((byte & 0xf0) >> 4)];
+        s += kHex[((byte & 0x0f) >> 0)];
     }
     return s;
 }
@@ -121,7 +124,8 @@ ecdsaCanonicality(Slice const& sig)
         boost::multiprecision::unchecked,
         void>>;
 
-    static uint264 const G("0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141");
+    static uint264 const kG(
+        "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141");  // NOLINT(readability-identifier-naming)
 
     // The format of a signature should be:
     // <30> <len> [ <02> <lenR> <R> ] [ <02> <lenS> <S> ]
@@ -135,20 +139,20 @@ ecdsaCanonicality(Slice const& sig)
     if (!r || !s || !p.empty())
         return std::nullopt;
 
-    uint264 R(sliceToHex(*r));
-    if (R >= G)
+    uint264 const rNum(sliceToHex(*r));
+    if (rNum >= kG)
         return std::nullopt;
 
-    uint264 S(sliceToHex(*s));
-    if (S >= G)
+    uint264 const sNum(sliceToHex(*s));
+    if (sNum >= kG)
         return std::nullopt;
 
     // (R,S) and (R,G-S) are canonical,
     // but is fully canonical when S <= G-S
-    auto const Sp = G - S;
-    if (S > Sp)
-        return ECDSACanonicality::canonical;
-    return ECDSACanonicality::fullyCanonical;
+    auto const Sp = kG - sNum;  // NOLINT(readability-identifier-naming)
+    if (sNum > Sp)
+        return ECDSACanonicality::Canonical;
+    return ECDSACanonicality::FullyCanonical;
 }
 
 static bool
@@ -157,6 +161,7 @@ ed25519Canonical(Slice const& sig)
     if (sig.size() != 64)
         return false;
     // Big-endian Order, the Ed25519 subgroup order
+    // NOLINTNEXTLINE(readability-identifier-naming)
     std::uint8_t const Order[] = {
         0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x14, 0xDE, 0xF9, 0xDE, 0xA2, 0xF7,
@@ -165,7 +170,7 @@ ed25519Canonical(Slice const& sig)
     // Take the second half of signature
     // and byte-reverse it to big-endian.
     auto const le = sig.data() + 32;
-    std::uint8_t S[32];
+    std::uint8_t S[32];  // NOLINT(readability-identifier-naming)
     std::reverse_copy(le, le + 32, S);
     // Must be less than Order
     return std::lexicographical_compare(S, S + 32, Order, Order + 32);
@@ -175,13 +180,15 @@ ed25519Canonical(Slice const& sig)
 
 PublicKey::PublicKey(Slice const& slice)
 {
-    if (slice.size() < size_)
-        LogicError(
-            "PublicKey::PublicKey - Input slice cannot be an undersized "
+    if (slice.size() > kMaxSize)
+    {
+        logicError(
+            "PublicKey::PublicKey - Input slice cannot be an oversized "
             "buffer");
+    }
 
     if (!publicKeyType(slice))
-        LogicError("PublicKey::PublicKey invalid type");
+        logicError("PublicKey::PublicKey invalid type");
     size_ = slice.size();
     std::memcpy(buf_, slice.data(), size_);
 }
@@ -213,16 +220,14 @@ publicKeyType(Slice const& slice)
     if (slice.size() == 33)
     {
         if (slice[0] == 0xED)
-            return KeyType::ed25519;
+            return KeyType::Ed25519;
 
-        if (slice[0] == 0x02 || slice[0] == 0x03)
-            return KeyType::secp256k1;
+        if (slice[0] == kEcCompressedPrefixEvenY || slice[0] == kEcCompressedPrefixOddY)
+            return KeyType::Secp256k1;
     }
 
     if (slice.size() == 65 && slice[0] == 0xF6)
-    {
-        return KeyType::p256;
-    }
+        return KeyType::P256;
 
     return std::nullopt;
 }
@@ -234,45 +239,45 @@ verifyDigest(
     Slice const& sig,
     bool mustBeFullyCanonical) noexcept
 {
-    if (publicKeyType(publicKey) != KeyType::secp256k1)
-        LogicError("sign: secp256k1 required for digest signing");
+    if (publicKeyType(publicKey) != KeyType::Secp256k1)
+        logicError("sign: secp256k1 required for digest signing");
     auto const canonicality = ecdsaCanonicality(sig);
     if (!canonicality)
         return false;
-    if (mustBeFullyCanonical && (*canonicality != ECDSACanonicality::fullyCanonical))
+    if (mustBeFullyCanonical && (*canonicality != ECDSACanonicality::FullyCanonical))
         return false;
 
-    secp256k1_pubkey pubkey_imp;
+    secp256k1_pubkey pubkeyImp;
     if (secp256k1_ec_pubkey_parse(
             secp256k1Context(),
-            &pubkey_imp,
+            &pubkeyImp,
             reinterpret_cast<unsigned char const*>(publicKey.data()),
             publicKey.size()) != 1)
         return false;
 
-    secp256k1_ecdsa_signature sig_imp;
+    secp256k1_ecdsa_signature sigImp;
     if (secp256k1_ecdsa_signature_parse_der(
             secp256k1Context(),
-            &sig_imp,
+            &sigImp,
             reinterpret_cast<unsigned char const*>(sig.data()),
             sig.size()) != 1)
         return false;
-    if (*canonicality != ECDSACanonicality::fullyCanonical)
+    if (*canonicality != ECDSACanonicality::FullyCanonical)
     {
-        secp256k1_ecdsa_signature sig_norm;
-        if (secp256k1_ecdsa_signature_normalize(secp256k1Context(), &sig_norm, &sig_imp) != 1)
+        secp256k1_ecdsa_signature sigNorm;
+        if (secp256k1_ecdsa_signature_normalize(secp256k1Context(), &sigNorm, &sigImp) != 1)
             return false;
         return secp256k1_ecdsa_verify(
                    secp256k1Context(),
-                   &sig_norm,
+                   &sigNorm,
                    reinterpret_cast<unsigned char const*>(digest.data()),
-                   &pubkey_imp) == 1;
+                   &pubkeyImp) == 1;
     }
     return secp256k1_ecdsa_verify(
                secp256k1Context(),
-               &sig_imp,
+               &sigImp,
                reinterpret_cast<unsigned char const*>(digest.data()),
-               &pubkey_imp) == 1;
+               &pubkeyImp) == 1;
 }
 
 struct ECDSASignature
@@ -281,7 +286,7 @@ struct ECDSASignature
     std::array<uint8_t, 32> s;
 };
 
-std::optional<ECDSASignature>
+static std::optional<ECDSASignature>
 parseDERSignature(Slice const& derSig) noexcept
 {
     if (derSig.size() < 8)
@@ -309,8 +314,7 @@ parseDERSignature(Slice const& derSig) noexcept
     // Copy R, handling leading zeros
     int rStart = (rLen > 32 && data[offset] == 0x00) ? 1 : 0;
     int rCopyLen = std::min(32, static_cast<int>(rLen - rStart));
-    std::memcpy(
-        result.r.data() + (32 - rCopyLen), data + offset + rStart, rCopyLen);
+    std::memcpy(result.r.data() + (32 - rCopyLen), data + offset + rStart, rCopyLen);
     offset += rLen;
 
     // Parse S
@@ -323,13 +327,12 @@ parseDERSignature(Slice const& derSig) noexcept
     // Copy S, handling leading zeros
     int sStart = (sLen > 32 && data[offset] == 0x00) ? 1 : 0;
     int sCopyLen = std::min(32, static_cast<int>(sLen - sStart));
-    std::memcpy(
-        result.s.data() + (32 - sCopyLen), data + offset + sStart, sCopyLen);
+    std::memcpy(result.s.data() + (32 - sCopyLen), data + offset + sStart, sCopyLen);
 
     return result;
 }
 
-bool
+static bool
 verifyP256ECDSA(
     uint8_t const* hash,
     size_t hashLen,
@@ -361,39 +364,38 @@ verifyP256ECDSA(
 
     // Restore public key point from coordinates
     EC_POINT* point = EC_POINT_new(group);
-    BIGNUM* bn_x = BN_bin2bn(x, xLen, nullptr);
-    BIGNUM* bn_y = BN_bin2bn(y, yLen, nullptr);
+    BIGNUM* bnX = BN_bin2bn(x, xLen, nullptr);
+    BIGNUM* bnY = BN_bin2bn(y, yLen, nullptr);
 
     bool success = false;
-    if (point && bn_x && bn_y &&
-        EC_POINT_set_affine_coordinates_GFp(
-            group, point, bn_x, bn_y, nullptr) == 1 &&
+    if (point && bnX && bnY &&
+        EC_POINT_set_affine_coordinates_GFp(group, point, bnX, bnY, nullptr) == 1 &&
         EC_KEY_set_public_key(key, point) == 1)
     {
         // Pack r/s into ECDSA_SIG structure
         ECDSA_SIG* sig = ECDSA_SIG_new();
-        BIGNUM* bn_r = BN_bin2bn(r, rLen, nullptr);
-        BIGNUM* bn_s = BN_bin2bn(s, sLen, nullptr);
+        BIGNUM* bnR = BN_bin2bn(r, rLen, nullptr);
+        BIGNUM* bnS = BN_bin2bn(s, sLen, nullptr);
 
-        if (sig && bn_r && bn_s && ECDSA_SIG_set0(sig, bn_r, bn_s) == 1)
+        if (sig && bnR && bnS && ECDSA_SIG_set0(sig, bnR, bnS) == 1)
         {
-            // Verify (ECDSA_SIG_set0 takes ownership of bn_r, bn_s)
+            // Verify (ECDSA_SIG_set0 takes ownership of bnR, bnS)
             int verified = ECDSA_do_verify(hash, hashLen, sig, key);
             success = (verified == 1);
-            bn_r = nullptr;  // ownership transferred
-            bn_s = nullptr;  // ownership transferred
+            bnR = nullptr;  // ownership transferred
+            bnS = nullptr;  // ownership transferred
         }
 
         ECDSA_SIG_free(sig);
-        if (bn_r)
-            BN_free(bn_r);
-        if (bn_s)
-            BN_free(bn_s);
+        if (bnR)
+            BN_free(bnR);
+        if (bnS)
+            BN_free(bnS);
     }
 
     EC_POINT_free(point);
-    BN_free(bn_x);
-    BN_free(bn_y);
+    BN_free(bnX);
+    BN_free(bnY);
     EC_KEY_free(key);
     EC_GROUP_free(group);
 
@@ -405,11 +407,11 @@ verify(PublicKey const& publicKey, Slice const& m, Slice const& sig) noexcept
 {
     if (auto const type = publicKeyType(publicKey))
     {
-        if (*type == KeyType::secp256k1)
+        if (*type == KeyType::Secp256k1)
         {
             return verifyDigest(publicKey, sha512Half(m), sig);
         }
-        else if (*type == KeyType::ed25519)
+        if (*type == KeyType::Ed25519)
         {
             if (!ed25519Canonical(sig))
                 return false;
@@ -420,7 +422,7 @@ verify(PublicKey const& publicKey, Slice const& m, Slice const& sig) noexcept
             // first strip that prefix.
             return ed25519_sign_open(m.data(), m.size(), publicKey.data() + 1, sig.data()) == 0;
         }
-        else if (*type == KeyType::p256)
+        if (*type == KeyType::P256)
         {
             // Parse DER signature to extract r and s values
             auto parsedSig = parseDERSignature(sig);
@@ -436,8 +438,8 @@ verify(PublicKey const& publicKey, Slice const& m, Slice const& sig) noexcept
                 return false;
 
             // Extract x and y coordinates (skip prefix byte)
-            uint8_t const* x_coord = publicKey.data() + 1;
-            uint8_t const* y_coord = publicKey.data() + 33;
+            uint8_t const* xCoord = publicKey.data() + 1;
+            uint8_t const* yCoord = publicKey.data() + 33;
 
             return verifyP256ECDSA(
                 hash.data(),
@@ -446,9 +448,9 @@ verify(PublicKey const& publicKey, Slice const& m, Slice const& sig) noexcept
                 32,  // r component
                 parsedSig->s.data(),
                 32,  // s component
-                x_coord,
+                xCoord,
                 32,  // x coordinate
-                y_coord,
+                yCoord,
                 32);  // y coordinate
         }
     }
@@ -458,11 +460,11 @@ verify(PublicKey const& publicKey, Slice const& m, Slice const& sig) noexcept
 NodeID
 calcNodeID(PublicKey const& pk)
 {
-    static_assert(NodeID::bytes == sizeof(ripesha_hasher::result_type));
+    static_assert(NodeID::kBytes == sizeof(RipeshaHasher::result_type));
 
-    ripesha_hasher h;
+    RipeshaHasher h;
     h(pk.data(), pk.size());
-    return NodeID{static_cast<ripesha_hasher::result_type>(h)};
+    return NodeID::fromRaw(static_cast<RipeshaHasher::result_type>(h));
 }
 
 }  // namespace xrpl

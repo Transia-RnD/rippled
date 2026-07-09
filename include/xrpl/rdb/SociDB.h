@@ -8,16 +8,19 @@
     This module requires the @ref beast_sqlite external module.
 */
 
+#include <soci/blob.h>
+#include <soci/session.h>
+
+#include <memory>
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
 #endif
 
-#include <xrpl/basics/Log.h>
 #include <xrpl/core/JobQueue.h>
+#include <xrpl/core/ServiceRegistry.h>
 
 #define SOCI_USE_BOOST
-#include <soci/soci.h>
 
 #include <cstdint>
 #include <string>
@@ -25,7 +28,7 @@
 
 namespace sqlite_api {
 struct sqlite3;
-}
+}  // namespace sqlite_api
 
 namespace xrpl {
 
@@ -39,11 +42,11 @@ class BasicConfig;
 class DBConfig
 {
     std::string connectionString_;
-    explicit DBConfig(std::string const& dbPath);
+    explicit DBConfig(std::string dbPath);
 
 public:
     DBConfig(BasicConfig const& config, std::string const& dbName);
-    std::string
+    [[nodiscard]] std::string
     connectionString() const;
     void
     open(soci::session& s) const;
@@ -111,7 +114,7 @@ public:
     and so must outlive them both.
  */
 std::shared_ptr<Checkpointer>
-makeCheckpointer(std::uintptr_t id, std::weak_ptr<soci::session>, JobQueue&, Logs&);
+makeCheckpointer(std::uintptr_t id, std::weak_ptr<soci::session>, JobQueue&, ServiceRegistry&);
 
 }  // namespace xrpl
 

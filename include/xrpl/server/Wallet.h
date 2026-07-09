@@ -1,8 +1,20 @@
 #pragma once
 
+#include <xrpl/basics/UnorderedContainers.h>
+#include <xrpl/basics/base_uint.h>
+#include <xrpl/beast/hash/uhash.h>
+#include <xrpl/beast/utility/Journal.h>
 #include <xrpl/core/PeerReservationTable.h>
+#include <xrpl/protocol/PublicKey.h>
+#include <xrpl/protocol/SecretKey.h>
 #include <xrpl/rdb/DatabaseCon.h>
 #include <xrpl/server/Manifest.h>
+
+#include <functional>
+#include <memory>
+#include <string>
+#include <unordered_set>
+#include <utility>
 
 namespace xrpl {
 
@@ -31,14 +43,14 @@ makeTestWalletDB(DatabaseCon::Setup const& setup, std::string const& dbname, bea
  * @param session Session with the database.
  * @param dbTable Name of the database table from which the manifest will be
  *        extracted.
- * @param mCache Cache for storing the manifest.
+ * @param cache_ Cache for storing the manifest.
  * @param j Journal.
  */
 void
 getManifests(
     soci::session& session,
     std::string const& dbTable,
-    ManifestCache& mCache,
+    ManifestCache& cache,
     beast::Journal j);
 
 /**
@@ -89,7 +101,7 @@ getNodeIdentity(soci::session& session);
  * @param j Journal.
  * @return Peer reservation hash table.
  */
-std::unordered_set<PeerReservation, beast::uhash<>, KeyEqual>
+std::unordered_set<PeerReservation, beast::Uhash<>, KeyEqual>
 getPeerReservationTable(soci::session& session, beast::Journal j);
 
 /**
@@ -123,7 +135,7 @@ createFeatureVotes(soci::session& session);
 
 // For historical reasons the up-vote and down-vote integer representations
 // are unintuitive.
-enum class AmendmentVote : int { obsolete = -1, up = 0, down = 1 };
+enum class AmendmentVote : int { Obsolete = -1, Up = 0, Down = 1 };
 
 /**
  * @brief readAmendments Reads all amendments from the FeatureVotes table.
@@ -135,8 +147,8 @@ void
 readAmendments(
     soci::session& session,
     std::function<void(
-        boost::optional<std::string> amendment_hash,
-        boost::optional<std::string> amendment_name,
+        boost::optional<std::string> amendmentHash,
+        boost::optional<std::string> amendmentName,
         boost::optional<AmendmentVote> vote)> const& callback);
 
 /**

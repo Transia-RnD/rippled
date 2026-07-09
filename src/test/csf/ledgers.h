@@ -2,22 +2,25 @@
 
 #include <test/csf/Tx.h>
 
-#include <xrpld/consensus/LedgerTiming.h>
-
-#include <xrpl/basics/UnorderedContainers.h>
 #include <xrpl/basics/chrono.h>
-#include <xrpl/basics/comparators.h>
 #include <xrpl/basics/tagged_integer.h>
 #include <xrpl/json/json_value.h>
+#include <xrpl/ledger/LedgerTiming.h>
 
 #include <boost/bimap/bimap.hpp>
 
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <functional>
 #include <optional>
 #include <set>
+#include <string>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
 
-namespace xrpl {
-namespace test {
-namespace csf {
+namespace xrpl::test::csf {
 
 /** A ledger is a set of observed transactions and a sequence number
     identifying the ledger.
@@ -46,10 +49,10 @@ class Ledger
 
 public:
     struct SeqTag;
-    using Seq = tagged_integer<std::uint32_t, SeqTag>;
+    using Seq = TaggedInteger<std::uint32_t, SeqTag>;
 
     struct IdTag;
-    using ID = tagged_integer<std::uint32_t, IdTag>;
+    using ID = TaggedInteger<std::uint32_t, IdTag>;
 
     struct MakeGenesis
     {
@@ -60,9 +63,7 @@ private:
     // ID by the oracle
     struct Instance
     {
-        Instance()
-        {
-        }
+        Instance() = default;
 
         // Sequence number
         Seq seq{0};
@@ -71,7 +72,7 @@ private:
         TxSetType txs;
 
         // Resolution used to determine close time
-        NetClock::duration closeTimeResolution = ledgerDefaultTimeResolution;
+        NetClock::duration closeTimeResolution = kLedgerDefaultTimeResolution;
 
         //! When the ledger closed (up to closeTimeResolution)
         NetClock::time_point closeTime;
@@ -90,7 +91,7 @@ private:
         //! of the operators below.
         std::vector<Ledger::ID> ancestors;
 
-        auto
+        [[nodiscard]] auto
         asTie() const
         {
             return std::tie(
@@ -123,7 +124,9 @@ private:
 
         template <class Hasher>
         friend void
-        hash_append(Hasher& h, Ledger::Instance const& instance)
+        hash_append(
+            Hasher& h,
+            Ledger::Instance const& instance)  // NOLINT(readability-identifier-naming)
         {
             using beast::hash_append;
             hash_append(h, instance.asTie());
@@ -131,14 +134,14 @@ private:
     };
 
     // Single common genesis instance
-    static Instance const genesis;
+    static Instance const kGenesis;
 
     Ledger(ID id, Instance const* i) : id_{id}, instance_{i}
     {
     }
 
 public:
-    Ledger(MakeGenesis) : instance_(&genesis)
+    Ledger(MakeGenesis) : instance_(&kGenesis)
     {
     }
 
@@ -148,56 +151,56 @@ public:
     {
     }
 
-    ID
+    [[nodiscard]] ID
     id() const
     {
         return id_;
     }
 
-    Seq
+    [[nodiscard]] Seq
     seq() const
     {
         return instance_->seq;
     }
 
-    NetClock::duration
+    [[nodiscard]] NetClock::duration
     closeTimeResolution() const
     {
         return instance_->closeTimeResolution;
     }
 
-    bool
+    [[nodiscard]] bool
     closeAgree() const
     {
         return instance_->closeTimeAgree;
     }
 
-    NetClock::time_point
+    [[nodiscard]] NetClock::time_point
     closeTime() const
     {
         return instance_->closeTime;
     }
 
-    NetClock::time_point
+    [[nodiscard]] NetClock::time_point
     parentCloseTime() const
     {
         return instance_->parentCloseTime;
     }
 
-    ID
+    [[nodiscard]] ID
     parentID() const
     {
         return instance_->parentID;
     }
 
-    TxSetType const&
+    [[nodiscard]] TxSetType const&
     txs() const
     {
         return instance_->txs;
     }
 
     /** Determine whether ancestor is really an ancestor of this ledger */
-    bool
+    [[nodiscard]] bool
     isAncestor(Ledger const& ancestor) const;
 
     /** Return the id of the ancestor with the given seq (if exists/known)
@@ -210,7 +213,7 @@ public:
     friend Ledger::Seq
     mismatch(Ledger const& a, Ledger const& o);
 
-    Json::Value
+    [[nodiscard]] json::Value
     getJson() const;
 
     friend bool
@@ -229,22 +232,22 @@ private:
 class LedgerOracle
 {
     using InstanceMap = boost::bimaps::bimap<
-        boost::bimaps::set_of<Ledger::Instance, xrpl::less<Ledger::Instance>>,
-        boost::bimaps::set_of<Ledger::ID, xrpl::less<Ledger::ID>>>;
+        boost::bimaps::set_of<Ledger::Instance, std::less<>>,
+        boost::bimaps::set_of<Ledger::ID, std::less<>>>;
     using InstanceEntry = InstanceMap::value_type;
 
     // Set of all known ledgers; note this is never pruned
     InstanceMap instances_;
 
     // ID for the next unique ledger
-    Ledger::ID
+    [[nodiscard]] Ledger::ID
     nextID() const;
 
 public:
     LedgerOracle();
 
     /** Find the ledger with the given ID */
-    std::optional<Ledger>
+    [[nodiscard]] std::optional<Ledger>
     lookup(Ledger::ID const& id) const;
 
     /** Accept the given txs and generate a new ledger
@@ -278,8 +281,8 @@ public:
         O
           \--> B
     */
-    std::size_t
-    branches(std::set<Ledger> const& ledgers) const;
+    static std::size_t
+    branches(std::set<Ledger> const& ledgers);
 };
 
 /** Helper for writing unit tests with controlled ledger histories.
@@ -333,6 +336,4 @@ struct LedgerHistoryHelper
     }
 };
 
-}  // namespace csf
-}  // namespace test
-}  // namespace xrpl
+}  // namespace xrpl::test::csf

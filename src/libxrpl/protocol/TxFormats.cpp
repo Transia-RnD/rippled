@@ -1,36 +1,42 @@
+#include <xrpl/protocol/TxFormats.h>
+
+#include <xrpl/protocol/Feature.h>  // IWYU pragma: keep
 #include <xrpl/protocol/SField.h>
 #include <xrpl/protocol/SOTemplate.h>
-#include <xrpl/protocol/TxFormats.h>
-#include <xrpl/protocol/jss.h>
+#include <xrpl/protocol/jss.h>  // IWYU pragma: keep
 
-#include <initializer_list>
+#include <vector>
 
 namespace xrpl {
 
+std::vector<SOElement> const&
+TxFormats::getCommonFields()
+{
+    static auto const kCommonFields = std::vector<SOElement>{
+        {sfTransactionType, SoeRequired},
+        {sfFlags, SoeOptional},
+        {sfSourceTag, SoeOptional},
+        {sfAccount, SoeRequired},
+        {sfSequence, SoeRequired},
+        {sfPreviousTxnID, SoeOptional},  // emulate027
+        {sfLastLedgerSequence, SoeOptional},
+        {sfAccountTxnID, SoeOptional},
+        {sfFee, SoeRequired},
+        {sfOperationLimit, SoeOptional},
+        {sfMemos, SoeOptional},
+        {sfSigningPubKey, SoeRequired},
+        {sfTicketSequence, SoeOptional},
+        {sfTxnSignature, SoeOptional},
+        {sfSigners, SoeOptional},  // submit_multisigned
+        {sfNetworkID, SoeOptional},
+        {sfDelegate, SoeOptional},
+        {sfPasskeySignature, SoeOptional},
+    };
+    return kCommonFields;
+}
+
 TxFormats::TxFormats()
 {
-    // Fields shared by all txFormats:
-    static std::initializer_list<SOElement> const commonFields{
-        {sfTransactionType, soeREQUIRED},
-        {sfFlags, soeOPTIONAL},
-        {sfSourceTag, soeOPTIONAL},
-        {sfAccount, soeREQUIRED},
-        {sfSequence, soeREQUIRED},
-        {sfPreviousTxnID, soeOPTIONAL},  // emulate027
-        {sfLastLedgerSequence, soeOPTIONAL},
-        {sfAccountTxnID, soeOPTIONAL},
-        {sfFee, soeREQUIRED},
-        {sfOperationLimit, soeOPTIONAL},
-        {sfMemos, soeOPTIONAL},
-        {sfSigningPubKey, soeREQUIRED},
-        {sfTicketSequence, soeOPTIONAL},
-        {sfTxnSignature, soeOPTIONAL},
-        {sfSigners, soeOPTIONAL},  // submit_multisigned
-        {sfNetworkID, soeOPTIONAL},
-        {sfDelegate, soeOPTIONAL},
-        {sfPasskeySignature, soeOPTIONAL},
-    };
-
 #pragma push_macro("UNWRAP")
 #undef UNWRAP
 #pragma push_macro("TRANSACTION")
@@ -38,7 +44,7 @@ TxFormats::TxFormats()
 
 #define UNWRAP(...) __VA_ARGS__
 #define TRANSACTION(tag, value, name, delegable, amendment, privileges, fields) \
-    add(jss::name, tag, UNWRAP fields, commonFields);
+    add(jss::name, tag, UNWRAP fields, getCommonFields());
 
 #include <xrpl/protocol/detail/transactions.macro>
 
@@ -51,8 +57,8 @@ TxFormats::TxFormats()
 TxFormats const&
 TxFormats::getInstance()
 {
-    static TxFormats const instance;
-    return instance;
+    static TxFormats const kInstance;
+    return kInstance;
 }
 
 }  // namespace xrpl

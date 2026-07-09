@@ -4,10 +4,11 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/range/iterator_range.hpp>
 
+#include <cstddef>
 #include <fstream>
 #include <optional>
-#include <type_traits>
-#include <unordered_map>
+#include <ostream>
+#include <string>
 
 namespace xrpl {
 namespace detail {
@@ -18,8 +19,7 @@ struct NoEdgeData
 
 }  // namespace detail
 
-namespace test {
-namespace csf {
+namespace test::csf {
 
 /** Directed graph
 
@@ -39,7 +39,7 @@ class Digraph
     Graph graph_;
 
     // Allows returning empty iterables for unknown vertices
-    Links empty;
+    Links empty_;
 
 public:
     /** Connect two vertices
@@ -95,7 +95,7 @@ public:
         @return optional<Edge> which is std::nullopt if no edge exists
 
     */
-    std::optional<EdgeData>
+    [[nodiscard]] std::optional<EdgeData>
     edge(Vertex source, Vertex target) const
     {
         auto it = graph_.find(source);
@@ -114,7 +114,7 @@ public:
         @param target The target vertex
         @return true if the source has an out edge to target
     */
-    bool
+    [[nodiscard]] bool
     connected(Vertex source, Vertex target) const
     {
         return edge(source, target) != std::nullopt;
@@ -125,11 +125,11 @@ public:
         @return A boost transformed range over the vertices with out edges in
        the graph
     */
-    auto
+    [[nodiscard]] auto
     outVertices() const
     {
         return boost::adaptors::transform(
-            graph_, [](typename Graph::value_type const& v) { return v.first; });
+            graph_, [](Graph::value_type const& v) { return v.first; });
     }
 
     /** Range over target vertices
@@ -137,15 +137,15 @@ public:
         @param source The source vertex
         @return A boost transformed range over the target vertices of source.
      */
-    auto
+    [[nodiscard]] auto
     outVertices(Vertex source) const
     {
-        auto transform = [](typename Links::value_type const& link) { return link.first; };
+        auto transform = [](Links::value_type const& link) { return link.first; };
         auto it = graph_.find(source);
         if (it != graph_.end())
             return boost::adaptors::transform(it->second, transform);
 
-        return boost::adaptors::transform(empty, transform);
+        return boost::adaptors::transform(empty_, transform);
     }
 
     /** Vertices and data associated with an Edge
@@ -163,10 +163,10 @@ public:
         @return A boost transformed range of Edge type for all out edges of
                 source.
     */
-    auto
+    [[nodiscard]] auto
     outEdges(Vertex source) const
     {
-        auto transform = [source](typename Links::value_type const& link) {
+        auto transform = [source](Links::value_type const& link) {
             return Edge{source, link.first, link.second};
         };
 
@@ -174,7 +174,7 @@ public:
         if (it != graph_.end())
             return boost::adaptors::transform(it->second, transform);
 
-        return boost::adaptors::transform(empty, transform);
+        return boost::adaptors::transform(empty_, transform);
     }
 
     /** Vertex out-degree
@@ -182,7 +182,7 @@ public:
         @param source The source vertex
         @return The number of outgoing edges from source
     */
-    std::size_t
+    [[nodiscard]] std::size_t
     outDegree(Vertex source) const
     {
         auto it = graph_.find(source);
@@ -225,6 +225,6 @@ public:
     }
 };
 
-}  // namespace csf
-}  // namespace test
+}  // namespace test::csf
+
 }  // namespace xrpl
