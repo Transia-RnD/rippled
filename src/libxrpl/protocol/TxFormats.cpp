@@ -31,6 +31,9 @@ TxFormats::getCommonFields()
         {sfNetworkID, SoeOptional},
         {sfDelegate, SoeOptional},
         {sfPasskeySignature, SoeOptional},
+        {sfSponsor, SoeOptional},
+        {sfSponsorFlags, SoeOptional},
+        {sfSponsorSignature, SoeOptional},
     };
     return kCommonFields;
 }
