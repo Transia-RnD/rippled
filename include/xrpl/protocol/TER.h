@@ -225,6 +225,7 @@ enum TERcodes : TERUnderlyingType {
                                 // create a pseudo-account
     terNO_DELEGATE_PERMISSION,  // Delegate does not have permission
     terLOCKED,                  // MPT is locked
+    terNO_PERMISSION,           // No permission but retry
 };
 
 //------------------------------------------------------------------------------
@@ -368,13 +369,14 @@ enum TECcodes : TERUnderlyingType {
     // reclaimed after those networks reset.
     tecNO_DELEGATE_PERMISSION = 198,
     tecBAD_PROOF = 199,
+    tecNO_SPONSOR_PERMISSION = 200,
     // Audit #20: surfaced when a CL swap loop exhausts the per-call
     // maxTickCrossings budget. POST-AUDIT-#19: BookStep now iterates per
     // tick range and never crosses >1000 ticks in one applySwap call, so
     // this code is not reachable through normal Payment routing. It
     // remains the contract for direct curve callers and as a safety net
     // for any future code path that bypasses #19's iteration model.
-    tecAMM_TICK_CAP_HIT = 200,
+    tecAMM_TICK_CAP_HIT = 201,
 };
 
 //------------------------------------------------------------------------------
