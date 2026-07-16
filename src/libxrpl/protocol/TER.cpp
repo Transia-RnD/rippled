@@ -108,6 +108,7 @@ transResults()
         MAKE_ERROR(tecPRECISION_LOSS,                "The amounts used by the transaction cannot interact."),
         MAKE_ERROR(tecBAD_PROOF,                     "Proof cannot be verified"),
         MAKE_ERROR(tecNO_SPONSOR_PERMISSION,         "Sponsor has not authorized this transaction."),
+        MAKE_ERROR(tecWOULD_CROSS,                   "Post-only offer would cross."),
 
         MAKE_ERROR(tefALREADY,                     "The exact transaction was already in this ledger."),
         MAKE_ERROR(tefBAD_ADD_AUTH,                "Not authorized to add account."),
