@@ -130,7 +130,7 @@ SubscriptionSet::preclaim(PreclaimContext const& ctx)
 {
     STAmount const amount = ctx.tx.getFieldAmount(sfAmount);
     AccountID const account = ctx.tx.getAccountID(sfAccount);
-    AccountID const dest = ctx.tx.getAccountID(sfDestination);
+    AccountID dest = ctx.tx.getAccountID(sfDestination);
     if (ctx.tx.isFieldPresent(sfSubscriptionID))
     {
         // update
@@ -147,6 +147,15 @@ SubscriptionSet::preclaim(PreclaimContext const& ctx)
                                    "owner of the subscription.";
             return tecNO_PERMISSION;
         }
+
+        if (amount.asset() != sle->getFieldAmount(sfAmount).asset())
+        {
+            JLOG(ctx.j.trace()) << "SubscriptionSet: Amount asset does not "
+                                   "match the subscription asset.";
+            return tecWRONG_ASSET;
+        }
+
+        dest = sle->getAccountID(sfDestination);
     }
     else
     {
@@ -236,6 +245,7 @@ SubscriptionSet::doApply()
         auto sle = std::make_shared<SLE>(subKeylet);
         sle->setAccountID(sfAccount, account);
         sle->setAccountID(sfDestination, dest);
+        sle->setFieldU32(sfSequence, ctx_.tx.getSeqValue());
         if (ctx_.tx.isFieldPresent(sfDestinationTag))
             sle->setFieldU32(sfDestinationTag, ctx_.tx.getFieldU32(sfDestinationTag));
         sle->setFieldAmount(sfAmount, ctx_.tx.getFieldAmount(sfAmount));

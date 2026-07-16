@@ -2,6 +2,7 @@
 
 #include <xrpl/basics/Log.h>
 #include <xrpl/ledger/Sandbox.h>
+#include <xrpl/ledger/View.h>
 #include <xrpl/ledger/helpers/AccountRootHelpers.h>
 #include <xrpl/protocol/AccountID.h>
 #include <xrpl/protocol/Indexes.h>
@@ -29,6 +30,20 @@ SubscriptionCancel::preclaim(PreclaimContext const& ctx)
     {
         JLOG(ctx.j.debug()) << "SubscriptionCancel: Subscription does not exist.";
         return tecNO_ENTRY;
+    }
+
+    // The owner or the destination may cancel at any time; anyone may cancel
+    // once the subscription has expired.
+    if (!hasExpired(ctx.view, (*sleSub)[~sfExpiration]))
+    {
+        AccountID const account = ctx.tx.getAccountID(sfAccount);
+        if (account != sleSub->getAccountID(sfAccount) &&
+            account != sleSub->getAccountID(sfDestination))
+        {
+            JLOG(ctx.j.debug()) << "SubscriptionCancel: Account is not the owner "
+                                   "or destination of the subscription.";
+            return tecNO_PERMISSION;
+        }
     }
 
     return tesSUCCESS;

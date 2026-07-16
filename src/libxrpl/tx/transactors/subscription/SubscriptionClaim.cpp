@@ -128,6 +128,14 @@ SubscriptionClaim::preclaim(PreclaimContext const& ctx)
         }
     }
 
+    // An expired subscription can no longer be claimed; it can only be
+    // cancelled.
+    if (hasExpired(ctx.view, (*sleSub)[~sfExpiration]))
+    {
+        JLOG(ctx.j.trace()) << "SubscriptionClaim: The subscription has expired.";
+        return tecEXPIRED;
+    }
+
     // Must be at or past the start of the effective period.
     if (!hasExpired(ctx.view, sleSub->getFieldU32(sfNextClaimTime)))
     {
@@ -254,13 +262,6 @@ SubscriptionClaim::doApply()
     }
 
     psb.update(sleSub);
-
-    if (sleSub->isFieldPresent(sfExpiration) &&
-        psb.header().parentCloseTime.time_since_epoch().count() >=
-            sleSub->getFieldU32(sfExpiration))
-    {
-        psb.erase(sleSub);
-    }
 
     psb.apply(ctx_.rawView());
     return tesSUCCESS;
