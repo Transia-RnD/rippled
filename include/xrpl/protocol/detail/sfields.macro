@@ -114,6 +114,9 @@ TYPED_SFIELD(sfLateInterestRate,         UINT32,    66) // 1/10 basis points (bi
 TYPED_SFIELD(sfCloseInterestRate,        UINT32,    67) // 1/10 basis points (bips)
 TYPED_SFIELD(sfOverpaymentInterestRate,  UINT32,    68) // 1/10 basis points (bips)
 TYPED_SFIELD(sfConfidentialBalanceVersion, UINT32,  69)
+TYPED_SFIELD(sfFrequency,                UINT32,    70)
+TYPED_SFIELD(sfStartTime,                UINT32,    71)
+TYPED_SFIELD(sfNextClaimTime,            UINT32,    72)
 
 // 64-bit integers (common)
 TYPED_SFIELD(sfIndexNext,                UINT64,     1)
@@ -209,6 +212,7 @@ TYPED_SFIELD(sfLoanBrokerID,             UINT256,   37,
 TYPED_SFIELD(sfLoanID,                   UINT256,   38)
 TYPED_SFIELD(sfReferenceHolding,         UINT256,   39)
 TYPED_SFIELD(sfBlindingFactor,           UINT256,   40)
+TYPED_SFIELD(sfSubscriptionID,           UINT256,   41)
 
 // number (common)
 TYPED_SFIELD(sfNumber,                   NUMBER,     1)
