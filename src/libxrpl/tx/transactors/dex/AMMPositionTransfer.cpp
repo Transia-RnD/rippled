@@ -100,7 +100,7 @@ AMMPositionTransfer::doApply()
     {
         auto const ownerCount = sleDst->getFieldU32(sfOwnerCount);
         auto const newReserve =
-            sb.fees().accountReserve(static_cast<std::size_t>(ownerCount) + 1);
+            sb.fees().accountReserve(static_cast<std::uint32_t>(ownerCount) + 1, 1);
         auto const dstBalance = sleDst->getFieldAmount(sfBalance).xrp();
         if (dstBalance < newReserve)
             return tecINSUFFICIENT_RESERVE;
@@ -128,8 +128,8 @@ AMMPositionTransfer::doApply()
     sb.update(posSle);
 
     // Owner count adjustments. Reserve was already validated above.
-    adjustOwnerCount(sb, sb.peek(keylet::account(src)), -1, ctx_.journal);
-    adjustOwnerCount(sb, sleDst, +1, ctx_.journal);
+    decreaseOwnerCount(sb, src, std::nullopt, 1, ctx_.journal);
+    increaseOwnerCount(sb, sleDst, SLE::pointer(), 1, ctx_.journal);
 
     sb.apply(ctx_.rawView());
     return tesSUCCESS;

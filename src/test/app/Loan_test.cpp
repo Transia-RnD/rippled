@@ -324,7 +324,8 @@ protected:
         TenthBips32 const interestRate{};
     };
 
-    /** Helper class to compare the expected state of a loan and loan broker
+    /**
+     * Helper class to compare the expected state of a loan and loan broker
      * against the data in the ledger.
      */
     struct VerifyLoanStatus
@@ -344,7 +345,8 @@ protected:
         {
         }
 
-        /** Checks the expected broker state against the ledger
+        /**
+         * Checks the expected broker state against the ledger
          */
         void
         checkBroker(
@@ -415,7 +417,9 @@ protected:
             }
         }
 
-        /** Checks both the loan and broker expect states against the ledger */
+        /**
+         * Checks both the loan and broker expect states against the ledger
+         */
         void
         operator()(
             std::uint32_t previousPaymentDate,
@@ -442,7 +446,7 @@ protected:
                 env.test.BEAST_EXPECT(loan->at(sfPeriodicPayment) == periodicPayment);
                 env.test.BEAST_EXPECT(loan->at(sfFlags) == flags);
 
-                auto const ls = constructRoundedLoanState(loan);
+                auto const ls = constructLoanState(loan);
 
                 auto const interestRate = TenthBips32{loan->at(sfInterestRate)};
                 auto const paymentInterval = loan->at(sfPaymentInterval);
@@ -475,7 +479,9 @@ protected:
             }
         }
 
-        /** Checks both the loan and broker expect states against the ledger */
+        /**
+         * Checks both the loan and broker expect states against the ledger
+         */
         void
         operator()(LoanState const& state) const
         {
@@ -541,7 +547,9 @@ protected:
         return {asset, keylet, vaultKeylet, params};
     }
 
-    /// Get the state without checking anything
+    /**
+     * Get the state without checking anything
+     */
     LoanState
     getCurrentState(jtx::Env const& env, BrokerInfo const& broker, Keylet const& loanKeylet)
     {
@@ -569,8 +577,10 @@ protected:
         return LoanState{};
     }
 
-    /// Get the state and check the values against the parameters used in
-    /// `lifecycle`
+    /**
+     * Get the state and check the values against the parameters used in
+     * `lifecycle`
+     */
     LoanState
     getCurrentState(
         jtx::Env const& env,
@@ -1109,7 +1119,7 @@ protected:
                     // No reason for this not to exist
                     return;
                 }
-                auto const current = constructRoundedLoanState(loanSle);
+                auto const current = constructLoanState(loanSle);
                 auto const errors = nextTrueState - current;
                 log << currencyLabel << " Loan balances: "
                     << "\n\tAmount taken: " << paymentComponents.trackedValueDelta
@@ -1242,7 +1252,8 @@ protected:
             PaymentParameters{.showStepBalances = true});
     }
 
-    /** Runs through the complete lifecycle of a loan
+    /**
+     * Runs through the complete lifecycle of a loan
      *
      * 1. Create a loan.
      * 2. Test a bunch of transaction failure conditions.
@@ -1560,7 +1571,8 @@ protected:
         return "Unknown";
     }
 
-    /** Wrapper to run a series of lifecycle tests for a given asset and loan
+    /**
+     * Wrapper to run a series of lifecycle tests for a given asset and loan
      * amount
      *
      * Will be used in the future to vary the loan parameters. For now, it is
@@ -6044,7 +6056,7 @@ protected:
             auto const loanSle = env.le(loanKeylet);
             if (!BEAST_EXPECT(loanSle))
                 return;
-            auto const state = constructRoundedLoanState(loanSle);
+            auto const state = constructLoanState(loanSle);
 
             log << "Loan state:" << std::endl;
             log << "  ValueOutstanding: " << state.valueOutstanding << std::endl;

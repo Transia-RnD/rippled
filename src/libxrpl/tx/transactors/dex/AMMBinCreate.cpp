@@ -107,7 +107,7 @@ AMMBinCreate::doApply()
         static_cast<std::int64_t>(binID) -
         static_cast<std::int64_t>(minBinID) + 1);
     auto const maybeMpt = MPTokenIssuanceCreate::create(
-        sb,
+        ApplyViewContext{sb, ctx_.tx},
         ctx_.journal,
         {
             .priorBalance = std::nullopt,

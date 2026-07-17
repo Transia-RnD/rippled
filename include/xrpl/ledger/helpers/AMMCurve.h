@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <xrpl/basics/Expected.h>
+#include <expected>
 #include <xrpl/basics/Number.h>
 #include <xrpl/ledger/helpers/AMMHelpers.h>
 #include <xrpl/protocol/AMMCore.h>
@@ -41,7 +41,7 @@ class CurveInterface
 public:
     virtual ~CurveInterface() = default;
 
-    virtual Expected<STAmount, TER>
+    virtual std::expected<STAmount, TER>
     swapIn(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -50,7 +50,7 @@ public:
         STObject const* ammSle,
         CurveContext const& ctx = {}) const = 0;
 
-    virtual Expected<STAmount, TER>
+    virtual std::expected<STAmount, TER>
     swapOut(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -59,7 +59,7 @@ public:
         STObject const* ammSle,
         CurveContext const& ctx = {}) const = 0;
 
-    virtual Expected<Number, TER>
+    virtual std::expected<Number, TER>
     spotPrice(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -70,7 +70,7 @@ public:
     [[nodiscard]] virtual TER
     validateParams(STObject const& tx) const = 0;
 
-    virtual Expected<STAmount, TER>
+    virtual std::expected<STAmount, TER>
     initialLPTokens(
         STAmount const& asset1,
         STAmount const& asset2,

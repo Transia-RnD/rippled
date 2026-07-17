@@ -531,7 +531,7 @@ TRANSACTION(ttAMM_DELETE, 40, AMMDelete,
 #if TRANSACTION_INCLUDE
 #   include <xrpl/tx/transactors/dex/AMMCollectFees.h>
 #endif
-TRANSACTION(ttAMM_COLLECT_FEES, 90, AMMCollectFees,
+TRANSACTION(ttAMM_COLLECT_FEES, 94, AMMCollectFees,
     Delegation::Delegable,
     featureAMMCurves,
     NoPriv,
@@ -547,7 +547,7 @@ TRANSACTION(ttAMM_COLLECT_FEES, 90, AMMCollectFees,
 #if TRANSACTION_INCLUDE
 #   include <xrpl/tx/transactors/dex/AMMPositionTransfer.h>
 #endif
-TRANSACTION(ttAMM_POSITION_TRANSFER, 91, AMMPositionTransfer,
+TRANSACTION(ttAMM_POSITION_TRANSFER, 95, AMMPositionTransfer,
     Delegation::Delegable,
     featureAMMCurves,
     NoPriv,

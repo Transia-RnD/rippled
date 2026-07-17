@@ -279,7 +279,7 @@ AMMClawback::applyGuts(Sandbox& sb)
         {
             auto binSle = sb.peek(keylet::ammBin(ammID, s.binID));
             auto mptokenSle = sb.peek(keylet::mptoken(s.mptIssuanceID, holder));
-            auto issSle = sb.peek(keylet::mptIssuance(s.mptIssuanceID));
+            auto issSle = sb.peek(keylet::mptokenIssuance(s.mptIssuanceID));
             if (!binSle || !mptokenSle || !issSle)
                 return tecINTERNAL;
 
@@ -319,7 +319,7 @@ AMMClawback::applyGuts(Sandbox& sb)
             {
                 if (auto const ter = accountSend(
                         sb, ammAccount, issuer, drainClaw, ctx_.journal,
-                        WaiveTransferFee::Yes);
+                        {}, WaiveTransferFee::Yes);
                     !isTesSuccess(ter))
                     return ter;
             }
@@ -327,7 +327,7 @@ AMMClawback::applyGuts(Sandbox& sb)
             {
                 if (auto const ter = accountSend(
                         sb, ammAccount, holder, drainPair, ctx_.journal,
-                        WaiveTransferFee::Yes);
+                        {}, WaiveTransferFee::Yes);
                     !isTesSuccess(ter))
                     return ter;
             }

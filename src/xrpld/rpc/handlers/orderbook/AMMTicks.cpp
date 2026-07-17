@@ -2,7 +2,7 @@
 #include <xrpld/rpc/Context.h>
 #include <xrpld/rpc/detail/RPCLedgerHelpers.h>
 
-#include <xrpl/basics/Expected.h>
+#include <expected>
 #include <xrpl/basics/Log.h>
 #include <xrpl/basics/Number.h>
 #include <xrpl/basics/base_uint.h>
@@ -27,7 +27,7 @@
 namespace xrpl {
 
 // Defined in AMMInfo.cpp
-Expected<Asset, ErrorCodeI>
+std::expected<Asset, ErrorCodeI>
 getAsset(json::Value const& v, beast::Journal j);
 
 namespace {

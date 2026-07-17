@@ -98,7 +98,7 @@ AMMBinDestroy::preclaim(PreclaimContext const& ctx)
     if (binSle->isFieldPresent(sfMPTokenIssuanceID))
     {
         auto const mptId = binSle->getFieldH192(sfMPTokenIssuanceID);
-        auto const iss = ctx.view.read(keylet::mptIssuance(mptId));
+        auto const iss = ctx.view.read(keylet::mptokenIssuance(mptId));
         if (iss && iss->getFieldU64(sfOutstandingAmount) != 0)
             return tecAMM_FAILED;
     }
@@ -128,7 +128,7 @@ AMMBinDestroy::doApply()
     if (binSle->isFieldPresent(sfMPTokenIssuanceID))
     {
         auto const mptId = binSle->getFieldH192(sfMPTokenIssuanceID);
-        auto issSle = sb.peek(keylet::mptIssuance(mptId));
+        auto issSle = sb.peek(keylet::mptokenIssuance(mptId));
         if (issSle)
         {
             if (issSle->getFieldU64(sfOutstandingAmount) != 0)

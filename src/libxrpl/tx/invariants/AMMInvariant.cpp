@@ -711,7 +711,7 @@ ValidAMM::finalizeBinnedConsistency(
         if (sle->isFieldPresent(sfMPTokenIssuanceID))
         {
             auto const mptId = sle->getFieldH192(sfMPTokenIssuanceID);
-            auto const iss = view.read(keylet::mptIssuance(mptId));
+            auto const iss = view.read(keylet::mptokenIssuance(mptId));
             if (iss)
             {
                 auto const binOut = sle->getFieldU64(sfOutstandingAmount);

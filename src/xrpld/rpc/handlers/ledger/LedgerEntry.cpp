@@ -142,7 +142,7 @@ parseAMM(
     return keylet::amm(*asset, *asset2, ct).key;
 }
 
-static Expected<uint256, json::Value>
+static std::expected<uint256, json::Value>
 parseAMMPosition(
     json::Value const& params,
     json::StaticString const fieldName,
@@ -151,7 +151,7 @@ parseAMMPosition(
     return parseObjectID(params, fieldName, "hex string");
 }
 
-static Expected<uint256, json::Value>
+static std::expected<uint256, json::Value>
 parseAMMTick(
     json::Value const& params,
     json::StaticString const fieldName,
@@ -160,7 +160,7 @@ parseAMMTick(
     return parseObjectID(params, fieldName, "hex string");
 }
 
-static Expected<uint256, json::Value>
+static std::expected<uint256, json::Value>
 parseAMMTickBitmap(
     json::Value const& params,
     json::StaticString const fieldName,
@@ -169,7 +169,7 @@ parseAMMTickBitmap(
     return parseObjectID(params, fieldName, "hex string");
 }
 
-static Expected<uint256, json::Value>
+static std::expected<uint256, json::Value>
 parseAMMBin(
     json::Value const& params,
     json::StaticString const fieldName,
@@ -178,7 +178,7 @@ parseAMMBin(
     return parseObjectID(params, fieldName, "hex string");
 }
 
-static Expected<uint256, json::Value>
+static std::expected<uint256, json::Value>
 parseAMMBinHolding(
     json::Value const& params,
     json::StaticString const fieldName,

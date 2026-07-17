@@ -5,7 +5,7 @@
 
 #include <xrpl/ledger/helpers/AMMCurve.h>
 
-#include <xrpl/basics/Expected.h>
+#include <expected>
 #include <xrpl/basics/Number.h>
 #include <xrpl/basics/base_uint.h>
 
@@ -358,7 +358,7 @@ findNextTick(ReadView const& view, uint256 const& ammID, std::int32_t currentTic
 class ConstantProductCurve final : public CurveInterface
 {
 public:
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     swapIn(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -372,17 +372,17 @@ public:
         Number const denom = poolIn + Number(assetIn) * f;
 
         if (denom <= Number{0})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         Number const out = poolOut - num / denom;
         if (out <= Number{0})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         NumberRoundModeGuard const mg(Number::RoundingMode::Downward);
         return toSTAmount(poolOut.asset(), out);
     }
 
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     swapOut(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -395,17 +395,17 @@ public:
         Number const denom = poolOut - Number(assetOut);
 
         if (denom <= Number{0})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         Number const in = (poolIn * poolOut / denom - poolIn) / f;
         if (in <= Number{0})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         NumberRoundModeGuard const mg(Number::RoundingMode::Upward);
         return toSTAmount(poolIn.asset(), in);
     }
 
-    Expected<Number, TER>
+    std::expected<Number, TER>
     spotPrice(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -423,7 +423,7 @@ public:
         return tesSUCCESS;
     }
 
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     initialLPTokens(
         STAmount const& asset1,
         STAmount const& asset2,
@@ -531,7 +531,7 @@ class ConcentratedLiquidityCurve final : public CurveInterface
     }
 
 public:
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     swapIn(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -541,11 +541,11 @@ public:
         CurveContext const& cctx = {}) const override
     {
         if (ammSle == nullptr)
-            return Unexpected(tecINTERNAL);
+            return std::unexpected(tecINTERNAL);
 
         auto activeLiquidity = ammSle->getFieldU64(sfActiveLiquidity);
         if (activeLiquidity == 0)
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         auto const f = feeMult(tfee);
         bool const zeroForOne = poolIn.asset() < poolOut.asset();
@@ -560,7 +560,7 @@ public:
         {
             auto const [_, out] = singleRangeSwapIn(l, sqrtP, feeAdjustedIn, zeroForOne);
             if (out <= Number{0})
-                return Unexpected(tecAMM_FAILED);
+                return std::unexpected(tecAMM_FAILED);
             NumberRoundModeGuard const mg(Number::RoundingMode::Downward);
             return toSTAmount(poolOut.asset(), out);
         }
@@ -619,13 +619,13 @@ public:
         }
 
         if (totalOut <= Number{0})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         NumberRoundModeGuard const mg(Number::RoundingMode::Downward);
         return toSTAmount(poolOut.asset(), totalOut);
     }
 
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     swapOut(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -635,11 +635,11 @@ public:
         CurveContext const& cctx = {}) const override
     {
         if (ammSle == nullptr)
-            return Unexpected(tecINTERNAL);
+            return std::unexpected(tecINTERNAL);
 
         auto activeLiquidity = ammSle->getFieldU64(sfActiveLiquidity);
         if (activeLiquidity == 0)
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         auto const f = feeMult(tfee);
         bool const zeroForOne = poolIn.asset() < poolOut.asset();
@@ -653,7 +653,7 @@ public:
         {
             auto const [_, in_] = singleRangeSwapOut(l, sqrtP, Number(assetOut), zeroForOne);
             if (in_ <= Number{0})
-                return Unexpected(tecAMM_FAILED);
+                return std::unexpected(tecAMM_FAILED);
             NumberRoundModeGuard const mg(Number::RoundingMode::Upward);
             return toSTAmount(poolIn.asset(), in_ / f);
         }
@@ -686,7 +686,7 @@ public:
             {
                 auto const [_, in_] = singleRangeSwapOut(l, sqrtP, remainingOut, zeroForOne);
                 if (in_ <= Number{0})
-                    return Unexpected(tecAMM_FAILED);
+                    return std::unexpected(tecAMM_FAILED);
                 totalIn = totalIn + in_;
                 remainingOut = Number{0};
                 break;
@@ -708,7 +708,7 @@ public:
         }
 
         if (totalIn <= Number{0})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         totalIn = totalIn / f;
 
@@ -716,7 +716,7 @@ public:
         return toSTAmount(poolIn.asset(), totalIn);
     }
 
-    Expected<Number, TER>
+    std::expected<Number, TER>
     spotPrice(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -725,7 +725,7 @@ public:
         CurveContext const& = {}) const override
     {
         if (ammSle == nullptr)
-            return Unexpected(tecINTERNAL);
+            return std::unexpected(tecINTERNAL);
 
         auto const tick = ammSle->getFieldI32(sfCurrentTick);
         Number const sqrtP = tickToSqrtPrice(tick);
@@ -749,7 +749,7 @@ public:
         return tesSUCCESS;
     }
 
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     initialLPTokens(
         STAmount const& asset1,
         STAmount const& asset2,
@@ -939,7 +939,7 @@ public:
 class StableSwapCurve final : public CurveInterface
 {
 public:
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     swapIn(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -949,7 +949,7 @@ public:
         CurveContext const& = {}) const override
     {
         if (ammSle == nullptr)
-            return Unexpected(tecINTERNAL);
+            return std::unexpected(tecINTERNAL);
 
         auto const a = Number(ammSle->getFieldU32(sfAmplification));
         auto const f = feeMult(tfee);
@@ -964,13 +964,13 @@ public:
         Number const dy = y - newY;
 
         if (dy <= Number{0} || dy >= y)
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         NumberRoundModeGuard const mg(Number::RoundingMode::Downward);
         return toSTAmount(poolOut.asset(), dy);
     }
 
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     swapOut(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -980,7 +980,7 @@ public:
         CurveContext const& = {}) const override
     {
         if (ammSle == nullptr)
-            return Unexpected(tecINTERNAL);
+            return std::unexpected(tecINTERNAL);
 
         auto const a = Number(ammSle->getFieldU32(sfAmplification));
         auto const f = feeMult(tfee);
@@ -990,20 +990,20 @@ public:
         Number const newY = y - Number(assetOut);
 
         if (newY <= Number{0})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         Number const d = computeD(x, y, a);
         Number const newX = computeY(newY, d, a);
         Number const dx = (newX - x) / f;
 
         if (dx <= Number{0})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         NumberRoundModeGuard const mg(Number::RoundingMode::Upward);
         return toSTAmount(poolIn.asset(), dx);
     }
 
-    Expected<Number, TER>
+    std::expected<Number, TER>
     spotPrice(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -1012,7 +1012,7 @@ public:
         CurveContext const& = {}) const override
     {
         if (ammSle == nullptr)
-            return Unexpected(tecINTERNAL);
+            return std::unexpected(tecINTERNAL);
 
         auto const a = Number(ammSle->getFieldU32(sfAmplification));
         Number const x = poolIn;
@@ -1041,7 +1041,7 @@ public:
         return tesSUCCESS;
     }
 
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     initialLPTokens(
         STAmount const& asset1,
         STAmount const& asset2,
@@ -1049,7 +1049,7 @@ public:
         STObject const* curveParams) const override
     {
         if (curveParams == nullptr)
-            return Unexpected(tecINTERNAL);
+            return std::unexpected(tecINTERNAL);
 
         auto const a = Number(curveParams->getFieldU32(sfAmplification));
         auto const d = computeD(Number(asset1), Number(asset2), a);
@@ -1315,7 +1315,7 @@ class BinnedCurve final : public CurveInterface
     }
 
 public:
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     swapIn(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -1325,7 +1325,7 @@ public:
         CurveContext const& ctx = {}) const override
     {
         if (ammSle == nullptr)
-            return Unexpected(tecINTERNAL);
+            return std::unexpected(tecINTERNAL);
 
         auto const binStep = ammSle->getFieldU16(sfBinStep);
         auto const activeBinID = ammSle->getFieldI32(sfActiveBinID);
@@ -1352,13 +1352,13 @@ public:
         }
 
         if (dy <= Number{0})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         NumberRoundModeGuard const mg(Number::RoundingMode::Downward);
         return toSTAmount(poolOut.asset(), dy);
     }
 
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     swapOut(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -1368,10 +1368,10 @@ public:
         CurveContext const& ctx = {}) const override
     {
         if (ammSle == nullptr)
-            return Unexpected(tecINTERNAL);
+            return std::unexpected(tecINTERNAL);
 
         if (Number{assetOut} > Number{poolOut})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         auto const binStep = ammSle->getFieldU16(sfBinStep);
         auto const activeBinID = ammSle->getFieldI32(sfActiveBinID);
@@ -1387,7 +1387,7 @@ public:
             // contract — if any output remains undelivered, the AMM
             // can't fulfil the swap.
             if (walk.totalDy < Number{assetOut})
-                return Unexpected(tecAMM_FAILED);
+                return std::unexpected(tecAMM_FAILED);
             dxPreFee = walk.totalDx;
         }
         else
@@ -1399,13 +1399,13 @@ public:
 
         Number const dx = dxPreFee / f;
         if (dx <= Number{0})
-            return Unexpected(tecAMM_FAILED);
+            return std::unexpected(tecAMM_FAILED);
 
         NumberRoundModeGuard const mg(Number::RoundingMode::Upward);
         return toSTAmount(poolIn.asset(), dx);
     }
 
-    Expected<Number, TER>
+    std::expected<Number, TER>
     spotPrice(
         STAmount const& poolIn,
         STAmount const& poolOut,
@@ -1414,7 +1414,7 @@ public:
         CurveContext const& = {}) const override
     {
         if (ammSle == nullptr)
-            return Unexpected(tecINTERNAL);
+            return std::unexpected(tecINTERNAL);
         auto const binStep = ammSle->getFieldU16(sfBinStep);
         auto const activeBinID = ammSle->getFieldI32(sfActiveBinID);
         Number const P = binPrice(binStep, activeBinID);
@@ -1437,7 +1437,7 @@ public:
         return temMALFORMED;
     }
 
-    Expected<STAmount, TER>
+    std::expected<STAmount, TER>
     initialLPTokens(
         STAmount const&,
         STAmount const&,
