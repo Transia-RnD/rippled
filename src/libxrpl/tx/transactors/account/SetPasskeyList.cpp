@@ -91,7 +91,7 @@ SetPasskeyList::doApply()
 
     (*sle)[sfOwnerNode] = *page;
 
-    adjustOwnerCount(ctx_.view(), sleAccount, 1, viewJ);
+    increaseOwnerCount(ctx_.view(), sleAccount, {}, 1, viewJ);
 
     ctx_.view().insert(sle);
     return tesSUCCESS;
