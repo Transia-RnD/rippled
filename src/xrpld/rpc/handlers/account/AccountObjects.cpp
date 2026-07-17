@@ -306,6 +306,7 @@ doAccountObjects(RPC::JsonContext& context)
             {.name = jss::permissioned_domain, .type = ltPERMISSIONED_DOMAIN},
             {.name = jss::vault, .type = ltVAULT},
             {.name = jss::sponsorship, .type = ltSPONSORSHIP},
+            {.name = jss::token_issuance, .type = ltTOKEN_ISSUANCE},
         };
 
         typeFilter.emplace();

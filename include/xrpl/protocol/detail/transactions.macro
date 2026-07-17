@@ -1194,6 +1194,62 @@ TRANSACTION(ttSPONSORSHIP_SET, 91, SponsorshipSet,
     {sfRemainingOwnerCount, SoeOptional},
 }))
 
+/** This transaction type creates a TokenIssuance object. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/token/TokenIssuanceCreate.h>
+#endif
+TRANSACTION(ttTOKEN_ISSUANCE_CREATE, 92, TokenIssuanceCreate,
+    Delegation::NotDelegable,
+    featureTokenIssuance,
+    CreateTokenIssuance,
+    ({
+    {sfCurrency, SoeRequired},
+    {sfMaximumAmount, SoeOptional},
+    {sfTokenScale, SoeOptional},
+    {sfMPTokenIssuanceID, SoeOptional},
+    {sfTransferFee, SoeOptional},
+    {sfMPTokenMetadata, SoeOptional},
+}))
+
+/** This transaction type modifies a TokenIssuance object. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/token/TokenIssuanceSet.h>
+#endif
+TRANSACTION(ttTOKEN_ISSUANCE_SET, 93, TokenIssuanceSet,
+    Delegation::NotDelegable,
+    featureTokenIssuance,
+    NoPriv,
+    ({
+    {sfCurrency, SoeRequired},
+    {sfMPTokenIssuanceID, SoeOptional},
+    {sfTransferFee, SoeOptional},
+    {sfMPTokenMetadata, SoeOptional},
+}))
+
+/** This transaction type destroys a TokenIssuance object. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/token/TokenIssuanceDestroy.h>
+#endif
+TRANSACTION(ttTOKEN_ISSUANCE_DESTROY, 94, TokenIssuanceDestroy,
+    Delegation::NotDelegable,
+    featureTokenIssuance,
+    DestroyTokenIssuance,
+    ({
+    {sfCurrency, SoeRequired},
+}))
+
+/** This transaction type converts between an IOU and its bound MPT. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/token/TokenConvert.h>
+#endif
+TRANSACTION(ttTOKEN_CONVERT, 95, TokenConvert,
+    Delegation::NotDelegable,
+    featureTokenIssuance,
+    NoPriv,
+    ({
+    {sfAmount, SoeRequired, SoeMptSupported},
+}))
+
 /** This system-generated transaction type is used to update the status of the various amendments.
 
     For details, see: https://xrpl.org/amendments.html

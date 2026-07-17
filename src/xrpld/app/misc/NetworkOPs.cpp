@@ -4476,7 +4476,8 @@ NetworkOPsImp::getBookPage(
     unsigned int uBookEntry = 0;
     STAmount saDirRate;
 
-    auto const rate = transferRate(view, book.out.getIssuer());
+    auto const rate = book.out.holds<Issue>() ? transferRate(view, book.out.get<Issue>())
+                                              : transferRate(view, book.out.getIssuer());
     auto viewJ = registry_.get().getJournal("View");
 
     while (!bDone && iLimit-- > 0)
@@ -4659,7 +4660,7 @@ NetworkOPsImp::getBookPage(
     MetaView lesActive(lpLedger, tapNONE, true);
     OrderBookIterator obIterator(lesActive, book);
 
-    auto const rate = transferRate(lesActive, book.out.account);
+    auto const rate = transferRate(lesActive, Issue{book.out.currency, book.out.account});
 
     bool const bGlobalFreeze =
         lesActive.isGlobalFrozen(book.out.account) || lesActive.isGlobalFrozen(book.in.account);
