@@ -22,6 +22,7 @@
 #include <xrpl/protocol/STLedgerEntry.h>
 #include <xrpl/protocol/STTx.h>
 #include <xrpl/protocol/TER.h>
+#include <xrpl/protocol/TxFlags.h>
 #include <xrpl/protocol/UintTypes.h>
 #include <xrpl/tx/Transactor.h>
 
@@ -63,6 +64,12 @@ setPreflightHelper<MPTIssue>(PreflightContext const& ctx)
     return tesSUCCESS;
 }
 
+std::uint32_t
+SubscriptionSet::getFlagsMask(PreflightContext const& ctx)
+{
+    return tfSubscriptionSetMask;
+}
+
 NotTEC
 SubscriptionSet::preflight(PreflightContext const& ctx)
 {
@@ -76,12 +83,18 @@ SubscriptionSet::preflight(PreflightContext const& ctx)
             return temMALFORMED;
         }
 
-        if (ctx.tx.isFieldPresent(sfDestination) || ctx.tx.isFieldPresent(sfFrequency) ||
-            ctx.tx.isFieldPresent(sfStartTime))
+        if (ctx.tx.isFieldPresent(sfDestination) || ctx.tx.isFieldPresent(sfStartTime))
         {
             JLOG(ctx.j.trace()) << "SubscriptionSet: Malformed transaction: SubscriptionID "
-                                   "is  present, but optional fields are also present.";
+                                   "is  present, but immutable fields are also present.";
             return temMALFORMED;
+        }
+
+        // lsfSingleUse is fixed at creation and cannot be changed on update.
+        if (ctx.tx.getFlags() & tfSingleUse)
+        {
+            JLOG(ctx.j.trace()) << "SubscriptionSet: tfSingleUse cannot be set on update.";
+            return temINVALID_FLAG;
         }
     }
     else
@@ -171,11 +184,8 @@ SubscriptionSet::preclaim(PreclaimContext const& ctx)
         if ((flags & lsfRequireDestTag) && !ctx.tx[~sfDestinationTag])
             return tecDST_TAG_NEEDED;
 
-        if (ctx.tx.getFieldU32(sfFrequency) <= 0)
-        {
-            JLOG(ctx.j.trace()) << "SubscriptionSet: The frequency is less than or equal to 0.";
-            return temMALFORMED;
-        }
+        // Frequency == 0 denotes an unmetered subscription: no period
+        // accounting, each claim capped at Amount.
     }
 
     if (!isXRP(amount))
@@ -207,21 +217,40 @@ SubscriptionSet::doApply()
     if (ctx_.tx.isFieldPresent(sfSubscriptionID))
     {
         // update
+        auto const currentTime = sb.header().parentCloseTime.time_since_epoch().count();
         auto sle = sb.peek(keylet::subscription(ctx_.tx.getFieldH256(sfSubscriptionID)));
         sle->setFieldAmount(sfAmount, ctx_.tx.getFieldAmount(sfAmount));
+
+        // Changing Frequency starts a clean period: reset the anchor to now and
+        // restore the full balance. This covers metered<->unmetered and
+        // metered->metered transitions uniformly.
+        if (ctx_.tx.isFieldPresent(sfFrequency))
+        {
+            sle->setFieldU32(sfFrequency, ctx_.tx.getFieldU32(sfFrequency));
+            sle->setFieldU32(sfNextClaimTime, currentTime);
+            sle->setFieldAmount(sfBalance, ctx_.tx.getFieldAmount(sfAmount));
+        }
+
         if (ctx_.tx.isFieldPresent(sfExpiration))
         {
-            auto const currentTime = sb.header().parentCloseTime.time_since_epoch().count();
             auto const expiration = ctx_.tx.getFieldU32(sfExpiration);
 
-            if (expiration < currentTime)
+            // Expiration == 0 removes any existing expiration.
+            if (expiration == 0)
+            {
+                if (sle->isFieldPresent(sfExpiration))
+                    sle->makeFieldAbsent(sfExpiration);
+            }
+            else if (expiration < currentTime)
             {
                 JLOG(ctx_.journal.trace())
                     << "SubscriptionSet: The expiration time is in the past.";
                 return temBAD_EXPIRATION;
             }
-
-            sle->setFieldU32(sfExpiration, ctx_.tx.getFieldU32(sfExpiration));
+            else
+            {
+                sle->setFieldU32(sfExpiration, expiration);
+            }
         }
 
         sb.update(sle);
@@ -246,6 +275,8 @@ SubscriptionSet::doApply()
         sle->setAccountID(sfAccount, account);
         sle->setAccountID(sfDestination, dest);
         sle->setFieldU32(sfSequence, ctx_.tx.getSeqValue());
+        if (ctx_.tx.getFlags() & tfSingleUse)
+            sle->setFlag(lsfSingleUse);
         if (ctx_.tx.isFieldPresent(sfDestinationTag))
             sle->setFieldU32(sfDestinationTag, ctx_.tx.getFieldU32(sfDestinationTag));
         sle->setFieldAmount(sfAmount, ctx_.tx.getFieldAmount(sfAmount));

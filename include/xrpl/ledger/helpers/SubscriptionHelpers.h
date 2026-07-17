@@ -395,4 +395,33 @@ doTransferTokenHelper<MPTIssue>(
     return tesSUCCESS;
 }
 
+// Remove a subscription from both owner directories, release the owner's
+// reserve, and erase the object. Shared by SubscriptionCancel and the
+// single-use claim path so the two never diverge.
+inline TER
+deleteSubscription(ApplyView& view, SLE::ref sleSub, beast::Journal journal)
+{
+    AccountID const account{sleSub->getAccountID(sfAccount)};
+    AccountID const dstAcct{sleSub->getAccountID(sfDestination)};
+
+    std::uint64_t const ownerPage{(*sleSub)[sfOwnerNode]};
+    if (!view.dirRemove(keylet::ownerDir(account), ownerPage, sleSub->key(), true))
+    {
+        JLOG(journal.fatal()) << "deleteSubscription: Unable to delete from source.";
+        return tefBAD_LEDGER;
+    }
+
+    std::uint64_t const destPage{(*sleSub)[sfDestinationNode]};
+    if (!view.dirRemove(keylet::ownerDir(dstAcct), destPage, sleSub->key(), true))
+    {
+        JLOG(journal.fatal()) << "deleteSubscription: Unable to delete from destination.";
+        return tefBAD_LEDGER;
+    }
+
+    auto const sleSrc = view.peek(keylet::account(account));
+    adjustOwnerCount(view, sleSrc, -1, journal);
+    view.erase(sleSub);
+    return tesSUCCESS;
+}
+
 }  // namespace xrpl

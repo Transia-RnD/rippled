@@ -11,6 +11,7 @@
 #include <xrpl/protocol/Concepts.h>
 #include <xrpl/protocol/Indexes.h>
 #include <xrpl/protocol/Issue.h>
+#include <xrpl/protocol/LedgerFormats.h>
 #include <xrpl/protocol/MPTIssue.h>
 #include <xrpl/protocol/SField.h>
 #include <xrpl/protocol/STAmount.h>
@@ -242,26 +243,40 @@ SubscriptionClaim::doApply()
             return ret;
     }
 
-    // Update balance and period pointer
-    STAmount const newBalance = availableBalance - deliverAmount;
-
-    if (newBalance == sleAmount.zeroed())
+    // Metered accounting: advance/reset the period. Unmetered subscriptions
+    // (Frequency == 0) cap each claim at Amount and never touch Balance or
+    // NextClaimTime.
+    if (frequency != 0)
     {
-        // Full period claimed: advance exactly one period and reset next period
-        // balance.
-        nextClaimTime += frequency;
-        sleSub->setFieldU32(sfNextClaimTime, nextClaimTime);
-        sleSub->setFieldAmount(sfBalance, sleAmount);
+        STAmount const newBalance = availableBalance - deliverAmount;
+        if (newBalance == sleAmount.zeroed())
+        {
+            // Full period claimed: advance exactly one period and reset next
+            // period balance.
+            nextClaimTime += frequency;
+            sleSub->setFieldU32(sfNextClaimTime, nextClaimTime);
+            sleSub->setFieldAmount(sfBalance, sleAmount);
+        }
+        else
+        {
+            // Partial claim within the same effective period.
+            sleSub->setFieldAmount(sfBalance, newBalance);
+            // Do not advance nextClaimTime; if we had a rollover-forfeit above,
+            // we already moved nextClaimTime forward exactly once.
+        }
+    }
+
+    // Single-use subscriptions are removed on the first successful claim,
+    // regardless of Frequency or whether the claim was partial.
+    if (sleSub->isFlag(lsfSingleUse))
+    {
+        if (auto const ter = deleteSubscription(psb, sleSub, viewJ); !isTesSuccess(ter))
+            return ter;
     }
     else
     {
-        // Partial claim within the same effective period.
-        sleSub->setFieldAmount(sfBalance, newBalance);
-        // Do not advance nextClaimTime; if we had a rollover-forfeit above,
-        // we already moved nextClaimTime forward exactly once.
+        psb.update(sleSub);
     }
-
-    psb.update(sleSub);
 
     psb.apply(ctx_.rawView());
     return tesSUCCESS;

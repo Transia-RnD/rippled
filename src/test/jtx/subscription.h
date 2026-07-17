@@ -8,6 +8,7 @@
 #include <xrpl/basics/chrono.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/protocol/STAmount.h>
+#include <xrpl/protocol/TxFlags.h>
 
 #include <optional>
 
@@ -16,22 +17,26 @@ namespace xrpl::test::jtx {
 /** Subscription operations. */
 namespace subscription {
 
-/** Create a subscription. */
+/** Create a subscription. Pass a frequency of zero for an unmetered
+    subscription and set tfSingleUse in flags for a one-shot subscription. */
 json::Value
 create(
     jtx::Account const& account,
     jtx::Account const& destination,
     STAmount const& amount,
     NetClock::duration const& frequency,
-    std::optional<NetClock::time_point> const& expiration = std::nullopt);
+    std::optional<NetClock::time_point> const& expiration = std::nullopt,
+    std::uint32_t flags = tfFullyCanonicalSig);
 
-/** Update a subscription. */
+/** Update a subscription. An engaged expiration of zero removes any existing
+    expiration; an engaged frequency changes it and resets the period. */
 json::Value
 update(
     jtx::Account const& account,
     uint256 const& subscriptionId,
     STAmount const& amount,
-    std::optional<NetClock::time_point> const& expiration = std::nullopt);
+    std::optional<NetClock::time_point> const& expiration = std::nullopt,
+    std::optional<NetClock::duration> const& frequency = std::nullopt);
 
 /** Cancel a subscription. */
 json::Value

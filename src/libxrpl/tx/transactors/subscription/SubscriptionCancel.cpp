@@ -4,6 +4,7 @@
 #include <xrpl/ledger/Sandbox.h>
 #include <xrpl/ledger/View.h>
 #include <xrpl/ledger/helpers/AccountRootHelpers.h>
+#include <xrpl/ledger/helpers/SubscriptionHelpers.h>
 #include <xrpl/protocol/AccountID.h>
 #include <xrpl/protocol/Indexes.h>
 #include <xrpl/protocol/SField.h>
@@ -61,28 +62,9 @@ SubscriptionCancel::doApply()
         return tecINTERNAL;
     }
 
-    AccountID const account{sleSub->getAccountID(sfAccount)};
-    AccountID const dstAcct{sleSub->getAccountID(sfDestination)};
     auto viewJ = ctx_.registry.get().getJournal("View");
-
-    std::uint64_t const ownerPage{(*sleSub)[sfOwnerNode]};
-    if (!sb.dirRemove(keylet::ownerDir(account), ownerPage, sleSub->key(), true))
-    {
-        JLOG(j_.fatal()) << "Unable to delete subscription from source.";
-        return tefBAD_LEDGER;
-    }
-
-    std::uint64_t const destPage{(*sleSub)[sfDestinationNode]};
-    if (!sb.dirRemove(keylet::ownerDir(dstAcct), destPage, sleSub->key(), true))
-    {
-        JLOG(j_.fatal()) << "Unable to delete subscription from destination.";
-        return tefBAD_LEDGER;
-    }
-
-    auto const sleSrc = sb.peek(keylet::account(account));
-    sb.erase(sleSub);
-
-    adjustOwnerCount(sb, sleSrc, -1, viewJ);
+    if (auto const ter = deleteSubscription(sb, sleSub, viewJ); !isTesSuccess(ter))
+        return ter;
 
     sb.apply(ctx_.rawView());
     return tesSUCCESS;

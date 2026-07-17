@@ -26,7 +26,8 @@ create(
     jtx::Account const& destination,
     STAmount const& amount,
     NetClock::duration const& frequency,
-    std::optional<NetClock::time_point> const& expiration)
+    std::optional<NetClock::time_point> const& expiration,
+    std::uint32_t flags)
 {
     json::Value jv;
     jv[jss::TransactionType] = jss::SubscriptionSet;
@@ -34,7 +35,7 @@ create(
     jv[jss::Destination] = to_string(destination.id());
     jv[jss::Amount] = amount.getJson(JsonOptions::Values::None);
     jv[jss::Frequency] = frequency.count();
-    jv[jss::Flags] = tfFullyCanonicalSig;
+    jv[jss::Flags] = flags;
     if (expiration)
         jv[sfExpiration.jsonName] = expiration->time_since_epoch().count();
     return jv;
@@ -45,7 +46,8 @@ update(
     jtx::Account const& account,
     uint256 const& subscriptionId,
     STAmount const& amount,
-    std::optional<NetClock::time_point> const& expiration)
+    std::optional<NetClock::time_point> const& expiration,
+    std::optional<NetClock::duration> const& frequency)
 {
     json::Value jv;
     jv[jss::TransactionType] = jss::SubscriptionSet;
@@ -55,6 +57,8 @@ update(
     jv[jss::Flags] = tfFullyCanonicalSig;
     if (expiration)
         jv[sfExpiration.jsonName] = expiration->time_since_epoch().count();
+    if (frequency)
+        jv[jss::Frequency] = frequency->count();
     return jv;
 }
 

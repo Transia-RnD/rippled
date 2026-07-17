@@ -213,7 +213,7 @@ struct Subscription_test : public beast::unit_test::Suite
         // temINVALID_FLAG
         {
             env(subscription::create(alice, bob, XRP(10), 100s),
-                Txflags(tfSetfAuth),
+                Txflags(0x00020000),
                 Ter(temINVALID_FLAG));
             env.close();
         }
@@ -279,17 +279,6 @@ struct Subscription_test : public beast::unit_test::Suite
             env.close();
         }
 
-        // temMALFORMED: sfFrequency present with sfSubscriptionID
-        {
-            auto const aliceSeq = env.seq(alice);
-            auto const subId = getSubscriptionIndex(alice, bob, aliceSeq);
-            json::Value txn = subscription::update(alice, subId, XRP(10));
-            auto const frequency = 100s;
-            txn[sfFrequency.jsonName] = to_string(frequency.count());
-            env(txn, Ter(temMALFORMED));
-            env.close();
-        }
-
         // temMALFORMED: sfStartTime present with sfSubscriptionID
         {
             auto const aliceSeq = env.seq(alice);
@@ -347,12 +336,6 @@ struct Subscription_test : public beast::unit_test::Suite
         // tecNO_DST
         {
             env(subscription::create(alice, dne, XRP(10), 100s), Ter(tecNO_DST));
-            env.close();
-        }
-
-        // temMALFORMED: frequency <= 0
-        {
-            env(subscription::create(alice, bob, XRP(10), 0s), Ter(temMALFORMED));
             env.close();
         }
 
@@ -2451,6 +2434,653 @@ struct Subscription_test : public beast::unit_test::Suite
     }
 
     void
+    testUnmeteredMode(FeatureBitset features)
+    {
+        testcase("unmetered mode");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        Env env{*this, features};
+        env.fund(XRP(1000), alice, bob);
+        env.close();
+
+        // Frequency == 0 is valid and denotes an unmetered subscription:
+        // Balance == Amount, NextClaimTime == create/close time, no period.
+        {
+            auto const startTime = env.now().time_since_epoch().count();
+            auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+            env(subscription::create(alice, bob, XRP(10), 0s));
+            env.close();
+
+            validateSubscription(env, subId, XRP(10), XRP(10), 0, startTime);
+        }
+
+        // A post-dated StartTime still gates the first claim with tecTOO_SOON.
+        {
+            auto const start = env.now() + 200s;
+            auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+            env(subscription::create(alice, bob, XRP(10), 0s), subscription::StartTime(start));
+            env.close();
+
+            validateSubscription(env, subId, XRP(10), XRP(10), 0, start.time_since_epoch().count());
+
+            env(subscription::claim(bob, subId, XRP(10)), Ter(tecTOO_SOON));
+            env.close();
+
+            for (; env.now() < start; env.close())
+            {
+            }
+            env(subscription::claim(bob, subId, XRP(10)));
+            env.close();
+
+            // Balance and NextClaimTime are untouched by the claim.
+            validateSubscription(env, subId, XRP(10), XRP(10), 0, start.time_since_epoch().count());
+        }
+
+        // Expiration still gates an unmetered subscription with tecEXPIRED.
+        {
+            auto const expire = env.now() + 100s;
+            auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+            env(subscription::create(alice, bob, XRP(10), 0s, expire));
+            env.close();
+
+            env.close(100s);
+            env(subscription::claim(bob, subId, XRP(10)), Ter(tecEXPIRED));
+            env.close();
+            BEAST_EXPECT(subscriptionExists(*env.current(), subId));
+        }
+    }
+
+    void
+    testUnmeteredClaims(FeatureBitset features)
+    {
+        testcase("unmetered claims");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        Env env{*this, features};
+        env.fund(XRP(1000), alice, bob);
+        env.close();
+
+        auto const startTime = env.now().time_since_epoch().count();
+        auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+        env(subscription::create(alice, bob, XRP(10), 0s));
+        env.close();
+
+        // A claim exceeding Amount is rejected.
+        env(subscription::claim(bob, subId, XRP(11)), Ter(temBAD_AMOUNT));
+        env.close();
+
+        // Unlimited claims, each capped at Amount. Partial claims do NOT
+        // reduce a running balance: the next claim is still capped at the full
+        // Amount, and Balance/NextClaimTime never change.
+        auto const baseFee = env.current()->fees().base;
+
+        for (auto const& amt : {XRP(3), XRP(10), XRP(1), XRP(10)})
+        {
+            auto const preAlice = env.balance(alice);
+            auto const preBob = env.balance(bob);
+            env(subscription::claim(bob, subId, amt));
+            env.close();
+            BEAST_EXPECT(env.balance(alice) == preAlice - amt);
+            BEAST_EXPECT(env.balance(bob) == preBob - baseFee + amt);
+            // Balance stays == Amount across every partial and full claim.
+            validateSubscription(env, subId, XRP(10), XRP(10), 0, startTime);
+        }
+    }
+
+    void
+    testSingleUse(FeatureBitset features)
+    {
+        testcase("single use");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        // Metered single-use: the first (full) claim deletes the object with
+        // full cleanup.
+        {
+            Env env{*this, features};
+            env.fund(XRP(1000), alice, bob);
+            env.close();
+
+            auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+            env(subscription::create(alice, bob, XRP(10), 100s),
+                Txflags(tfSingleUse | tfFullyCanonicalSig));
+            env.close();
+
+            // lsfSingleUse is recorded on the object.
+            auto const [key, subSle] = subKeyAndSle(*env.current(), subId);
+            if (!BEAST_EXPECT(subSle))
+                return;
+            BEAST_EXPECT(subSle->getFieldU32(sfFlags) & lsfSingleUse);
+
+            auto const preAliceOwners = ownerCount(env, alice);
+            auto const preAlice = env.balance(alice);
+            auto const preBob = env.balance(bob);
+
+            env(subscription::claim(bob, subId, XRP(10)));
+            env.close();
+
+            // Gone from the ledger, both directories emptied, reserve released.
+            BEAST_EXPECT(!subscriptionExists(*env.current(), subId));
+            BEAST_EXPECT(ownerCount(env, alice) == preAliceOwners - 1);
+            BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
+            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
+            BEAST_EXPECT(env.balance(alice) == preAlice - XRP(10));
+            BEAST_EXPECT(env.balance(bob) == preBob - env.current()->fees().base + XRP(10));
+
+            // Second claim fails: the object is gone.
+            env(subscription::claim(bob, subId, XRP(10)), Ter(tecNO_ENTRY));
+            env.close();
+        }
+
+        // Unmetered one-shot: single-use composed with Frequency == 0. The
+        // first claim (here partial) deletes the object.
+        {
+            Env env{*this, features};
+            env.fund(XRP(1000), alice, bob);
+            env.close();
+
+            auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+            env(subscription::create(alice, bob, XRP(10), 0s),
+                Txflags(tfSingleUse | tfFullyCanonicalSig));
+            env.close();
+
+            auto const preAliceOwners = ownerCount(env, alice);
+            env(subscription::claim(bob, subId, XRP(4)));
+            env.close();
+
+            BEAST_EXPECT(!subscriptionExists(*env.current(), subId));
+            BEAST_EXPECT(ownerCount(env, alice) == preAliceOwners - 1);
+            BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
+
+            env(subscription::claim(bob, subId, XRP(4)), Ter(tecNO_ENTRY));
+            env.close();
+        }
+    }
+
+    void
+    testSingleUseMetered(FeatureBitset features)
+    {
+        testcase("single use metered");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        Env env{*this, features};
+        env.fund(XRP(1000), alice, bob);
+        env.close();
+
+        // A single-use metered subscription is deleted on the first claim even
+        // when that claim is partial and the period is not exhausted.
+        auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+        env(subscription::create(alice, bob, XRP(10), 100s),
+            Txflags(tfSingleUse | tfFullyCanonicalSig));
+        env.close();
+
+        auto const preAliceOwners = ownerCount(env, alice);
+        auto const preAlice = env.balance(alice);
+        env(subscription::claim(bob, subId, XRP(5)));
+        env.close();
+
+        BEAST_EXPECT(!subscriptionExists(*env.current(), subId));
+        BEAST_EXPECT(ownerCount(env, alice) == preAliceOwners - 1);
+        BEAST_EXPECT(ownerDirCount(*env.current(), alice) == 0);
+        BEAST_EXPECT(ownerDirCount(*env.current(), bob) == 0);
+        BEAST_EXPECT(env.balance(alice) == preAlice - XRP(5));
+
+        env(subscription::claim(bob, subId, XRP(5)), Ter(tecNO_ENTRY));
+        env.close();
+    }
+
+    void
+    testSingleUseImmutable(FeatureBitset features)
+    {
+        testcase("single use immutable");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        Env env{*this, features};
+        env.fund(XRP(1000), alice, bob);
+        env.close();
+
+        // A subscription created without lsfSingleUse cannot gain it via update.
+        auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+        env(subscription::create(alice, bob, XRP(10), 100s));
+        env.close();
+
+        json::Value txn = subscription::update(alice, subId, XRP(10));
+        txn[jss::Flags] = tfSingleUse | tfFullyCanonicalSig;
+        env(txn, Ter(temINVALID_FLAG));
+        env.close();
+
+        auto const [key, subSle] = subKeyAndSle(*env.current(), subId);
+        if (BEAST_EXPECT(subSle))
+            BEAST_EXPECT(!(subSle->getFieldU32(sfFlags) & lsfSingleUse));
+    }
+
+    void
+    testUpdateFrequency(FeatureBitset features)
+    {
+        testcase("update frequency");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        Env env{*this, features};
+        env.fund(XRP(1000), alice, bob);
+        env.close();
+
+        auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+        env(subscription::create(alice, bob, XRP(10), 100s));
+        env.close();
+
+        // Claim the full period so NextClaimTime is advanced.
+        env(subscription::claim(bob, subId, XRP(10)));
+        env.close();
+        env(subscription::claim(bob, subId, XRP(10)), Ter(tecTOO_SOON));
+        env.close();
+
+        // Updating Frequency changes it and resets a clean period:
+        // NextClaimTime = current close time, Balance = Amount.
+        env(subscription::update(alice, subId, XRP(10), std::nullopt, 200s));
+        env.close();
+
+        auto const resetTime = env.now().time_since_epoch().count();
+        {
+            auto const [key, subSle] = subKeyAndSle(*env.current(), subId);
+            if (!BEAST_EXPECT(subSle))
+                return;
+            BEAST_EXPECT(subSle->getFieldU32(sfFrequency) == 200);
+            BEAST_EXPECT(subSle->getFieldAmount(sfBalance) == XRP(10));
+            // NextClaimTime was reset to the update's close time.
+            BEAST_EXPECT(subSle->getFieldU32(sfNextClaimTime) < resetTime);
+        }
+
+        // A fresh full claim is immediately available after the reset.
+        env(subscription::claim(bob, subId, XRP(10)));
+        env.close();
+        // ... and the new (longer) period now gates the next one.
+        env(subscription::claim(bob, subId, XRP(10)), Ter(tecTOO_SOON));
+        env.close();
+    }
+
+    void
+    testUpdateFrequencyTransitions(FeatureBitset features)
+    {
+        testcase("update frequency transitions");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        // metered -> unmetered (N -> 0)
+        {
+            Env env{*this, features};
+            env.fund(XRP(1000), alice, bob);
+            env.close();
+
+            auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+            env(subscription::create(alice, bob, XRP(10), 100s));
+            env.close();
+
+            env(subscription::claim(bob, subId, XRP(10)));
+            env.close();
+            // Metered: a second immediate claim is too soon.
+            env(subscription::claim(bob, subId, XRP(10)), Ter(tecTOO_SOON));
+            env.close();
+
+            env(subscription::update(alice, subId, XRP(10), std::nullopt, 0s));
+            env.close();
+            auto const resetTime = env.now().time_since_epoch().count();
+
+            // Now unmetered: repeated claims succeed, each capped at Amount,
+            // and Balance/NextClaimTime never change.
+            for (int i = 0; i < 3; ++i)
+            {
+                env(subscription::claim(bob, subId, XRP(10)));
+                env.close();
+                auto const [key, subSle] = subKeyAndSle(*env.current(), subId);
+                if (!BEAST_EXPECT(subSle))
+                    return;
+                BEAST_EXPECT(subSle->getFieldU32(sfFrequency) == 0);
+                BEAST_EXPECT(subSle->getFieldAmount(sfBalance) == XRP(10));
+                BEAST_EXPECT(subSle->getFieldU32(sfNextClaimTime) < resetTime);
+            }
+        }
+
+        // unmetered -> metered (0 -> N)
+        {
+            Env env{*this, features};
+            env.fund(XRP(1000), alice, bob);
+            env.close();
+
+            auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+            env(subscription::create(alice, bob, XRP(10), 0s));
+            env.close();
+
+            // Unmetered: two back-to-back claims both succeed.
+            env(subscription::claim(bob, subId, XRP(10)));
+            env.close();
+            env(subscription::claim(bob, subId, XRP(10)));
+            env.close();
+
+            env(subscription::update(alice, subId, XRP(10), std::nullopt, 100s));
+            env.close();
+
+            {
+                auto const [key, subSle] = subKeyAndSle(*env.current(), subId);
+                if (!BEAST_EXPECT(subSle))
+                    return;
+                BEAST_EXPECT(subSle->getFieldU32(sfFrequency) == 100);
+                BEAST_EXPECT(subSle->getFieldAmount(sfBalance) == XRP(10));
+            }
+
+            // Now metered: one full claim, then the period gates the next.
+            env(subscription::claim(bob, subId, XRP(10)));
+            env.close();
+            env(subscription::claim(bob, subId, XRP(10)), Ter(tecTOO_SOON));
+            env.close();
+        }
+
+        // metered -> metered (N -> M)
+        {
+            Env env{*this, features};
+            env.fund(XRP(1000), alice, bob);
+            env.close();
+
+            auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+            env(subscription::create(alice, bob, XRP(10), 100s));
+            env.close();
+
+            env(subscription::claim(bob, subId, XRP(10)));
+            env.close();
+            env(subscription::claim(bob, subId, XRP(10)), Ter(tecTOO_SOON));
+            env.close();
+
+            env(subscription::update(alice, subId, XRP(10), std::nullopt, 300s));
+            env.close();
+
+            {
+                auto const [key, subSle] = subKeyAndSle(*env.current(), subId);
+                if (!BEAST_EXPECT(subSle))
+                    return;
+                BEAST_EXPECT(subSle->getFieldU32(sfFrequency) == 300);
+                BEAST_EXPECT(subSle->getFieldAmount(sfBalance) == XRP(10));
+            }
+
+            // Fresh full claim immediately available after the reset.
+            env(subscription::claim(bob, subId, XRP(10)));
+            env.close();
+            env(subscription::claim(bob, subId, XRP(10)), Ter(tecTOO_SOON));
+            env.close();
+        }
+    }
+
+    void
+    testUpdateRemoveExpiration(FeatureBitset features)
+    {
+        testcase("update remove expiration");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        Env env{*this, features};
+        env.fund(XRP(1000), alice, bob);
+        env.close();
+
+        auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+        auto const expire = env.now() + 150s;
+        env(subscription::create(alice, bob, XRP(10), 100s, expire));
+        env.close();
+
+        {
+            auto const [key, subSle] = subKeyAndSle(*env.current(), subId);
+            if (BEAST_EXPECT(subSle))
+                BEAST_EXPECT(
+                    subSle->getFieldU32(sfExpiration) == expire.time_since_epoch().count());
+        }
+
+        // Update with Expiration > now changes it.
+        auto const expire2 = env.now() + 250s;
+        env(subscription::update(alice, subId, XRP(10), expire2));
+        env.close();
+        {
+            auto const [key, subSle] = subKeyAndSle(*env.current(), subId);
+            if (BEAST_EXPECT(subSle))
+                BEAST_EXPECT(
+                    subSle->getFieldU32(sfExpiration) == expire2.time_since_epoch().count());
+        }
+
+        // Update with a past (nonzero) Expiration is rejected.
+        env(subscription::update(alice, subId, XRP(10), env.now() - 10s), Ter(temBAD_EXPIRATION));
+        env.close();
+
+        // Update with Expiration == 0 removes the field entirely.
+        env(subscription::update(alice, subId, XRP(10), NetClock::time_point{}));
+        env.close();
+        {
+            auto const [key, subSle] = subKeyAndSle(*env.current(), subId);
+            if (BEAST_EXPECT(subSle))
+                BEAST_EXPECT(!subSle->isFieldPresent(sfExpiration));
+        }
+
+        // With expiration removed, a claim succeeds past the original expiry.
+        env.close(300s);
+        auto const preAlice = env.balance(alice);
+        env(subscription::claim(bob, subId, XRP(10)));
+        env.close();
+        BEAST_EXPECT(env.balance(alice) == preAlice - XRP(10));
+    }
+
+    void
+    testDelegatedPull(FeatureBitset features)
+    {
+        testcase("delegated pull");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        // The puller/receiver split is delivered through XLS-75 delegation,
+        // NOT a dedicated field on the subscription object. The merchant
+        // (Destination) delegates SubscriptionClaim to a processor account;
+        // the processor claims on the merchant's behalf and funds move
+        // payer -> merchant. The processor is never named on the object.
+        auto const payer = Account("payer");
+        auto const merchant = Account("merchant");
+        auto const processor = Account("processor");
+        auto const stranger = Account("stranger");
+
+        Env env{*this, features};
+        env.fund(XRP(1000), payer, merchant, processor, stranger);
+        env.close();
+
+        auto const subId = getSubscriptionIndex(payer, merchant, env.seq(payer));
+        env(subscription::create(payer, merchant, XRP(10), 100s));
+        env.close();
+
+        // The merchant delegates SubscriptionClaim to the processor.
+        env(delegate::set(merchant, processor, {"SubscriptionClaim"}));
+        env.close();
+
+        auto const baseFee = env.current()->fees().base;
+        auto const predPayer = env.balance(payer);
+        auto const preMerchant = env.balance(merchant);
+        auto const preProcessor = env.balance(processor);
+
+        // The processor claims on the merchant's behalf: funds move
+        // payer -> merchant. Under XLS-75 delegation the delegate (processor)
+        // pays the transaction fee, so the merchant receives the full claim.
+        env(subscription::claim(merchant, subId, XRP(10)), delegate::As(processor));
+        env.close();
+        BEAST_EXPECT(env.balance(payer) == predPayer - XRP(10));
+        BEAST_EXPECT(env.balance(merchant) == preMerchant + XRP(10));
+        BEAST_EXPECT(env.balance(processor) == preProcessor - baseFee);
+
+        // The processor is not recorded on the object.
+        {
+            auto const [key, subSle] = subKeyAndSle(*env.current(), subId);
+            if (BEAST_EXPECT(subSle))
+            {
+                BEAST_EXPECT(subSle->getAccountID(sfAccount) == payer.id());
+                BEAST_EXPECT(subSle->getAccountID(sfDestination) == merchant.id());
+            }
+        }
+
+        env.close(100s);
+
+        // Revoking the delegation (removing the SubscriptionClaim permission)
+        // makes the processor's next claim fail with the delegate retry code.
+        env(delegate::set(merchant, processor, {"Payment"}));
+        env.close();
+
+        env(subscription::claim(merchant, subId, XRP(10)),
+            delegate::As(processor),
+            Ter(terNO_DELEGATE_PERMISSION));
+        env.close();
+
+        // A stranger submitting a claim directly (not as a delegate) is not
+        // the destination: tecNO_PERMISSION.
+        env(subscription::claim(stranger, subId, XRP(10)), Ter(tecNO_PERMISSION));
+        env.close();
+
+        // An account that was never delegated the permission fails with the
+        // delegate retry code.
+        env(subscription::claim(merchant, subId, XRP(10)),
+            delegate::As(stranger),
+            Ter(terNO_DELEGATE_PERMISSION));
+        env.close();
+    }
+
+    void
+    testExploitSingleUseReplay(FeatureBitset features)
+    {
+        testcase("exploit: single use replay");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        Env env{*this, features};
+        env.fund(XRP(1000), alice, bob);
+        env.close();
+
+        auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+        env(subscription::create(alice, bob, XRP(10), 100s),
+            Txflags(tfSingleUse | tfFullyCanonicalSig));
+        env.close();
+
+        auto const preAlice = env.balance(alice);
+        env(subscription::claim(bob, subId, XRP(10)));
+        env.close();
+        BEAST_EXPECT(env.balance(alice) == preAlice - XRP(10));
+
+        // Replaying the same claim cannot double-spend: the object is gone.
+        env(subscription::claim(bob, subId, XRP(10)), Ter(tecNO_ENTRY));
+        env.close();
+        BEAST_EXPECT(env.balance(alice) == preAlice - XRP(10));
+    }
+
+    void
+    testExploitUnmeteredPartialDrain(FeatureBitset features)
+    {
+        testcase("exploit: unmetered partial drain");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        Env env{*this, features};
+        env.fund(XRP(1000), alice, bob);
+        env.close();
+
+        auto const startTime = env.now().time_since_epoch().count();
+        auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+        env(subscription::create(alice, bob, XRP(10), 0s));
+        env.close();
+
+        // A partial claim does not shrink the per-claim cap: the following
+        // claim is still capped at the full Amount, not the remainder. There
+        // is no running balance to drain below the cap.
+        env(subscription::claim(bob, subId, XRP(3)));
+        env.close();
+        validateSubscription(env, subId, XRP(10), XRP(10), 0, startTime);
+
+        // Claiming above Amount is still rejected.
+        env(subscription::claim(bob, subId, XRP(11)), Ter(temBAD_AMOUNT));
+        env.close();
+
+        // A full-Amount claim right after the partial one succeeds (the cap
+        // did not drop to the remainder of 7).
+        env(subscription::claim(bob, subId, XRP(10)));
+        env.close();
+        validateSubscription(env, subId, XRP(10), XRP(10), 0, startTime);
+    }
+
+    void
+    testExploitFrequencyUpdateArrearsReset(FeatureBitset features)
+    {
+        testcase("exploit: frequency update arrears reset");
+        using namespace jtx;
+        using namespace std::literals::chrono_literals;
+
+        auto const alice = Account("alice");
+        auto const bob = Account("bob");
+
+        Env env{*this, features};
+        env.fund(XRP(1000), alice, bob);
+        env.close();
+
+        auto const start = env.now();
+        auto const subId = getSubscriptionIndex(alice, bob, env.seq(alice));
+        env(subscription::create(alice, bob, XRP(10), 100s));
+        env.close();
+
+        // Let three periods accrue unclaimed. Without an update these arrears
+        // would permit three back-to-back full claims.
+        for (; env.now() < start + 300s; env.close())
+        {
+        }
+
+        // A Frequency update resets a clean period: the accrued arrears are
+        // forfeited, not carried over.
+        env(subscription::update(alice, subId, XRP(10), std::nullopt, 100s));
+        env.close();
+
+        auto const preAlice = env.balance(alice);
+
+        // Exactly one full claim is available immediately after the reset.
+        env(subscription::claim(bob, subId, XRP(10)));
+        env.close();
+        BEAST_EXPECT(env.balance(alice) == preAlice - XRP(10));
+
+        // The arrears did not survive the reset: no second claim yet.
+        env(subscription::claim(bob, subId, XRP(10)), Ter(tecTOO_SOON));
+        env.close();
+        BEAST_EXPECT(env.balance(alice) == preAlice - XRP(10));
+    }
+
+    void
     testIOUEnablement(FeatureBitset features)
     {
         testcase("IOU Enablement");
@@ -4108,6 +4738,20 @@ struct Subscription_test : public beast::unit_test::Suite
         testUpdateRequireAuth(features);
         testSequenceField(features);
         testReserveEdge(features);
+
+        // Unmetered mode, single-use, flexible updates, delegated pull
+        testUnmeteredMode(features);
+        testUnmeteredClaims(features);
+        testSingleUse(features);
+        testSingleUseMetered(features);
+        testSingleUseImmutable(features);
+        testUpdateFrequency(features);
+        testUpdateFrequencyTransitions(features);
+        testUpdateRemoveExpiration(features);
+        testDelegatedPull(features);
+        testExploitSingleUseReplay(features);
+        testExploitUnmeteredPartialDrain(features);
+        testExploitFrequencyUpdateArrearsReset(features);
 
         // IOU-specific tests
         testIOUWithFeats(features);
