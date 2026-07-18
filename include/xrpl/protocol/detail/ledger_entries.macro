@@ -621,6 +621,44 @@ LEDGER_ENTRY(ltLOAN, 0x0089, Loan, loan, ({
     {sfLoanScale,                SoeDefault},
 }))
 
+/** A ledger object representing a bond coupon schedule: the issuer's
+    standing offer of fixed periodic coupon payments per unit of a bond
+    asset, in a settlement asset. One schedule per (Account, BondAsset).
+
+    \sa keylet::couponSchedule
+ */
+LEDGER_ENTRY(ltCOUPON_SCHEDULE, 0x008A, CouponSchedule, coupon_schedule, ({
+    {sfPreviousTxnID,        SoeRequired},
+    {sfPreviousTxnLgrSeq,    SoeRequired},
+    {sfOwnerNode,            SoeRequired},
+    {sfAccount,              SoeRequired},
+    {sfBondAsset,            SoeRequired},
+    {sfCouponAmount,         SoeRequired},
+    {sfCouponInterval,       SoeRequired},
+    {sfFirstCouponTime,      SoeRequired},
+    {sfExpiration,           SoeOptional},
+    {sfCallNoticePeriod,     SoeOptional},
+    {sfEarliestCallTime,     SoeOptional},
+    {sfRegistrationCount,    SoeDefault},
+}))
+
+/** A ledger object representing a holder's registration into a coupon
+    schedule: locked bond units accruing coupons, and coupons accrued
+    but not yet claimed. One registration per (CouponSchedule, Holder).
+
+    \sa keylet::couponRegistration
+ */
+LEDGER_ENTRY(ltCOUPON_REGISTRATION, 0x008B, CouponRegistration, coupon_registration, ({
+    {sfPreviousTxnID,        SoeRequired},
+    {sfPreviousTxnLgrSeq,    SoeRequired},
+    {sfOwnerNode,            SoeRequired},
+    {sfAccount,              SoeRequired},
+    {sfCouponScheduleID,     SoeRequired},
+    {sfRegisteredUnits,      SoeRequired},
+    {sfAccruedAmount,        SoeRequired},
+    {sfLastSettledTime,      SoeRequired},
+}))
+
 /** A ledger object representing a sponsorship.
     \sa keylet::sponsorship
  */

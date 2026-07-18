@@ -1194,6 +1194,90 @@ TRANSACTION(ttSPONSORSHIP_SET, 91, SponsorshipSet,
     {sfRemainingOwnerCount, SoeOptional},
 }))
 
+/** This transaction creates a coupon schedule for a bond asset. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/coupon/CouponScheduleCreate.h>
+#endif
+TRANSACTION(ttCOUPON_SCHEDULE_CREATE, 92, CouponScheduleCreate,
+    Delegation::NotDelegable,
+    featureCouponPayments,
+    NoPriv,
+    ({
+    {sfBondAsset, SoeRequired},
+    {sfCouponAmount, SoeRequired, SoeMptSupported},
+    {sfCouponInterval, SoeRequired},
+    {sfFirstCouponTime, SoeRequired},
+    {sfExpiration, SoeOptional},
+    {sfCallNoticePeriod, SoeOptional},
+    {sfEarliestCallTime, SoeOptional},
+}))
+
+/** This transaction exercises the issuer's call option on a callable
+    coupon schedule by shortening its Expiration. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/coupon/CouponScheduleSet.h>
+#endif
+TRANSACTION(ttCOUPON_SCHEDULE_SET, 93, CouponScheduleSet,
+    Delegation::NotDelegable,
+    featureCouponPayments,
+    NoPriv,
+    ({
+    {sfCouponScheduleID, SoeRequired},
+    {sfExpiration, SoeRequired},
+}))
+
+/** This transaction deletes an empty coupon schedule. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/coupon/CouponScheduleDelete.h>
+#endif
+TRANSACTION(ttCOUPON_SCHEDULE_DELETE, 94, CouponScheduleDelete,
+    Delegation::NotDelegable,
+    featureCouponPayments,
+    NoPriv,
+    ({
+    {sfCouponScheduleID, SoeRequired},
+}))
+
+/** This transaction locks bond units into a coupon registration. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/coupon/CouponRegister.h>
+#endif
+TRANSACTION(ttCOUPON_REGISTER, 95, CouponRegister,
+    Delegation::NotDelegable,
+    featureCouponPayments,
+    NoPriv,
+    ({
+    {sfCouponScheduleID, SoeRequired},
+    {sfAmount, SoeRequired, SoeMptSupported},
+}))
+
+/** This transaction releases bond units from a coupon registration. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/coupon/CouponUnregister.h>
+#endif
+TRANSACTION(ttCOUPON_UNREGISTER, 96, CouponUnregister,
+    Delegation::NotDelegable,
+    featureCouponPayments,
+    NoPriv,
+    ({
+    {sfCouponScheduleID, SoeRequired},
+    {sfAmount, SoeOptional, SoeMptSupported},
+}))
+
+/** This transaction claims accrued coupons, pulling payment from the
+    schedule issuer's live balance. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/coupon/CouponClaim.h>
+#endif
+TRANSACTION(ttCOUPON_CLAIM, 97, CouponClaim,
+    Delegation::Delegable,
+    featureCouponPayments,
+    NoPriv,
+    ({
+    {sfCouponScheduleID, SoeRequired},
+    {sfAmount, SoeOptional, SoeMptSupported},
+}))
+
 /** This system-generated transaction type is used to update the status of the various amendments.
 
     For details, see: https://xrpl.org/amendments.html

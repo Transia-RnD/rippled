@@ -389,6 +389,24 @@ loan(uint256 const& key)
 }
 
 Keylet
+couponSchedule(AccountID const& issuer, Asset const& bondAsset) noexcept;
+
+inline Keylet
+couponSchedule(uint256 const& scheduleKey)
+{
+    return {ltCOUPON_SCHEDULE, scheduleKey};
+}
+
+Keylet
+couponRegistration(uint256 const& couponScheduleID, AccountID const& holder) noexcept;
+
+inline Keylet
+couponRegistration(uint256 const& key)
+{
+    return {ltCOUPON_REGISTRATION, key};
+}
+
+Keylet
 permissionedDomain(AccountID const& account, std::uint32_t seq) noexcept;
 
 Keylet

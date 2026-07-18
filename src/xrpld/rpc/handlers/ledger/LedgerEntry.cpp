@@ -476,6 +476,53 @@ parseLedgerHashes(
 }
 
 static std::expected<uint256, json::Value>
+parseCouponSchedule(
+    json::Value const& params,
+    json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+    {
+        return parseObjectID(params, fieldName);
+    }
+
+    auto const issuer =
+        LedgerEntryHelpers::requiredAccountID(params, jss::issuer, "malformedIssuer");
+    if (!issuer)
+        return std::unexpected(issuer.error());
+
+    auto const asset = LedgerEntryHelpers::requiredAsset(params, jss::asset, "malformedRequest");
+    if (!asset)
+        return std::unexpected(asset.error());
+
+    return keylet::couponSchedule(*issuer, *asset).key;
+}
+
+static std::expected<uint256, json::Value>
+parseCouponRegistration(
+    json::Value const& params,
+    json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+    {
+        return parseObjectID(params, fieldName);
+    }
+
+    auto const scheduleID =
+        LedgerEntryHelpers::requiredUInt256(params, jss::coupon_schedule_id, "malformedRequest");
+    if (!scheduleID)
+        return std::unexpected(scheduleID.error());
+
+    auto const holder =
+        LedgerEntryHelpers::requiredAccountID(params, jss::account, "malformedAddress");
+    if (!holder)
+        return std::unexpected(holder.error());
+
+    return keylet::couponRegistration(*scheduleID, *holder).key;
+}
+
+static std::expected<uint256, json::Value>
 parseLoanBroker(
     json::Value const& params,
     json::StaticString const fieldName,
