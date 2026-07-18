@@ -108,6 +108,10 @@ transResults()
         MAKE_ERROR(tecPRECISION_LOSS,                "The amounts used by the transaction cannot interact."),
         MAKE_ERROR(tecBAD_PROOF,                     "Proof cannot be verified"),
         MAKE_ERROR(tecNO_SPONSOR_PERMISSION,         "Sponsor has not authorized this transaction."),
+        MAKE_ERROR(tecBALLOT_CLOSED,                 "The ballot voting window has closed."),
+        MAKE_ERROR(tecBALLOT_VOTED,                  "The account has already voted on this ballot."),
+        MAKE_ERROR(tecBALLOT_NOT_OPEN,               "The ballot voting window has not opened yet."),
+        MAKE_ERROR(tecBALLOT_EXISTS,                 "The issuance already has an open ballot."),
 
         MAKE_ERROR(tefALREADY,                     "The exact transaction was already in this ledger."),
         MAKE_ERROR(tefBAD_ADD_AUTH,                "Not authorized to add account."),

@@ -370,6 +370,10 @@ enum TECcodes : TERUnderlyingType {
     tecNO_DELEGATE_PERMISSION = 198,
     tecBAD_PROOF = 199,
     tecNO_SPONSOR_PERMISSION = 200,
+    tecBALLOT_CLOSED = 201,
+    tecBALLOT_VOTED = 202,
+    tecBALLOT_NOT_OPEN = 203,
+    tecBALLOT_EXISTS = 204,
 };
 
 //------------------------------------------------------------------------------
