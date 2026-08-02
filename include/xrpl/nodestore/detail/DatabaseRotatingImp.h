@@ -47,6 +47,9 @@ public:
     std::size_t
     generationCount() const override;
 
+    std::uint64_t
+    copyForwardCount() const override;
+
     void
     beginRetire() override;
 

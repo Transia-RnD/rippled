@@ -84,6 +84,12 @@ DatabaseRotatingImp::generationCount() const
     return ring_->size();
 }
 
+std::uint64_t
+DatabaseRotatingImp::copyForwardCount() const
+{
+    return copyForwardCount_.load(std::memory_order_relaxed);
+}
+
 void
 DatabaseRotatingImp::beginRetire()
 {

@@ -8,6 +8,7 @@
 #include <xrpld/app/rdb/backend/SQLiteDatabase.h>
 #include <xrpld/core/Config.h>
 
+#include <xrpl/basics/Blob.h>
 #include <xrpl/basics/ByteUtilities.h>
 #include <xrpl/basics/base_uint.h>
 #include <xrpl/beast/unit_test/suite.h>
@@ -16,6 +17,8 @@
 #include <xrpl/json/json_value.h>
 #include <xrpl/nodestore/Backend.h>
 #include <xrpl/nodestore/Manager.h>
+#include <xrpl/nodestore/NodeObject.h>
+#include <xrpl/nodestore/Types.h>
 #include <xrpl/nodestore/detail/DatabaseRotatingImp.h>
 #include <xrpl/protocol/ErrorCodes.h>
 #include <xrpl/protocol/LedgerHeader.h>
@@ -611,6 +614,91 @@ public:
         }
     }
 
+    // Store a node into the writable generation and return its hash. A distinct tag byte
+    // gives each node a distinct key and payload.
+    uint256
+    storeNode(NodeStore::DatabaseRotating& dbr, std::uint8_t tag)
+    {
+        uint256 hash;
+        hash.begin()[0] = tag;
+        Blob blob{tag, tag, tag};
+        dbr.store(NodeObjectType::AccountNode, std::move(blob), hash, 1);
+        return hash;
+    }
+
+    bool
+    hasNode(NodeStore::DatabaseRotating& dbr, uint256 const& hash)
+    {
+        return dbr.fetchNodeObject(hash, 0, NodeStore::FetchType::Synchronous, false) != nullptr;
+    }
+
+    void
+    testRetention()
+    {
+        // Prove the generational invariant the whole feature rests on: retiring the oldest
+        // generation preserves its still-live nodes (evacuated forward) and reclaims only
+        // its dead ones, and evacuation is scoped to the retiring generation so nodes in
+        // other sealed generations are never needlessly copied. This is also the recovery
+        // guarantee — a node retained across a rotation is still fetchable afterwards.
+        testcase("generational retention and evacuation");
+
+        using namespace jtx;
+        Env env(*this, envconfig(onlineDelete));
+        NodeStoreScheduler scheduler(env.app().getJobQueue());
+        auto nscfg = env.app().config().section(Sections::kNodeDatabase);
+
+        auto const noop = [](std::vector<std::string> const&) {};
+
+        // Start with one generation (g0, writable) and grow the ring to three:
+        // g0 (oldest) -> g1 (middle) -> g2 (writable).
+        std::vector<std::shared_ptr<NodeStore::Backend>> generations;
+        generations.emplace_back(makeBackendRotating(env, scheduler, "g0"));
+        auto dbr = std::make_unique<NodeStore::DatabaseRotatingImp>(
+            scheduler, 4, std::move(generations), nscfg, env.app().getJournal("NodeStoreTest"));
+
+        // Into g0: a live node (X, will be evacuated) and a dead node (Z, never touched
+        // during the retire window, so it must be reclaimed with the generation).
+        auto const x = storeNode(*dbr, 0x11);
+        auto const z = storeNode(*dbr, 0x22);
+
+        dbr->advance(makeBackendRotating(env, scheduler, "g1"), noop);
+        // Into g1: a live node (Y) in a generation that will NOT be retired.
+        auto const y = storeNode(*dbr, 0x33);
+
+        dbr->advance(makeBackendRotating(env, scheduler, "g2"), noop);
+        BEAST_EXPECT(dbr->generationCount() == 3);
+        BEAST_EXPECT(dbr->getName() == "g2");
+
+        // Retire the oldest generation (g0). During the window, evacuate live nodes by
+        // fetching them — exactly what SHAMapStore does via visitNodes(copyNode).
+        dbr->beginRetire();
+
+        // X is served by the retiring generation, so it is copied forward into the
+        // writable backend.
+        BEAST_EXPECT(hasNode(*dbr, x));
+        BEAST_EXPECT(dbr->copyForwardCount() == 1);
+
+        // Y is served by a sealed but non-retiring generation: found, but NOT copied — the
+        // property that keeps evacuation O(churn) rather than O(total state).
+        BEAST_EXPECT(hasNode(*dbr, y));
+        BEAST_EXPECT(dbr->copyForwardCount() == 1);
+
+        // Fetching X again now hits the writable copy first, so it is not copied twice.
+        BEAST_EXPECT(hasNode(*dbr, x));
+        BEAST_EXPECT(dbr->copyForwardCount() == 1);
+
+        dbr->endRetire();
+        dbr->retireOldest(noop);
+        BEAST_EXPECT(dbr->generationCount() == 2);
+
+        // X lived only in g0; its survival proves it was evacuated to the writable backend.
+        BEAST_EXPECT(hasNode(*dbr, x));
+        // Z lived only in g0 and was never evacuated: reclaimed with the dropped generation.
+        BEAST_EXPECT(!hasNode(*dbr, z));
+        // Y lives in g1, which was not dropped: it survives without ever being copied.
+        BEAST_EXPECT(hasNode(*dbr, y));
+    }
+
     void
     run() override
     {
@@ -618,6 +706,7 @@ public:
         testAutomatic();
         testCanDelete();
         testRotate();
+        testRetention();
     }
 };
 

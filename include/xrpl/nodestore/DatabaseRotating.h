@@ -6,6 +6,7 @@
 #include <xrpl/nodestore/Scheduler.h>
 
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
@@ -53,6 +54,15 @@ public:
      */
     virtual std::size_t
     generationCount() const = 0;
+
+    /**
+     * Number of live nodes copied forward out of the retiring generation during the
+     * current retire window (reset by beginRetire). This is the evacuation volume — the
+     * churn the ring pays in place of copying the whole live state every rotation — so it
+     * quantifies that reclamation is O(churn) rather than O(total state).
+     */
+    virtual std::uint64_t
+    copyForwardCount() const = 0;
 
     /**
      * Begin/end retiring the oldest generation. While a retire is in progress, any
