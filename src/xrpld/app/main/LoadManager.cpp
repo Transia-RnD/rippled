@@ -149,25 +149,28 @@ LoadManager::run()
                 logicError("Fatal server stall detected");
             }
         }
-    }
+        // Adjust this node's local load fee every tick from current job-queue
+        // pressure: a saturated queue raises the fee (shedding load), a healthy one
+        // lets it decay. Must run inside the loop — the wait_until above only breaks
+        // out at shutdown, where adjusting the fee is pointless.
+        bool change = false;
+        if (app_.getJobQueue().isOverloaded())
+        {
+            JLOG(journal_.info()) << "Raising local fee (JQ overload): "
+                                  << app_.getJobQueue().getJson(0);
+            change = app_.getFeeTrack().raiseLocalFee();
+        }
+        else
+        {
+            change = app_.getFeeTrack().lowerLocalFee();
+        }
 
-    bool change = false;
-    if (app_.getJobQueue().isOverloaded())
-    {
-        JLOG(journal_.info()) << "Raising local fee (JQ overload): "
-                              << app_.getJobQueue().getJson(0);
-        change = app_.getFeeTrack().raiseLocalFee();
-    }
-    else
-    {
-        change = app_.getFeeTrack().lowerLocalFee();
-    }
-
-    if (change)
-    {
-        // VFALCO TODO replace this with a Listener / observer and
-        // subscribe in NetworkOPs or Application.
-        app_.getOPs().reportFeeChange();
+        if (change)
+        {
+            // VFALCO TODO replace this with a Listener / observer and
+            // subscribe in NetworkOPs or Application.
+            app_.getOPs().reportFeeChange();
+        }
     }
 }
 
