@@ -228,6 +228,9 @@ SHAMapStoreImp::makeNodeStore(int readThreads)
             app_.getJournal(kNodeStoreName));
         fdRequired_ += dbr->fdRequired();
         dbRotating_ = dbr.get();
+        JLOG(journal_.warn()) << "online_delete generation ring: opened " << dbr->generationCount()
+                              << " generations, budget " << numGenerations_
+                              << " (retire when above budget)";
         db.reset(dynamic_cast<NodeStore::Database*>(dbr.release()));
     }
     else
@@ -386,6 +389,12 @@ SHAMapStoreImp::run()
             // Once the ring exceeds its generation budget, retire the oldest generation:
             // evacuate only its still-live nodes into the writable backend, then drop it.
             // This is the O(churn) replacement for the old O(total state) copy-on-rotate.
+            JLOG(journal_.warn()) << "rotation " << validatedSeq << ": ring has "
+                                  << dbRotating_->generationCount() << " generations, budget "
+                                  << numGenerations_
+                                  << (dbRotating_->generationCount() > numGenerations_
+                                          ? " -> retiring oldest"
+                                          : " -> below budget, no retirement");
             if (dbRotating_->generationCount() > numGenerations_)
             {
                 // RAII: close the retire window on any early return / exception, so a
@@ -408,9 +417,10 @@ SHAMapStoreImp::run()
                 // dead: retained ledgers span at most one deleteInterval (online_delete >=
                 // ledger_history), and those ledgers' unique nodes live in the newest
                 // generation, so dropping the rest is correct.
-                JLOG(journal_.debug())
+                JLOG(journal_.warn())
                     << "evacuating retiring generation for ledger " << validatedSeq;
                 std::uint64_t nodeCount = 0;
+                bool evacuationComplete = true;
                 try
                 {
                     validatedLedger->stateMap().snapShot(false)->visitNodes(
@@ -420,15 +430,22 @@ SHAMapStoreImp::run()
                 }
                 catch (SHAMapMissingNode const& e)
                 {
-                    JLOG(journal_.error())
-                        << "Missing node while evacuating retiring generation: " << e.what();
-                    continue;
+                    // A node absent from every generation AND memory is already lost: it
+                    // cannot be recovered whether or not we retire, so aborting retirement
+                    // only leaks the ring forever (the observed failure mode). Log it,
+                    // preserve everything reachable + cached (freshenCaches below), and still
+                    // drop the oldest generation so the ring stays bounded.
+                    evacuationComplete = false;
+                    JLOG(journal_.warn())
+                        << "evacuation incomplete for ledger " << validatedSeq << " after "
+                        << nodeCount << " nodes -- a node is already lost (retiring anyway to keep "
+                        << "the ring bounded): " << e.what();
                 }
 
                 if (healthWait() == HealthResult::Stopping)
                     return;
-                JLOG(journal_.debug())
-                    << "evacuated ledger " << validatedSeq << " nodecount " << nodeCount;
+                JLOG(journal_.warn()) << "evacuated ledger " << validatedSeq << " nodecount "
+                                      << nodeCount << (evacuationComplete ? "" : " (INCOMPLETE)");
 
                 // Any hot node still living only in the retiring generation is re-stored
                 // into the writable backend via the same scoped copy-forward.
@@ -443,8 +460,12 @@ SHAMapStoreImp::run()
                 if (healthWait() == HealthResult::Stopping)
                     return;
 
+                auto const evacuated = dbRotating_->copyForwardCount();
                 dbRotating_->retireOldest(persistRing);
                 clearCaches(validatedSeq);
+                JLOG(journal_.warn()) << "retired oldest generation for ledger " << validatedSeq
+                                      << ": evacuated " << evacuated << " live nodes, ring now "
+                                      << dbRotating_->generationCount() << " generations";
             }
 
             JLOG(journal_.warn()) << "finished rotation " << validatedSeq;

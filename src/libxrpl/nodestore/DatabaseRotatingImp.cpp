@@ -67,6 +67,11 @@ DatabaseRotatingImp::advance(
     std::vector<std::string> names;
     {
         std::scoped_lock const lock(mutex_);
+        // Flush the outgoing writable's buffered writes before it is sealed read-only, so
+        // every node written to it is durable in its own generation and can't later surface
+        // as missing when a cold read falls through to it.
+        if (!ring_->empty())
+            ring_->back()->sync();
         // Copy-on-write: the prior writable stays in the ring as a sealed, read-only
         // generation; the new backend becomes the writable one at the back.
         auto next = std::make_shared<Ring>(*ring_);
