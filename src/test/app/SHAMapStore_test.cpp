@@ -33,6 +33,7 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace xrpl::test {
 
@@ -543,17 +544,16 @@ public:
 
         NodeStoreScheduler scheduler(env.app().getJobQueue());
 
-        std::string const writableDb = "write";
-        std::string const archiveDb = "archive";
-        auto writableBackend = makeBackendRotating(env, scheduler, writableDb);
-        auto archiveBackend = makeBackendRotating(env, scheduler, archiveDb);
+        // Open a two-generation ring, oldest -> newest: {"archive", "write"}.
+        std::vector<std::shared_ptr<NodeStore::Backend>> generations;
+        generations.emplace_back(makeBackendRotating(env, scheduler, "archive"));
+        generations.emplace_back(makeBackendRotating(env, scheduler, "write"));
 
         static constexpr int kReadThreads = 4;
         auto dbr = std::make_unique<NodeStore::DatabaseRotatingImp>(
             scheduler,
             kReadThreads,
-            std::move(writableBackend),
-            std::move(archiveBackend),
+            std::move(generations),
             nscfg,
             env.app().getJournal("NodeStoreTest"));
 
@@ -562,46 +562,53 @@ public:
         using namespace std::chrono_literals;
         std::atomic<int> threadNum = 0;
 
+        BEAST_EXPECT(dbr->getName() == "write");
+        BEAST_EXPECT(dbr->generationCount() == 2);
+
+        // advance: append a fresh writable generation "1". The prior writable stays in
+        // the ring; the persist callback receives the whole ring, oldest -> newest.
         {
             auto newBackend = makeBackendRotating(env, scheduler, std::to_string(++threadNum));
-
-            auto const cb = [&](std::string const& writableName, std::string const& archiveName) {
-                BEAST_EXPECT(writableName == "1");
-                BEAST_EXPECT(archiveName == "write");
-                // Ensure that dbr functions can be called from within the
-                // callback
+            std::vector<std::string> persisted;
+            dbr->advance(std::move(newBackend), [&](std::vector<std::string> const& generations) {
+                persisted = generations;
+                // Ensure that dbr functions can be called from within the callback
                 BEAST_EXPECT(dbr->getName() == "1");
-            };
-
-            dbr->rotate(std::move(newBackend), cb);
+            });
+            BEAST_EXPECT((persisted == std::vector<std::string>{"archive", "write", "1"}));
         }
         BEAST_EXPECT(threadNum == 1);
         BEAST_EXPECT(dbr->getName() == "1");
+        BEAST_EXPECT(dbr->generationCount() == 3);
 
-        /////////////////////////////////////////////////////////////
-        // Do something stupid. Try to re-enter rotate from inside the callback.
+        // retire the oldest generation ("archive"); the ring shrinks and the persist
+        // callback receives the shortened ring.
         {
-            auto const cb = [&](std::string const& writableName, std::string const& archiveName) {
-                BEAST_EXPECT(writableName == "3");
-                BEAST_EXPECT(archiveName == "2");
-                // Ensure that dbr functions can be called from within the
-                // callback
-                BEAST_EXPECT(dbr->getName() == "3");
-            };
-            auto const cbReentrant = [&](std::string const& writableName,
-                                         std::string const& archiveName) {
-                BEAST_EXPECT(writableName == "2");
-                BEAST_EXPECT(archiveName == "1");
-                auto newBackend = makeBackendRotating(env, scheduler, std::to_string(++threadNum));
-                // Reminder: doing this is stupid and should never happen
-                dbr->rotate(std::move(newBackend), cb);
-            };
-            auto newBackend = makeBackendRotating(env, scheduler, std::to_string(++threadNum));
-            dbr->rotate(std::move(newBackend), cbReentrant);
+            dbr->beginRetire();
+            std::vector<std::string> persisted;
+            dbr->retireOldest([&](std::vector<std::string> const& generations) {
+                persisted = generations;
+                BEAST_EXPECT(dbr->getName() == "1");
+            });
+            dbr->endRetire();
+            BEAST_EXPECT((persisted == std::vector<std::string>{"write", "1"}));
         }
+        BEAST_EXPECT(dbr->getName() == "1");
+        BEAST_EXPECT(dbr->generationCount() == 2);
 
-        BEAST_EXPECT(threadNum == 3);
-        BEAST_EXPECT(dbr->getName() == "3");
+        // retireOldest never drops the sole writable generation.
+        {
+            dbr->retireOldest([&](std::vector<std::string> const& generations) {
+                BEAST_EXPECT((generations == std::vector<std::string>{"1"}));
+            });
+            BEAST_EXPECT(dbr->generationCount() == 1);
+
+            bool retiredWritable = false;
+            dbr->retireOldest([&](std::vector<std::string> const&) { retiredWritable = true; });
+            BEAST_EXPECT(!retiredWritable);
+            BEAST_EXPECT(dbr->generationCount() == 1);
+            BEAST_EXPECT(dbr->getName() == "1");
+        }
     }
 
     void

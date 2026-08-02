@@ -99,6 +99,11 @@ private:
     std::uint32_t deleteInterval_ = 0;
     bool advisoryDelete_ = false;
     std::uint32_t deleteBatch_ = 100;
+    // Number of NodeStore generations to retain in the ring before retiring the oldest.
+    // The disk<->copy tradeoff: larger keeps more (transient) on-disk data but re-stores
+    // a cold node less often (~once per this many rotations instead of every rotation).
+    // Minimum 2 (writable + one archive, i.e. the historical behavior).
+    std::uint32_t numGenerations_ = 8;
     std::chrono::milliseconds backOff_{100};
     std::chrono::seconds ageThreshold_{60};
     /**

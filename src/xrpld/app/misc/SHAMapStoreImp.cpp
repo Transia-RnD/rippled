@@ -130,6 +130,11 @@ SHAMapStoreImp::SHAMapStoreImp(
     {
         // Configuration that affects the behavior of online delete
         getIfExists(section, Keys::kDeleteBatch, deleteBatch_);
+        getIfExists(section, Keys::kOnlineDeleteGenerations, numGenerations_);
+        // A ring needs at least a writable generation plus one archive (the historical
+        // two-backend behavior); fewer would drop data still referenced by the network.
+        if (numGenerations_ < 2u)
+            numGenerations_ = 2u;
         std::uint32_t temp = 0;
         if (getIfExists(section, Keys::kBackOffMilliseconds, temp) ||
             // Included for backward compatibility with an undocumented setting
@@ -190,22 +195,35 @@ SHAMapStoreImp::makeNodeStore(int readThreads)
     if (deleteInterval_ != 0u)
     {
         SavedState state = stateDb_.getState();
-        auto writableBackend = makeBackendRotating(state.writableDb);
-        auto archiveBackend = makeBackendRotating(state.archiveDb);
-        if (state.writableDb.empty())
+
+        // Open the generation ring, oldest -> newest. New nodes are written to the
+        // newest (writable) generation; reads probe newest -> oldest.
+        std::vector<std::shared_ptr<NodeStore::Backend>> generations;
+        if (state.generations.empty())
         {
-            state.writableDb = writableBackend->getName();
-            state.archiveDb = archiveBackend->getName();
+            // First run: bootstrap a two-generation ring (a sealed archive plus an
+            // empty writable), matching the historical initial two-backend state.
+            auto archive = makeBackendRotating();
+            auto writable = makeBackendRotating();
+            state.archiveDb = archive->getName();
+            state.writableDb = writable->getName();
+            state.generations = {archive->getName(), writable->getName()};
             stateDb_.setState(state);
+            generations.emplace_back(std::move(archive));
+            generations.emplace_back(std::move(writable));
+        }
+        else
+        {
+            for (auto const& name : state.generations)
+                generations.emplace_back(makeBackendRotating(name));
         }
 
-        // Create NodeStore with two backends to allow online deletion of
-        // data
+        // Create the rotating NodeStore over the generation ring to allow online
+        // deletion of data.
         auto dbr = std::make_unique<NodeStore::DatabaseRotatingImp>(
             scheduler_,
             readThreads,
-            std::move(writableBackend),
-            std::move(archiveBackend),
+            std::move(generations),
             nscfg,
             app_.getJournal(kNodeStoreName));
         fdRequired_ += dbr->fdRequired();
@@ -343,74 +361,91 @@ SHAMapStoreImp::run()
             if (healthWait() == HealthResult::Stopping)
                 return;
 
-            JLOG(journal_.debug()) << "copying ledger " << validatedSeq;
-            std::uint64_t nodeCount = 0;
-
-            try
-            {
-                validatedLedger->stateMap().snapShot(false)->visitNodes(
-                    [this, &nodeCount](SHAMapTreeNode const& node) {
-                        return copyNode(nodeCount, node);
-                    });
-            }
-            catch (SHAMapMissingNode const& e)
-            {
-                JLOG(journal_.error())
-                    << "Missing node while copying ledger before rotate: " << e.what();
-                continue;
-            }
-
-            if (healthWait() == HealthResult::Stopping)
-                return;
-            // Only log if we completed without a "health" abort
-            JLOG(journal_.debug())
-                << "copied ledger " << validatedSeq << " nodecount " << nodeCount;
-
-            // Close the getKeys()->swap exposure window: from here until
-            // rotate() completes, an ordinary read served by the archive is
-            // copied forward into the writable backend, so a node fetched
-            // from the doomed archive cannot be left RAM-only when the
-            // archive is deleted. RAII so the early returns below (and any
-            // exception) also clear the flag.
-            struct RotationExposureGuard
-            {
-                NodeStore::DatabaseRotating& db;
-                ~RotationExposureGuard()
-                {
-                    db.setRotationInFlight(false);
-                }
+            // Persist the whole generation ring durably. archiveDb/writableDb are kept
+            // in sync with the ring ends so an older two-backend build could still boot.
+            auto const persistRing = [&](std::vector<std::string> const& generations) {
+                SavedState savedState;
+                savedState.generations = generations;
+                savedState.archiveDb = generations.empty() ? std::string() : generations.front();
+                savedState.writableDb = generations.empty() ? std::string() : generations.back();
+                savedState.lastRotated = lastRotated;
+                stateDb_.setState(savedState);
             };
-            RotationExposureGuard const rotationExposureGuard{*dbRotating_};
-            dbRotating_->setRotationInFlight(true);
-
-            JLOG(journal_.debug()) << "freshening caches";
-            freshenCaches();
-            if (healthWait() == HealthResult::Stopping)
-                return;
-            // Only log if we completed without a "health" abort
-            JLOG(journal_.debug()) << validatedSeq << " freshened caches";
-
-            JLOG(journal_.trace()) << "Making a new backend";
-            auto newBackend = makeBackendRotating();
-            JLOG(journal_.debug()) << validatedSeq << " new backend " << newBackend->getName();
-
-            clearCaches(validatedSeq);
-            if (healthWait() == HealthResult::Stopping)
-                return;
 
             lastRotated = validatedSeq;
 
-            dbRotating_->rotate(
-                std::move(newBackend),
-                [&](std::string const& writableName, std::string const& archiveName) {
-                    SavedState savedState;
-                    savedState.writableDb = writableName;
-                    savedState.archiveDb = archiveName;
-                    savedState.lastRotated = lastRotated;
-                    stateDb_.setState(savedState);
+            // Seal the current writable generation and open a fresh empty one. This is
+            // O(1): new nodes now accumulate in the new generation, and the whole live
+            // set is NOT re-stored (unlike the old full-state copy).
+            JLOG(journal_.trace()) << "Making a new writable generation";
+            auto newBackend = makeBackendRotating();
+            JLOG(journal_.debug())
+                << validatedSeq << " new writable generation " << newBackend->getName();
+            dbRotating_->advance(std::move(newBackend), persistRing);
 
-                    clearCaches(validatedSeq);
-                });
+            // Once the ring exceeds its generation budget, retire the oldest generation:
+            // evacuate only its still-live nodes into the writable backend, then drop it.
+            // This is the O(churn) replacement for the old O(total state) copy-on-rotate.
+            if (dbRotating_->generationCount() > numGenerations_)
+            {
+                // RAII: close the retire window on any early return / exception, so a
+                // read is never copied forward from a generation we are no longer dropping.
+                struct RetireGuard
+                {
+                    NodeStore::DatabaseRotating& db;
+                    ~RetireGuard()
+                    {
+                        db.endRetire();
+                    }
+                };
+                RetireGuard const retireGuard{*dbRotating_};
+                dbRotating_->beginRetire();
+
+                // Copy forward the retiring generation's survivors. copyNode fetches each
+                // current-state node; the scoped copy-forward re-stores only those served
+                // by the retiring generation (the cold survivors), not the whole live set.
+                // Nodes in the retiring generation NOT reachable from the current state are
+                // dead: retained ledgers span at most one deleteInterval (online_delete >=
+                // ledger_history), and those ledgers' unique nodes live in the newest
+                // generation, so dropping the rest is correct.
+                JLOG(journal_.debug())
+                    << "evacuating retiring generation for ledger " << validatedSeq;
+                std::uint64_t nodeCount = 0;
+                try
+                {
+                    validatedLedger->stateMap().snapShot(false)->visitNodes(
+                        [this, &nodeCount](SHAMapTreeNode const& node) {
+                            return copyNode(nodeCount, node);
+                        });
+                }
+                catch (SHAMapMissingNode const& e)
+                {
+                    JLOG(journal_.error())
+                        << "Missing node while evacuating retiring generation: " << e.what();
+                    continue;
+                }
+
+                if (healthWait() == HealthResult::Stopping)
+                    return;
+                JLOG(journal_.debug())
+                    << "evacuated ledger " << validatedSeq << " nodecount " << nodeCount;
+
+                // Any hot node still living only in the retiring generation is re-stored
+                // into the writable backend via the same scoped copy-forward.
+                JLOG(journal_.debug()) << "freshening caches";
+                freshenCaches();
+                if (healthWait() == HealthResult::Stopping)
+                    return;
+
+                // Invalidate FullBelow / ledger caches before the drop so nothing resolves
+                // to the removed backend.
+                clearCaches(validatedSeq);
+                if (healthWait() == HealthResult::Stopping)
+                    return;
+
+                dbRotating_->retireOldest(persistRing);
+                clearCaches(validatedSeq);
+            }
 
             JLOG(journal_.warn()) << "finished rotation " << validatedSeq;
         }
@@ -443,42 +478,42 @@ SHAMapStoreImp::dbPaths()
     SavedState state = stateDb_.getState();
 
     {
-        auto update = [&dbPath](std::string& sPath) {
+        // If the configured node_db "path" changed, rewrite every stored generation
+        // name (and the legacy pair) to point at the new directory, keeping filenames.
+        using namespace boost::filesystem;
+        bool changed = false;
+        auto relocate = [&dbPath, &changed](std::string& sPath) {
             if (sPath.empty())
-                return false;
-
-            // Check if configured "path" matches stored directory path
-            using namespace boost::filesystem;
+                return;
             auto const stored{path(sPath)};
             if (stored.parent_path() == dbPath)
-                return false;
-
+                return;
             sPath = (dbPath / stored.filename()).string();
-            return true;
+            changed = true;
         };
 
-        if (update(state.writableDb))
-        {
-            update(state.archiveDb);
+        for (auto& name : state.generations)
+            relocate(name);
+        relocate(state.writableDb);
+        relocate(state.archiveDb);
+        if (changed)
             stateDb_.setState(state);
-        }
     }
 
-    bool writableDbExists = false;
-    bool archiveDbExists = false;
-
+    // Every generation named in the ring must exist on disk. Any other directory whose
+    // stem is the backend prefix is an orphan (e.g. a generation whose directory was
+    // created but never persisted into the ring before a crash) and is removed.
+    std::size_t generationsFound = 0;
     std::vector<boost::filesystem::path> pathsToDelete;
     for (boost::filesystem::directory_iterator it(dbPath);
          it != boost::filesystem::directory_iterator();
          ++it)
     {
-        if (state.writableDb == it->path().string())
+        auto const name = it->path().string();
+        if (std::find(state.generations.begin(), state.generations.end(), name) !=
+            state.generations.end())
         {
-            writableDbExists = true;
-        }
-        else if (state.archiveDb == it->path().string())
-        {
-            archiveDbExists = true;
+            ++generationsFound;
         }
         else if (dbPrefix_ == it->path().stem().string())
         {
@@ -486,19 +521,15 @@ SHAMapStoreImp::dbPaths()
         }
     }
 
-    if ((!writableDbExists && !state.writableDb.empty()) ||
-        (!archiveDbExists && !state.archiveDb.empty()) || (writableDbExists != archiveDbExists) ||
-        state.writableDb.empty() != state.archiveDb.empty())
+    if (generationsFound != state.generations.size())
     {
         boost::filesystem::path stateDbPathName = app_.config().legacy(Sections::kDatabasePath);
         stateDbPathName /= dbName_;
         stateDbPathName += "*";
 
         journal_.error() << "state db error:\n"
-                         << "  writableDbExists " << writableDbExists << " archiveDbExists "
-                         << archiveDbExists << '\n'
-                         << "  writableDb '" << state.writableDb << "' archiveDb '"
-                         << state.archiveDb << "\n\n"
+                         << "  generations expected " << state.generations.size() << " found "
+                         << generationsFound << "\n\n"
                          << "The existing data is in a corrupted state.\n"
                          << "To resume operation, remove the files matching "
                          << stateDbPathName.string() << " and contents of the directory "
