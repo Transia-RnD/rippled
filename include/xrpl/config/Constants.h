@@ -9,6 +9,7 @@ struct Sections
     static constexpr auto kBetaRpcApi = "beta_rpc_api";
     static constexpr auto kClusterNodes = "cluster_nodes";
     static constexpr auto kCompression = "compression";
+    static constexpr auto kConsensusReserveThreads = "consensus_reserve_threads";
     static constexpr auto kCrawl = "crawl";
     static constexpr auto kDatabasePath = "database_path";
     static constexpr auto kDebugLogfile = "debug_logfile";

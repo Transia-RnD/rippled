@@ -237,6 +237,10 @@ public:
     int ioWorkers = 0;        // io svc thread count. default: 2
     int prefetchWorkers = 0;  // prefetch thread count. default: 4
 
+    // Worker threads reserved for consensus-critical jobs so they are never
+    // starved by non-consensus load. 0 = off (default), unchanged behavior.
+    int consensusReserveThreads = 0;
+
     // Can only be set in code, specifically unit tests
     bool forceMultiThread = false;
 

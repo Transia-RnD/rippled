@@ -357,7 +357,8 @@ public:
                   collectorManager_->group("jobq"),
                   logs_->journal("JobQueue"),
                   *logs_,
-                  *perfLog_))
+                  *perfLog_,
+                  config_->consensusReserveThreads))
         , nodeStoreScheduler_(*jobQueue_)
         , shaMapStore_(makeSHAMapStore(*this, nodeStoreScheduler_, logs_->journal("SHAMapStore")))
         , tempNodeCache_(

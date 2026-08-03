@@ -31,6 +31,10 @@ private:
     std::chrono::milliseconds const avgLatency_;
     std::chrono::milliseconds const peakLatency_;
 
+    // True for consensus-liveness-critical jobs that may use reserved worker
+    // slots and are never starved by non-consensus load.
+    bool const consensusCritical_;
+
 public:
     // Not default constructible
     JobTypeInfo() = delete;
@@ -40,12 +44,14 @@ public:
         std::string name,
         int limit,
         std::chrono::milliseconds avgLatency,
-        std::chrono::milliseconds peakLatency)
+        std::chrono::milliseconds peakLatency,
+        bool consensusCritical = false)
         : type_(type)
         , name_(std::move(name))
         , limit_(limit)
         , avgLatency_(avgLatency)
         , peakLatency_(peakLatency)
+        , consensusCritical_(consensusCritical)
     {
     }
 
@@ -83,6 +89,12 @@ public:
     getPeakLatency() const
     {
         return peakLatency_;
+    }
+
+    [[nodiscard]] bool
+    isConsensusCritical() const
+    {
+        return consensusCritical_;
     }
 };
 

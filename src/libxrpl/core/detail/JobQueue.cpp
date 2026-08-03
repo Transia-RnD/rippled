@@ -26,14 +26,17 @@ JobQueue::JobQueue(
     beast::insight::Collector::ptr const& collector,
     beast::Journal journal,
     Logs& logs,
-    perf::PerfLog& perfLog)
+    perf::PerfLog& perfLog,
+    int reservedThreads)
     : journal_(journal)
     , invalidJobData_(JobTypes::instance().getInvalid(), collector, logs)
+    , reservedThreads_(std::max(0, std::min(reservedThreads, threadCount - 1)))
     , workers_(*this, &perfLog, "JobQueue", threadCount)
     , perfLog_(perfLog)
     , collector_(collector)
 {
-    JLOG(journal_.info()) << "Using " << threadCount << "  threads";
+    JLOG(journal_.info()) << "Using " << threadCount << "  threads, reserving " << reservedThreads_
+                          << " for consensus";
 
     hook_ = collector_->makeHook([this] { collect(); });
     jobCount_ = collector_->makeGauge("job_count");
@@ -287,13 +290,19 @@ JobQueue::isStopped() const
     return stopped_;
 }
 
-void
+bool
 JobQueue::getNextJob(Job& job)
 {
-    XRPL_ASSERT(!jobSet_.empty(), "xrpl::JobQueue::getNextJob : non-empty jobs");
+    // An empty set is legitimate here: with consensus-thread reservation
+    // finishJob may re-task a worker whose target job another worker already
+    // took. The loop below simply finds nothing and returns false.
 
-    std::set<Job>::const_iterator iter;
-    for (iter = jobSet_.begin(); iter != jobSet_.end(); ++iter)
+    // Slots available to non-consensus jobs. When reservedThreads_ == 0 this
+    // equals the thread count, so the reservation gate below is always open
+    // and behavior is identical to a queue without reservation.
+    int const general = workers_.getNumberOfThreads() - reservedThreads_;
+
+    for (auto iter = jobSet_.begin(); iter != jobSet_.end(); ++iter)
     {
         JobType const type = iter->getType();
         XRPL_ASSERT(type != JtInvalid, "xrpl::JobQueue::getNextJob : valid job type");
@@ -302,19 +311,28 @@ JobQueue::getNextJob(Job& job)
         XRPL_ASSERT(
             data.running <= getJobLimit(type), "xrpl::JobQueue::getNextJob : maximum jobs running");
 
-        // Run this job if we're running below the limit.
-        if (data.running < getJobLimit(data.type()))
+        // A candidate runs only if it is below its per-type limit AND either it
+        // is consensus-critical (may use any free slot) or a general slot is
+        // still available (non-consensus jobs cannot occupy reserved slots).
+        bool const belowLimit = data.running < getJobLimit(data.type());
+        bool const reservationOk =
+            JobTypes::instance().get(type).isConsensusCritical() || runningTotal_ < general;
+
+        if (belowLimit && reservationOk)
         {
             XRPL_ASSERT(data.waiting > 0, "xrpl::JobQueue::getNextJob : positive data waiting");
             --data.waiting;
             ++data.running;
-            break;
+            ++runningTotal_;
+            job = *iter;
+            jobSet_.erase(iter);
+            return true;
         }
     }
 
-    XRPL_ASSERT(iter != jobSet_.end(), "xrpl::JobQueue::getNextJob : found next job");
-    job = *iter;
-    jobSet_.erase(iter);
+    // Nothing runnable right now: only reservation-blocked non-consensus jobs
+    // remain. The worker goes idle; finishJob re-wakes workers as slots free.
+    return false;
 }
 
 void
@@ -336,6 +354,12 @@ JobQueue::finishJob(JobType type)
     }
 
     --data.running;
+    --runningTotal_;
+
+    // A slot just freed. Re-wake a worker so any reservation-blocked job in the
+    // set gets re-evaluated. Guarded so the feature-off path is unchanged.
+    if (reservedThreads_ > 0 && !jobSet_.empty())
+        workers_.addTask();
 }
 
 void
@@ -350,7 +374,10 @@ JobQueue::processTask(int instance)
             Job job;
             {
                 std::scoped_lock const lock(mutex_);
-                getNextJob(job);
+                // No runnable job (only reservation-blocked jobs remain): go
+                // idle. finishJob re-wakes a worker when a slot frees.
+                if (!getNextJob(job))
+                    return;
                 ++processCount_;
             }
             type = job.getType();

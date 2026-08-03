@@ -1,18 +1,165 @@
 #include <test/jtx/Env.h>
 
+#include <xrpl/basics/Log.h>
+#include <xrpl/beast/insight/NullCollector.h>
 #include <xrpl/beast/unit_test/suite.h>
 #include <xrpl/core/Job.h>
 #include <xrpl/core/JobQueue.h>
+#include <xrpl/core/PerfLog.h>
 
 #include <atomic>
+#include <chrono>
+#include <condition_variable>
+#include <cstdint>
 #include <memory>
+#include <mutex>
+#include <string>
+#include <thread>
 
 namespace xrpl::test {
 
 //------------------------------------------------------------------------------
 
+namespace {
+
+// Minimal PerfLog stub so a JobQueue can be constructed in isolation.
+class NullPerfLog : public perf::PerfLog
+{
+    void
+    rpcStart(std::string const&, std::uint64_t) override
+    {
+    }
+    void
+    rpcFinish(std::string const&, std::uint64_t) override
+    {
+    }
+    void
+    rpcError(std::string const&, std::uint64_t) override
+    {
+    }
+    void
+    jobQueue(JobType) override
+    {
+    }
+    void
+    jobStart(
+        JobType,
+        std::chrono::microseconds,
+        std::chrono::time_point<std::chrono::steady_clock>,
+        int) override
+    {
+    }
+    void
+    jobFinish(JobType, std::chrono::microseconds, int) override
+    {
+    }
+    [[nodiscard]] json::Value
+    countersJson() const override
+    {
+        return {};
+    }
+    [[nodiscard]] json::Value
+    currentJson() const override
+    {
+        return {};
+    }
+    void
+    resizeJobs(int) override
+    {
+    }
+    void
+    rotate() override
+    {
+    }
+};
+
+}  // namespace
+
 class JobQueue_test : public beast::unit_test::Suite
 {
+    // Spin-wait for `pred` up to `timeout`; returns true if it became true.
+    template <class Pred>
+    static bool
+    waitFor(Pred pred, std::chrono::milliseconds timeout = std::chrono::seconds{10})
+    {
+        auto const deadline = std::chrono::steady_clock::now() + timeout;
+        while (!pred())
+        {
+            if (std::chrono::steady_clock::now() > deadline)
+                return false;
+            std::this_thread::sleep_for(std::chrono::milliseconds{1});
+        }
+        return true;
+    }
+
+    // Verifies that reserving worker slots keeps a consensus-critical job from
+    // being starved by a flood of long-running non-consensus jobs, and that
+    // every job still eventually completes.
+    void
+    testConsensusReservation()
+    {
+        testcase("consensus thread reservation");
+
+        using namespace std::chrono_literals;
+
+        Logs logs{beast::Severity::Fatal};
+        auto perfLog = std::make_unique<NullPerfLog>();
+        auto collector = beast::insight::NullCollector::make();
+
+        int const threadCount = 3;
+        int const reserved = 1;  // general = 2 non-consensus slots
+        JobQueue jq(threadCount, collector, logs.journal("JobQueueTest"), logs, *perfLog, reserved);
+
+        // Gate that blocks every non-consensus job until released.
+        std::mutex gm;
+        std::condition_variable gcv;
+        bool release = false;
+
+        std::atomic<int> clientsRunning{0};
+        std::atomic<int> clientsDone{0};
+        std::atomic<bool> consensusRan{false};
+
+        int const clientCount = 6;
+        for (int i = 0; i < clientCount; ++i)
+        {
+            BEAST_EXPECT(jq.addJob(JtClient, "flood", [&]() {
+                ++clientsRunning;
+                std::unique_lock lk(gm);
+                gcv.wait(lk, [&] { return release; });
+                lk.unlock();
+                ++clientsDone;
+            }));
+        }
+
+        // Wait until the general (non-reserved) slots are saturated. Only
+        // `general` == 2 non-consensus jobs may run at once; the rest wait.
+        BEAST_EXPECT(waitFor([&] { return clientsRunning.load() == threadCount - reserved; }));
+        // The reservation must prevent a client from stealing the reserved slot.
+        BEAST_EXPECT(clientsRunning.load() == threadCount - reserved);
+        BEAST_EXPECT(clientsDone.load() == 0);
+
+        // Post a consensus-critical job. It must run on the reserved slot even
+        // though every general slot is occupied and more clients are waiting.
+        BEAST_EXPECT(jq.addJob(JtNetopTimer, "consensus", [&]() { consensusRan = true; }));
+
+        BEAST_EXPECT(waitFor([&] { return consensusRan.load(); }));
+        // Proof of non-starvation: consensus ran while clients are still blocked.
+        BEAST_EXPECT(consensusRan.load());
+        BEAST_EXPECT(clientsDone.load() == 0);
+
+        // Release the flood; everything must drain with no deadlock.
+        {
+            std::scoped_lock lk(gm);
+            release = true;
+        }
+        gcv.notify_all();
+
+        BEAST_EXPECT(waitFor([&] { return clientsDone.load() == clientCount; }));
+        BEAST_EXPECT(clientsDone.load() == clientCount);
+
+        jq.stop();
+    }
+
     void
     testAddJob()
     {
@@ -136,6 +283,7 @@ public:
     {
         testAddJob();
         testPostCoro();
+        testConsensusReservation();
     }
 };
 

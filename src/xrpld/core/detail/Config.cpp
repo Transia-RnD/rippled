@@ -759,6 +759,9 @@ Config::loadFromString(std::string const& fileContents)
         }
     }
 
+    if (getSingleSection(secConfig, Sections::kConsensusReserveThreads, strTemp, j_))
+        consensusReserveThreads = std::max(0, beast::lexicalCastThrow<int>(strTemp));
+
     if (getSingleSection(secConfig, Sections::kIoWorkers, strTemp, j_))
     {
         ioWorkers = beast::lexicalCastThrow<int>(strTemp);

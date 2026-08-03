@@ -159,7 +159,8 @@ public:
         beast::insight::Collector::ptr const& collector,
         beast::Journal journal,
         Logs& logs,
-        perf::PerfLog& perfLog);
+        perf::PerfLog& perfLog,
+        int reservedThreads = 0);
     ~JobQueue() override;
 
     /**
@@ -273,6 +274,12 @@ private:
     // The number of jobs currently in processTask()
     int processCount_{0};
 
+    // Worker slots reserved for consensus-critical jobs; 0 = feature off.
+    int const reservedThreads_;
+
+    // Running job count across all types.
+    int runningTotal_ = 0;
+
     // The number of suspended coroutines
     int nSuspend_ = 0;
 
@@ -319,7 +326,12 @@ private:
     //
     // Invariants:
     //  The calling thread owns the JobLock
-    void
+    //
+    // Returns:
+    //  true if a runnable job was found and written to `job`; false if no
+    //  waiting job is currently runnable (e.g. only reservation-blocked
+    //  non-consensus jobs remain).
+    bool
     getNextJob(Job& job);
 
     // Indicates that a running Job has completed its task.

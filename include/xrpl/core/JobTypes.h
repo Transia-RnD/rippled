@@ -35,14 +35,16 @@ private:
                        std::string name,
                        int limit,
                        std::chrono::milliseconds avgLatency,
-                       std::chrono::milliseconds peakLatency) {
+                       std::chrono::milliseconds peakLatency,
+                       bool consensusCritical = false) {
             XRPL_ASSERT(!map.contains(jt), "xrpl::JobTypes::JobTypes::add : unique job type input");
 
             [[maybe_unused]] auto const inserted =
                 map.emplace(
                        std::piecewise_construct,
                        std::forward_as_tuple(jt),
-                       std::forward_as_tuple(jt, name, limit, avgLatency, peakLatency))
+                       std::forward_as_tuple(
+                           jt, name, limit, avgLatency, peakLatency, consensusCritical))
                     .second;
 
             XRPL_ASSERT(inserted == true, "xrpl::JobTypes::JobTypes::add : input is inserted");
@@ -52,7 +54,7 @@ private:
         //                                                           avg     peak
         //  JobType               name                    limit    latency  latency
         add(JtPack,              "makeFetchPack",               1,     0ms,     0ms);
-        add(JtPuboldledger,      "publishAcqLedger",            2, 10000ms, 15000ms);
+        add(JtPuboldledger,      "publishAcqLedger",            2, 10000ms, 15000ms, true);
         add(JtValidationUt,     "untrustedValidation",  maxLimit,  2000ms,  5000ms);
         add(JtManifest,          "manifest",             maxLimit,  2000ms,  5000ms);
         add(JtTransactionL,     "localTransaction",     maxLimit,   100ms,   500ms);
@@ -72,19 +74,19 @@ private:
         add(JtUpdatePf,         "updatePaths",                 1,     0ms,     0ms);
         add(JtTransaction,       "transaction",          maxLimit,   250ms,  1000ms);
         add(JtBatch,             "batch",                maxLimit,   250ms,  1000ms);
-        add(JtAdvance,           "advanceLedger",        maxLimit,     0ms,     0ms);
-        add(JtPubledger,         "publishNewLedger",     maxLimit,  3000ms,  4500ms);
+        add(JtAdvance,           "advanceLedger",        maxLimit,     0ms,     0ms, true);
+        add(JtPubledger,         "publishNewLedger",     maxLimit,  3000ms,  4500ms, true);
         add(JtTxnData,          "fetchTxnData",                5,     0ms,     0ms);
         add(JtWal,               "writeAhead",           maxLimit,  1000ms,  2500ms);
-        add(JtValidationT,      "trustedValidation",    maxLimit,   500ms,  1500ms);
+        add(JtValidationT,      "trustedValidation",    maxLimit,   500ms,  1500ms, true);
         add(JtWrite,             "writeObjects",         maxLimit,  1750ms,  2500ms);
         // Non-zero targets so a stalled AcceptLedger trips isOverloaded() and drives the
         // local load-fee escalation to shed client load; 0ms/0ms left it invisible to it.
-        add(JtAccept,            "acceptLedger",         maxLimit,  4000ms,  8000ms);
-        add(JtProposalT,        "trustedProposal",      maxLimit,   100ms,   500ms);
+        add(JtAccept,            "acceptLedger",         maxLimit,  4000ms,  8000ms, true);
+        add(JtProposalT,        "trustedProposal",      maxLimit,   100ms,   500ms, true);
         add(JtSweep,             "sweep",                       1,     0ms,     0ms);
         add(JtNetopCluster,     "clusterReport",               1,  9999ms,  9999ms);
-        add(JtNetopTimer,       "heartbeat",                   1,   999ms,   999ms);
+        add(JtNetopTimer,       "heartbeat",                   1,   999ms,   999ms, true);
         add(JtAdmin,             "administration",       maxLimit,     0ms,     0ms);
         add(JtMissingTxn,       "handleHaveTransactions",   1200,     0ms,     0ms);
         add(JtRequestedTxn,     "doTransactions",           1200,     0ms,     0ms);
