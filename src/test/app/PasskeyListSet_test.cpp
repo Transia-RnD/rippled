@@ -52,7 +52,7 @@ class PasskeyListSet_test : public beast::unit_test::Suite
         json::Value jv;
         jv[sfAccount.jsonName] = account.human();
         jv[sfTransactionType.jsonName] = jss::PasskeyListSet;
-        jv[sfPasskeys.jsonName] = json::arrayValue;
+        jv[sfPasskeys.jsonName] = json::ValueType::Array;
         jv[sfPasskeys.jsonName][0u][sfPasskey.jsonName][sfPasskeyID.jsonName] = "DEADBEEF";
         jv[sfPasskeys.jsonName][0u][sfPasskey.jsonName][sfPublicKey.jsonName] =
             strHex(account.pk());
@@ -67,7 +67,7 @@ class PasskeyListSet_test : public beast::unit_test::Suite
         json::Value jv;
         jv[sfAccount.jsonName] = account.human();
         jv[sfTransactionType.jsonName] = jss::PasskeyListSet;
-        jv[sfPasskeys.jsonName] = json::arrayValue;
+        jv[sfPasskeys.jsonName] = json::ValueType::Array;
         for (json::UInt i = 0; i < entries.size(); ++i)
         {
             jv[sfPasskeys.jsonName][i][sfPasskey.jsonName][sfPasskeyID.jsonName] =
@@ -130,7 +130,7 @@ public:
         json::Value jv;
         jv[sfAccount.jsonName] = alice.human();
         jv[sfTransactionType.jsonName] = jss::PasskeyListSet;
-        jv[sfPasskeys.jsonName] = json::arrayValue;
+        jv[sfPasskeys.jsonName] = json::ValueType::Array;
         env(jv, Ter(temMALFORMED));
     }
 
