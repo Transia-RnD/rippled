@@ -626,6 +626,7 @@ class ValueConstIterator : public ValueIteratorBase
 public:
     using size_t = unsigned int;
     using difference_type = int;
+    using value_type = Value const;
     using reference = Value const&;
     using pointer = Value const*;
     using SelfType = ValueConstIterator;
@@ -690,6 +691,7 @@ class ValueIterator : public ValueIteratorBase
 public:
     using size_t = unsigned int;
     using difference_type = int;
+    using value_type = Value;
     using reference = Value&;
     using pointer = Value*;
     using SelfType = ValueIterator;
