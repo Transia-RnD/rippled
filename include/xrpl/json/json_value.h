@@ -625,6 +625,7 @@ public:
     using size_t = unsigned int;
     using value_type = Value;
     using difference_type = int;
+    using value_type = Value const;
     using reference = Value const&;
     using pointer = Value const*;
     using iterator_category = std::bidirectional_iterator_tag;
@@ -691,6 +692,7 @@ public:
     using size_t = unsigned int;
     using value_type = Value;
     using difference_type = int;
+    using value_type = Value;
     using reference = Value&;
     using pointer = Value*;
     using iterator_category = std::bidirectional_iterator_tag;
