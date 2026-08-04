@@ -36,7 +36,7 @@ private:
         SecretKey const& ssk,
         int seq)
     {
-        STObject st(kSfGeneric);
+        STObject st(sfGeneric);
         st[sfSequence] = seq;
         st[sfPublicKey] = pk;
 

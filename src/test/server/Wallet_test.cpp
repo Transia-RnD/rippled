@@ -80,7 +80,7 @@ class Wallet_test : public beast::unit_test::Suite
         auto const [returnedPk, returnedSk] = getNodeIdentity(*session);
 
         BEAST_EXPECT(returnedPk == pk);
-        BEAST_EXPECT(returnedSk == sk);
+        BEAST_EXPECT(returnedSk.toString() == sk.toString());
         BEAST_EXPECT(publicKeyType(returnedPk.slice()) == kt);
 
         // Tidy up so successive runs / keytypes don't collide.
@@ -109,7 +109,7 @@ class Wallet_test : public beast::unit_test::Suite
         // A second call must return the same keypair (persistence).
         auto const [pk2, sk2] = getNodeIdentity(*session);
         BEAST_EXPECT(pk1 == pk2);
-        BEAST_EXPECT(sk1 == sk2);
+        BEAST_EXPECT(sk1.toString() == sk2.toString());
 
         boost::filesystem::remove(dbDir() / dbName);
     }

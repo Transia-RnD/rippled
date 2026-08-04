@@ -6,6 +6,7 @@
 #include <xrpld/app/misc/ValidatorSite.h>
 
 #include <xrpl/basics/strHex.h>
+#include <xrpl/json/to_string.h>
 #include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/jss.h>
 

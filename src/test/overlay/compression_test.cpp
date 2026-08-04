@@ -483,8 +483,8 @@ public:
             BEAST_EXPECT(header);
             if (header)
             {
-                BEAST_EXPECT(header->payload_wire_size <= kMaximumMessageSize);
-                BEAST_EXPECT(header->uncompressed_size <= kMaximumMessageSize);
+                BEAST_EXPECT(header->payloadWireSize <= kMaximumMessageSize);
+                BEAST_EXPECT(header->uncompressedSize <= kMaximumMessageSize);
             }
         }
 
