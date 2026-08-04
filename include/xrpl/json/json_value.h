@@ -4,6 +4,7 @@
 #include <xrpl/json/json_forwards.h>
 
 #include <cstring>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <string>
@@ -622,9 +623,11 @@ class ValueConstIterator : public ValueIteratorBase
 
 public:
     using size_t = unsigned int;
+    using value_type = Value;
     using difference_type = int;
     using reference = Value const&;
     using pointer = Value const*;
+    using iterator_category = std::bidirectional_iterator_tag;
     using SelfType = ValueConstIterator;
 
     ValueConstIterator() = default;
@@ -686,9 +689,11 @@ class ValueIterator : public ValueIteratorBase
 
 public:
     using size_t = unsigned int;
+    using value_type = Value;
     using difference_type = int;
     using reference = Value&;
     using pointer = Value*;
+    using iterator_category = std::bidirectional_iterator_tag;
     using SelfType = ValueIterator;
 
     ValueIterator() = default;
