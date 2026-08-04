@@ -25,6 +25,7 @@
 
 #include <xrpl/beast/unit_test/suite.h>
 #include <xrpl/json/json_value.h>
+#include <xrpl/json/to_string.h>
 #include <xrpl/protocol/AMMCore.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
@@ -1220,7 +1221,7 @@ private:
 
         // The MPT issuance SLE should exist with AMM as issuer.
         auto const mptIssuanceSle =
-            env.current()->read(keylet::mptIssuance(mptIssuanceID));
+            env.current()->read(keylet::mptokenIssuance(mptIssuanceID));
         if (!BEAST_EXPECT(mptIssuanceSle != nullptr))
             return;
         BEAST_EXPECT((*mptIssuanceSle)[sfIssuer] == ammSle->getAccountID(sfAccount));
@@ -1268,7 +1269,7 @@ private:
 
         // Issuance OutstandingAmount tracks the sum.
         auto const issAfter =
-            env.current()->read(keylet::mptIssuance(mptIssuanceID));
+            env.current()->read(keylet::mptokenIssuance(mptIssuanceID));
         BEAST_EXPECT(issAfter->getFieldU64(sfOutstandingAmount) == lpMptAmount);
 
         // 3) AMMWithdraw burns MPT in lock-step with holding SLE shares.
@@ -1292,7 +1293,7 @@ private:
             BEAST_EXPECT(lpMptAfter->getFieldU64(sfMPTAmount) == 0);
         }
         auto const issAfterWd =
-            env.current()->read(keylet::mptIssuance(mptIssuanceID));
+            env.current()->read(keylet::mptokenIssuance(mptIssuanceID));
         BEAST_EXPECT(issAfterWd->getFieldU64(sfOutstandingAmount) == 0);
         // Bin SLE persists (still owns the issuance ID).
         BEAST_EXPECT(env.current()->read(keylet::ammBin(ammID, 0)) != nullptr);
@@ -1484,14 +1485,14 @@ private:
         if (!BEAST_EXPECT(bin5 != nullptr))
             return;
         auto const mptId = bin5->getFieldH192(sfMPTokenIssuanceID);
-        BEAST_EXPECT(env.current()->read(keylet::mptIssuance(mptId)) != nullptr);
+        BEAST_EXPECT(env.current()->read(keylet::mptokenIssuance(mptId)) != nullptr);
 
         // Destroying bin 5 (empty, non-active) succeeds.
         env(binDestroyTx(5));
         env.close();
 
         BEAST_EXPECT(env.current()->read(keylet::ammBin(ammID, 5)) == nullptr);
-        BEAST_EXPECT(env.current()->read(keylet::mptIssuance(mptId)) == nullptr);
+        BEAST_EXPECT(env.current()->read(keylet::mptokenIssuance(mptId)) == nullptr);
 
         // Destroying a non-existent bin returns tecNO_ENTRY.
         env(binDestroyTx(5), Ter(tecNO_ENTRY));
@@ -2848,11 +2849,11 @@ private:
         depositInto(0, 100);
         auto const binSle1 = env.current()->read(keylet::ammBin(ammID, 0));
         auto const mptID1 = binSle1->getFieldH192(sfMPTokenIssuanceID);
-        BEAST_EXPECT(env.current()->read(keylet::mptIssuance(mptID1)) != nullptr);
+        BEAST_EXPECT(env.current()->read(keylet::mptokenIssuance(mptID1)) != nullptr);
         withdrawAll(0);
         destroy(0);
         BEAST_EXPECT(env.current()->read(keylet::ammBin(ammID, 0)) == nullptr);
-        BEAST_EXPECT(env.current()->read(keylet::mptIssuance(mptID1)) == nullptr);
+        BEAST_EXPECT(env.current()->read(keylet::mptokenIssuance(mptID1)) == nullptr);
 
         // Second incarnation: same bin ID. MPT issuance keylet is
         // deterministic per (ammID, binID) — must NOT collide with the
@@ -2863,7 +2864,7 @@ private:
             return;
         auto const mptID2 = binSle2->getFieldH192(sfMPTokenIssuanceID);
         BEAST_EXPECT(mptID2 == mptID1);  // deterministic
-        BEAST_EXPECT(env.current()->read(keylet::mptIssuance(mptID2)) != nullptr);
+        BEAST_EXPECT(env.current()->read(keylet::mptokenIssuance(mptID2)) != nullptr);
         depositInto(0, 50);
         auto const shares = mptSharesOf(env, ammID, 0, al.id());
         BEAST_EXPECT(shares > 0);
