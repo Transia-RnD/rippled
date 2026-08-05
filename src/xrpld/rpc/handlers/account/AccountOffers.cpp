@@ -61,24 +61,24 @@ appendOfferJson(SLE::const_ref offer, json::Value& offers)
 //   marker: opaque                 // optional, resume previous query
 // }
 json::Value
-doAccountOffers(RPC::JsonContext& context)
+doAccountOffers(rpc::JsonContext& context)
 {
     auto const& params(context.params);
     if (!params.isMember(jss::account))
-        return RPC::missingFieldError(jss::account);
+        return rpc::missingFieldError(jss::account);
 
     if (!params[jss::account].isString())
-        return RPC::invalidFieldError(jss::account);
+        return rpc::invalidFieldError(jss::account);
 
     std::shared_ptr<ReadView const> ledger;
-    auto result = RPC::lookupLedger(ledger, context);
+    auto result = rpc::lookupLedger(ledger, context);
     if (!ledger)
         return result;
 
     auto id = parseBase58<AccountID>(params[jss::account].asString());
     if (!id)
     {
-        RPC::injectError(RpcActMalformed, result);
+        rpc::injectError(RpcActMalformed, result);
         return result;
     }
     auto const accountID{id.value()};
@@ -90,7 +90,7 @@ doAccountOffers(RPC::JsonContext& context)
         return rpcError(RpcActNotFound);
 
     unsigned int limit = 0;
-    if (auto err = readLimitField(limit, RPC::Tuning::kAccountOffers, context))
+    if (auto err = readLimitField(limit, rpc::tuning::kAccountOffers, context))
         return *err;
 
     json::Value& jsonOffers(result[jss::offers] = json::ValueType::Array);
@@ -101,20 +101,20 @@ doAccountOffers(RPC::JsonContext& context)
     if (params.isMember(jss::marker))
     {
         if (!params[jss::marker].isString())
-            return RPC::expectedFieldError(jss::marker, "string");
+            return rpc::expectedFieldError(jss::marker, "string");
 
         // Marker is composed of a comma separated index and start hint. The
         // former will be read as hex, and the latter using boost lexical cast.
         std::stringstream marker(params[jss::marker].asString());
         std::string value;
         if (!std::getline(marker, value, ','))
-            return RPC::invalidFieldError(jss::marker);
+            return rpc::invalidFieldError(jss::marker);
 
         if (!startAfter.parseHex(value))
-            return RPC::invalidFieldError(jss::marker);
+            return rpc::invalidFieldError(jss::marker);
 
         if (!std::getline(marker, value, ','))
-            return RPC::invalidFieldError(jss::marker);
+            return rpc::invalidFieldError(jss::marker);
 
         try
         {
@@ -122,7 +122,7 @@ doAccountOffers(RPC::JsonContext& context)
         }
         catch (boost::bad_lexical_cast&)
         {
-            return RPC::invalidFieldError(jss::marker);
+            return rpc::invalidFieldError(jss::marker);
         }
 
         // We then must check if the object pointed to by the marker is actually
@@ -132,7 +132,7 @@ doAccountOffers(RPC::JsonContext& context)
         if (!sle)
             return rpcError(RpcInvalidParams);
 
-        if (!RPC::isRelatedToAccount(*ledger, sle, accountID))
+        if (!rpc::isRelatedToAccount(*ledger, sle, accountID))
             return rpcError(RpcInvalidParams);
     }
 
@@ -157,7 +157,7 @@ doAccountOffers(RPC::JsonContext& context)
                 if (++count == limit)
                 {
                     marker = sle->key();
-                    nextHint = RPC::getStartHint(sle, accountID);
+                    nextHint = rpc::getStartHint(sle, accountID);
                 }
 
                 if (count <= limit && sle->getType() == ltOFFER)
@@ -183,7 +183,7 @@ doAccountOffers(RPC::JsonContext& context)
     for (auto const& offer : offers)
         appendOfferJson(offer, jsonOffers);
 
-    context.loadType = Resource::kFeeMediumBurdenRpc;
+    context.loadType = resource::kFeeMediumBurdenRpc;
     return result;
 }
 
