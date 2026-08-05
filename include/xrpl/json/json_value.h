@@ -623,7 +623,6 @@ class ValueConstIterator : public ValueIteratorBase
 
 public:
     using size_t = unsigned int;
-    using value_type = Value;
     using difference_type = int;
     using value_type = Value const;
     using reference = Value const&;
@@ -690,7 +689,6 @@ class ValueIterator : public ValueIteratorBase
 
 public:
     using size_t = unsigned int;
-    using value_type = Value;
     using difference_type = int;
     using value_type = Value;
     using reference = Value&;

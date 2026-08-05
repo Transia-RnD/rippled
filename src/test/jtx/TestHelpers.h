@@ -830,7 +830,7 @@ checkMetrics(
 /* LoanBroker */
 /******************************************************************************/
 
-namespace loanBroker {
+namespace loan_broker {
 
 json::Value
 set(AccountID const& account, uint256 const& vaultId, std::uint32_t flags = 0);
@@ -871,7 +871,7 @@ auto const kCoverRateLiquidation =
 
 auto const kDestination = JTxFieldWrapper<AccountIdField>(sfDestination);
 
-}  // namespace loanBroker
+}  // namespace loan_broker
 
 /* Loan */
 /******************************************************************************/
