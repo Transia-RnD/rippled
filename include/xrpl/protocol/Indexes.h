@@ -174,6 +174,20 @@ Keylet
 sponsorship(AccountID const& sponsor, AccountID const& sponsee) noexcept;
 
 /**
+ * A Subscription
+ */
+/** @{ */
+Keylet
+subscription(AccountID const& account, AccountID const& dest, std::uint32_t seq) noexcept;
+
+inline Keylet
+subscription(uint256 const& key) noexcept
+{
+    return {ltSUBSCRIPTION, key};
+}
+/** @} */
+
+/**
  * A Check
  */
 /** @{ */

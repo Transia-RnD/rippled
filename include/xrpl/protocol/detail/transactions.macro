@@ -1194,6 +1194,49 @@ TRANSACTION(ttSPONSORSHIP_SET, 91, SponsorshipSet,
     {sfRemainingOwnerCount, SoeOptional},
 }))
 
+/** This transaction creates or updates a recurring-payment subscription. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/subscription/SubscriptionSet.h>
+#endif
+TRANSACTION(ttSUBSCRIPTION_SET, 72, SubscriptionSet,
+    Delegation::Delegable,
+    featureSubscription,
+    NoPriv,
+    ({
+    {sfDestination, SoeOptional},
+    {sfAmount, SoeRequired, SoeMptSupported},
+    {sfFrequency, SoeOptional},
+    {sfStartTime, SoeOptional},
+    {sfExpiration, SoeOptional},
+    {sfDestinationTag, SoeOptional},
+    {sfSubscriptionID, SoeOptional},
+}))
+
+/** This transaction cancels a recurring-payment subscription. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/subscription/SubscriptionCancel.h>
+#endif
+TRANSACTION(ttSUBSCRIPTION_CANCEL, 73, SubscriptionCancel,
+    Delegation::Delegable,
+    featureSubscription,
+    NoPriv,
+    ({
+    {sfSubscriptionID, SoeRequired},
+}))
+
+/** This transaction lets the destination pull a due recurring payment. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/subscription/SubscriptionClaim.h>
+#endif
+TRANSACTION(ttSUBSCRIPTION_CLAIM, 79, SubscriptionClaim,
+    Delegation::Delegable,
+    featureSubscription,
+    MayCreateMpt,
+    ({
+    {sfAmount, SoeRequired, SoeMptSupported},
+    {sfSubscriptionID, SoeRequired},
+}))
+
 /** This system-generated transaction type is used to update the status of the various amendments.
 
     For details, see: https://xrpl.org/amendments.html
