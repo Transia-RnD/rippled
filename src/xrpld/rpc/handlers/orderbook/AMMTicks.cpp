@@ -57,13 +57,13 @@ sameScope(uint256 const& key, uint256 const& base, uint256 const& end)
 }  // namespace
 
 json::Value
-doAMMTicks(RPC::JsonContext& context)
+doAMMTicks(rpc::JsonContext& context)
 {
     auto const& params(context.params);
     json::Value result;
 
     std::shared_ptr<ReadView const> ledger;
-    result = RPC::lookupLedger(ledger, context);
+    result = rpc::lookupLedger(ledger, context);
     if (!ledger)
         return result;
 
@@ -79,7 +79,7 @@ doAMMTicks(RPC::JsonContext& context)
 
     if (context.apiVersion < 3 && kInvalid(params))
     {
-        RPC::injectError(RpcInvalidParams, result);
+        rpc::injectError(RpcInvalidParams, result);
         return result;
     }
 
@@ -89,7 +89,7 @@ doAMMTicks(RPC::JsonContext& context)
             asset1 = *i;
         else
         {
-            RPC::injectError(i.error(), result);
+            rpc::injectError(i.error(), result);
             return result;
         }
     }
@@ -100,7 +100,7 @@ doAMMTicks(RPC::JsonContext& context)
             asset2 = *i;
         else
         {
-            RPC::injectError(i.error(), result);
+            rpc::injectError(i.error(), result);
             return result;
         }
     }
@@ -110,26 +110,26 @@ doAMMTicks(RPC::JsonContext& context)
         auto const id = parseBase58<AccountID>(params[jss::amm_account].asString());
         if (!id)
         {
-            RPC::injectError(RpcActMalformed, result);
+            rpc::injectError(RpcActMalformed, result);
             return result;
         }
         auto const sle = ledger->read(keylet::account(*id));
         if (!sle)
         {
-            RPC::injectError(RpcActMalformed, result);
+            rpc::injectError(RpcActMalformed, result);
             return result;
         }
         ammIDFromAccount = sle->getFieldH256(sfAMMID);
         if (ammIDFromAccount->isZero())
         {
-            RPC::injectError(RpcActNotFound, result);
+            rpc::injectError(RpcActNotFound, result);
             return result;
         }
     }
 
     if (context.apiVersion >= 3 && kInvalid(params))
     {
-        RPC::injectError(RpcInvalidParams, result);
+        rpc::injectError(RpcInvalidParams, result);
         return result;
     }
 
@@ -141,7 +141,7 @@ doAMMTicks(RPC::JsonContext& context)
     {
         // No curve_type provided with asset/asset2 -> cannot identify which CL
         // pool the caller wants.
-        RPC::injectError(
+        rpc::injectError(
             RpcInvalidParams,
             "amm_ticks requires curve_type=1 (ConcentratedLiquidity).",
             result);
@@ -156,7 +156,7 @@ doAMMTicks(RPC::JsonContext& context)
     auto const amm = ledger->read(ammKeylet);
     if (!amm)
     {
-        RPC::injectError(RpcActNotFound, result);
+        rpc::injectError(RpcActNotFound, result);
         return result;
     }
 
@@ -167,7 +167,7 @@ doAMMTicks(RPC::JsonContext& context)
 
     if (curveType != CtConcentratedLiquidity)
     {
-        RPC::injectError(
+        rpc::injectError(
             RpcInvalidParams,
             "amm_ticks only valid for ConcentratedLiquidity (curve_type 1) pools.",
             result);
@@ -181,7 +181,7 @@ doAMMTicks(RPC::JsonContext& context)
     {
         if (!params[jss::tick_lower].isIntegral())
         {
-            RPC::injectError(RpcInvalidParams, "tick_lower must be an integer.", result);
+            rpc::injectError(RpcInvalidParams, "tick_lower must be an integer.", result);
             return result;
         }
         tickLower = params[jss::tick_lower].asInt();
@@ -190,14 +190,14 @@ doAMMTicks(RPC::JsonContext& context)
     {
         if (!params[jss::tick_upper].isIntegral())
         {
-            RPC::injectError(RpcInvalidParams, "tick_upper must be an integer.", result);
+            rpc::injectError(RpcInvalidParams, "tick_upper must be an integer.", result);
             return result;
         }
         tickUpper = params[jss::tick_upper].asInt();
     }
     if (tickLower < kMinTick || tickUpper > kMaxTick || tickLower > tickUpper)
     {
-        RPC::injectError(RpcInvalidParams, "Invalid tick range.", result);
+        rpc::injectError(RpcInvalidParams, "Invalid tick range.", result);
         return result;
     }
 
@@ -207,7 +207,7 @@ doAMMTicks(RPC::JsonContext& context)
     {
         if (!params[jss::limit].isIntegral())
         {
-            RPC::injectError(RpcInvalidParams, "limit must be an integer.", result);
+            rpc::injectError(RpcInvalidParams, "limit must be an integer.", result);
             return result;
         }
         auto const requested = params[jss::limit].asUInt();
@@ -227,18 +227,18 @@ doAMMTicks(RPC::JsonContext& context)
         json::Value const& marker = params[jss::marker];
         if (!marker.isString())
         {
-            RPC::injectError(RpcInvalidParams, "marker must be a string.", result);
+            rpc::injectError(RpcInvalidParams, "marker must be a string.", result);
             return result;
         }
         uint256 m;
         if (!m.parseHex(marker.asString()))
         {
-            RPC::injectError(RpcInvalidParams, "Invalid marker.", result);
+            rpc::injectError(RpcInvalidParams, "Invalid marker.", result);
             return result;
         }
         if (!sameScope(m, baseKey, endKey))
         {
-            RPC::injectError(RpcInvalidParams, "Marker does not belong to this pool.", result);
+            rpc::injectError(RpcInvalidParams, "Marker does not belong to this pool.", result);
             return result;
         }
         cursor = m;
