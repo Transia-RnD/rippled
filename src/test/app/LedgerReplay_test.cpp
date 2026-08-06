@@ -28,6 +28,7 @@
 
 #include <xrpl/basics/Slice.h>
 #include <xrpl/basics/base_uint.h>
+#include <xrpl/basics/random.h>
 #include <xrpl/beast/net/IPAddress.h>
 #include <xrpl/beast/net/IPEndpoint.h>
 #include <xrpl/beast/unit_test/suite.h>
@@ -279,13 +280,13 @@ public:
     send(std::shared_ptr<Message> const& m) override
     {
     }
-    [[nodiscard]] beast::IP::Endpoint
+    [[nodiscard]] beast::ip::Endpoint
     getRemoteAddress() const override
     {
         return {};
     }
     void
-    charge(Resource::Charge const& fee, std::string const& context = {}) override
+    charge(resource::Charge const& fee, std::string const& context = {}) override
     {
     }
     [[nodiscard]] id_t
@@ -452,7 +453,7 @@ struct TestPeerSet : public PeerSet
             dropRate = 100;
         }
 
-        if (((rand() % 100) + 1) <= dropRate)
+        if (randInt(1, 100) <= dropRate)
             return;
 
         switch (type)
@@ -1205,7 +1206,7 @@ struct LedgerReplayer_test : public beast::unit_test::Suite
             if (serverResult != expecting)
                 return false;
 
-            beast::IP::Address const addr = boost::asio::ip::make_address("172.1.1.100");
+            beast::ip::Address const addr = boost::asio::ip::make_address("172.1.1.100");
             jtx::Env serverEnv(*this);
             serverEnv.app().config().ledgerReplay = server;
             auto httpResp = xrpl::makeResponse(
