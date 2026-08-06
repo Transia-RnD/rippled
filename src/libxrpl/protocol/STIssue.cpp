@@ -1,21 +1,4 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2023 Ripple Labs Inc.
-
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
+#include <xrpl/protocol/STIssue.h>
 
 #include <xrpl/basics/contract.h>
 #include <xrpl/json/json_value.h>
@@ -25,9 +8,10 @@
 #include <xrpl/protocol/MPTIssue.h>
 #include <xrpl/protocol/SField.h>
 #include <xrpl/protocol/STBase.h>
-#include <xrpl/protocol/STIssue.h>
 #include <xrpl/protocol/Serializer.h>
 #include <xrpl/protocol/UintTypes.h>
+
+#include <boost/endian/conversion.hpp>
 
 #include <cstddef>
 #include <cstdint>
@@ -36,7 +20,7 @@
 #include <string>
 #include <utility>
 
-namespace ripple {
+namespace xrpl {
 
 STIssue::STIssue(SField const& name) : STBase{name}
 {
@@ -46,7 +30,7 @@ STIssue::STIssue(SerialIter& sit, SField const& name) : STBase{name}
 {
     auto const currencyOrAccount = sit.get160();
 
-    if (isXRP(static_cast<Currency>(currencyOrAccount)))
+    if (isXRP(Currency::fromRaw(currencyOrAccount)))
     {
         asset_ = xrpIssue();
     }
@@ -57,20 +41,23 @@ STIssue::STIssue(SerialIter& sit, SField const& name) : STBase{name}
         // - 160 bits MPT issuer account
         // - 160 bits black hole account
         // - 32 bits sequence
-        AccountID account = static_cast<AccountID>(sit.get160());
+        AccountID const account = AccountID::fromRaw(sit.get160());
         // MPT
         if (noAccount() == account)
         {
             MPTID mptID;
             std::uint32_t sequence = sit.get32();
-            static_assert(
-                MPTID::size() == sizeof(sequence) + sizeof(currencyOrAccount));
+            // MPTID stores the sequence in canonical big-endian bytes. STIssue
+            // ledger bytes are the legacy LE-host encoding, so convert the
+            // native get32() value to LE bytes before copying into the MPTID.
+            sequence = boost::endian::native_to_little(sequence);
+            static_assert(MPTID::size() == sizeof(sequence) + sizeof(currencyOrAccount));
             memcpy(mptID.data(), &sequence, sizeof(sequence));
             memcpy(
                 mptID.data() + sizeof(sequence),
                 currencyOrAccount.data(),
                 sizeof(currencyOrAccount));
-            MPTIssue issue{mptID};
+            MPTIssue const issue{mptID};
             asset_ = issue;
         }
         else
@@ -79,8 +66,7 @@ STIssue::STIssue(SerialIter& sit, SField const& name) : STBase{name}
             issue.currency = currencyOrAccount;
             issue.account = account;
             if (!isConsistent(issue))
-                Throw<std::runtime_error>(
-                    "invalid issue: currency and account native mismatch");
+                Throw<std::runtime_error>("invalid issue: currency and account native mismatch");
             asset_ = issue;
         }
     }
@@ -98,10 +84,10 @@ STIssue::getText() const
     return asset_.getText();
 }
 
-Json::Value
+json::Value
 STIssue::getJson(JsonOptions) const
 {
-    Json::Value jv;
+    json::Value jv;
     asset_.setJson(jv);
     return jv;
 }
@@ -109,35 +95,38 @@ STIssue::getJson(JsonOptions) const
 void
 STIssue::add(Serializer& s) const
 {
-    if (holds<Issue>())
-    {
-        auto const& issue = asset_.get<Issue>();
-        s.addBitString(issue.currency);
-        if (!isXRP(issue.currency))
-            s.addBitString(issue.account);
-    }
-    else
-    {
-        auto const& issue = asset_.get<MPTIssue>();
-        s.addBitString(issue.getIssuer());
-        s.addBitString(noAccount());
-        std::uint32_t sequence;
-        memcpy(&sequence, issue.getMptID().data(), sizeof(sequence));
-        s.add32(sequence);
-    }
+    asset_.visit(
+        [&](Issue const& issue) {
+            s.addBitString(issue.currency);
+            if (!isXRP(issue.currency))
+                s.addBitString(issue.account);
+        },
+        [&](MPTIssue const& issue) {
+            s.addBitString(issue.getIssuer());
+            s.addBitString(noAccount());
+            std::uint32_t sequence = 0;
+            memcpy(&sequence, issue.getMptID().data(), sizeof(sequence));
+            // The MPTID bytes are canonical big-endian. Interpret those bytes
+            // as the legacy LE-host value so add32() writes the preserved
+            // STIssue wire bytes on every host endian.
+            sequence = boost::endian::little_to_native(sequence);
+            s.add32(sequence);
+        });
 }
 
 bool
 STIssue::isEquivalent(STBase const& t) const
 {
-    STIssue const* v = dynamic_cast<STIssue const*>(&t);
-    return v && (*v == *this);
+    auto const* v = dynamic_cast<STIssue const*>(&t);
+    return (v != nullptr) && (*v == *this);
 }
 
 bool
 STIssue::isDefault() const
 {
-    return holds<Issue>() && asset_.get<Issue>() == xrpIssue();
+    return asset_.visit(
+        [](Issue const& issue) { return issue == xrpIssue(); },
+        [](MPTIssue const&) { return false; });
 }
 
 STBase*
@@ -153,9 +142,9 @@ STIssue::move(std::size_t n, void* buf)
 }
 
 STIssue
-issueFromJson(SField const& name, Json::Value const& v)
+issueFromJson(SField const& name, json::Value const& v)
 {
     return STIssue{name, assetFromJson(v)};
 }
 
-}  // namespace ripple
+}  // namespace xrpl

@@ -1,47 +1,28 @@
-//------------------------------------------------------------------------------
-/*
-    This file is part of rippled: https://github.com/ripple/rippled
-    Copyright (c) 2012, 2013 Ripple Labs Inc.
+#pragma once
 
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose  with  or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
+#include <xrpl/core/JobQueue.h>
+#include <xrpl/nodestore/Scheduler.h>
+#include <xrpl/nodestore/Task.h>
 
-    THE  SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-    WITH  REGARD  TO  THIS  SOFTWARE  INCLUDING  ALL  IMPLIED  WARRANTIES  OF
-    MERCHANTABILITY  AND  FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-    ANY  SPECIAL ,  DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-    WHATSOEVER  RESULTING  FROM  LOSS  OF USE, DATA OR PROFITS, WHETHER IN AN
-    ACTION  OF  CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-//==============================================================================
+namespace xrpl {
 
-#ifndef RIPPLE_APP_MAIN_NODESTORESCHEDULER_H_INCLUDED
-#define RIPPLE_APP_MAIN_NODESTORESCHEDULER_H_INCLUDED
-
-#include <xrpld/core/JobQueue.h>
-#include <xrpld/nodestore/Scheduler.h>
-
-namespace ripple {
-
-/** A NodeStore::Scheduler which uses the JobQueue. */
-class NodeStoreScheduler : public NodeStore::Scheduler
+/**
+ * A node_store::Scheduler which uses the JobQueue.
+ */
+class NodeStoreScheduler : public node_store::Scheduler
 {
 public:
     explicit NodeStoreScheduler(JobQueue& jobQueue);
 
     void
-    scheduleTask(NodeStore::Task& task) override;
+    scheduleTask(node_store::Task& task) override;
     void
-    onFetch(NodeStore::FetchReport const& report) override;
+    onFetch(node_store::FetchReport const& report) override;
     void
-    onBatchWrite(NodeStore::BatchWriteReport const& report) override;
+    onBatchWrite(node_store::BatchWriteReport const& report) override;
 
 private:
     JobQueue& jobQueue_;
 };
 
-}  // namespace ripple
-
-#endif
+}  // namespace xrpl

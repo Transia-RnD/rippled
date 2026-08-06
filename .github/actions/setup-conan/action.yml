@@ -2,42 +2,48 @@ name: Setup Conan
 description: "Set up Conan configuration, profile, and remote."
 
 inputs:
-  conan_remote_name:
+  remote_name:
     description: "The name of the Conan remote to use."
     required: false
     default: xrplf
-  conan_remote_url:
+  remote_url:
     description: "The URL of the Conan endpoint to use."
     required: false
-    default: https://conan.ripplex.io
+    default: https://conan.xrplf.org/repository/conan/
 
 runs:
   using: composite
 
   steps:
-    - name: Set up Conan configuration
+    - name: Apply custom configuration to global.conf
       shell: bash
       run: |
-        echo 'Installing configuration.'
         cat conan/global.conf ${{ runner.os == 'Linux' && '>>' || '>' }} $(conan config home)/global.conf
 
-        echo 'Conan configuration:'
+    - name: Show global configuration
+      shell: bash
+      run: |
         conan config show '*'
 
-    - name: Set up Conan profile
+    - name: Install profiles
       shell: bash
       run: |
-        echo 'Installing profile.'
-        conan config install conan/profiles/default -tf $(conan config home)/profiles/
+        conan config install conan/profiles/ -tf $(conan config home)/profiles/
 
-        echo 'Conan profile:'
-        conan profile show
-
-    - name: Set up Conan remote
+    - name: Show CI profile
       shell: bash
       run: |
-        echo "Adding Conan remote '${{ inputs.conan_remote_name }}' at ${{ inputs.conan_remote_url }}."
-        conan remote add --index 0 --force ${{ inputs.conan_remote_name }} ${{ inputs.conan_remote_url }}
+        conan profile show --profile ci
 
-        echo 'Listing Conan remotes.'
+    - name: Add a remote
+      shell: bash
+      env:
+        REMOTE_NAME: ${{ inputs.remote_name }}
+        REMOTE_URL: ${{ inputs.remote_url }}
+      run: |
+        conan remote add --index 0 --force "${REMOTE_NAME}" "${REMOTE_URL}"
+
+    - name: List remotes
+      shell: bash
+      run: |
         conan remote list
