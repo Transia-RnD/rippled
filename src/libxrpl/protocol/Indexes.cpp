@@ -110,6 +110,7 @@ enum class LedgerNameSpace : std::uint16_t {
     AmmTickBitmap = 'M',
     AmmBin = 'W',
     AmmBinHolding = 'j',
+    PasskeyList = 'k',
     Sponsorship = '>',
     Subscription = 'U',
 
@@ -883,6 +884,18 @@ Keylet
 ammBinHolding(uint256 const& key) noexcept
 {
     return {ltAMM_BIN_HOLDING, key};
+}
+
+static Keylet
+passkeyList(AccountID const& account, std::uint32_t page) noexcept
+{
+    return {ltPASSKEY_LIST, indexHash(LedgerNameSpace::PasskeyList, account, page)};
+}
+
+Keylet
+passkeyList(AccountID const& account) noexcept
+{
+    return passkeyList(account, 0);
 }
 
 }  // namespace keylet

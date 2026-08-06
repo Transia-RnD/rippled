@@ -823,6 +823,18 @@ LEDGER_ENTRY(ltCOUPON_REGISTRATION, 0x008B, CouponRegistration, coupon_registrat
     {sfLastSettledTime,      SoeRequired},
 }))
 
+/** A ledger object representing a passkey list.
+
+    \sa keylet::passkeyList
+ */
+LEDGER_ENTRY(ltPASSKEY_LIST, 0x008C, PasskeyList, passkey_list, ({
+    {sfPreviousTxnID,        SoeRequired},
+    {sfPreviousTxnLgrSeq,    SoeRequired},
+    {sfOwnerNode,            SoeRequired},
+    {sfOwner,                SoeRequired},
+    {sfPasskeys,             SoeRequired},
+}))
+
 /** A ledger object representing a sponsorship.
     \sa keylet::sponsorship
  */

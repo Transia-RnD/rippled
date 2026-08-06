@@ -569,9 +569,11 @@ private:
         {
             if (jv.size() == 0)
                 return false;
-            for (auto it = jv.begin(), end = jv.end(); it != end; ++it)
-                if (!isValidJson2(*it))
+            for (auto const& j : jv)
+            {
+                if (!isValidJson2(j))
                     return false;
+            }
             return true;
         }
         if (jv.isObject())

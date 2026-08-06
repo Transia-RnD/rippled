@@ -626,6 +626,9 @@ ammBinHolding(uint256 const& ammID, AccountID const& owner, std::int32_t binID) 
 Keylet
 ammBinHolding(uint256 const& key) noexcept;
 
+Keylet
+passkeyList(AccountID const& account) noexcept;
+
 }  // namespace keylet
 
 // Everything below is deprecated and should be removed in favor of keylets:
