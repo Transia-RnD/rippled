@@ -104,6 +104,7 @@ enum class LedgerNameSpace : std::uint16_t {
     LoanBroker = 'l',  // lower-case L
     Loan = 'L',
     Sponsorship = '>',
+    Subscription = 'U',
 
     ContractSource = 'Z',
     Contract = 'c',
@@ -630,6 +631,17 @@ Keylet
 contractData(AccountID const& owner, AccountID const& contractAccount) noexcept
 {
     return {ltCONTRACT_DATA, indexHash(LedgerNameSpace::ContractData, owner, contractAccount)};
+}
+
+Keylet
+subscription(
+    AccountID const& account,
+    AccountID const& dest,
+    std::uint32_t const& seq) noexcept
+{
+    return {
+        ltSUBSCRIPTION,
+        indexHash(LedgerNameSpace::Subscription, account, dest, seq)};
 }
 
 }  // namespace keylet

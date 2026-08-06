@@ -17,6 +17,7 @@
 
 XRPL_FEATURE(SmartContract,               Supported::Yes, VoteBehavior::DefaultNo)
 XRPL_FEATURE(SmartEscrow,                 Supported::Yes, VoteBehavior::DefaultNo)
+XRPL_FEATURE(Subscription,                Supported::Yes, VoteBehavior::DefaultNo)
 XRPL_FIX    (Cleanup3_4_0,                Supported::Yes, VoteBehavior::DefaultNo)
 XRPL_FEATURE(Sponsor,                     Supported::Yes, VoteBehavior::DefaultNo)
 XRPL_FEATURE(BatchV1_1,                   Supported::Yes, VoteBehavior::DefaultNo)

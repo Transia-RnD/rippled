@@ -1380,6 +1380,52 @@ TRANSACTION(ttCONTRACT_CALL, 97, ContractCall,
     {sfGas, SoeRequired},
 }))
 
+/** A subscription payment setup between two accounts. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/dex/SubscriptionSet.h>
+#endif
+TRANSACTION(ttSUBSCRIPTION_SET, 72, SubscriptionSet,
+    Delegation::Delegable,
+    featureSubscription,
+    NoPriv,
+    Emittance::emitable,
+    ({
+    {sfDestination, SoeOptional},
+    {sfAmount, SoeRequired, SoeMptSupported},
+    {sfFrequency, SoeOptional},
+    {sfStartTime, SoeOptional},
+    {sfExpiration, SoeOptional},
+    {sfDestinationTag, SoeOptional},
+    {sfSubscriptionID, SoeOptional},
+}))
+
+/** Cancels an existing subscription. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/dex/SubscriptionCancel.h>
+#endif
+TRANSACTION(ttSUBSCRIPTION_CANCEL, 73, SubscriptionCancel,
+    Delegation::Delegable,
+    featureSubscription,
+    NoPriv,
+    Emittance::emitable,
+    ({
+    {sfSubscriptionID, SoeRequired},
+}))
+
+/** Claims a periodic payment from an existing subscription. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/dex/SubscriptionClaim.h>
+#endif
+TRANSACTION(ttSUBSCRIPTION_CLAIM, 98, SubscriptionClaim,
+    Delegation::Delegable,
+    featureSubscription,
+    NoPriv,
+    Emittance::emitable,
+    ({
+    {sfAmount, SoeRequired, SoeMptSupported},
+    {sfSubscriptionID, SoeRequired},
+}))
+
 /** This system-generated transaction type is used to update the status of the various amendments.
 
     For details, see: https://xrpl.org/amendments.html

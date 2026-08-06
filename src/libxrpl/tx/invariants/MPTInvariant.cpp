@@ -375,6 +375,9 @@ ValidMPTIssuance::finalize(
             return true;
         }
 
+        if (txnType == ttSUBSCRIPTION_CLAIM)
+            return true;
+
         if (hasPrivilege(tx, MayDeleteMpt) &&
             ((txnType == ttAMM_DELETE && mptokensDeleted_ <= 2) || mptokensDeleted_ == 1) &&
             mptokensCreated_ == 0 && mptIssuancesCreated_ == 0 && mptIssuancesDeleted_ == 0)
