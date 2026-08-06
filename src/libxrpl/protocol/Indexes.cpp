@@ -26,7 +26,9 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <map>
 #include <set>
+#include <string>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -114,6 +116,29 @@ enum class LedgerNameSpace : std::uint16_t {
     Generator [[deprecated]] = 'g',
     Nickname [[deprecated]] = 'n',
 };
+
+std::map<std::string, std::uint16_t> const&
+ledgerNameSpaceMap()
+{
+#pragma push_macro("LEDGER_NAME_SPACE")
+#undef LEDGER_NAME_SPACE
+#pragma push_macro("LEDGER_NAME_SPACE_DEPRECATED")
+#undef LEDGER_NAME_SPACE_DEPRECATED
+
+#define LEDGER_NAME_SPACE(name, value) {#name, static_cast<std::uint16_t>(LedgerNameSpace::name)},
+#define LEDGER_NAME_SPACE_DEPRECATED(name, value)
+
+    static std::map<std::string, std::uint16_t> const kMap{
+#include <xrpl/protocol/detail/ledger_name_spaces.macro>
+    };
+
+#undef LEDGER_NAME_SPACE_DEPRECATED
+#pragma pop_macro("LEDGER_NAME_SPACE_DEPRECATED")
+#undef LEDGER_NAME_SPACE
+#pragma pop_macro("LEDGER_NAME_SPACE")
+
+    return kMap;
+}
 
 template <class... Args>
 static uint256
