@@ -46,13 +46,13 @@ private:
     static PublicKey
     randomNode()
     {
-        return derivePublicKey(KeyType::Secp256k1, randomSecretKey());
+        return derivePublicKey(KeyType::Dilithium, randomSecretKey(KeyType::Dilithium));
     }
 
     static PublicKey
     randomMasterKey()
     {
-        return derivePublicKey(KeyType::Ed25519, randomSecretKey());
+        return derivePublicKey(KeyType::Dilithium, randomSecretKey(KeyType::Dilithium));
     }
 
     static void
@@ -143,7 +143,11 @@ public:
         st[sfPublicKey] = pk;
 
         sign(
-            st, HashPrefix::Manifest, type, invalidSig ? randomSecretKey() : sk, sfMasterSignature);
+            st,
+            HashPrefix::Manifest,
+            type,
+            invalidSig ? randomSecretKey(KeyType::Dilithium) : sk,
+            sfMasterSignature);
         BEAST_EXPECT(invalidSig ^ verify(st, HashPrefix::Manifest, pk, sfMasterSignature));
 
         Serializer s;
@@ -162,7 +166,11 @@ public:
         st[sfPublicKey] = pk;
 
         sign(
-            st, HashPrefix::Manifest, type, invalidSig ? randomSecretKey() : sk, sfMasterSignature);
+            st,
+            HashPrefix::Manifest,
+            type,
+            invalidSig ? randomSecretKey(KeyType::Dilithium) : sk,
+            sfMasterSignature);
         BEAST_EXPECT(invalidSig ^ verify(st, HashPrefix::Manifest, pk, sfMasterSignature));
 
         Serializer s;
@@ -196,7 +204,11 @@ public:
         BEAST_EXPECT(verify(st, HashPrefix::Manifest, spk));
 
         sign(
-            st, HashPrefix::Manifest, type, invalidSig ? randomSecretKey() : sk, sfMasterSignature);
+            st,
+            HashPrefix::Manifest,
+            type,
+            invalidSig ? randomSecretKey(KeyType::Dilithium) : sk,
+            sfMasterSignature);
         BEAST_EXPECT(invalidSig ^ verify(st, HashPrefix::Manifest, pk, sfMasterSignature));
 
         Serializer s;
@@ -309,9 +321,9 @@ public:
                 BEAST_EXPECT(
                     !loaded.load(*dbCon, "ValidatorManifests", badManifest, emptyRevocation));
 
-                auto const sk = randomSecretKey();
-                auto const pk = derivePublicKey(KeyType::Ed25519, sk);
-                auto const kp = randomKeyPair(KeyType::Secp256k1);
+                auto const sk = randomSecretKey(KeyType::Dilithium);
+                auto const pk = derivePublicKey(KeyType::Dilithium, sk);
+                auto const kp = randomKeyPair(KeyType::Dilithium);
 
                 std::string const cfgManifest = makeManifestString(pk, sk, kp.first, kp.second, 0);
 
@@ -327,10 +339,10 @@ public:
                 BEAST_EXPECT(
                     !loaded.load(*dbCon, "ValidatorManifests", emptyManifest, badRevocation));
 
-                auto const sk = randomSecretKey();
-                auto const keyType = KeyType::Ed25519;
+                auto const sk = randomSecretKey(KeyType::Dilithium);
+                auto const keyType = KeyType::Dilithium;
                 auto const pk = derivePublicKey(keyType, sk);
-                auto const kp = randomKeyPair(KeyType::Secp256k1);
+                auto const kp = randomKeyPair(KeyType::Dilithium);
                 std::vector<std::string> const nonRevocation = {
                     makeManifestString(pk, sk, kp.first, kp.second, 0)};
 
@@ -358,10 +370,11 @@ public:
     testGetSignature()
     {
         testcase("getSignature");
-        auto const sk = randomSecretKey();
-        auto const pk = derivePublicKey(KeyType::Ed25519, sk);
-        auto const kp = randomKeyPair(KeyType::Secp256k1);
-        auto const m = makeManifest(sk, KeyType::Ed25519, kp.second, KeyType::Secp256k1, 0);
+        auto const sk = randomSecretKey(KeyType::Dilithium);
+        auto const pk = derivePublicKey(KeyType::Dilithium, sk);
+        auto const kp = randomKeyPair(KeyType::Dilithium);
+        auto const m = makeManifest(
+            sk, KeyType::Dilithium, kp.second, KeyType::Dilithium, 0);
 
         STObject st(sfGeneric);
         st[sfSequence] = 0;
@@ -370,13 +383,16 @@ public:
         Serializer ss;
         ss.add32(HashPrefix::Manifest);
         st.addWithoutSigningFields(ss);
-        auto const sig = sign(KeyType::Secp256k1, kp.second, ss.slice());
-        BEAST_EXPECT(
-            strHex(sig) ==
-            strHex(*m.getSignature()));  // NOLINT(bugprone-unchecked-optional-access)
 
-        auto const masterSig = sign(KeyType::Ed25519, sk, ss.slice());
-        BEAST_EXPECT(strHex(masterSig) == strHex(m.getMasterSignature()));
+        // Verify the ephemeral key signature is valid
+        auto const sig = m.getSignature();
+        BEAST_EXPECT(sig.has_value());
+        BEAST_EXPECT(verify(kp.first, ss.slice(), makeSlice(*sig)));
+
+        // Verify the master key signature is valid
+        auto const masterSig = m.getMasterSignature();
+        BEAST_EXPECT(!masterSig.empty());
+        BEAST_EXPECT(verify(pk, ss.slice(), makeSlice(masterSig)));
     }
 
     void
@@ -385,8 +401,8 @@ public:
         testcase("getKeys");
 
         ManifestCache cache;
-        auto const sk = randomSecretKey();
-        auto const pk = derivePublicKey(KeyType::Ed25519, sk);
+        auto const sk = randomSecretKey(KeyType::Dilithium);
+        auto const pk = derivePublicKey(KeyType::Dilithium, sk);
 
         // getSigningKey should return same key if there is no manifest
         BEAST_EXPECT(cache.getSigningKey(pk) == pk);
@@ -395,11 +411,11 @@ public:
         // for the listed validator master public key
         // getMasterKey should return the listed validator master key
         // for that ephemeral public key
-        auto const kp0 = randomKeyPair(KeyType::Secp256k1);
+        auto const kp0 = randomKeyPair(KeyType::Dilithium);
         BEAST_EXPECT(
             ManifestDisposition::Accepted ==
-            cache.applyManifest(
-                makeManifest(sk, KeyType::Ed25519, kp0.second, KeyType::Secp256k1, 0)));
+            cache.applyManifest(makeManifest(
+                sk, KeyType::Dilithium, kp0.second, KeyType::Dilithium, 0)));
         BEAST_EXPECT(cache.getSigningKey(pk) == kp0.first);
         BEAST_EXPECT(cache.getMasterKey(kp0.first) == pk);
 
@@ -407,11 +423,11 @@ public:
         // for the listed validator master public key
         // getMasterKey should only return a master key for the latest
         // ephemeral public key
-        auto const kp1 = randomKeyPair(KeyType::Secp256k1);
+        auto const kp1 = randomKeyPair(KeyType::Dilithium);
         BEAST_EXPECT(
             ManifestDisposition::Accepted ==
-            cache.applyManifest(
-                makeManifest(sk, KeyType::Ed25519, kp1.second, KeyType::Secp256k1, 1)));
+            cache.applyManifest(makeManifest(
+                sk, KeyType::Dilithium, kp1.second, KeyType::Dilithium, 1)));
         BEAST_EXPECT(cache.getSigningKey(pk) == kp1.first);
         BEAST_EXPECT(cache.getMasterKey(kp1.first) == pk);
         BEAST_EXPECT(cache.getMasterKey(kp0.first) == kp0.first);
@@ -420,8 +436,8 @@ public:
         // applied with the same signing key but a higher sequence
         BEAST_EXPECT(
             ManifestDisposition::BadEphemeralKey ==
-            cache.applyManifest(
-                makeManifest(sk, KeyType::Ed25519, kp1.second, KeyType::Secp256k1, 2)));
+            cache.applyManifest(makeManifest(
+                sk, KeyType::Dilithium, kp1.second, KeyType::Dilithium, 2)));
         BEAST_EXPECT(cache.getSigningKey(pk) == kp1.first);
         BEAST_EXPECT(cache.getMasterKey(kp1.first) == pk);
         BEAST_EXPECT(cache.getMasterKey(kp0.first) == kp0.first);
@@ -431,7 +447,7 @@ public:
         // key from a revoked master public key
         BEAST_EXPECT(
             ManifestDisposition::Accepted ==
-            cache.applyManifest(makeRevocation(sk, KeyType::Ed25519)));
+            cache.applyManifest(makeRevocation(sk, KeyType::Dilithium)));
         BEAST_EXPECT(cache.revoked(pk));
         BEAST_EXPECT(cache.getSigningKey(pk) == pk);
         BEAST_EXPECT(cache.getMasterKey(kp0.first) == kp0.first);
@@ -488,11 +504,11 @@ public:
     {
         testcase("Versioning");
 
-        auto const sk = generateSecretKey(KeyType::Ed25519, randomSeed());
-        auto const pk = derivePublicKey(KeyType::Ed25519, sk);
+        auto const sk = generateSecretKey(KeyType::Dilithium, randomSeed());
+        auto const pk = derivePublicKey(KeyType::Dilithium, sk);
 
-        auto const ssk = generateSecretKey(KeyType::Secp256k1, randomSeed());
-        auto const spk = derivePublicKey(KeyType::Secp256k1, ssk);
+        auto const ssk = generateSecretKey(KeyType::Dilithium, randomSeed());
+        auto const spk = derivePublicKey(KeyType::Dilithium, ssk);
 
         auto buildManifestObject = [&](std::uint16_t version) {
             STObject st(sfGeneric);
@@ -503,8 +519,13 @@ public:
             if (version != 0)
                 st[sfVersion] = version;
 
-            sign(st, HashPrefix::Manifest, KeyType::Ed25519, sk, sfMasterSignature);
-            sign(st, HashPrefix::Manifest, KeyType::Secp256k1, ssk);
+            sign(
+                st,
+                HashPrefix::Manifest,
+                KeyType::Dilithium,
+                sk,
+                sfMasterSignature);
+            sign(st, HashPrefix::Manifest, KeyType::Dilithium, ssk);
 
             Serializer s;
             st.add(s);
@@ -523,7 +544,8 @@ public:
     void
     testManifestDeserialization()
     {
-        std::array<KeyType, 2> const keyTypes{{KeyType::Ed25519, KeyType::Secp256k1}};
+        std::array<KeyType, 2> const keyTypes{
+            {KeyType::Dilithium, KeyType::Dilithium}};
 
         std::uint32_t sequence = 0;
 
@@ -790,11 +812,11 @@ public:
     {
         testcase("Manifest Domain Names");
 
-        auto const sk1 = generateSecretKey(KeyType::Secp256k1, randomSeed());
-        auto const pk1 = derivePublicKey(KeyType::Secp256k1, sk1);
+        auto const sk1 = generateSecretKey(KeyType::Dilithium, randomSeed());
+        auto const pk1 = derivePublicKey(KeyType::Dilithium, sk1);
 
-        auto const sk2 = generateSecretKey(KeyType::Secp256k1, randomSeed());
-        auto const pk2 = derivePublicKey(KeyType::Secp256k1, sk2);
+        auto const sk2 = generateSecretKey(KeyType::Dilithium, randomSeed());
+        auto const pk2 = derivePublicKey(KeyType::Dilithium, sk2);
 
         auto test = [&](std::string domain) {
             STObject st(sfGeneric);
@@ -803,8 +825,13 @@ public:
             st[sfDomain] = makeSlice(domain);
             st[sfSigningPubKey] = pk2;
 
-            sign(st, HashPrefix::Manifest, KeyType::Secp256k1, sk1, sfMasterSignature);
-            sign(st, HashPrefix::Manifest, KeyType::Secp256k1, sk2);
+            sign(
+                st,
+                HashPrefix::Manifest,
+                KeyType::Dilithium,
+                sk1,
+                sfMasterSignature);
+            sign(st, HashPrefix::Manifest, KeyType::Dilithium, sk2);
 
             Serializer s;
             st.add(s);
@@ -870,71 +897,78 @@ public:
         {
             testcase("apply");
 
-            auto const skA = randomSecretKey();
-            auto const pkA = derivePublicKey(KeyType::Ed25519, skA);
-            auto const kpA0 = randomKeyPair(KeyType::Secp256k1);
-            auto const kpA1 = randomKeyPair(KeyType::Secp256k1);
-            auto const sA0 =
-                makeManifest(skA, KeyType::Ed25519, kpA0.second, KeyType::Secp256k1, 0);
-            auto const sA1 =
-                makeManifest(skA, KeyType::Ed25519, kpA1.second, KeyType::Secp256k1, 1);
-            auto const sA2 =
-                makeManifest(skA, KeyType::Ed25519, kpA1.second, KeyType::Secp256k1, 2);
-            auto const sAMax = makeRevocation(skA, KeyType::Ed25519);
+            auto const sk_a = randomSecretKey(KeyType::Dilithium);
+            auto const pk_a = derivePublicKey(KeyType::Dilithium, sk_a);
+            auto const kp_a0 = randomKeyPair(KeyType::Dilithium);
+            auto const kp_a1 = randomKeyPair(KeyType::Dilithium);
+            auto const s_a0 = makeManifest(
+                sk_a, KeyType::Dilithium, kp_a0.second, KeyType::Dilithium, 0);
+            auto const s_a1 = makeManifest(
+                sk_a, KeyType::Dilithium, kp_a1.second, KeyType::Dilithium, 1);
+            auto const s_a2 = makeManifest(
+                sk_a, KeyType::Dilithium, kp_a1.second, KeyType::Dilithium, 2);
+            auto const s_aMax = makeRevocation(sk_a, KeyType::Dilithium);
 
-            auto const skB = randomSecretKey();
-            auto const kpB0 = randomKeyPair(KeyType::Secp256k1);
-            auto const kpB1 = randomKeyPair(KeyType::Secp256k1);
-            auto const kpB2 = randomKeyPair(KeyType::Secp256k1);
-            auto const sB0 =
-                makeManifest(skB, KeyType::Ed25519, kpB0.second, KeyType::Secp256k1, 0);
-            auto const sB1 = makeManifest(
-                skB,
-                KeyType::Ed25519,
-                kpB1.second,
-                KeyType::Secp256k1,
+            auto const sk_b = randomSecretKey(KeyType::Dilithium);
+            auto const kp_b0 = randomKeyPair(KeyType::Dilithium);
+            auto const kp_b1 = randomKeyPair(KeyType::Dilithium);
+            auto const kp_b2 = randomKeyPair(KeyType::Dilithium);
+            auto const s_b0 = makeManifest(
+                sk_b, KeyType::Dilithium, kp_b0.second, KeyType::Dilithium, 0);
+            auto const s_b1 = makeManifest(
+                sk_b,
+                KeyType::Dilithium,
+                kp_b1.second,
+                KeyType::Dilithium,
                 1,
                 true);  // invalidSig
-            auto const sB2 = makeManifest(skB, KeyType::Ed25519, kpB2.second, KeyType::Ed25519, 2);
+            auto const s_b2 = makeManifest(
+                sk_b, KeyType::Dilithium, kp_b2.second, KeyType::Dilithium, 2);
 
-            auto const fake = sB2.serialized + '\0';
+            auto const fake = s_b2.serialized + '\0';
 
             // applyManifest should accept new manifests with
             // higher sequence numbers
             auto const seq0 = cache.sequence();
-            BEAST_EXPECT(cache.applyManifest(clone(sA0)) == ManifestDisposition::Accepted);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a0)) == ManifestDisposition::Accepted);
             BEAST_EXPECT(cache.sequence() > seq0);
 
             auto const seq1 = cache.sequence();
-            BEAST_EXPECT(cache.applyManifest(clone(sA0)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a0)) == ManifestDisposition::Stale);
             BEAST_EXPECT(cache.sequence() == seq1);
 
-            BEAST_EXPECT(cache.applyManifest(clone(sA1)) == ManifestDisposition::Accepted);
-            BEAST_EXPECT(cache.applyManifest(clone(sA1)) == ManifestDisposition::Stale);
-            BEAST_EXPECT(cache.applyManifest(clone(sA0)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a1)) == ManifestDisposition::Accepted);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a1)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a0)) == ManifestDisposition::Stale);
 
-            BEAST_EXPECT(cache.applyManifest(clone(sA2)) == ManifestDisposition::BadEphemeralKey);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a2)) == ManifestDisposition::BadEphemeralKey);
 
             // applyManifest should accept manifests with max sequence numbers
             // that revoke the master public key
-            BEAST_EXPECT(!cache.revoked(pkA));
-            BEAST_EXPECT(sAMax.revoked());
-            BEAST_EXPECT(cache.applyManifest(clone(sAMax)) == ManifestDisposition::Accepted);
-            BEAST_EXPECT(cache.applyManifest(clone(sAMax)) == ManifestDisposition::Stale);
-            BEAST_EXPECT(cache.applyManifest(clone(sA1)) == ManifestDisposition::Stale);
-            BEAST_EXPECT(cache.applyManifest(clone(sA0)) == ManifestDisposition::Stale);
-            BEAST_EXPECT(cache.revoked(pkA));
+            BEAST_EXPECT(!cache.revoked(pk_a));
+            BEAST_EXPECT(s_aMax.revoked());
+            BEAST_EXPECT(cache.applyManifest(clone(s_aMax)) == ManifestDisposition::Accepted);
+            BEAST_EXPECT(cache.applyManifest(clone(s_aMax)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a1)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_a0)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.revoked(pk_a));
 
             // applyManifest should reject manifests with invalid signatures
-            BEAST_EXPECT(cache.applyManifest(clone(sB0)) == ManifestDisposition::Accepted);
-            BEAST_EXPECT(cache.applyManifest(clone(sB0)) == ManifestDisposition::Stale);
+            BEAST_EXPECT(cache.applyManifest(clone(s_b0)) == ManifestDisposition::Accepted);
+            BEAST_EXPECT(cache.applyManifest(clone(s_b0)) == ManifestDisposition::Stale);
             BEAST_EXPECT(!deserializeManifest(fake));
-            BEAST_EXPECT(cache.applyManifest(clone(sB1)) == ManifestDisposition::Invalid);
-            BEAST_EXPECT(cache.applyManifest(clone(sB2)) == ManifestDisposition::Accepted);
+            BEAST_EXPECT(cache.applyManifest(clone(s_b1)) == ManifestDisposition::Invalid);
+            BEAST_EXPECT(cache.applyManifest(clone(s_b2)) == ManifestDisposition::Accepted);
 
-            auto const sC0 = makeManifest(
-                kpB2.second, KeyType::Ed25519, randomSecretKey(), KeyType::Ed25519, 47);
-            BEAST_EXPECT(cache.applyManifest(clone(sC0)) == ManifestDisposition::BadMasterKey);
+            auto const s_c0 = makeManifest(
+                kp_b2.second,
+                KeyType::Dilithium,
+                randomSecretKey(KeyType::Dilithium),
+                KeyType::Dilithium,
+                47);
+            BEAST_EXPECT(
+                cache.applyManifest(clone(s_c0)) ==
+                ManifestDisposition::BadMasterKey);
         }
 
         testLoadStore(cache);

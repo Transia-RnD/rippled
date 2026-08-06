@@ -272,7 +272,7 @@ class TestPeer : public Peer
 public:
     TestPeer(bool enableLedgerReplay)
         : ledgerReplayEnabled_(enableLedgerReplay)
-        , nodePublicKey_(derivePublicKey(KeyType::Ed25519, randomSecretKey()))
+        , nodePublicKey_(derivePublicKey(KeyType::Dilithium, randomSecretKey(KeyType::Dilithium)))
     {
     }
 

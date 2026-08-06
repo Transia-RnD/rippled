@@ -1501,7 +1501,9 @@ ApplicationImp::setup(boost::program_options::variables_map const& cmdline)
         }
     }
 
+    JLOG(journal_.debug()) << "About to call validatorSites_->start()";
     validatorSites_->start();
+    JLOG(journal_.debug()) << "validatorSites_->start() returned";
 
     return true;
 }

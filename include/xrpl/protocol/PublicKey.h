@@ -41,6 +41,7 @@ namespace xrpl {
  *     secp256k1
  *     ed25519
  *     p256
+ *     dilithium
  *
  * secp256k1 public keys consist of a 33 byte
  * compressed public key, with the lead byte equal
@@ -49,15 +50,18 @@ namespace xrpl {
  * The ed25519 public keys consist of a 1 byte
  * prefix constant 0xED, followed by 32 bytes of
  * public key data.
+ *
+ * The dilithium public keys will have their own specific format.
  */
 class PublicKey
 {
 protected:
-    // All the constructed public keys are valid and non-empty. secp256k1
-    // and ed25519 keys hold 33 bytes of data; uncompressed p256 keys hold
-    // 65 bytes.
-    static constexpr std::size_t kMaxSize = 65;
-    std::uint8_t buf_[kMaxSize]{};  // should be large enough
+    // Minimum / standard public key size (secp256k1, ed25519).
+    static constexpr std::size_t kSize = 33;
+    // Buffer sized for the largest supported key (dilithium = 1312 bytes).
+    // secp256k1 and ed25519 keys hold 33 bytes; uncompressed p256 keys hold
+    // 65 bytes; dilithium keys hold 1312 bytes. Actual length is tracked in size_.
+    std::uint8_t buf_[1312]{};
     std::size_t size_ = 0;
 
 public:
