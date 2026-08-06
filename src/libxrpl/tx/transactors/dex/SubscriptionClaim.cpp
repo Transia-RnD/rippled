@@ -3,15 +3,16 @@
 #include <xrpl/basics/Log.h>
 #include <xrpl/ledger/PaymentSandbox.h>
 #include <xrpl/ledger/View.h>
+#include <xrpl/ledger/helpers/AccountRootHelpers.h>
 #include <xrpl/ledger/helpers/MPTokenHelpers.h>
 #include <xrpl/ledger/helpers/RippleStateHelpers.h>
+#include <xrpl/ledger/helpers/SubscriptionHelpers.h>
 #include <xrpl/ledger/helpers/TokenHelpers.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
 #include <xrpl/protocol/STAccount.h>
 #include <xrpl/protocol/TER.h>
 #include <xrpl/protocol/TxFlags.h>
-#include <xrpld/app/misc/SubscriptionHelpers.h>
 
 namespace xrpl {
 
@@ -81,7 +82,7 @@ SubscriptionClaim::preclaim(PreclaimContext const& ctx)
 
         // Time/period context
         std::uint32_t const currentTime =
-            ctx.view.info().parentCloseTime.time_since_epoch().count();
+            ctx.view.header().parentCloseTime.time_since_epoch().count();
         std::uint32_t const nextClaimTime =
             sleSub->getFieldU32(sfNextClaimTime);
         std::uint32_t const frequency = sleSub->getFieldU32(sfFrequency);
@@ -144,7 +145,7 @@ static TER
 doTransferTokenHelper(
     ApplyView& view,
     std::shared_ptr<SLE> const& sleDest,
-    STAmount const& xrpBalance,
+    XRPAmount const xrpBalance,
     STAmount const& amount,
     AccountID const& issuer,
     AccountID const& sender,
@@ -157,7 +158,7 @@ TER
 doTransferTokenHelper<Issue>(
     ApplyView& view,
     std::shared_ptr<SLE> const& sleDest,
-    STAmount const& xrpBalance,
+    XRPAmount const xrpBalance,
     STAmount const& amount,
     AccountID const& issuer,
     AccountID const& sender,
@@ -165,7 +166,7 @@ doTransferTokenHelper<Issue>(
     bool createAsset,
     beast::Journal journal)
 {
-    Keylet const trustLineKey = keylet::line(receiver, amount.issue());
+    Keylet const trustLineKey = keylet::trustLine(receiver, amount.get<Issue>());
     bool const recvLow = issuer > receiver;
 
     // Review Note: We could remove this and just say to use batch to auth the
@@ -173,8 +174,7 @@ doTransferTokenHelper<Issue>(
     if (!view.exists(trustLineKey) && createAsset && issuer != receiver)
     {
         // Can the account cover the trust line's reserve?
-        if (std::uint32_t const ownerCount = {sleDest->at(sfOwnerCount)};
-            xrpBalance < view.fees().accountReserve(ownerCount + 1))
+        if (xrpBalance < accountReserve(view, sleDest, journal, {.ownerCountDelta = 1}))
         {
             JLOG(journal.trace())
                 << "doTransferTokenHelper: Trust line does not exist. "
@@ -183,9 +183,8 @@ doTransferTokenHelper<Issue>(
             return tecNO_LINE_INSUF_RESERVE;
         }
 
-        Currency const currency = amount.getCurrency();
-        STAmount initialBalance(amount.issue());
-        initialBalance.setIssuer(noAccount());
+        Currency const currency = amount.get<Issue>().currency;
+        STAmount const initialBalance(Issue(currency, noAccount()), 0);
 
         // clang-format off
         if (TER const ter = trustCreate(
@@ -203,6 +202,7 @@ doTransferTokenHelper<Issue>(
                 Issue(currency, receiver),   // limit of zero
                 0,                              // quality in
                 0,                              // quality out
+                {},                             // no sponsor
                 journal);                       // journal
             !isTesSuccess(ter))
         {
@@ -218,7 +218,7 @@ doTransferTokenHelper<Issue>(
         return tecNO_LINE;
 
     auto const ter = accountSend(
-        view, sender, receiver, amount, journal, WaiveTransferFee::No);
+        view, sender, receiver, amount, journal, {}, WaiveTransferFee::No);
     if (ter != tesSUCCESS)
     {
         JLOG(journal.trace()) << "doTransferTokenHelper: Failed to send token: "
@@ -234,7 +234,7 @@ TER
 doTransferTokenHelper<MPTIssue>(
     ApplyView& view,
     std::shared_ptr<SLE> const& sleDest,
-    STAmount const& xrpBalance,
+    XRPAmount const xrpBalance,
     STAmount const& amount,
     AccountID const& issuer,
     AccountID const& sender,
@@ -243,11 +243,10 @@ doTransferTokenHelper<MPTIssue>(
     beast::Journal journal)
 {
     auto const mptID = amount.get<MPTIssue>().getMptID();
-    auto const issuanceKey = keylet::mptIssuance(mptID);
+    auto const issuanceKey = keylet::mptokenIssuance(mptID);
     if (!view.exists(keylet::mptoken(issuanceKey.key, receiver)) && createAsset)
     {
-        if (std::uint32_t const ownerCount = {sleDest->at(sfOwnerCount)};
-            xrpBalance < view.fees().accountReserve(ownerCount + 1))
+        if (xrpBalance < accountReserve(view, sleDest, journal, {.ownerCountDelta = 1}))
         {
             JLOG(journal.trace())
                 << "doTransferTokenHelper: MPT does not exist. "
@@ -267,7 +266,7 @@ doTransferTokenHelper<MPTIssue>(
         }
 
         // Update owner count.
-        adjustOwnerCount(view, sleDest, 1, journal);
+        increaseOwnerCount(view, sleDest, {}, 1, journal);
     }
 
     if (!view.exists(keylet::mptoken(issuanceKey.key, receiver)))
@@ -277,7 +276,7 @@ doTransferTokenHelper<MPTIssue>(
     }
 
     auto const ter = accountSend(
-        view, sender, receiver, amount, journal, WaiveTransferFee::No);
+        view, sender, receiver, amount, journal, {}, WaiveTransferFee::No);
     if (ter != tesSUCCESS)
     {
         JLOG(journal.trace())
@@ -328,7 +327,7 @@ SubscriptionClaim::doApply()
 
     // Pull current period info
     std::uint32_t const currentTime =
-        psb.info().parentCloseTime.time_since_epoch().count();
+        ctx_.view().header().parentCloseTime.time_since_epoch().count();
     std::uint32_t nextClaimTime = sleSub->getFieldU32(sfNextClaimTime);
     std::uint32_t const frequency = sleSub->getFieldU32(sfFrequency);
 
@@ -374,7 +373,7 @@ SubscriptionClaim::doApply()
                     return doTransferTokenHelper<T>(
                         psb,
                         psb.peek(keylet::account(dest)),
-                        mPriorBalance,
+                        xrpLiquid(psb, dest, 0, viewJ),
                         deliverAmount,
                         deliverAmount.getIssuer(),
                         account,
@@ -409,7 +408,7 @@ SubscriptionClaim::doApply()
     psb.update(sleSub);
 
     if (sleSub->isFieldPresent(sfExpiration) &&
-        psb.info().parentCloseTime.time_since_epoch().count() >=
+        ctx_.view().header().parentCloseTime.time_since_epoch().count() >=
             sleSub->getFieldU32(sfExpiration))
     {
         psb.erase(sleSub);
@@ -417,6 +416,24 @@ SubscriptionClaim::doApply()
 
     psb.apply(ctx_.rawView());
     return tesSUCCESS;
+}
+
+void
+SubscriptionClaim::visitInvariantEntry(bool, SLE::const_ref, SLE::const_ref)
+{
+    // No transaction-specific invariants.
+}
+
+bool
+SubscriptionClaim::finalizeInvariants(
+    STTx const&,
+    TER,
+    XRPAmount,
+    ReadView const&,
+    beast::Journal const&)
+{
+    // No transaction-specific invariants.
+    return true;
 }
 
 }  // namespace xrpl

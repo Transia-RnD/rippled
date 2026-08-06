@@ -840,10 +840,10 @@ private:
         memset(&header->version_string, 0, 32);
         memcpy(
             &header->version_string,
-            BuildInfo::getVersionString().c_str(),
-            BuildInfo::getVersionString().size() > 32
+            xrpl::build_info::getVersionString().c_str(),
+            xrpl::build_info::getVersionString().size() > 32
                 ? 32
-                : BuildInfo::getVersionString().size());
+                : xrpl::build_info::getVersionString().size());
 
         header->ledger_range_count = 0;
         return buffer;

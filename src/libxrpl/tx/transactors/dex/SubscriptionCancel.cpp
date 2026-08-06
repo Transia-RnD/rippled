@@ -3,6 +3,7 @@
 #include <xrpl/basics/Log.h>
 #include <xrpl/ledger/Sandbox.h>
 #include <xrpl/ledger/View.h>
+#include <xrpl/ledger/helpers/AccountRootHelpers.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
 #include <xrpl/protocol/STAccount.h>
@@ -71,10 +72,28 @@ SubscriptionCancel::doApply()
     auto const sleSrc = sb.peek(keylet::account(account));
     sb.erase(sleSub);
 
-    adjustOwnerCount(sb, sleSrc, -1, viewJ);
+    decreaseOwnerCount(sb, sleSrc, {}, 1, viewJ);
 
     sb.apply(ctx_.rawView());
     return tesSUCCESS;
+}
+
+void
+SubscriptionCancel::visitInvariantEntry(bool, SLE::const_ref, SLE::const_ref)
+{
+    // No transaction-specific invariants.
+}
+
+bool
+SubscriptionCancel::finalizeInvariants(
+    STTx const&,
+    TER,
+    XRPAmount,
+    ReadView const&,
+    beast::Journal const&)
+{
+    // No transaction-specific invariants.
+    return true;
 }
 
 }  // namespace xrpl

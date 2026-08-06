@@ -220,7 +220,7 @@ EscrowFinish::preclaim(PreclaimContext const& ctx)
             {
                 if (auto const ret = std::visit(
                         [&]<typename T>(T const&) {
-                            return escrowFinishPreclaimHelper<T>(ctx, dest, amount);
+                            return escrowUnlockPreclaimHelper<T>(ctx.view, dest, amount);
                         },
                         amount.asset().value());
                     !isTesSuccess(ret))

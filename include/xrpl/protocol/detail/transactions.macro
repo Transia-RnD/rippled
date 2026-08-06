@@ -567,10 +567,11 @@ TRANSACTION(ttAMM_DELETE, 40, AMMDelete,
 #if TRANSACTION_INCLUDE
 #   include <xrpl/tx/transactors/dex/AMMCollectFees.h>
 #endif
-TRANSACTION(ttAMM_COLLECT_FEES, 94, AMMCollectFees,
+TRANSACTION(ttAMM_COLLECT_FEES, 121, AMMCollectFees,
     Delegation::Delegable,
     featureAMMCurves,
     NoPriv,
+    Emittance::emitable,
     ({
     {sfAsset, SoeRequired, SoeMptSupported},
     {sfAsset2, SoeRequired, SoeMptSupported},
@@ -583,10 +584,11 @@ TRANSACTION(ttAMM_COLLECT_FEES, 94, AMMCollectFees,
 #if TRANSACTION_INCLUDE
 #   include <xrpl/tx/transactors/dex/AMMPositionTransfer.h>
 #endif
-TRANSACTION(ttAMM_POSITION_TRANSFER, 95, AMMPositionTransfer,
+TRANSACTION(ttAMM_POSITION_TRANSFER, 122, AMMPositionTransfer,
     Delegation::Delegable,
     featureAMMCurves,
     NoPriv,
+    Emittance::emitable,
     ({
     {sfDestination, SoeRequired},
     {sfPositionID, SoeRequired},
@@ -596,10 +598,11 @@ TRANSACTION(ttAMM_POSITION_TRANSFER, 95, AMMPositionTransfer,
 #if TRANSACTION_INCLUDE
 #   include <xrpl/tx/transactors/dex/AMMBinCreate.h>
 #endif
-TRANSACTION(ttAMM_BIN_CREATE, 92, AMMBinCreate,
+TRANSACTION(ttAMM_BIN_CREATE, 119, AMMBinCreate,
     Delegation::Delegable,
     featureAMMCurves,
     CreateMptIssuance,
+    Emittance::emitable,
     ({
     {sfAsset, SoeRequired, SoeMptSupported},
     {sfAsset2, SoeRequired, SoeMptSupported},
@@ -611,10 +614,11 @@ TRANSACTION(ttAMM_BIN_CREATE, 92, AMMBinCreate,
 #if TRANSACTION_INCLUDE
 #   include <xrpl/tx/transactors/dex/AMMBinDestroy.h>
 #endif
-TRANSACTION(ttAMM_BIN_DESTROY, 93, AMMBinDestroy,
+TRANSACTION(ttAMM_BIN_DESTROY, 120, AMMBinDestroy,
     Delegation::Delegable,
     featureAMMCurves,
     DestroyMptIssuance,
+    Emittance::emitable,
     ({
     {sfAsset, SoeRequired, SoeMptSupported},
     {sfAsset2, SoeRequired, SoeMptSupported},
@@ -1511,6 +1515,7 @@ TRANSACTION(ttBALLOT_CREATE, 103, BallotCreate,
     Delegation::NotDelegable,
     featureConfidentialVoting,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfMPTokenIssuanceID, SoeOptional},
     {sfDomainID, SoeOptional},
@@ -1532,6 +1537,7 @@ TRANSACTION(ttBALLOT_CAST_VOTE, 104, BallotCastVote,
     Delegation::NotDelegable,
     featureConfidentialVoting,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfBallotID, SoeRequired},
     {sfEncryptedVotes, SoeRequired},
@@ -1551,6 +1557,7 @@ TRANSACTION(ttBALLOT_FINALIZE, 105, BallotFinalize,
     Delegation::NotDelegable,
     featureConfidentialVoting,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfBallotID, SoeRequired},
     {sfResults, SoeRequired},
@@ -1565,6 +1572,7 @@ TRANSACTION(ttBALLOT_DELETE, 106, BallotDelete,
     Delegation::NotDelegable,
     featureConfidentialVoting,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfBallotID, SoeRequired},
 }))
@@ -1577,6 +1585,7 @@ TRANSACTION(ttCOUPON_SCHEDULE_CREATE, 107, CouponScheduleCreate,
     Delegation::NotDelegable,
     featureCouponPayments,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfBondAsset, SoeRequired},
     {sfCouponAmount, SoeRequired, SoeMptSupported},
@@ -1596,6 +1605,7 @@ TRANSACTION(ttCOUPON_SCHEDULE_SET, 108, CouponScheduleSet,
     Delegation::NotDelegable,
     featureCouponPayments,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfCouponScheduleID, SoeRequired},
     {sfExpiration, SoeRequired},
@@ -1609,6 +1619,7 @@ TRANSACTION(ttCOUPON_SCHEDULE_DELETE, 109, CouponScheduleDelete,
     Delegation::NotDelegable,
     featureCouponPayments,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfCouponScheduleID, SoeRequired},
 }))
@@ -1621,6 +1632,7 @@ TRANSACTION(ttCOUPON_REGISTER, 110, CouponRegister,
     Delegation::NotDelegable,
     featureCouponPayments,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfCouponScheduleID, SoeRequired},
     {sfAmount, SoeRequired, SoeMptSupported},
@@ -1634,6 +1646,7 @@ TRANSACTION(ttCOUPON_UNREGISTER, 111, CouponUnregister,
     Delegation::NotDelegable,
     featureCouponPayments,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfCouponScheduleID, SoeRequired},
     {sfAmount, SoeOptional, SoeMptSupported},
@@ -1648,6 +1661,7 @@ TRANSACTION(ttCOUPON_CLAIM, 112, CouponClaim,
     Delegation::Delegable,
     featureCouponPayments,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfCouponScheduleID, SoeRequired},
     {sfAmount, SoeOptional, SoeMptSupported},
@@ -1661,6 +1675,7 @@ TRANSACTION(ttTOKEN_ISSUANCE_CREATE, 113, TokenIssuanceCreate,
     Delegation::NotDelegable,
     featureTokenIssuance,
     CreateTokenIssuance,
+    Emittance::notEmitable,
     ({
     {sfCurrency, SoeRequired},
     {sfMaximumAmount, SoeOptional},
@@ -1678,6 +1693,7 @@ TRANSACTION(ttTOKEN_ISSUANCE_SET, 114, TokenIssuanceSet,
     Delegation::NotDelegable,
     featureTokenIssuance,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfCurrency, SoeRequired},
     {sfMPTokenIssuanceID, SoeOptional},
@@ -1693,6 +1709,7 @@ TRANSACTION(ttTOKEN_ISSUANCE_DESTROY, 115, TokenIssuanceDestroy,
     Delegation::NotDelegable,
     featureTokenIssuance,
     DestroyTokenIssuance,
+    Emittance::notEmitable,
     ({
     {sfCurrency, SoeRequired},
 }))
@@ -1705,6 +1722,7 @@ TRANSACTION(ttTOKEN_CONVERT, 116, TokenConvert,
     Delegation::NotDelegable,
     featureTokenIssuance,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfAmount, SoeRequired, SoeMptSupported},
 }))
@@ -1717,6 +1735,7 @@ TRANSACTION(ttPAYCHAN_CLAWBACK, 117, PaymentChannelClawback,
     Delegation::Delegable,
     featureTokenPaychan,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfChannel, SoeRequired},
     {sfAmount, SoeOptional, SoeMptSupported},
@@ -1730,6 +1749,7 @@ TRANSACTION(ttPASSKEY_LIST_SET, 118, PasskeyListSet,
     Delegation::Delegable,
     featurePasskey,
     NoPriv,
+    Emittance::notEmitable,
     ({
     {sfPasskeys, SoeRequired},
 }))

@@ -3,12 +3,15 @@
 #include <xrpl/basics/Log.h>
 #include <xrpl/ledger/Sandbox.h>
 #include <xrpl/ledger/View.h>
+#include <xrpl/ledger/helpers/AccountRootHelpers.h>
+#include <xrpl/ledger/helpers/DirectoryHelpers.h>
+#include <xrpl/ledger/helpers/SubscriptionHelpers.h>
 #include <xrpl/protocol/Feature.h>
 #include <xrpl/protocol/Indexes.h>
+#include <xrpl/protocol/Protocol.h>
 #include <xrpl/protocol/STAccount.h>
 #include <xrpl/protocol/TER.h>
 #include <xrpl/protocol/TxFlags.h>
-#include <xrpld/app/misc/SubscriptionHelpers.h>
 
 namespace xrpl {
 
@@ -21,10 +24,10 @@ NotTEC
 setPreflightHelper<Issue>(PreflightContext const& ctx)
 {
     STAmount const amount = ctx.tx[sfAmount];
-    if (amount.native() || amount <= beast::zero)
+    if (amount.native() || amount <= beast::kZero)
         return temBAD_AMOUNT;
 
-    if (badCurrency() == amount.getCurrency())
+    if (badCurrency() == amount.get<Issue>().currency)
         return temBAD_CURRENCY;
 
     return tesSUCCESS;
@@ -38,8 +41,8 @@ setPreflightHelper<MPTIssue>(PreflightContext const& ctx)
         return temDISABLED;
 
     auto const amount = ctx.tx[sfAmount];
-    if (amount.native() || amount.mpt() > MPTAmount{maxMPTokenAmount} ||
-        amount <= beast::zero)
+    if (amount.native() || amount.mpt() > MPTAmount(kMaxMpTokenAmount) ||
+        amount <= beast::kZero)
         return temBAD_AMOUNT;
 
     return tesSUCCESS;
@@ -98,7 +101,7 @@ SubscriptionSet::preflight(PreflightContext const& ctx)
     STAmount const amount = ctx.tx.getFieldAmount(sfAmount);
     if (amount.native())
     {
-        if (!isLegalNet(amount) || amount <= beast::zero)
+        if (!isLegalNet(amount) || amount <= beast::kZero)
         {
             JLOG(ctx.j.trace())
                 << "SubscriptionSet: Malformed transaction: bad amount: "
@@ -206,7 +209,7 @@ SubscriptionSet::doApply()
         if (ctx_.tx.isFieldPresent(sfExpiration))
         {
             auto const currentTime =
-                sb.info().parentCloseTime.time_since_epoch().count();
+                ctx_.view().header().parentCloseTime.time_since_epoch().count();
             auto const expiration = ctx_.tx.getFieldU32(sfExpiration);
 
             if (expiration < currentTime)
@@ -224,7 +227,7 @@ SubscriptionSet::doApply()
     else
     {
         auto const currentTime =
-            sb.info().parentCloseTime.time_since_epoch().count();
+            ctx_.view().header().parentCloseTime.time_since_epoch().count();
         auto startTime = currentTime;
         auto nextClaimTime = currentTime;
 
@@ -232,7 +235,7 @@ SubscriptionSet::doApply()
         {
             auto const balance = STAmount((*sleAccount)[sfBalance]).xrp();
             auto const reserve =
-                sb.fees().accountReserve((*sleAccount)[sfOwnerCount] + 1);
+                accountReserve(sb, sleAccount, ctx_.journal, {.ownerCountDelta = 1});
             if (balance < reserve)
                 return tecINSUFFICIENT_RESERVE;
         }
@@ -301,11 +304,29 @@ SubscriptionSet::doApply()
             (*sle)[sfDestinationNode] = *page;
         }
 
-        adjustOwnerCount(sb, sleAccount, 1, ctx_.journal);
+        increaseOwnerCount(sb, sleAccount, {}, 1, ctx_.journal);
         sb.insert(sle);
     }
     sb.apply(ctx_.rawView());
     return tesSUCCESS;
+}
+
+void
+SubscriptionSet::visitInvariantEntry(bool, SLE::const_ref, SLE::const_ref)
+{
+    // No transaction-specific invariants.
+}
+
+bool
+SubscriptionSet::finalizeInvariants(
+    STTx const&,
+    TER,
+    XRPAmount,
+    ReadView const&,
+    beast::Journal const&)
+{
+    // No transaction-specific invariants.
+    return true;
 }
 
 }  // namespace xrpl

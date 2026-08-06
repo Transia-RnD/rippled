@@ -1,4 +1,5 @@
 #include <xrpld/core/Config.h>
+#include <xrpld/core/ConfigSections.h>
 
 #include <xrpl/basics/FileUtilities.h>
 #include <xrpl/basics/Log.h>

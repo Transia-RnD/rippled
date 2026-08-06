@@ -470,7 +470,7 @@ LEDGER_ENTRY(ltAMM_TICK_BITMAP, 0x007c, AMMTickBitmap, amm_tick_bitmap, ({
 
     \sa keylet::ammBin
  */
-LEDGER_ENTRY(ltAMM_BIN, 0x0085, AMMBin, amm_bin, ({
+LEDGER_ENTRY(ltAMM_BIN, 0x0095, AMMBin, amm_bin, ({
     {sfAMMID,                SoeRequired},
     {sfBinID,                SoeRequired},
     {sfReserve0,             SoeRequired},
@@ -496,7 +496,7 @@ LEDGER_ENTRY(ltAMM_BIN, 0x0085, AMMBin, amm_bin, ({
 
     \sa keylet::ammBinHolding
  */
-LEDGER_ENTRY(ltAMM_BIN_HOLDING, 0x0086, AMMBinHolding, amm_bin_holding, ({
+LEDGER_ENTRY(ltAMM_BIN_HOLDING, 0x0096, AMMBinHolding, amm_bin_holding, ({
     {sfAccount,              SoeRequired},
     {sfAMMID,                SoeRequired},
     {sfBinID,                SoeRequired},

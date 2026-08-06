@@ -193,7 +193,7 @@ ed25519Canonical(Slice const& sig)
 
 PublicKey::PublicKey(Slice const& slice)
 {
-    if (slice.size() > kMaxSize)
+    if (slice.size() > kSize)
     {
         logicError(
             "PublicKey::PublicKey - Input slice cannot be an oversized "
