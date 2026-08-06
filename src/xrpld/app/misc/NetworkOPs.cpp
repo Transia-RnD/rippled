@@ -348,6 +348,9 @@ public:
     OperatingMode
     getOperatingMode() const override;
 
+    StateAccountingData
+    getStateAccountingData() override;
+
     std::string
     strOperatingMode(OperatingMode const mode, bool const admin) const override;
 
@@ -971,6 +974,16 @@ inline OperatingMode
 NetworkOPsImp::getOperatingMode() const
 {
     return mode_;
+}
+
+NetworkOPs::StateAccountingData
+NetworkOPsImp::getStateAccountingData()
+{
+    auto const data = accounting_.getCounterData();
+    std::array<NetworkOPs::AccountingCounter, 5> out;
+    for (std::size_t i = 0; i < out.size(); ++i)
+        out[i] = {data.counters[i].transitions, data.counters[i].dur};
+    return {out, data.mode, data.start, data.initialSyncUs};
 }
 
 inline std::string
