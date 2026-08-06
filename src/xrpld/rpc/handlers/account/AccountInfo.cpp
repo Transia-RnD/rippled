@@ -34,41 +34,6 @@
 
 namespace xrpl {
 
-/**
- * @brief Injects JSON describing a ledger entry.
- *
- * @param jv The JSON value to populate.
- * @param sle The ledger entry to describe.
- *
- * @details
- * Populates the provided JSON value with the description of the specified
- * ledger entry. If the entry is an account root and contains an email hash,
- * adds a 'urlgravatar' field with the corresponding Gravatar URL.
- * If the entry is not an account root, sets the 'Invalid' field to true.
- */
-void
-injectSLE(json::Value& jv, SLE const& sle)
-{
-    jv = sle.getJson(JsonOptions::Values::None);
-    if (sle.getType() == ltACCOUNT_ROOT)
-    {
-        if (sle.isFieldPresent(sfEmailHash))
-        {
-            auto const& hash = sle.getFieldH128(sfEmailHash);
-            Blob const b(hash.begin(), hash.end());
-            std::string md5 = strHex(makeSlice(b));
-            boost::to_lower(md5);
-            // VFALCO TODO Give a name to this constant and move it
-            //             to a more visible location.
-            jv[jss::urlgravatar] = str(boost::format("https://www.gravatar.com/avatar/%s") % md5);
-        }
-    }
-    else
-    {
-        jv[jss::Invalid] = true;
-    }
-}
-
 // {
 //   account: <ident>,
 //   ledger_hash : <ledger>
@@ -159,7 +124,7 @@ doAccountInfo(rpc::JsonContext& context)
         }
 
         json::Value jvAccepted(json::ValueType::Object);
-        injectSLE(jvAccepted, *sleAccepted);
+        RPC::injectSLE(jvAccepted, *sleAccepted);
         result[jss::account_data] = jvAccepted;
 
         json::Value acctFlags{json::ValueType::Object};

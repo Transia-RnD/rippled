@@ -78,6 +78,7 @@ InfoSub::~InfoSub()
     safeUnsub(seq_, [&] { source_.unsubValidations(seq_); }, j);
     safeUnsub(seq_, [&] { source_.unsubPeerStatus(seq_); }, j);
     safeUnsub(seq_, [&] { source_.unsubConsensus(seq_); }, j);
+    safeUnsub(seq_, [&] { source_.unsubContractEvent(seq_); }, j);
 
     // Use the internal unsubscribe so that it won't call
     // back to us and modify its own parameter

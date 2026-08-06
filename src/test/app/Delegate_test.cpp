@@ -2721,7 +2721,7 @@ class Delegate_test : public beast::unit_test::Suite
 #undef TRANSACTION
 
 #define TRANSACTION(tag, value, name, txDelegable, ...) \
-    if (txDelegable == xrpl::Delegable)                 \
+    if (txDelegable == Delegation::Delegable)           \
     {                                                   \
         delegableCount++;                               \
     }
@@ -2749,7 +2749,7 @@ class Delegate_test : public beast::unit_test::Suite
         // DO NOT modify expectedDelegableCount unless all scenarios, including
         // edge cases, have been fully tested and verified.
         // ====================================================================
-        std::size_t const expectedDelegableCount = 57;
+        std::size_t const expectedDelegableCount = 63;
 
         BEAST_EXPECTS(
             delegableCount == expectedDelegableCount,

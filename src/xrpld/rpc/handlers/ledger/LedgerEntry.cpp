@@ -845,6 +845,72 @@ parseXChainOwnedCreateAccountClaimID(
     return keylet.key;
 }
 
+static std::expected<uint256, json::Value>
+parseContractSource(
+    json::Value const& params,
+    json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+    {
+        return parseObjectID(params, fieldName);
+    }
+
+    auto const id = LedgerEntryHelpers::requiredAccountID(params, jss::owner, "malformedOwner");
+    if (!id)
+        return std::unexpected(id.error());
+
+    auto const seq = LedgerEntryHelpers::requiredUInt32(params, jss::seq, "malformedRequest");
+    if (!seq)
+        return std::unexpected(seq.error());
+
+    return keylet::vault(*id, *seq).key;
+}
+
+static std::expected<uint256, json::Value>
+parseContract(
+    json::Value const& params,
+    json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+    {
+        return parseObjectID(params, fieldName);
+    }
+
+    auto const id = LedgerEntryHelpers::requiredAccountID(params, jss::owner, "malformedOwner");
+    if (!id)
+        return std::unexpected(id.error());
+
+    auto const seq = LedgerEntryHelpers::requiredUInt32(params, jss::seq, "malformedRequest");
+    if (!seq)
+        return std::unexpected(seq.error());
+
+    return keylet::vault(*id, *seq).key;
+}
+
+static std::expected<uint256, json::Value>
+parseContractData(
+    json::Value const& params,
+    json::StaticString const fieldName,
+    [[maybe_unused]] unsigned const apiVersion)
+{
+    if (!params.isObject())
+    {
+        return parseObjectID(params, fieldName);
+    }
+
+    auto const id = LedgerEntryHelpers::requiredAccountID(params, jss::owner, "malformedOwner");
+    if (!id)
+        return std::unexpected(id.error());
+
+    auto const seq = LedgerEntryHelpers::requiredUInt32(params, jss::seq, "malformedRequest");
+    if (!seq)
+        return std::unexpected(seq.error());
+
+    return keylet::vault(*id, *seq).key;
+}
+
 struct LedgerEntry
 {
     json::StaticString fieldName;
