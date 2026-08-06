@@ -13,35 +13,35 @@
 
 namespace xrpl::transactions {
 
-class PaymentChannelFundBuilder;
+class PaymentChannelClawbackBuilder;
 
 /**
- * @brief Transaction: PaymentChannelFund
+ * @brief Transaction: PaymentChannelClawback
  *
- * Type: ttPAYCHAN_FUND (14)
+ * Type: ttPAYCHAN_CLAWBACK (92)
  * Delegable: Delegation::Delegable
- * Amendment: uint256{}
+ * Amendment: featureTokenPaychan
  * Privileges: NoPriv
  *
  * Immutable wrapper around STTx providing type-safe field access.
- * Use PaymentChannelFundBuilder to construct new transactions.
+ * Use PaymentChannelClawbackBuilder to construct new transactions.
  */
-class PaymentChannelFund : public TransactionBase
+class PaymentChannelClawback : public TransactionBase
 {
 public:
-    static constexpr xrpl::TxType txType = ttPAYCHAN_FUND;
+    static constexpr xrpl::TxType txType = ttPAYCHAN_CLAWBACK;
 
     /**
-     * @brief Construct a PaymentChannelFund transaction wrapper from an existing STTx object.
+     * @brief Construct a PaymentChannelClawback transaction wrapper from an existing STTx object.
      * @throws std::runtime_error if the transaction type doesn't match.
      */
-    explicit PaymentChannelFund(std::shared_ptr<STTx const> tx)
+    explicit PaymentChannelClawback(std::shared_ptr<STTx const> tx)
         : TransactionBase(std::move(tx))
     {
         // Verify transaction type
         if (tx_->getTxnType() != txType)
         {
-            throw std::runtime_error("Invalid transaction type for PaymentChannelFund");
+            throw std::runtime_error("Invalid transaction type for PaymentChannelClawback");
         }
     }
 
@@ -59,82 +59,69 @@ public:
     }
 
     /**
-     * @brief Get sfAmount (SoeRequired)
+     * @brief Get sfAmount (SoeOptional)
      * @note This field supports MPT (Multi-Purpose Token) amounts.
-     * @return The field value.
-     */
-    [[nodiscard]]
-    SF_AMOUNT::type::value_type
-    getAmount() const
-    {
-        return this->tx_->at(sfAmount);
-    }
-
-    /**
-     * @brief Get sfExpiration (SoeOptional)
      * @return The field value, or std::nullopt if not present.
      */
     [[nodiscard]]
-    protocol_autogen::Optional<SF_UINT32::type::value_type>
-    getExpiration() const
+    protocol_autogen::Optional<SF_AMOUNT::type::value_type>
+    getAmount() const
     {
-        if (hasExpiration())
+        if (hasAmount())
         {
-            return this->tx_->at(sfExpiration);
+            return this->tx_->at(sfAmount);
         }
         return std::nullopt;
     }
 
     /**
-     * @brief Check if sfExpiration is present.
+     * @brief Check if sfAmount is present.
      * @return True if the field is present, false otherwise.
      */
     [[nodiscard]]
     bool
-    hasExpiration() const
+    hasAmount() const
     {
-        return this->tx_->isFieldPresent(sfExpiration);
+        return this->tx_->isFieldPresent(sfAmount);
     }
 };
 
 /**
- * @brief Builder for PaymentChannelFund transactions.
+ * @brief Builder for PaymentChannelClawback transactions.
  *
  * Provides a fluent interface for constructing transactions with method chaining.
  * Uses STObject internally for flexible transaction construction.
  * Inherits common field setters from TransactionBuilderBase.
  */
-class PaymentChannelFundBuilder : public TransactionBuilderBase<PaymentChannelFundBuilder>
+class PaymentChannelClawbackBuilder : public TransactionBuilderBase<PaymentChannelClawbackBuilder>
 {
 public:
     /**
-     * @brief Construct a new PaymentChannelFundBuilder with required fields.
+     * @brief Construct a new PaymentChannelClawbackBuilder with required fields.
      * @param account The account initiating the transaction.
      * @param channel The sfChannel field value.
-     * @param amount The sfAmount field value.
      * @param sequence Optional sequence number for the transaction.
      * @param fee Optional fee for the transaction.
      */
-    PaymentChannelFundBuilder(SF_ACCOUNT::type::value_type account,
-                     std::decay_t<typename SF_UINT256::type::value_type> const& channel,                     std::decay_t<typename SF_AMOUNT::type::value_type> const& amount,                    std::optional<SF_UINT32::type::value_type> sequence = std::nullopt,
+    PaymentChannelClawbackBuilder(SF_ACCOUNT::type::value_type account,
+                     std::decay_t<typename SF_UINT256::type::value_type> const& channel,                    std::optional<SF_UINT32::type::value_type> sequence = std::nullopt,
                     std::optional<SF_AMOUNT::type::value_type> fee = std::nullopt
 )
-        : TransactionBuilderBase<PaymentChannelFundBuilder>(ttPAYCHAN_FUND, account, sequence, fee)
+        : TransactionBuilderBase<PaymentChannelClawbackBuilder>(ttPAYCHAN_CLAWBACK, account, sequence, fee)
     {
         setChannel(channel);
-        setAmount(amount);
     }
 
     /**
-     * @brief Construct a PaymentChannelFundBuilder from an existing STTx object.
+     * @brief Construct a PaymentChannelClawbackBuilder from an existing STTx object.
      * @param tx The existing transaction to copy from.
      * @throws std::runtime_error if the transaction type doesn't match.
      */
-    PaymentChannelFundBuilder(std::shared_ptr<STTx const> tx)
+    PaymentChannelClawbackBuilder(std::shared_ptr<STTx const> tx)
     {
-        if (tx->getTxnType() != ttPAYCHAN_FUND)
+        if (tx->getTxnType() != ttPAYCHAN_CLAWBACK)
         {
-            throw std::runtime_error("Invalid transaction type for PaymentChannelFundBuilder");
+            throw std::runtime_error("Invalid transaction type for PaymentChannelClawbackBuilder");
         }
         object_ = *tx;
     }
@@ -147,7 +134,7 @@ public:
      * @brief Set sfChannel (SoeRequired)
      * @return Reference to this builder for method chaining.
      */
-    PaymentChannelFundBuilder&
+    PaymentChannelClawbackBuilder&
     setChannel(std::decay_t<typename SF_UINT256::type::value_type> const& value)
     {
         object_[sfChannel] = value;
@@ -155,11 +142,11 @@ public:
     }
 
     /**
-     * @brief Set sfAmount (SoeRequired)
+     * @brief Set sfAmount (SoeOptional)
      * @note This field supports MPT (Multi-Purpose Token) amounts.
      * @return Reference to this builder for method chaining.
      */
-    PaymentChannelFundBuilder&
+    PaymentChannelClawbackBuilder&
     setAmount(std::decay_t<typename SF_AMOUNT::type::value_type> const& value)
     {
         object_[sfAmount] = value;
@@ -167,27 +154,16 @@ public:
     }
 
     /**
-     * @brief Set sfExpiration (SoeOptional)
-     * @return Reference to this builder for method chaining.
-     */
-    PaymentChannelFundBuilder&
-    setExpiration(std::decay_t<typename SF_UINT32::type::value_type> const& value)
-    {
-        object_[sfExpiration] = value;
-        return *this;
-    }
-
-    /**
-     * @brief Build and return the PaymentChannelFund wrapper.
+     * @brief Build and return the PaymentChannelClawback wrapper.
      * @param publicKey The public key for signing.
      * @param secretKey The secret key for signing.
      * @return The constructed transaction wrapper.
      */
-    PaymentChannelFund
+    PaymentChannelClawback
     build(PublicKey const& publicKey, SecretKey const& secretKey)
     {
         sign(publicKey, secretKey);
-        return PaymentChannelFund{std::make_shared<STTx>(std::move(object_))};
+        return PaymentChannelClawback{std::make_shared<STTx>(std::move(object_))};
     }
 };
 

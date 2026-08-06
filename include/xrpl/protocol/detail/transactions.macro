@@ -191,7 +191,7 @@ TRANSACTION(ttPAYCHAN_CREATE, 13, PaymentChannelCreate,
     NoPriv,
     ({
     {sfDestination, SoeRequired},
-    {sfAmount, SoeRequired},
+    {sfAmount, SoeRequired, SoeMptSupported},
     {sfSettleDelay, SoeRequired},
     {sfPublicKey, SoeRequired},
     {sfCancelAfter, SoeOptional},
@@ -208,7 +208,7 @@ TRANSACTION(ttPAYCHAN_FUND, 14, PaymentChannelFund,
     NoPriv,
     ({
     {sfChannel, SoeRequired},
-    {sfAmount, SoeRequired},
+    {sfAmount, SoeRequired, SoeMptSupported},
     {sfExpiration, SoeOptional},
 }))
 
@@ -222,8 +222,8 @@ TRANSACTION(ttPAYCHAN_CLAIM, 15, PaymentChannelClaim,
     NoPriv,
     ({
     {sfChannel, SoeRequired},
-    {sfAmount, SoeOptional},
-    {sfBalance, SoeOptional},
+    {sfAmount, SoeOptional, SoeMptSupported},
+    {sfBalance, SoeOptional, SoeMptSupported},
     {sfSignature, SoeOptional},
     {sfPublicKey, SoeOptional},
     {sfCredentialIDs, SoeOptional},
@@ -1192,6 +1192,19 @@ TRANSACTION(ttSPONSORSHIP_SET, 91, SponsorshipSet,
     {sfFeeAmount, SoeOptional},
     {sfMaxFee, SoeOptional},
     {sfRemainingOwnerCount, SoeOptional},
+}))
+
+/** This transaction claws back tokens locked in a payment channel. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/payment_channel/PaymentChannelClawback.h>
+#endif
+TRANSACTION(ttPAYCHAN_CLAWBACK, 92, PaymentChannelClawback,
+    Delegation::Delegable,
+    featureTokenPaychan,
+    NoPriv,
+    ({
+    {sfChannel, SoeRequired},
+    {sfAmount, SoeOptional, SoeMptSupported},
 }))
 
 /** This system-generated transaction type is used to update the status of the various amendments.
