@@ -376,13 +376,14 @@ enum TECcodes : TERUnderlyingType {
     tecNO_DELEGATE_PERMISSION = 198,
     tecBAD_PROOF = 199,
     tecNO_SPONSOR_PERMISSION = 200,
-    tecOUT_OF_GAS = 201,
-    tecBYTECODE_REJECTED = 202,
-    tecINVALID_PARAMETERS = 203,
-    tecBALLOT_CLOSED = 204,
-    tecBALLOT_VOTED = 205,
-    tecBALLOT_NOT_OPEN = 206,
-    tecBALLOT_EXISTS = 207,
+    tecWOULD_CROSS = 201,
+    tecOUT_OF_GAS = 202,
+    tecBYTECODE_REJECTED = 203,
+    tecINVALID_PARAMETERS = 204,
+    tecBALLOT_CLOSED = 205,
+    tecBALLOT_VOTED = 206,
+    tecBALLOT_NOT_OPEN = 207,
+    tecBALLOT_EXISTS = 208,
 };
 
 //------------------------------------------------------------------------------

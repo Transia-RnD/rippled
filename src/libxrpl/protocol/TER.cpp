@@ -108,6 +108,7 @@ transResults()
         MAKE_ERROR(tecPRECISION_LOSS,                "The amounts used by the transaction cannot interact."),
         MAKE_ERROR(tecBAD_PROOF,                     "Proof cannot be verified"),
         MAKE_ERROR(tecNO_SPONSOR_PERMISSION,         "Sponsor has not authorized this transaction."),
+        MAKE_ERROR(tecWOULD_CROSS,                   "Post-only offer would cross."),
         MAKE_ERROR(tecOUT_OF_GAS,                    "The WASM code ran out of gas during execution."),
         MAKE_ERROR(tecBYTECODE_REJECTED,             "The custom WASM code that was run rejected your transaction."),
         MAKE_ERROR(tecINVALID_PARAMETERS,            "Contract parameters do not match the expected ABI."),
