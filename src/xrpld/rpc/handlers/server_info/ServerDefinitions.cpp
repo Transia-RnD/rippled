@@ -389,7 +389,7 @@ getServerDefinitionsJson()
 }
 
 json::Value
-doServerDefinitions(RPC::JsonContext& context)
+doServerDefinitions(rpc::JsonContext& context)
 {
     auto& params = context.params;
 
@@ -397,7 +397,7 @@ doServerDefinitions(RPC::JsonContext& context)
     if (params.isMember(jss::hash))
     {
         if (!params[jss::hash].isString() || !hash.parseHex(params[jss::hash].asString()))
-            return RPC::invalidFieldError(jss::hash);
+            return rpc::invalidFieldError(jss::hash);
     }
 
     auto const& defs = detail::getDefinitions();
