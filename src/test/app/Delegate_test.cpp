@@ -2749,7 +2749,13 @@ class Delegate_test : public beast::unit_test::Suite
         // DO NOT modify expectedDelegableCount unless all scenarios, including
         // edge cases, have been fully tested and verified.
         // ====================================================================
-        std::size_t const expectedDelegableCount = 63;
+        // 67 = 63 alphanet baseline + 4 new delegable txs from the AMM curves
+        // bundle (AMMCollectFees, AMMBinCreate, AMMBinDestroy, and the
+        // CL-position-transfer tx). All four follow the existing AMMDeposit /
+        // AMMWithdraw delegation surface (pool-scoped, AMM SLE checked at
+        // preclaim) — no new authority is granted to the delegate that they
+        // couldn't already exercise via the pre-existing AMM tx surface.
+        std::size_t const expectedDelegableCount = 67;
 
         BEAST_EXPECTS(
             delegableCount == expectedDelegableCount,

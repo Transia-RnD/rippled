@@ -14,8 +14,11 @@
 #include <xrpl/protocol/STXChainBridge.h>
 #include <xrpl/protocol/UintTypes.h>
 
+#include <boost/endian/conversion.hpp>
+
 #include <array>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <map>
 #include <set>
@@ -58,6 +61,31 @@ std::map<std::string, std::uint16_t> const&
 ledgerNameSpaceMap();
 
 class SeqProxy;
+
+// Structured-key helpers: read/write the low 64 bits of a uint256 keylet
+// in big-endian byte order. Used by every AMM keylet scheme that
+// embeds an ordered subkey (tick index, bitmap-word index, bin ID) into
+// the low 64 bits so SHAMap range walks visit entries in subkey order.
+//
+// We type-pun via std::memcpy rather than a reinterpret_cast through
+// uint64_t* — the latter violates strict aliasing and has no alignment
+// guarantee on base_uint's underlying byte storage. memcpy of an
+// 8-byte value compiles to a single load/store on x86_64 / ARM64 under
+// any optimization level, so the safer idiom is free at runtime.
+inline void
+setLow64BE(uint256& key, std::uint64_t value) noexcept
+{
+    auto const be = boost::endian::native_to_big(value);
+    std::memcpy(key.end() - sizeof(std::uint64_t), &be, sizeof(std::uint64_t));
+}
+
+[[nodiscard]] inline std::uint64_t
+getLow64BE(uint256 const& key) noexcept
+{
+    std::uint64_t be;
+    std::memcpy(&be, key.end() - sizeof(std::uint64_t), sizeof(std::uint64_t));
+    return boost::endian::big_to_native(be);
+}
 /**
  * Keylet computation functions.
  *
@@ -341,7 +369,7 @@ nftSells(uint256 const& id) noexcept;
  * AMM entry
  */
 Keylet
-amm(Asset const& issue1, Asset const& issue2) noexcept;
+amm(Asset const& issue1, Asset const& issue2, std::uint8_t curveType = 0) noexcept;
 
 Keylet
 amm(uint256 const& amm) noexcept;
@@ -512,6 +540,92 @@ ballotVote(uint256 const& key)
 {
     return {ltBALLOT_VOTE, key};
 }
+
+/** A concentrated liquidity AMM position */
+Keylet
+ammPosition(uint256 const& ammID, AccountID const& owner, std::uint32_t seq) noexcept;
+
+inline Keylet
+ammPosition(uint256 const& key)
+{
+    return {ltAMM_POSITION, key};
+}
+
+/** A concentrated liquidity AMM tick.
+    Uses structured (non-hashed) keys for ordered SHAMap traversal.
+    High 192 bits: pool scope (from ammID hash).
+    Low 64 bits: encoded tick index (offset binary, big-endian).
+*/
+Keylet
+ammTick(uint256 const& ammID, std::int32_t tickIndex) noexcept;
+
+inline Keylet
+ammTick(uint256 const& key)
+{
+    return {ltAMM_TICK, key};
+}
+
+/** Base key for a CL pool's tick range (low 64 bits zeroed). */
+Keylet
+ammTickBase(uint256 const& ammID) noexcept;
+
+/** End key for a CL pool's tick range (low 64 bits all 1s). */
+Keylet
+ammTickEnd(uint256 const& ammID) noexcept;
+
+/** A 256-tick presence bitmap window for a CL pool.
+    Keylet structure mirrors `ammTick`: high 192 bits derive from a pool-scoped
+    hash, low 64 bits encode the word index (big-endian) so range walks via
+    SHAMap succ/pred yield the next-higher / next-lower word.
+*/
+Keylet
+ammTickBitmapWord(uint256 const& ammID, std::uint16_t wordIndex) noexcept;
+
+inline Keylet
+ammTickBitmapWord(uint256 const& key)
+{
+    return {ltAMM_TICK_BITMAP, key};
+}
+
+/** Base key for a CL pool's tick-bitmap range (low 64 bits zeroed). */
+Keylet
+ammTickBitmapBase(uint256 const& ammID) noexcept;
+
+/** End key for a CL pool's tick-bitmap range (low 64 bits all 1s). */
+Keylet
+ammTickBitmapEnd(uint256 const& ammID) noexcept;
+
+/** A single bin within a CtBinned AMM pool. Bins are keyed by signed
+    bin ID, offset-encoded into the low 64 bits of the keylet so SHAMap
+    range walks yield consecutive bins in price order.
+*/
+Keylet
+ammBin(uint256 const& ammID, std::int32_t binID) noexcept;
+
+/** Lookup a bin SLE by its raw key (used by transactors that have a
+    stored issuance / bin reference). */
+Keylet
+ammBin(uint256 const& key) noexcept;
+
+/** Base / end keys for a binned AMM's bin-SLE range. Bins for the
+    same AMM are contiguous in SHAMap order (high 192 bits are an
+    ammID-scoped hash; low 64 bits offset-encode the bin ID), so
+    `view.succ(bin_at(binID).key, ammBinEnd(ammID).key)` jumps to the
+    next populated bin in O(log n) regardless of gap size. */
+Keylet
+ammBinBase(uint256 const& ammID) noexcept;
+
+Keylet
+ammBinEnd(uint256 const& ammID) noexcept;
+
+/** A single LP's holding record in a single bin. Phase 5 will replace
+    this with a fungible MPT issuance per bin. */
+Keylet
+ammBinHolding(uint256 const& ammID, AccountID const& owner, std::int32_t binID) noexcept;
+
+Keylet
+ammBinHolding(uint256 const& key) noexcept;
+
 }  // namespace keylet
 
 // Everything below is deprecated and should be removed in favor of keylets:
