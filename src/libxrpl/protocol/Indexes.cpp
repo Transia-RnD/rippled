@@ -115,6 +115,9 @@ enum class LedgerNameSpace : std::uint16_t {
     Ballot = 'w',
     BallotVote = 'v',
 
+    CouponSchedule = 'F',
+    CouponRegistration = 'y',
+
     // No longer used or supported. Left here to reserve the space to avoid accidental reuse.
     Generator [[deprecated]] = 'g',
     Nickname [[deprecated]] = 'n',
@@ -629,6 +632,33 @@ Keylet
 loan(uint256 const& loanBrokerID, std::uint32_t loanSeq) noexcept
 {
     return loan(indexHash(LedgerNameSpace::Loan, loanBrokerID, loanSeq));
+}
+
+Keylet
+couponSchedule(AccountID const& issuer, Asset const& bondAsset) noexcept
+{
+    return std::visit(
+        [&]<ValidIssueType TIss>(TIss const& issue) {
+            if constexpr (std::is_same_v<TIss, Issue>)
+            {
+                return couponSchedule(indexHash(
+                    LedgerNameSpace::CouponSchedule, issuer, issue.account, issue.currency));
+            }
+            else
+            {
+                return couponSchedule(
+                    indexHash(LedgerNameSpace::CouponSchedule, issuer, issue.getMptID()));
+            }
+        },
+        bondAsset.value());
+}
+
+Keylet
+couponRegistration(uint256 const& couponScheduleID, AccountID const& holder) noexcept
+{
+    return {
+        ltCOUPON_REGISTRATION,
+        indexHash(LedgerNameSpace::CouponRegistration, couponScheduleID, holder)};
 }
 
 Keylet
