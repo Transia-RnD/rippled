@@ -462,7 +462,29 @@ subscription(uint256 const& key) noexcept
     return {ltSUBSCRIPTION, key};
 }
 
+/**
+ * A ballot owned by `owner`, keyed by the creating transaction sequence.
+ */
+Keylet
+ballot(AccountID const& owner, std::uint32_t seq) noexcept;
 
+inline Keylet
+ballot(uint256 const& ballotID)
+{
+    return {ltBALLOT, ballotID};
+}
+
+/**
+ * A voter's cast on the ballot identified by `ballotID`.
+ */
+Keylet
+ballotVote(uint256 const& ballotID, AccountID const& voter) noexcept;
+
+inline Keylet
+ballotVote(uint256 const& key)
+{
+    return {ltBALLOT_VOTE, key};
+}
 }  // namespace keylet
 
 // Everything below is deprecated and should be removed in favor of keylets:

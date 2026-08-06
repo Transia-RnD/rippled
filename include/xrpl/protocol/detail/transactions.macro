@@ -1426,6 +1426,72 @@ TRANSACTION(ttSUBSCRIPTION_CLAIM, 98, SubscriptionClaim,
     {sfSubscriptionID, SoeRequired},
 }))
 
+/** This transaction type creates a confidential Ballot. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/voting/BallotCreate.h>
+#endif
+TRANSACTION(ttBALLOT_CREATE, 103, BallotCreate,
+    Delegation::NotDelegable,
+    featureConfidentialVoting,
+    NoPriv,
+    ({
+    {sfMPTokenIssuanceID, SoeOptional},
+    {sfDomainID, SoeOptional},
+    {sfDigest, SoeRequired},
+    {sfURI, SoeOptional},
+    {sfOptionCount, SoeRequired},
+    {sfTallyPublicKey, SoeRequired},
+    {sfAuditorEncryptionKey, SoeOptional},
+    {sfOpenTime, SoeRequired},
+    {sfCloseTime, SoeRequired},
+    {sfZKProof, SoeRequired},
+}))
+
+/** This transaction type casts an encrypted vote on a Ballot. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/voting/BallotCastVote.h>
+#endif
+TRANSACTION(ttBALLOT_CAST_VOTE, 104, BallotCastVote,
+    Delegation::NotDelegable,
+    featureConfidentialVoting,
+    NoPriv,
+    ({
+    {sfBallotID, SoeRequired},
+    {sfEncryptedVotes, SoeRequired},
+    {sfAuditorEncryptedVotes, SoeOptional},
+    {sfVoterPublicKey, SoeOptional},
+    {sfVoterEncryptedVotes, SoeOptional},
+    {sfZKProof, SoeRequired},
+    {sfBlindingFactor, SoeRequired},
+    {sfCredentialIDs, SoeOptional},
+}))
+
+/** This transaction type publishes the verifiable results of a Ballot. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/voting/BallotFinalize.h>
+#endif
+TRANSACTION(ttBALLOT_FINALIZE, 105, BallotFinalize,
+    Delegation::NotDelegable,
+    featureConfidentialVoting,
+    NoPriv,
+    ({
+    {sfBallotID, SoeRequired},
+    {sfResults, SoeRequired},
+    {sfZKProof, SoeRequired},
+}))
+
+/** This transaction type deletes a Ballot or a BallotVote object. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/voting/BallotDelete.h>
+#endif
+TRANSACTION(ttBALLOT_DELETE, 106, BallotDelete,
+    Delegation::NotDelegable,
+    featureConfidentialVoting,
+    NoPriv,
+    ({
+    {sfBallotID, SoeRequired},
+}))
+
 /** This system-generated transaction type is used to update the status of the various amendments.
 
     For details, see: https://xrpl.org/amendments.html

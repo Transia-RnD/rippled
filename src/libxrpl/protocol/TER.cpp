@@ -111,6 +111,10 @@ transResults()
         MAKE_ERROR(tecOUT_OF_GAS,                    "The WASM code ran out of gas during execution."),
         MAKE_ERROR(tecBYTECODE_REJECTED,             "The custom WASM code that was run rejected your transaction."),
         MAKE_ERROR(tecINVALID_PARAMETERS,            "Contract parameters do not match the expected ABI."),
+        MAKE_ERROR(tecBALLOT_CLOSED,                 "The ballot voting window has closed."),
+        MAKE_ERROR(tecBALLOT_VOTED,                  "The account has already voted on this ballot."),
+        MAKE_ERROR(tecBALLOT_NOT_OPEN,               "The ballot voting window has not opened yet."),
+        MAKE_ERROR(tecBALLOT_EXISTS,                 "The issuance already has an open ballot."),
 
         MAKE_ERROR(tefALREADY,                     "The exact transaction was already in this ledger."),
         MAKE_ERROR(tefBAD_ADD_AUTH,                "Not authorized to add account."),

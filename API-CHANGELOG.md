@@ -28,6 +28,8 @@ This section contains changes targeting a future version.
 
 ### Additions
 
+- `ledger_entry`, `account_objects`: Added the `Ballot` and `BallotVote` ledger entry types introduced by the `ConfidentialVoting` amendment. `ledger_entry` accepts a `ballot` request object (`owner` + `seq`) and a `ballot_vote` request object (`ballot_id` + `account`), or a hex object ID for either. `account_objects` returns these entries and accepts them as `type` filters.
+
 - `account_tx`: Added an optional `delegate` request object to filter delegated transactions. The object requires `delegate_filter`, which must be either `actor` for transactions owned by the requested account but signed by another account, or `authorizer` for transactions signed by the requested account on behalf of another account. The optional `counter_party` account narrows the results to a specific signer/delegate for `actor` or a specific owner/delegator for `authorizer`. Malformed `delegate`, `delegate_filter`, and `counter_party` values return standard invalid field errors, and invalid account IDs return `actMalformed`.
   When paginating delegate-filtered queries, a marker from a delegate-filtered query includes a `delegate` flag and is only valid for follow-up requests that also supply `delegate` (mixing marker conventions returns `invalidParams`). Because filtering is applied after the ledger scan, a page may contain fewer results than `limit` (possibly zero) while still returning a marker, so callers must continue until no marker is present.
 
