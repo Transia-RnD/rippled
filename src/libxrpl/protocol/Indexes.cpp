@@ -118,6 +118,8 @@ enum class LedgerNameSpace : std::uint16_t {
     CouponSchedule = 'F',
     CouponRegistration = 'y',
 
+    TokenIssuance = 'k',
+
     // No longer used or supported. Left here to reserve the space to avoid accidental reuse.
     Generator [[deprecated]] = 'g',
     Nickname [[deprecated]] = 'n',
@@ -596,6 +598,12 @@ Keylet
 mptokenIssuance(MPTID const& issuanceID) noexcept
 {
     return {ltMPTOKEN_ISSUANCE, indexHash(LedgerNameSpace::MPTokenIssuance, issuanceID)};
+}
+
+Keylet
+tokenIssuance(AccountID const& issuer, Currency const& currency) noexcept
+{
+    return {ltTOKEN_ISSUANCE, indexHash(LedgerNameSpace::TokenIssuance, issuer, currency)};
 }
 
 Keylet

@@ -214,7 +214,13 @@ enum LedgerEntryType : std::uint16_t {
                                                                                                                                    \
     LEDGER_OBJECT(Ballot,                                                                                                          \
         LSF_FLAG(lsfBallotFinalized, 0x00000001)                /* True, results have been published */                            \
-        LSF_FLAG(lsfVoterRecoverable, 0x00000002))              /* True, casts carry a voter self-recovery vector */
+        LSF_FLAG(lsfVoterRecoverable, 0x00000002))              /* True, casts carry a voter self-recovery vector */               \
+                                                                                                                                   \
+    LEDGER_OBJECT(TokenIssuance,                                                                                                   \
+        LSF_FLAG(lsfTokenLocked, 0x00000001)                    /* True, per-currency global freeze */                             \
+        LSF_FLAG(lsfTokenCannotLock, 0x00000002)                /* True, issuer renounced the per-currency lock */                 \
+        LSF_FLAG(lsfTokenWrapped, 0x00000004)                   /* True, owned by a pseudo-account (blackholed issuer) */          \
+        LSF_FLAG(lsfTokenVerifiedSupply, 0x00000008))           /* True, IssuedAmount reflects verified legacy supply */
 
 // clang-format on
 

@@ -116,6 +116,7 @@ transResults()
         MAKE_ERROR(tecBALLOT_VOTED,                  "The account has already voted on this ballot."),
         MAKE_ERROR(tecBALLOT_NOT_OPEN,               "The ballot voting window has not opened yet."),
         MAKE_ERROR(tecBALLOT_EXISTS,                 "The issuance already has an open ballot."),
+        MAKE_ERROR(tecSUPPLY_EXCEEDED,               "The transaction would exceed the token's maximum supply."),
 
         MAKE_ERROR(tefALREADY,                     "The exact transaction was already in this ledger."),
         MAKE_ERROR(tefBAD_ADD_AUTH,                "Not authorized to add account."),

@@ -384,6 +384,7 @@ enum TECcodes : TERUnderlyingType {
     tecBALLOT_VOTED = 206,
     tecBALLOT_NOT_OPEN = 207,
     tecBALLOT_EXISTS = 208,
+    tecSUPPLY_EXCEEDED = 209,
 };
 
 //------------------------------------------------------------------------------

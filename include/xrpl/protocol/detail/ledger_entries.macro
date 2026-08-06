@@ -419,6 +419,7 @@ LEDGER_ENTRY(ltMPTOKEN_ISSUANCE, 0x007e, MPTokenIssuance, mpt_issuance, ({
     {sfAuditorEncryptionKey,     SoeOptional},
     {sfConfidentialOutstandingAmount, SoeDefault},
     {sfBallotID,                 SoeOptional},  // ConfidentialVoting: the issuance's open ballot, if any
+    {sfTokenIssuanceID,          SoeOptional},
 }))
 
 /** A ledger object which tracks MPToken
@@ -791,5 +792,21 @@ LEDGER_ENTRY(ltSUBSCRIPTION, 0x0093, Subscription, subscription, ({
     {sfDestinationNode,      SoeRequired},
 }))
 
+/** A ledger object which describes an IOU token issuance.
+    \sa keylet::tokenIssuance
+ */
+LEDGER_ENTRY(ltTOKEN_ISSUANCE, 0x0094, TokenIssuance, token_issuance, ({
+    {sfIssuer,               SoeRequired},
+    {sfCurrency,             SoeRequired},
+    {sfMaximumAmount,        SoeOptional},
+    {sfIssuedAmount,         SoeDefault},
+    {sfTokenScale,           SoeDefault},
+    {sfMPTokenIssuanceID,    SoeOptional},
+    {sfTransferFee,          SoeOptional},
+    {sfMPTokenMetadata,      SoeOptional},
+    {sfOwnerNode,            SoeRequired},
+    {sfPreviousTxnID,        SoeRequired},
+    {sfPreviousTxnLgrSeq,    SoeRequired},
+}))
 #undef EXPAND
 #undef LEDGER_ENTRY_DUPLICATE
