@@ -113,6 +113,13 @@ target_link_libraries(
 )
 
 # Level 05
+if(force_supported)
+    target_compile_definitions(
+        xrpl.libxrpl.protocol
+        PRIVATE XRPL_FORCE_ALL_AMENDMENTS_SUPPORTED
+    )
+endif()
+
 add_module(xrpl protocol_autogen)
 target_link_libraries(
     xrpl.libxrpl.protocol_autogen

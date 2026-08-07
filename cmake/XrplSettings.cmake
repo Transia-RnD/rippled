@@ -22,6 +22,18 @@ option(assert "Enables asserts, even in release builds" OFF)
 
 option(xrpld "Build xrpld" ON)
 
+option(
+    force_supported
+    "Force every amendment to Supported::Yes regardless of features.macro. For perf/test networks only; never enable for production builds."
+    OFF
+)
+if(force_supported)
+    message(
+        WARNING
+        "force_supported=ON: every amendment is built as Supported::Yes. This binary must never run on a production validator."
+    )
+endif()
+
 option(tests "Build tests" ON)
 if(tests)
     # This setting allows making a separate workflow to test fees other than default 10

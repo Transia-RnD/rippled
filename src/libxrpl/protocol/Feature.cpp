@@ -236,6 +236,13 @@ check(bool condition, char const* logicErrorMessage)
 uint256
 FeatureCollections::registerFeature(std::string const& name, Supported support, VoteBehavior vote)
 {
+#ifdef XRPL_FORCE_ALL_AMENDMENTS_SUPPORTED
+    // Perf/test builds (cmake -Dforce_supported=ON) support every amendment so
+    // test networks can enable them all without amendment blocking. Vote
+    // behavior is unchanged, so the server still won't vote for amendments
+    // that are DefaultNo.
+    support = Supported::Yes;
+#endif
     check(!readOnly_, "Attempting to register a feature after startup.");
     check(
         support == Supported::Yes || vote == VoteBehavior::DefaultNo,
