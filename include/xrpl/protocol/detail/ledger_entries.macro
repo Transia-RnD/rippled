@@ -634,6 +634,18 @@ LEDGER_ENTRY(ltLOAN, 0x0089, Loan, loan, ({
     {sfLoanScale,                SoeDefault},
 }))
 
+/** A ledger object representing a passkey list.
+
+    \sa keylet::passkeyList
+ */
+LEDGER_ENTRY(ltPASSKEY_LIST, 0x0091, PasskeyList, passkey_list, ({
+    {sfPreviousTxnID,        SoeRequired},
+    {sfPreviousTxnLgrSeq,    SoeRequired},
+    {sfOwnerNode,            SoeRequired},
+    {sfOwner,                SoeRequired},
+    {sfPasskeys,             SoeRequired},
+}))
+
 /** A ledger object representing a sponsorship.
     \sa keylet::sponsorship
  */
