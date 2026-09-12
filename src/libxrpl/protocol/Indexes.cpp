@@ -104,6 +104,7 @@ enum class LedgerNameSpace : std::uint16_t {
     LoanBroker = 'l',  // lower-case L
     Loan = 'L',
     Sponsorship = '>',
+    Beneficiary = 'Y',
 
     // No longer used or supported. Left here to reserve the space to avoid accidental reuse.
     Contract [[deprecated]] = 'c',
@@ -353,6 +354,12 @@ Keylet
 sponsorship(AccountID const& sponsor, AccountID const& sponsee) noexcept
 {
     return {ltSPONSORSHIP, indexHash(LedgerNameSpace::Sponsorship, sponsor, sponsee)};
+}
+
+Keylet
+beneficiary(AccountID const& account) noexcept
+{
+    return {ltBENEFICIARY, indexHash(LedgerNameSpace::Beneficiary, account)};
 }
 
 Keylet
