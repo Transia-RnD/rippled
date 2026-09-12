@@ -437,6 +437,8 @@ LEDGER_ENTRY(ltMPTOKEN, 0x007f, MPToken, mptoken, ({
     {sfIssuerEncryptedBalance,      SoeOptional},
     {sfAuditorEncryptedBalance,     SoeOptional},
     {sfHolderEncryptionKey,         SoeOptional},
+    {sfCouponAccrued,               SoeOptional},
+    {sfCouponIndex,                 SoeOptional},
 }))
 
 /** A ledger object which tracks Oracle
@@ -632,6 +634,33 @@ LEDGER_ENTRY(ltLOAN, 0x0089, Loan, loan, ({
     // number of digits after the decimal point (excluding
     // trailing zeros).
     {sfLoanScale,                SoeDefault},
+}))
+
+/** A ledger object representing a bond coupon schedule: the issuer's
+    standing offer of fixed periodic coupon payments per unit of a bond
+    asset, in a settlement asset. One schedule per (Account, BondAsset).
+
+    \sa keylet::couponSchedule
+ */
+LEDGER_ENTRY(ltCOUPON_SCHEDULE, 0x0091, CouponSchedule, coupon_schedule, ({
+    {sfPreviousTxnID,        SoeRequired},
+    {sfPreviousTxnLgrSeq,    SoeRequired},
+    {sfOwnerNode,            SoeRequired},
+    {sfOwner,                SoeRequired},
+    {sfAccount,              SoeRequired},
+    {sfMPTokenIssuanceID,    SoeRequired},
+    {sfCouponAsset,          SoeRequired},
+    {sfAccruedPerUnit,       SoeDefault},
+    {sfPoolAmount,           SoeDefault},
+    {sfClaimantCount,        SoeDefault},
+    {sfCouponCount,          SoeDefault},
+    {sfLastCouponTime,       SoeOptional},
+    {sfCouponAmount,         SoeOptional},
+    {sfCouponInterval,       SoeOptional},
+    {sfFirstCouponTime,      SoeOptional},
+    {sfExpiration,           SoeOptional},
+    {sfCallNoticePeriod,     SoeOptional},
+    {sfEarliestCallTime,     SoeOptional},
 }))
 
 /** A ledger object representing a sponsorship.
