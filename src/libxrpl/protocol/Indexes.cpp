@@ -104,6 +104,7 @@ enum class LedgerNameSpace : std::uint16_t {
     LoanBroker = 'l',  // lower-case L
     Loan = 'L',
     Sponsorship = '>',
+    Repo = 'Z',
 
     // No longer used or supported. Left here to reserve the space to avoid accidental reuse.
     Contract [[deprecated]] = 'c',
@@ -608,6 +609,12 @@ Keylet
 permissionedDomain(uint256 const& domainID) noexcept
 {
     return {ltPERMISSIONED_DOMAIN, domainID};
+}
+
+Keylet
+repo(AccountID const& seller, SeqProxy const& seq) noexcept
+{
+    return {ltREPO, indexHash(LedgerNameSpace::Repo, seller, seq.value())};
 }
 
 }  // namespace keylet
