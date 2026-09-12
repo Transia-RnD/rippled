@@ -1181,3 +1181,60 @@ TRANSACTION(ttUNL_MODIFY, 102, UNLModify,
     {sfLedgerSequence, SoeRequired},
     {sfUNLModifyValidator, SoeRequired},
 }))
+
+/** This transaction type offers a repurchase agreement and locks its collateral. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/repo/RepoCreate.h>
+#endif
+TRANSACTION(ttREPO_CREATE, 114, RepoCreate,
+    ({.delegable = Delegation::Delegable, .amendment = featureRepo}),
+    ({
+    {sfCounterparty,         SoeRequired},
+    {sfCollateralAmount,     SoeRequired, SoeMptSupported},
+    {sfPurchasePrice,        SoeRequired, SoeMptSupported},
+    {sfInterestRate,         SoeRequired},
+    {sfExpiration,           SoeRequired},
+    {sfMaturityDate,         SoeRequired},
+    {sfGracePeriod,          SoeRequired},
+    {sfData,                 SoeOptional},
+}))
+
+/** This transaction type accepts a pending repo, delivering the cash. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/repo/RepoAccept.h>
+#endif
+TRANSACTION(ttREPO_ACCEPT, 115, RepoAccept,
+    ({.delegable = Delegation::Delegable, .amendment = featureRepo}),
+    ({
+    {sfRepoID,               SoeRequired},
+}))
+
+/** This transaction type cancels a pending repo and returns the collateral. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/repo/RepoCancel.h>
+#endif
+TRANSACTION(ttREPO_CANCEL, 116, RepoCancel,
+    ({.delegable = Delegation::Delegable, .amendment = featureRepo}),
+    ({
+    {sfRepoID,               SoeRequired},
+}))
+
+/** This transaction type repurchases the collateral, paying principal plus interest. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/repo/RepoClose.h>
+#endif
+TRANSACTION(ttREPO_CLOSE, 117, RepoClose,
+    ({.delegable = Delegation::Delegable, .amendment = featureRepo}),
+    ({
+    {sfRepoID,               SoeRequired},
+}))
+
+/** This transaction type closes out a defaulted repo, delivering the collateral. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/repo/RepoDefault.h>
+#endif
+TRANSACTION(ttREPO_DEFAULT, 118, RepoDefault,
+    ({.delegable = Delegation::Delegable, .amendment = featureRepo}),
+    ({
+    {sfRepoID,               SoeRequired},
+}))

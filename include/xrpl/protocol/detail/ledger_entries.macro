@@ -522,6 +522,30 @@ LEDGER_ENTRY(ltVAULT, 0x0084, Vault, vault, ({
     // no PermissionedDomainID ever (use MPTIssuance.sfDomainID)
 }))
 
+/**
+ * A bilateral repurchase agreement. The seller locks collateral and receives
+ * cash; the entry is pending until the buyer accepts, active thereafter.
+ * \sa keylet::repo
+ */
+LEDGER_ENTRY(ltREPO, 0x0095, Repo, repo, ({
+    {sfAccount,              SoeRequired},
+    {sfCounterparty,         SoeRequired},
+    {sfCollateralAmount,     SoeRequired, SoeMptSupported},
+    {sfPurchasePrice,        SoeRequired, SoeMptSupported},
+    {sfInterestRate,         SoeRequired},
+    {sfExpiration,           SoeRequired},
+    {sfStartDate,            SoeOptional},
+    {sfMaturityDate,         SoeRequired},
+    {sfGracePeriod,          SoeRequired},
+    {sfTransferRate,         SoeOptional},
+    {sfData,                 SoeOptional},
+    {sfOwnerNode,            SoeRequired},
+    {sfDestinationNode,      SoeRequired},
+    {sfIssuerNode,           SoeOptional},
+    {sfPreviousTxnID,        SoeRequired},
+    {sfPreviousTxnLgrSeq,    SoeRequired},
+}))
+
 /** Reserve 0x0084-0x0087 for future Vault-related objects. */
 
 /** A ledger object representing a loan broker
