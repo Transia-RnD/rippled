@@ -238,6 +238,10 @@ inline constexpr FlagValue tfUniversalMask = ~tfUniversal;
         TF_FLAG(tfSponsorshipEnd, 0x00010000)                                                                                                                  \
         TF_FLAG(tfSponsorshipCreate, 0x00020000)                                                                                                               \
         TF_FLAG(tfSponsorshipReassign, 0x00040000),                                                                                                            \
+        MASK_ADJ(0))                                                                                                                                           \
+                                                                                                                                                               \
+    TRANSACTION(SubscriptionSet,                        /* True, delete the subscription on the first successful claim */                                      \
+        TF_FLAG(tfSingleUse, 0x00010000),                                                                                                                      \
         MASK_ADJ(0))
 
 // clang-format on

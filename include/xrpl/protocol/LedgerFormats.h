@@ -208,7 +208,10 @@ enum LedgerEntryType : std::uint16_t {
                                                                                                                                    \
     LEDGER_OBJECT(Sponsorship,                                                                                                     \
         LSF_FLAG(lsfSponsorshipRequireSignForFee, 0x00010000)                                                                      \
-        LSF_FLAG(lsfSponsorshipRequireSignForReserve, 0x00020000))
+        LSF_FLAG(lsfSponsorshipRequireSignForReserve, 0x00020000))                                                                 \
+                                                                                                                                   \
+    LEDGER_OBJECT(Subscription,                                                                                                    \
+        LSF_FLAG(lsfSingleUse, 0x00010000))                     /* True, delete on first successful claim */
 
 // clang-format on
 
