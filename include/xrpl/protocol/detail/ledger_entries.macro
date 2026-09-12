@@ -418,6 +418,7 @@ LEDGER_ENTRY(ltMPTOKEN_ISSUANCE, 0x007e, MPTokenIssuance, mpt_issuance, ({
     {sfIssuerKeyEpoch,           SoeOptional},
     {sfAuditorKeyEpoch,          SoeOptional},
     {sfConfidentialOutstandingAmount, SoeDefault},
+    {sfTokenIssuanceID,          SoeOptional},
 }))
 
 /** A ledger object which tracks MPToken
@@ -647,6 +648,23 @@ LEDGER_ENTRY(ltSPONSORSHIP, 0x0090, Sponsorship, sponsorship, ({
     {sfRemainingOwnerCount,  SoeDefault},
     {sfOwnerNode,            SoeRequired},
     {sfSponseeNode,          SoeRequired},
+}))
+
+/** A ledger object which describes an IOU token issuance.
+    \sa keylet::tokenIssuance
+ */
+LEDGER_ENTRY(ltTOKEN_ISSUANCE, 0x0091, TokenIssuance, token_issuance, ({
+    {sfIssuer,               SoeRequired},
+    {sfCurrency,             SoeRequired},
+    {sfMaximumAmount,        SoeOptional},
+    {sfIssuedAmount,         SoeDefault},
+    {sfTokenScale,           SoeDefault},
+    {sfMPTokenIssuanceID,    SoeOptional},
+    {sfTransferFee,          SoeOptional},
+    {sfMPTokenMetadata,      SoeOptional},
+    {sfOwnerNode,            SoeRequired},
+    {sfPreviousTxnID,        SoeRequired},
+    {sfPreviousTxnLgrSeq,    SoeRequired},
 }))
 
 #undef EXPAND
