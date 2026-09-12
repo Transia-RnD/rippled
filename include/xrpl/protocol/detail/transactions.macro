@@ -1134,6 +1134,17 @@ TRANSACTION(ttSPONSORSHIP_SET, 91, SponsorshipSet,
     {sfRemainingOwnerCountDelta, SoeOptional},
 }))
 
+/** This transaction designates, updates or clears an account's beneficiary. */
+#if TRANSACTION_INCLUDE
+#   include <xrpl/tx/transactors/beneficiary/BeneficiarySet.h>
+#endif
+TRANSACTION(ttBENEFICIARY_SET, 119, BeneficiarySet,
+    ({.amendment = featureBeneficiary}),
+    ({
+    {sfBeneficiary, SoeOptional},
+    {sfTimeLock, SoeOptional},
+}))
+
 /** This system-generated transaction type is used to update the status of the various amendments.
 
     For details, see: https://xrpl.org/amendments.html
