@@ -1139,9 +1139,7 @@ TRANSACTION(ttSPONSORSHIP_SET, 91, SponsorshipSet,
 #   include <xrpl/tx/transactors/payment_channel/PaymentChannelClawback.h>
 #endif
 TRANSACTION(ttPAYCHAN_CLAWBACK, 92, PaymentChannelClawback,
-    Delegation::Delegable,
-    featureTokenPaychan,
-    NoPriv,
+    ({.delegable = Delegation::Delegable, .amendment = featureTokenPaychan}),
     ({
     {sfChannel, SoeRequired},
     {sfAmount, SoeOptional, SoeMptSupported},

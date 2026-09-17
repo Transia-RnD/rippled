@@ -21,7 +21,7 @@ class PaymentChannelClawbackBuilder;
  * Type: ttPAYCHAN_CLAWBACK (92)
  * Delegable: Delegation::Delegable
  * Amendment: featureTokenPaychan
- * Privileges: NoPriv
+ * Privileges: Privilege::NoPriv
  *
  * Immutable wrapper around STTx providing type-safe field access.
  * Use PaymentChannelClawbackBuilder to construct new transactions.
