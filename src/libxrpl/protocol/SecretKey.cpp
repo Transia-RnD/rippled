@@ -53,13 +53,6 @@ extern "C" {
 #include "sign.h"
 }
 
-#include <iomanip>
-#include <iostream>
-#include <iterator>
-#include <ostream>
-#include <sstream>
-#include <stdexcept>
-
 // Define the dilithium functions and sizes with respect to functions named here
 #ifndef CRYPTO_PUBLICKEYBYTES
 #define CRYPTO_PUBLICKEYBYTES pqcrystals_dilithium2_PUBLICKEYBYTES
@@ -327,18 +320,6 @@ signDigest(PublicKey const& pk, SecretKey const& sk, uint256 const& digest)
     }
 }
 
-std::string
-toHexString(const uint8_t* data, size_t length)
-{
-    std::ostringstream oss;
-    for (size_t i = 0; i < length; ++i)
-    {
-        oss << std::uppercase << std::hex << std::setw(2) << std::setfill('0')
-            << static_cast<int>(data[i]);
-    }
-    return oss.str();
-}
-
 Buffer
 sign(PublicKey const& pk, SecretKey const& sk, Slice const& m)
 {
@@ -420,22 +401,6 @@ randomSecretKey(KeyType type)
     }
 }
 
-void
-expand_mat(polyvecl mat[K], const uint8_t rho[SEEDBYTES])
-{
-    unsigned int i, j;
-    uint16_t nonce;
-
-    for (i = 0; i < K; ++i)
-    {
-        for (j = 0; j < L; ++j)
-        {
-            nonce = (i << 8) + j;  // Combine indices i and j into a nonce
-            poly_uniform(&mat[i].vec[j], rho, nonce);
-        }
-    }
-}
-
 int
 pqcrystals_dilithium2_ref_keypair_seed(
     uint8_t* pk,
@@ -449,7 +414,6 @@ pqcrystals_dilithium2_ref_keypair_seed(
     const uint8_t* key;
     polyvecl mat[K], s1, s1hat;
     polyveck t1, t0, s2;
-    unsigned int i;
 
     /* Use the provided seed to generate rho, rhoprime, and key */
     shake256(seedbuf, 3 * SEEDBYTES, seed, SEEDBYTES);
@@ -457,21 +421,21 @@ pqcrystals_dilithium2_ref_keypair_seed(
     rhoprime = rho + SEEDBYTES;
     key = rhoprime + SEEDBYTES;
 
-    /* Expand matrix */
-    expand_mat(mat, rho);
+    /* Expand matrix: the same library routine pqcrystals_dilithium2_ref_publickey
+     * uses below, so both derive identical A from rho. */
+    polyvec_matrix_expand(mat, rho);
 
     /* Sample short vectors s1 and s2 using rhoprime */
     polyvecl_uniform_eta(&s1, rhoprime, 0);
     polyveck_uniform_eta(&s2, rhoprime, L);
 
-    /* Compute t = As1 + s2 */
+    /* Compute t = As1 + s2, the same library routines
+     * pqcrystals_dilithium2_ref_publickey uses. */
     s1hat = s1;
     polyvecl_ntt(&s1hat);
-    for (i = 0; i < K; ++i)
-    {
-        polyvecl_pointwise_acc_montgomery(&t1.vec[i], &mat[i], &s1hat);
-        poly_invntt_tomont(&t1.vec[i]);
-    }
+    polyvec_matrix_pointwise_montgomery(&t1, mat, &s1hat);
+    polyveck_reduce(&t1);
+    polyveck_invntt_tomont(&t1);
     polyveck_add(&t1, &t1, &s2);
 
     /* Extract t1 and write public key */
@@ -529,6 +493,14 @@ pqcrystals_dilithium2_ref_publickey(uint8_t* pk, const uint8_t* sk)
     polyveck_power2round(&t1, &t0, &t1);
     pack_pk(pk, rho, &t1);
 
+    /* Clean sensitive data: seedbuf carries key (the signing seed), and the
+     * unpacked secret polynomials s1, s1hat, s2, t0 are private key material. */
+    secureErase(seedbuf, sizeof(seedbuf));
+    secureErase((void*)&s1, sizeof(s1));
+    secureErase((void*)&s1hat, sizeof(s1hat));
+    secureErase((void*)&s2, sizeof(s2));
+    secureErase((void*)&t0, sizeof(t0));
+
     return 1;
 }
 
@@ -559,6 +531,7 @@ generateSecretKey(KeyType type, Seed const& seed)
         pqcrystals_dilithium2_ref_keypair_seed(pk, buf, key.data());
         SecretKey const sk{Slice{buf, CRYPTO_SECRETKEYBYTES}};
         secureErase(buf, CRYPTO_SECRETKEYBYTES);
+        secureErase(key.data(), key.size());
         return sk;
     }
 
@@ -638,12 +611,14 @@ template <>
 std::optional<SecretKey>
 parseBase58(TokenType type, std::string const& s)
 {
-    auto const result = decodeBase58Token(s, type);
+    auto result = decodeBase58Token(s, type);
     if (result.empty())
         return std::nullopt;
     if (result.size() != 32 && result.size() != 2560)
         return std::nullopt;
-    return SecretKey(makeSlice(result));
+    SecretKey const sk(makeSlice(result));
+    secureErase(result.data(), result.size());
+    return sk;
 }
 
 }  // namespace xrpl
