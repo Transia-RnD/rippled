@@ -200,6 +200,9 @@ PublicKey::PublicKey(Slice const& slice)
             "buffer");
     }
 
+    if (slice.size() > sizeof(buf_))
+        logicError("PublicKey::PublicKey - Input slice exceeds buffer");
+
     if (!publicKeyType(slice))
         logicError("PublicKey::PublicKey invalid type");
     size_ = slice.size();
@@ -338,7 +341,7 @@ verify(PublicKey const& publicKey, Slice const& m, Slice const& sig) noexcept
             // first strip that prefix.
             return ed25519_sign_open(m.data(), m.size(), publicKey.data() + 1, sig.data()) == 0;
         }
-        else if (*type == KeyType::Dilithium)
+        if (*type == KeyType::Dilithium)
         {
             uint8_t ctx[] = {};
             size_t ctxlen = 0;
