@@ -1,4 +1,4 @@
-include(FetchContent)
+include(ExternalProject)
 
 ExternalProject_Add(
   dilithium_src
@@ -16,7 +16,8 @@ ExternalProject_Add(
   BUILD_COMMAND
     COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/ref <BINARY_DIR>/ref
     COMMAND make -C <BINARY_DIR>/ref clean
-    COMMAND /bin/sh -c "CFLAGS='-DDILITHIUM_MODE=2 -DDILITHIUM_RANDOMIZED_SIGNING' make -C <BINARY_DIR>/ref libdilithium2_ref.a libfips202_ref.a"
+    COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${CMAKE_C_FLAGS} -DDILITHIUM_MODE=2 -DDILITHIUM_RANDOMIZED_SIGNING" make -C <BINARY_DIR>/ref libdilithium2_ref.a libfips202_ref.a
+    COMMAND ${CMAKE_AR} d <BINARY_DIR>/ref/libdilithium2_ref.a randombytes.o
   INSTALL_COMMAND ""
   BUILD_BYPRODUCTS
       <BINARY_DIR>/ref/libdilithium2_ref.a
@@ -36,6 +37,14 @@ set_target_properties(dilithium::dilithium2_ref PROPERTIES
   IMPORTED_LOCATION "${dilithium_src_BINARY_DIR}/ref/libdilithium2_ref.a"
   INTERFACE_INCLUDE_DIRECTORIES "${dilithium_src_SOURCE_DIR}/ref/"
 )
+# The archive above is compiled with these defines via BUILD_COMMAND's CFLAGS;
+# propagate them to every consumer so params.h resolves CRYPTO_PUBLICKEYBYTES /
+# CRYPTO_SECRETKEYBYTES identically in the library and in its callers
+# (SecretKey.cpp, PublicKey.cpp), which assert the resulting sizes at compile time.
+target_compile_definitions(dilithium::dilithium2_ref INTERFACE
+  DILITHIUM_MODE=2
+  DILITHIUM_RANDOMIZED_SIGNING
+)
 
 add_library(dilithium::libfips202_ref STATIC IMPORTED GLOBAL)
 set_target_properties(dilithium::libfips202_ref PROPERTIES
@@ -47,9 +56,11 @@ set_target_properties(dilithium::libfips202_ref PROPERTIES
 add_dependencies(dilithium::dilithium2_ref dilithium_src)
 add_dependencies(dilithium::libfips202_ref dilithium_src)
 
-# Note: We do NOT link the Dilithium library's randombytes.c because we provide
-# our own thread-safe implementation in src/libxrpl/protocol/SecretKey.cpp
-# that uses xrpld's crypto_prng() instead of direct /dev/urandom access.
+# The upstream Makefile builds randombytes.c into libdilithium2_ref.a by
+# default; the `ar d` step above strips that object so the archive carries no
+# randombytes symbol. We provide our own thread-safe implementation in
+# src/libxrpl/protocol/SecretKey.cpp that uses xrpld's crypto_prng() instead of
+# direct /dev/urandom access, and link order alone cannot guarantee it wins.
 
 # Create an interface library that links to the Dilithium libraries
 # Note: Link order matters - libraries that provide symbols must come AFTER libraries that use them

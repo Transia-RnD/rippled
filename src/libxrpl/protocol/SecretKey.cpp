@@ -73,6 +73,13 @@ extern "C" {
 #define CRYPTO_BYTES pqcrystals_dilithium2_BYTES
 #endif
 
+// Ties params.h's resolved size to the mode the archive was actually compiled
+// with (cmake/deps/dilithium.cmake), so a future mode change that isn't
+// propagated to this translation unit fails the build instead of corrupting
+// SecretKey's fixed-size buffer at runtime.
+static_assert(CRYPTO_PUBLICKEYBYTES == 1312, "Dilithium public key size mismatch");
+static_assert(CRYPTO_SECRETKEYBYTES == 2560, "Dilithium secret key size mismatch");
+
 #ifndef crypto_sign_keypair
 #define crypto_sign_keypair pqcrystals_dilithium2_ref_keypair
 #endif

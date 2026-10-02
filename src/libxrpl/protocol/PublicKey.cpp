@@ -35,6 +35,12 @@ extern "C" {
 #define crypto_sign_verify pqcrystals_dilithium2_ref_verify
 #endif
 
+// Ties params.h's resolved size to the mode the archive was actually compiled
+// with (cmake/deps/dilithium.cmake), so a future mode change that isn't
+// propagated to this translation unit fails the build instead of corrupting
+// PublicKey's fixed-size buffer at runtime.
+static_assert(CRYPTO_PUBLICKEYBYTES == 1312, "Dilithium public key size mismatch");
+
 namespace xrpl {
 
 std::ostream&
