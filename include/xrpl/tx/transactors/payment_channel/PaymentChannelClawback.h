@@ -11,20 +11,14 @@
 
 namespace xrpl {
 
-class PaymentChannelFund : public Transactor
+class PaymentChannelClawback : public Transactor
 {
 public:
-    static constexpr auto kConsequencesFactory = ConsequencesFactoryType::Custom;
+    static constexpr auto kConsequencesFactory = ConsequencesFactoryType::Normal;
 
-    explicit PaymentChannelFund(ApplyContext& ctx) : Transactor(ctx)
+    explicit PaymentChannelClawback(ApplyContext& ctx) : Transactor(ctx)
     {
     }
-
-    static TxConsequences
-    makeTxConsequences(PreflightContext const& ctx);
-
-    static bool
-    checkExtraFeatures(PreflightContext const& ctx);
 
     static NotTEC
     preflight(PreflightContext const& ctx);
