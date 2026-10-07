@@ -371,8 +371,7 @@ public:
         auto const sk = randomSecretKey(KeyType::Dilithium);
         auto const pk = derivePublicKey(KeyType::Dilithium, sk);
         auto const kp = randomKeyPair(KeyType::Dilithium);
-        auto const m = makeManifest(
-            sk, KeyType::Dilithium, kp.second, KeyType::Dilithium, 0);
+        auto const m = makeManifest(sk, KeyType::Dilithium, kp.second, KeyType::Dilithium, 0);
 
         STObject st(sfGeneric);
         st[sfSequence] = 0;
@@ -521,12 +520,7 @@ public:
             if (version != 0)
                 st[sfVersion] = version;
 
-            sign(
-                st,
-                HashPrefix::Manifest,
-                KeyType::Dilithium,
-                sk,
-                sfMasterSignature);
+            sign(st, HashPrefix::Manifest, KeyType::Dilithium, sk, sfMasterSignature);
             sign(st, HashPrefix::Manifest, KeyType::Dilithium, ssk);
 
             Serializer s;
@@ -546,8 +540,7 @@ public:
     void
     testManifestDeserialization()
     {
-        std::array<KeyType, 2> const keyTypes{
-            {KeyType::Dilithium, KeyType::Dilithium}};
+        std::array<KeyType, 2> const keyTypes{{KeyType::Dilithium, KeyType::Dilithium}};
 
         std::uint32_t sequence = 0;
 
@@ -827,12 +820,7 @@ public:
             st[sfDomain] = makeSlice(domain);
             st[sfSigningPubKey] = pk2;
 
-            sign(
-                st,
-                HashPrefix::Manifest,
-                KeyType::Dilithium,
-                sk1,
-                sfMasterSignature);
+            sign(st, HashPrefix::Manifest, KeyType::Dilithium, sk1, sfMasterSignature);
             sign(st, HashPrefix::Manifest, KeyType::Dilithium, sk2);
 
             Serializer s;
@@ -899,35 +887,35 @@ public:
         {
             testcase("apply");
 
-            auto const sk_a = randomSecretKey(KeyType::Dilithium);
-            auto const pk_a = derivePublicKey(KeyType::Dilithium, sk_a);
-            auto const kp_a0 = randomKeyPair(KeyType::Dilithium);
-            auto const kp_a1 = randomKeyPair(KeyType::Dilithium);
-            auto const s_a0 = makeManifest(
-                sk_a, KeyType::Dilithium, kp_a0.second, KeyType::Dilithium, 0);
-            auto const s_a1 = makeManifest(
-                sk_a, KeyType::Dilithium, kp_a1.second, KeyType::Dilithium, 1);
-            auto const s_a2 = makeManifest(
-                sk_a, KeyType::Dilithium, kp_a1.second, KeyType::Dilithium, 2);
-            auto const s_aMax = makeRevocation(sk_a, KeyType::Dilithium);
+            auto const skA = randomSecretKey(KeyType::Dilithium);
+            auto const pkA = derivePublicKey(KeyType::Dilithium, skA);
+            auto const kpA0 = randomKeyPair(KeyType::Dilithium);
+            auto const kpA1 = randomKeyPair(KeyType::Dilithium);
+            auto const sA0 =
+                makeManifest(skA, KeyType::Dilithium, kpA0.second, KeyType::Dilithium, 0);
+            auto const sA1 =
+                makeManifest(skA, KeyType::Dilithium, kpA1.second, KeyType::Dilithium, 1);
+            auto const sA2 =
+                makeManifest(skA, KeyType::Dilithium, kpA1.second, KeyType::Dilithium, 2);
+            auto const sAMax = makeRevocation(skA, KeyType::Dilithium);
 
-            auto const sk_b = randomSecretKey(KeyType::Dilithium);
-            auto const kp_b0 = randomKeyPair(KeyType::Dilithium);
-            auto const kp_b1 = randomKeyPair(KeyType::Dilithium);
-            auto const kp_b2 = randomKeyPair(KeyType::Dilithium);
-            auto const s_b0 = makeManifest(
-                sk_b, KeyType::Dilithium, kp_b0.second, KeyType::Dilithium, 0);
-            auto const s_b1 = makeManifest(
-                sk_b,
+            auto const skB = randomSecretKey(KeyType::Dilithium);
+            auto const kpB0 = randomKeyPair(KeyType::Dilithium);
+            auto const kpB1 = randomKeyPair(KeyType::Dilithium);
+            auto const kpB2 = randomKeyPair(KeyType::Dilithium);
+            auto const sB0 =
+                makeManifest(skB, KeyType::Dilithium, kpB0.second, KeyType::Dilithium, 0);
+            auto const sB1 = makeManifest(
+                skB,
                 KeyType::Dilithium,
-                kp_b1.second,
+                kpB1.second,
                 KeyType::Dilithium,
                 1,
                 true);  // invalidSig
-            auto const s_b2 = makeManifest(
-                sk_b, KeyType::Dilithium, kp_b2.second, KeyType::Dilithium, 2);
+            auto const sB2 =
+                makeManifest(skB, KeyType::Dilithium, kpB2.second, KeyType::Dilithium, 2);
 
-            auto const fake = s_b2.serialized + '\0';
+            auto const fake = sB2.serialized + '\0';
 
             // applyManifest should accept new manifests with
             // higher sequence numbers
