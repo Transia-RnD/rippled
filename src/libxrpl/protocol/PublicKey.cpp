@@ -24,7 +24,7 @@
 #include <string>
 
 extern "C" {
-#include "api.h"
+#include <api.h>
 }
 
 #ifndef CRYPTO_PUBLICKEYBYTES
@@ -266,8 +266,7 @@ verifyDigest(
             auto const canonicality = ecdsaCanonicality(sig);
             if (!canonicality)
                 return false;
-            if (mustBeFullyCanonical &&
-                (*canonicality != ECDSACanonicality::FullyCanonical))
+            if (mustBeFullyCanonical && (*canonicality != ECDSACanonicality::FullyCanonical))
                 return false;
 
             secp256k1_pubkey pubkeyImp;
@@ -288,8 +287,7 @@ verifyDigest(
             if (*canonicality != ECDSACanonicality::FullyCanonical)
             {
                 secp256k1_ecdsa_signature sigNorm;
-                if (secp256k1_ecdsa_signature_normalize(
-                        secp256k1Context(), &sigNorm, &sigImp) != 1)
+                if (secp256k1_ecdsa_signature_normalize(secp256k1Context(), &sigNorm, &sigImp) != 1)
                     return false;
                 return secp256k1_ecdsa_verify(
                            secp256k1Context(),
@@ -345,7 +343,9 @@ verify(PublicKey const& publicKey, Slice const& m, Slice const& sig) noexcept
         {
             uint8_t ctx[] = {};
             size_t ctxlen = 0;
-            return crypto_sign_verify(sig.data(), sig.size(), m.data(), m.size(), ctx, ctxlen, publicKey.data()) == 0;
+            return crypto_sign_verify(
+                       sig.data(), sig.size(), m.data(), m.size(), ctx, ctxlen, publicKey.data()) ==
+                0;
         }
     }
     return false;

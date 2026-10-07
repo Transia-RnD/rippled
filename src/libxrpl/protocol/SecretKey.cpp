@@ -29,7 +29,6 @@
 #include <stdexcept>
 #include <utility>
 
-
 #pragma push_macro("L")
 #pragma push_macro("K")
 #pragma push_macro("N")
@@ -44,13 +43,13 @@
 #undef D
 
 extern "C" {
-#include "api.h"
-#include "fips202.h"
-#include "packing.h"
-#include "params.h"
-#include "poly.h"
-#include "polyvec.h"
-#include "sign.h"
+#include <api.h>
+#include <fips202.h>
+#include <packing.h>
+#include <params.h>
+#include <poly.h>
+#include <polyvec.h>
+#include <sign.h>
 }
 
 // Define the dilithium functions and sizes with respect to functions named here
@@ -81,7 +80,8 @@ static_assert(CRYPTO_SECRETKEYBYTES == 2560, "Dilithium secret key size mismatch
 #define crypto_sign_signature pqcrystals_dilithium2_ref_signature
 #endif
 
-extern "C" void randombytes(uint8_t* buf, size_t size)
+extern "C" void
+randombytes(uint8_t* buf, size_t size)
 {
     beast::rngfill(buf, size, xrpl::cryptoPrng());
 }
@@ -293,8 +293,8 @@ signDigest(PublicKey const& pk, SecretKey const& sk, uint256 const& digest)
 
             unsigned char sig[72];
             size_t len = sizeof(sig);
-            if (secp256k1_ecdsa_signature_serialize_der(
-                    secp256k1Context(), sig, &len, &sigImp) != 1)
+            if (secp256k1_ecdsa_signature_serialize_der(secp256k1Context(), sig, &len, &sigImp) !=
+                1)
                 logicError("sign: secp256k1_ecdsa_signature_serialize_der failed");
 
             return Buffer{sig, len};
@@ -350,8 +350,8 @@ sign(PublicKey const& pk, SecretKey const& sk, Slice const& m)
 
             unsigned char sig[72];
             size_t len = sizeof(sig);
-            if (secp256k1_ecdsa_signature_serialize_der(
-                    secp256k1Context(), sig, &len, &sigImp) != 1)
+            if (secp256k1_ecdsa_signature_serialize_der(secp256k1Context(), sig, &len, &sigImp) !=
+                1)
                 logicError("sign: secp256k1_ecdsa_signature_serialize_der failed");
 
             return Buffer{sig, len};
@@ -402,16 +402,13 @@ randomSecretKey(KeyType type)
 }
 
 int
-pqcrystals_dilithium2_ref_keypair_seed(
-    uint8_t* pk,
-    uint8_t* sk,
-    const uint8_t* seed)
+pqcrystals_dilithium2_ref_keypair_seed(uint8_t* pk, uint8_t* sk, uint8_t const* seed)
 {
     uint8_t seedbuf[3 * SEEDBYTES];
     uint8_t tr[CRHBYTES];
-    const uint8_t* rho;
-    const uint8_t* rhoprime;
-    const uint8_t* key;
+    uint8_t const* rho;
+    uint8_t const* rhoprime;
+    uint8_t const* key;
     polyvecl mat[K], s1, s1hat;
     polyveck t1, t0, s2;
 
@@ -463,7 +460,7 @@ pqcrystals_dilithium2_ref_keypair_seed(
 }
 
 int
-pqcrystals_dilithium2_ref_publickey(uint8_t* pk, const uint8_t* sk)
+pqcrystals_dilithium2_ref_publickey(uint8_t* pk, uint8_t const* sk)
 {
     uint8_t seedbuf[3 * SEEDBYTES + 2 * CRHBYTES];
     uint8_t *rho, *tr, *key;
@@ -568,8 +565,7 @@ derivePublicKey(KeyType type, SecretKey const& sk)
         case KeyType::Dilithium: {
             uint8_t pk_data[CRYPTO_PUBLICKEYBYTES];
             if (pqcrystals_dilithium2_ref_publickey(pk_data, sk.data()) != 1)
-                logicError(
-                    "derivePublicKey: secp256k1_ec_pubkey_serialize failed");
+                logicError("derivePublicKey: secp256k1_ec_pubkey_serialize failed");
 
             return PublicKey{Slice{pk_data, CRYPTO_PUBLICKEYBYTES}};
         }
