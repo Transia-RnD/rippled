@@ -979,7 +979,11 @@ public:
                 ManifestDisposition::Accepted);
 
             auto const sC0 = makeManifest(
-                kpB2.second, KeyType::Dilithium, randomSecretKey(), KeyType::Dilithium, 47);
+                kpB2.second,
+                KeyType::Dilithium,
+                randomSecretKey(KeyType::Dilithium),
+                KeyType::Dilithium,
+                47);
             BEAST_EXPECT(
                 cache.applyManifest(clone(sC0), ManifestRateLimitCapPolicy::Capped) ==
                 ManifestDisposition::BadMasterKey);
