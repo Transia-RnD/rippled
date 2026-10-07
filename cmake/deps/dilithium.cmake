@@ -2,10 +2,12 @@ include(ExternalProject)
 
 ExternalProject_Add(
   dilithium_src
-  PREFIX ${nih_cache_path}
   # Pin to an explicit commit, not a moving branch ref. Bumping this SHA
   # is a supply-chain decision that must be reviewed; never revert to a
-  # branch tag here. Upstream:
+  # branch tag here. 3032292 is pq-crystals/dilithium@444cdcc84eb36b66fe27b3a2529ee48f6d8150c2
+  # plus one commit that touches only ref/Makefile, adding the
+  # libdilithium2_ref.a and libfips202_ref.a targets; every other file
+  # under ref/ is byte-identical to upstream.
   #   https://github.com/Transia-RnD/dilithium/commit/3032292cfd4d94e0df9bd49a0098669ca9166aa1
   GIT_REPOSITORY https://github.com/Transia-RnD/dilithium.git
   GIT_TAG 3032292cfd4d94e0df9bd49a0098669ca9166aa1
@@ -13,11 +15,12 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   LOG_BUILD ON
   BUILD_IN_SOURCE 0
+  # No shell: the flags reach make through the environment. -fstack-protector
+  # and -fPIC are what XrplCompiler.cmake gives every other translation unit.
   BUILD_COMMAND
     COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/ref <BINARY_DIR>/ref
     COMMAND make -C <BINARY_DIR>/ref clean
-    COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${CMAKE_C_FLAGS} -DDILITHIUM_MODE=2 -DDILITHIUM_RANDOMIZED_SIGNING" make -C <BINARY_DIR>/ref libdilithium2_ref.a libfips202_ref.a
-    COMMAND ${CMAKE_AR} d <BINARY_DIR>/ref/libdilithium2_ref.a randombytes.o
+    COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${CMAKE_C_FLAGS} -fstack-protector -fPIC -DDILITHIUM_MODE=2 -DDILITHIUM_RANDOMIZED_SIGNING" make -C <BINARY_DIR>/ref libdilithium2_ref.a libfips202_ref.a
   INSTALL_COMMAND ""
   BUILD_BYPRODUCTS
       <BINARY_DIR>/ref/libdilithium2_ref.a
@@ -56,11 +59,11 @@ set_target_properties(dilithium::libfips202_ref PROPERTIES
 add_dependencies(dilithium::dilithium2_ref dilithium_src)
 add_dependencies(dilithium::libfips202_ref dilithium_src)
 
-# The upstream Makefile builds randombytes.c into libdilithium2_ref.a by
-# default; the `ar d` step above strips that object so the archive carries no
-# randombytes symbol. We provide our own thread-safe implementation in
-# src/libxrpl/protocol/SecretKey.cpp that uses xrpld's crypto_prng() instead of
-# direct /dev/urandom access, and link order alone cannot guarantee it wins.
+# The pinned ref/Makefile archives $(SOURCES:.c=.o) symmetric-shake.o fips202.o
+# into libdilithium2_ref.a, and SOURCES has no randombytes.c, so the archive
+# carries no randombytes definition. The only one at link time is the
+# extern "C" randombytes in src/libxrpl/protocol/SecretKey.cpp, which draws
+# from xrpl::cryptoPrng() rather than reading /dev/urandom directly.
 
 # Create an interface library that links to the Dilithium libraries
 # Note: Link order matters - libraries that provide symbols must come AFTER libraries that use them
