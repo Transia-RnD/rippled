@@ -12,7 +12,6 @@
 #include <xrpl/protocol/Serializer.h>
 
 #include <chrono>
-
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -342,8 +341,8 @@ public:
             auto const nodeID = calcNodeID(pk);
             auto const signTime = NetClock::time_point{NetClock::duration{1}};
 
-            auto signed_ = std::make_shared<STValidation>(
-                signTime, pk, sk, nodeID, [](STValidation& v) {
+            auto signed_ =
+                std::make_shared<STValidation>(signTime, pk, sk, nodeID, [](STValidation& v) {
                     v.setFieldU32(sfLedgerSequence, 1);
                     v.setFieldH256(sfLedgerHash, uint256{});
                 });
@@ -355,7 +354,8 @@ public:
             auto parsed = std::make_shared<STValidation>(
                 sit,
                 [](PublicKey const& parsedPk) { return calcNodeID(parsedPk); },
-                /*checkSignature=*/true);
+                STValidation::DeserializeOptions{
+                    .checkSignature = true, .requireCanonicalOrder = true});
 
             BEAST_EXPECT(parsed);
             BEAST_EXPECT(parsed->isValid());

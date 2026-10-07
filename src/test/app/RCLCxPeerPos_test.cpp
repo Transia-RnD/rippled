@@ -1,8 +1,8 @@
 #include <xrpld/app/consensus/RCLCxPeerPos.h>
-#include <xrpld/consensus/ConsensusProposal.h>
 
 #include <xrpl/basics/base_uint.h>
 #include <xrpl/beast/unit_test.h>
+#include <xrpl/consensus/ConsensusProposal.h>
 #include <xrpl/protocol/HashPrefix.h>
 #include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/SecretKey.h>
@@ -32,8 +32,7 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
         auto const now = NetClock::time_point{NetClock::duration{123456}};
         NodeID const nodeID = calcNodeID(publicKey);
 
-        RCLCxPeerPos::Proposal proposal{
-            prevLedger, proposeSeq, position, closeTime, now, nodeID};
+        RCLCxPeerPos::Proposal proposal{prevLedger, proposeSeq, position, closeTime, now, nodeID};
 
         // Calculate signing hash (same as ConsensusProposal::signingHash())
         uint256 const signingHash = sha512Half(
@@ -60,8 +59,7 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
             sigSlice);
 
         // Construct RCLCxPeerPos with the signature
-        RCLCxPeerPos peerPos{
-            publicKey, sigSlice, suppression, std::move(proposal)};
+        RCLCxPeerPos peerPos{publicKey, sigSlice, suppression, std::move(proposal)};
 
         // Verify the signature
         BEAST_EXPECT(peerPos.checkSign());
@@ -83,8 +81,7 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
         auto const now = NetClock::time_point{NetClock::duration{123456}};
         NodeID const nodeID = calcNodeID(publicKey);
 
-        RCLCxPeerPos::Proposal proposal{
-            prevLedger, proposeSeq, position, closeTime, now, nodeID};
+        RCLCxPeerPos::Proposal proposal{prevLedger, proposeSeq, position, closeTime, now, nodeID};
 
         // Calculate signing hash
         uint256 const signingHash = sha512Half(
@@ -114,8 +111,7 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
             sigSlice);
 
         // Construct RCLCxPeerPos with the corrupted signature
-        RCLCxPeerPos peerPos{
-            publicKey, sigSlice, suppression, std::move(proposal)};
+        RCLCxPeerPos peerPos{publicKey, sigSlice, suppression, std::move(proposal)};
 
         // Verify the signature should fail
         BEAST_EXPECT(!peerPos.checkSign());
@@ -127,10 +123,8 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
         testcase("Proposal signed with wrong key");
 
         // Generate two different dilithium keypairs
-        auto const [publicKey1, secretKey1] =
-            randomKeyPair(KeyType::Dilithium);
-        auto const [publicKey2, secretKey2] =
-            randomKeyPair(KeyType::Dilithium);
+        auto const [publicKey1, secretKey1] = randomKeyPair(KeyType::Dilithium);
+        auto const [publicKey2, secretKey2] = randomKeyPair(KeyType::Dilithium);
 
         // Create a proposal
         uint256 const prevLedger{42};
@@ -140,8 +134,7 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
         auto const now = NetClock::time_point{NetClock::duration{123456}};
         NodeID const nodeID = calcNodeID(publicKey1);
 
-        RCLCxPeerPos::Proposal proposal{
-            prevLedger, proposeSeq, position, closeTime, now, nodeID};
+        RCLCxPeerPos::Proposal proposal{prevLedger, proposeSeq, position, closeTime, now, nodeID};
 
         // Calculate signing hash
         uint256 const signingHash = sha512Half(
@@ -181,8 +174,7 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
         testcase("secp256k1 proposal signature verification");
 
         // Generate secp256k1 keypair
-        auto const [publicKey, secretKey] =
-            randomKeyPair(KeyType::Secp256k1);
+        auto const [publicKey, secretKey] = randomKeyPair(KeyType::Secp256k1);
 
         // Verify key type
         BEAST_EXPECT(*publicKeyType(publicKey) == KeyType::Secp256k1);
@@ -195,8 +187,7 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
         auto const now = NetClock::time_point{NetClock::duration{123456}};
         NodeID const nodeID = calcNodeID(publicKey);
 
-        RCLCxPeerPos::Proposal proposal{
-            prevLedger, proposeSeq, position, closeTime, now, nodeID};
+        RCLCxPeerPos::Proposal proposal{prevLedger, proposeSeq, position, closeTime, now, nodeID};
 
         // Calculate signing hash
         uint256 const signingHash = sha512Half(
@@ -223,8 +214,7 @@ class RCLCxPeerPos_test : public beast::unit_test::Suite
             sigSlice);
 
         // Construct RCLCxPeerPos with the signature
-        RCLCxPeerPos peerPos{
-            publicKey, sigSlice, suppression, std::move(proposal)};
+        RCLCxPeerPos peerPos{publicKey, sigSlice, suppression, std::move(proposal)};
 
         // Verify the signature
         BEAST_EXPECT(peerPos.checkSign());

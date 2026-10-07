@@ -10,40 +10,35 @@
 #include <xrpl/rdb/DatabaseCon.h>
 #include <xrpl/server/Wallet.h>
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
-
 #include <soci/session.h>
 
+#include <filesystem>
 #include <string>
 
 namespace xrpl::test {
 
 class Wallet_test : public beast::unit_test::Suite
 {
-    static boost::filesystem::path
+    static std::filesystem::path
     dbDir()
     {
-        return boost::filesystem::current_path() / "wallet_test_dbs";
+        return std::filesystem::current_path() / "wallet_test_dbs";
     }
 
     static void
     ensureDir()
     {
-        using namespace boost::filesystem;
+        using namespace std::filesystem;
         if (!exists(dbDir()))
             create_directory(dbDir());
     }
 
     static void
-    insertIdentity(
-        soci::session& session,
-        std::string const& pubB58,
-        std::string const& secB58)
+    insertIdentity(soci::session& session, std::string const& pubB58, std::string const& secB58)
     {
         session << "DELETE FROM NodeIdentity;";
-        session << "INSERT INTO NodeIdentity (PublicKey,PrivateKey) VALUES('"
-                << pubB58 << "','" << secB58 << "');";
+        session << "INSERT INTO NodeIdentity (PublicKey,PrivateKey) VALUES('" << pubB58 << "','"
+                << secB58 << "');";
     }
 
     // Regression: getNodeIdentity() must return the stored keypair
@@ -84,7 +79,7 @@ class Wallet_test : public beast::unit_test::Suite
         BEAST_EXPECT(publicKeyType(returnedPk.slice()) == kt);
 
         // Tidy up so successive runs / keytypes don't collide.
-        boost::filesystem::remove(dbDir() / dbName);
+        std::filesystem::remove(dbDir() / dbName);
     }
 
     // When no identity is stored, a fresh dilithium identity is generated
@@ -111,7 +106,7 @@ class Wallet_test : public beast::unit_test::Suite
         BEAST_EXPECT(pk1 == pk2);
         BEAST_EXPECT(sk1.toString() == sk2.toString());
 
-        boost::filesystem::remove(dbDir() / dbName);
+        std::filesystem::remove(dbDir() / dbName);
     }
 
     // If the stored pubkey doesn't match the stored secret (corrupted row),
@@ -154,7 +149,7 @@ class Wallet_test : public beast::unit_test::Suite
         // And must not be the corrupted stored pair.
         BEAST_EXPECT(pk != pkMismatched);
 
-        boost::filesystem::remove(dbDir() / dbName);
+        std::filesystem::remove(dbDir() / dbName);
     }
 
     // An Ed25519 identity (never supported on the wire) must NOT be
@@ -191,7 +186,7 @@ class Wallet_test : public beast::unit_test::Suite
         BEAST_EXPECT(returnedPk != pk);
         BEAST_EXPECT(publicKeyType(returnedPk.slice()) == KeyType::Dilithium);
 
-        boost::filesystem::remove(dbDir() / dbName);
+        std::filesystem::remove(dbDir() / dbName);
     }
 
     void
