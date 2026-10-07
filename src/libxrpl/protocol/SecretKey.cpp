@@ -70,7 +70,9 @@ extern "C" {
 // propagated to this translation unit fails the build instead of corrupting
 // SecretKey's fixed-size buffer at runtime.
 static_assert(CRYPTO_PUBLICKEYBYTES == 1312, "Dilithium public key size mismatch");
-static_assert(CRYPTO_SECRETKEYBYTES == 2560, "Dilithium secret key size mismatch");
+static_assert(
+    CRYPTO_SECRETKEYBYTES == xrpl::SecretKey::kDilithiumSize,
+    "Dilithium secret key size mismatch");
 
 #ifndef crypto_sign_keypair
 #define crypto_sign_keypair pqcrystals_dilithium2_ref_keypair
@@ -93,21 +95,21 @@ SecretKey::~SecretKey()
     secureErase(buf_, sizeof(buf_));
 }
 
-SecretKey::SecretKey(std::array<std::uint8_t, 32> const& key)
+SecretKey::SecretKey(std::array<std::uint8_t, kSize> const& key)
 {
-    size_ = 32;
+    size_ = kSize;
     std::memcpy(buf_, key.data(), key.size());
 }
 
-SecretKey::SecretKey(std::array<std::uint8_t, 2560> const& key)
+SecretKey::SecretKey(std::array<std::uint8_t, kDilithiumSize> const& key)
 {
-    size_ = 2560;
+    size_ = kDilithiumSize;
     std::memcpy(buf_, key.data(), key.size());
 }
 
 SecretKey::SecretKey(Slice const& slice)
 {
-    if (slice.size() != 32 && slice.size() != 2560)
+    if (slice.size() != kSize && slice.size() != kDilithiumSize)
         logicError("SecretKey::SecretKey: invalid size");
     size_ = slice.size();
     std::memcpy(buf_, slice.data(), size_);
@@ -610,7 +612,7 @@ parseBase58(TokenType type, std::string const& s)
     auto result = decodeBase58Token(s, type);
     if (result.empty())
         return std::nullopt;
-    if (result.size() != 32 && result.size() != 2560)
+    if (result.size() != SecretKey::kSize && result.size() != SecretKey::kDilithiumSize)
         return std::nullopt;
     SecretKey const sk(makeSlice(result));
     secureErase(result.data(), result.size());

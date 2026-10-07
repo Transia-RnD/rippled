@@ -23,14 +23,16 @@ namespace xrpl {
 class SecretKey
 {
 public:
+    // ed25519 and secp256k1 secret keys are 32 bytes.
     static constexpr std::size_t kSize = 32;
+    // Dilithium secret keys are 2560 bytes (FIPS 204 ML-DSA-44; the earlier
+    // round-3 draft was 2528). SecretKey.cpp asserts this against the
+    // library's CRYPTO_SECRETKEYBYTES.
+    static constexpr std::size_t kDilithiumSize = 2560;
 
 private:
-    // Dilithium secret keys are 2560 bytes (FIPS 204 ML-DSA-44; the earlier
-    // round-3 draft was 2528), asserted against CRYPTO_SECRETKEYBYTES in
-    // SecretKey.cpp; ed25519/secp256k1 are 32.
     // Buffer sized for the largest supported key; actual length in size_.
-    std::uint8_t buf_[2560]{};
+    std::uint8_t buf_[kDilithiumSize]{};
     std::size_t size_ = 0;
 
 public:
@@ -49,7 +51,7 @@ public:
     ~SecretKey();
 
     SecretKey(std::array<std::uint8_t, kSize> const& data);
-    SecretKey(std::array<std::uint8_t, 2560> const& data);
+    SecretKey(std::array<std::uint8_t, kDilithiumSize> const& data);
     SecretKey(Slice const& slice);
 
     [[nodiscard]] std::uint8_t const*
