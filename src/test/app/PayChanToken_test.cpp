@@ -16,15 +16,21 @@
 #include <xrpld/rpc/detail/RPCHelpers.h>
 
 #include <xrpl/basics/Slice.h>
+#include <xrpl/basics/base_uint.h>
 #include <xrpl/basics/chrono.h>
 #include <xrpl/beast/unit_test/suite.h>
 #include <xrpl/json/json_value.h>
 #include <xrpl/ledger/Dir.h>
 #include <xrpl/protocol/Feature.h>
+#include <xrpl/protocol/HashPrefix.h>
 #include <xrpl/protocol/Indexes.h>
+#include <xrpl/protocol/MPTIssue.h>
+#include <xrpl/protocol/PayChan.h>
 #include <xrpl/protocol/Protocol.h>
 #include <xrpl/protocol/SField.h>
+#include <xrpl/protocol/STAmount.h>
 #include <xrpl/protocol/SeqProxy.h>
+#include <xrpl/protocol/Serializer.h>
 #include <xrpl/protocol/TER.h>
 #include <xrpl/protocol/TxFlags.h>
 #include <xrpl/protocol/UintTypes.h>
@@ -4976,6 +4982,55 @@ struct PayChanToken_test : public beast::unit_test::Suite
     }
 
     void
+    testClaimAuthorizationSerialization()
+    {
+        testcase("Claim Authorization Serialization");
+        using namespace jtx;
+
+        auto const gw = Account("gw");
+        uint256 const chan{7};
+
+        Serializer prefix;
+        prefix.add32(HashPrefix::PaymentChannelClaim);
+        prefix.addBitString(chan);
+
+        // XRP: the prefix, the channel and the drops as a 64-bit integer
+        {
+            Serializer msg;
+            serializePayChanAuthorization(msg, chan, XRP(10).value());
+            Serializer expected = prefix;
+            expected.add64(std::uint64_t{10'000'000});
+            BEAST_EXPECT(msg.getData() == expected.getData());
+        }
+
+        // IOU: the prefix, the channel and the Amount field serialization
+        {
+            STAmount const amt = gw["USD"](10.5).value();
+            Serializer msg;
+            serializePayChanAuthorization(msg, chan, amt);
+            Serializer expected = prefix;
+            amt.add(expected);
+            BEAST_EXPECT(msg.getData() == expected.getData());
+            BEAST_EXPECT(msg.getDataLength() == 4 + 32 + 8 + 20 + 20);
+        }
+
+        // MPT: the prefix, the channel and the Amount field serialization;
+        // the MPTokenIssuanceID already names the issuer, so none follows
+        {
+            STAmount const amt{MPTIssue{makeMptID(1, gw.id())}, 10};
+            Serializer msg;
+            serializePayChanAuthorization(msg, chan, amt);
+            Serializer expected = prefix;
+            amt.add(expected);
+            BEAST_EXPECT(msg.getData() == expected.getData());
+            BEAST_EXPECT(msg.getDataLength() == 4 + 32 + 1 + 8 + 24);
+            BEAST_EXPECT(
+                msg.getData()[36] ==
+                static_cast<unsigned char>((STAmount::kMpToken | STAmount::kPositive) >> 56));
+        }
+    }
+
+    void
     testIOUWithFeats(FeatureBitset features)
     {
         testIOUEnablement(features);
@@ -5042,6 +5097,8 @@ public:
     run() override
     {
         using namespace test::jtx;
+        testClaimAuthorizationSerialization();
+
         FeatureBitset const all{testableAmendments()};
         for (FeatureBitset const& feats :
              {all - featureSingleAssetVault - featureLendingProtocol, all})
