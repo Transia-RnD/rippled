@@ -443,8 +443,7 @@ public:
         std::string const valPublicKey = toBase58(
             TokenType::NodePublic,
             derivePublicKey(
-                KeyType::Dilithium,
-                generateSecretKey(KeyType::Dilithium, *parsedseed)));
+                KeyType::Dilithium, generateSecretKey(KeyType::Dilithium, *parsedseed)));
 
         auto wsc = makeWSClient(env.app().config());
         json::Value stream;

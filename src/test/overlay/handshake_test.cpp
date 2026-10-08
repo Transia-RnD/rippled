@@ -92,13 +92,7 @@ public:
         auto localIP = boost::asio::ip::make_address("127.0.0.1");
         auto remoteIP = boost::asio::ip::make_address("192.168.1.100");
 
-        buildHandshake(
-            headers,
-            sharedValue,
-            std::nullopt,
-            localIP,
-            remoteIP,
-            env.app());
+        buildHandshake(headers, sharedValue, std::nullopt, localIP, remoteIP, env.app());
 
         // Verify signature is base64 encoded and has reasonable size
         auto sigField = headers.find("Session-Signature");
@@ -132,13 +126,7 @@ public:
 
             try
             {
-                verifyHandshake(
-                    headers,
-                    sharedValue,
-                    std::nullopt,
-                    localIP,
-                    remoteIP,
-                    env.app());
+                verifyHandshake(headers, sharedValue, std::nullopt, localIP, remoteIP, env.app());
                 fail("Should have thrown for missing Public-Key");
             }
             catch (std::runtime_error const&)
@@ -155,13 +143,7 @@ public:
 
             try
             {
-                verifyHandshake(
-                    headers,
-                    sharedValue,
-                    std::nullopt,
-                    localIP,
-                    remoteIP,
-                    env.app());
+                verifyHandshake(headers, sharedValue, std::nullopt, localIP, remoteIP, env.app());
                 fail("Should have thrown for missing Session-Signature");
             }
             catch (std::runtime_error const&)
@@ -196,13 +178,7 @@ public:
         auto localIP = boost::asio::ip::make_address("127.0.0.1");
         auto remoteIP = boost::asio::ip::make_address("192.168.1.100");
 
-        buildHandshake(
-            headers,
-            sharedValue,
-            std::nullopt,
-            localIP,
-            remoteIP,
-            env.app());
+        buildHandshake(headers, sharedValue, std::nullopt, localIP, remoteIP, env.app());
 
         // Verify the public key in headers is dilithium
         auto pkField = headers.find("Public-Key");

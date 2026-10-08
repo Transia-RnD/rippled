@@ -1,14 +1,15 @@
-#include <xrpl/protocol/STTx.h>
-#include <xrpl/protocol/TxFormats.h>
-#include <xrpl/protocol/KeyType.h>
-#include <xrpl/protocol/PublicKey.h>
-#include <xrpl/protocol/SecretKey.h>
-#include <xrpl/protocol/Seed.h>
-#include <xrpl/protocol/digest.h>
-#include <xrpl/protocol/Rules.h>
-#include <xrpl/protocol/Sign.h>
 #include <xrpl/basics/Log.h>
 #include <xrpl/beast/unit_test.h>
+#include <xrpl/protocol/KeyType.h>
+#include <xrpl/protocol/PublicKey.h>
+#include <xrpl/protocol/Rules.h>
+#include <xrpl/protocol/STTx.h>
+#include <xrpl/protocol/SecretKey.h>
+#include <xrpl/protocol/Seed.h>
+#include <xrpl/protocol/Sign.h>
+#include <xrpl/protocol/TxFormats.h>
+#include <xrpl/protocol/digest.h>
+
 #include <chrono>
 #include <iostream>
 #include <unordered_set>
@@ -23,7 +24,7 @@ public:
     testSignatureSpeed(KeyType keyType)
     {
         // testcase("Signature Verification Speed Test");
-        const int iterations = 1000;
+        int const iterations = 1000;
         auto const keypair = randomKeyPair(keyType);
 
         // KeyType switch
@@ -65,8 +66,8 @@ public:
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
         double timePerVerification = static_cast<double>(duration.count()) / iterations;
-        std::cout << "Total time for " << iterations << " verifications: "
-            << duration.count() / 1000 << " ms" << std::endl;
+        std::cout << "Total time for " << iterations
+                  << " verifications: " << duration.count() / 1000 << " ms" << std::endl;
         std::cout << "Time per verification: " << timePerVerification << " µs" << std::endl;
         std::cout << "Verifications per second: " << (1000000.0 / timePerVerification) << std::endl;
         BEAST_EXPECT(duration.count() / 1000 < 500);

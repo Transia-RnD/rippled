@@ -54,8 +54,8 @@ getNodeIdentity(Application& app, boost::program_options::variables_map const& c
             if (!parsedKeyType)
             {
                 Throw<std::runtime_error>(
-                    std::string("Invalid key type specified in [") +
-                    Sections::kValidatorKeyType + "]: " + keyTypeStr);
+                    std::string("Invalid key type specified in [") + Sections::kValidatorKeyType +
+                    "]: " + keyTypeStr);
             }
             keyType = *parsedKeyType;
         }

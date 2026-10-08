@@ -43,9 +43,7 @@ class Wildcard_test : public beast::unit_test::Suite
             cfg->networkId = networkID;
             Section config;
             config.append(
-                {"reference_fee = 10",
-                 "account_reserve = 1000000",
-                 "owner_reserve = 200000"});
+                {"reference_fee = 10", "account_reserve = 1000000", "owner_reserve = 200000"});
             auto setup = setupFeeVote(config);
             cfg->fees = setup;
             return cfg;
@@ -88,10 +86,8 @@ class Wildcard_test : public beast::unit_test::Suite
                 JTx tx = env.jt(jv, Sig(bob));
                 STTx local = *(tx.stx);
                 auto const info = submitSTTx(local);
-                auto const tecResult =
-                    wildcardNetwork ? "tesSUCCESS" : "tefBAD_AUTH";
-                BEAST_EXPECT(
-                    info[jss::result][jss::engine_result] == tecResult);
+                auto const tecResult = wildcardNetwork ? "tesSUCCESS" : "tefBAD_AUTH";
+                BEAST_EXPECT(info[jss::result][jss::engine_result] == tecResult);
             }
 
             // Multi Sign
@@ -102,10 +98,8 @@ class Wildcard_test : public beast::unit_test::Suite
                 JTx tx = env.jt(jv, Msig(dave), Fee(XRP(1)));
                 STTx local = *(tx.stx);
                 auto const info = submitSTTx(local);
-                auto const tecResult =
-                    wildcardNetwork ? "tesSUCCESS" : "tefBAD_SIGNATURE";
-                BEAST_EXPECT(
-                    info[jss::result][jss::engine_result] == tecResult);
+                auto const tecResult = wildcardNetwork ? "tesSUCCESS" : "tefBAD_SIGNATURE";
+                BEAST_EXPECT(info[jss::result][jss::engine_result] == tecResult);
             }
         }
     }

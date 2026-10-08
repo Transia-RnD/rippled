@@ -45,8 +45,7 @@ doValidationCreate(rpc::JsonContext& context)
     KeyType keyType = KeyType::Dilithium;
     if (context.params.isMember(jss::key_type))
     {
-        auto const parsed =
-            keyTypeFromString(context.params[jss::key_type].asString());
+        auto const parsed = keyTypeFromString(context.params[jss::key_type].asString());
         if (!parsed)
             return rpcError(RpcBadKeyType);
         keyType = *parsed;

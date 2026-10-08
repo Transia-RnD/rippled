@@ -1,4 +1,5 @@
 #include <xrpl/beast/unit_test.h>
+
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/socket_base.hpp>
@@ -32,8 +33,7 @@ public:
         constexpr int targetBufferSize = 1024 * 1024;  // 1 MB
 
         // Set send buffer size
-        socket.set_option(
-            boost::asio::socket_base::send_buffer_size(targetBufferSize), ec);
+        socket.set_option(boost::asio::socket_base::send_buffer_size(targetBufferSize), ec);
 
         if (ec)
         {
@@ -45,8 +45,7 @@ public:
         }
 
         // Set receive buffer size
-        socket.set_option(
-            boost::asio::socket_base::receive_buffer_size(targetBufferSize), ec);
+        socket.set_option(boost::asio::socket_base::receive_buffer_size(targetBufferSize), ec);
 
         if (ec)
         {
@@ -120,8 +119,7 @@ public:
 
         if (!ec)
         {
-            log << "Default send buffer size: " << sendBufSize.value()
-                << " bytes" << std::endl;
+            log << "Default send buffer size: " << sendBufSize.value() << " bytes" << std::endl;
         }
 
         boost::asio::socket_base::receive_buffer_size recvBufSize;
@@ -129,8 +127,7 @@ public:
 
         if (!ec)
         {
-            log << "Default receive buffer size: " << recvBufSize.value()
-                << " bytes" << std::endl;
+            log << "Default receive buffer size: " << recvBufSize.value() << " bytes" << std::endl;
         }
 
         socket.close(ec);

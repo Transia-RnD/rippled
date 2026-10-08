@@ -1,16 +1,17 @@
 #include <test/jtx/Env.h>
 
 #include <xrpld/app/misc/ValidatorList.h>
-#include <xrpl/server/Manifest.h>
+
 #include <xrpl/basics/base64.h>
 #include <xrpl/basics/chrono.h>
+#include <xrpl/json/json_writer.h>
+#include <xrpl/protocol/HashPrefix.h>
 #include <xrpl/protocol/PublicKey.h>
+#include <xrpl/protocol/STObject.h>
 #include <xrpl/protocol/SecretKey.h>
 #include <xrpl/protocol/Sign.h>
 #include <xrpl/protocol/digest.h>
-#include <xrpl/protocol/STObject.h>
-#include <xrpl/protocol/HashPrefix.h>
-#include <xrpl/json/json_writer.h>
+#include <xrpl/server/Manifest.h>
 
 namespace xrpl {
 namespace test {
@@ -71,9 +72,8 @@ private:
             // Extract public key from manifest
             auto m = deserializeManifest(manifest);
             if (m)
-                data += "{\"validation_public_key\":\"" +
-                    strHex(m->masterKey) + "\",\"manifest\":\"" +
-                    base64Encode(manifest) + "\"},";
+                data += "{\"validation_public_key\":\"" + strHex(m->masterKey) +
+                    "\",\"manifest\":\"" + base64Encode(manifest) + "\"},";
         }
 
         if (!validatorManifests.empty())
@@ -124,18 +124,16 @@ private:
         Env env{*this};
 
         // Generate dilithium publisher keypair
-        auto const [publisherPubKey, publisherSecKey] =
-            randomKeyPair(KeyType::Dilithium);
+        auto const [publisherPubKey, publisherSecKey] = randomKeyPair(KeyType::Dilithium);
 
         // Generate dilithium validator keypairs (master + signing)
         auto const valMasterSec = randomSecretKey(KeyType::Dilithium);
         auto const valMasterPub = derivePublicKey(KeyType::Dilithium, valMasterSec);
-        auto const [valSigningPub, valSigningSec] =
-            randomKeyPair(KeyType::Dilithium);
+        auto const [valSigningPub, valSigningSec] = randomKeyPair(KeyType::Dilithium);
 
         // Create manifest for validator
-        std::string manifest = makeManifestString(
-            valMasterPub, valMasterSec, valSigningPub, valSigningSec, 1);
+        std::string manifest =
+            makeManifestString(valMasterPub, valMasterSec, valSigningPub, valSigningSec, 1);
 
         // Set times: effective=now, expiration=now+1 year
         auto now = env.timeKeeper().now();
@@ -169,45 +167,43 @@ private:
         // Apply the list
         ValidatorBlobInfo blobInfo{blob, signature, ""};
 
-        auto result = validatorList->applyLists(
-            "", 1, {blobInfo}, "test://dilithium-vl");
+        auto result = validatorList->applyLists("", 1, {blobInfo}, "test://dilithium-vl");
 
-        log << "applyLists disposition: " << to_string(result.bestDisposition())
-            << std::endl;
+        log << "applyLists disposition: " << to_string(result.bestDisposition()) << std::endl;
 
         // Now test the EXACT code path RCLConsensus uses
         auto expiration = validatorList->expires();
         auto currentTime = env.timeKeeper().now();
 
-        log << "Current time (Ripple): "
-            << currentTime.time_since_epoch().count() << std::endl;
+        log << "Current time (Ripple): " << currentTime.time_since_epoch().count() << std::endl;
 
         if (expiration)
         {
-            log << "Expiration time (Ripple): "
-                << expiration->time_since_epoch().count() << std::endl;
+            log << "Expiration time (Ripple): " << expiration->time_since_epoch().count()
+                << std::endl;
 
             if (*expiration < currentTime)
             {
-                fail("VL expired! RCLConsensus would bow out.\n"
-                     "expires() = " +
-                     std::to_string(expiration->time_since_epoch().count()) +
-                     "\n"
-                     "now() = " +
-                     std::to_string(currentTime.time_since_epoch().count()));
+                fail(
+                    "VL expired! RCLConsensus would bow out.\n"
+                    "expires() = " +
+                    std::to_string(expiration->time_since_epoch().count()) +
+                    "\n"
+                    "now() = " +
+                    std::to_string(currentTime.time_since_epoch().count()));
             }
             else
             {
-                log << "✓ VL is valid, not expired. RCLConsensus would continue."
-                    << std::endl;
+                log << "✓ VL is valid, not expired. RCLConsensus would continue." << std::endl;
                 pass();
             }
         }
         else
         {
-            fail("expires() returned nullopt! RCLConsensus would bow out.\n"
-                 "disposition = " +
-                 to_string(result.bestDisposition()));
+            fail(
+                "expires() returned nullopt! RCLConsensus would bow out.\n"
+                "disposition = " +
+                to_string(result.bestDisposition()));
         }
     }
 
@@ -220,12 +216,10 @@ private:
         Env env{*this};
 
         // Generate dilithium publisher keypair
-        auto const [publisherPubKey, publisherSecKey] =
-            randomKeyPair(KeyType::Dilithium);
+        auto const [publisherPubKey, publisherSecKey] = randomKeyPair(KeyType::Dilithium);
 
         // Generate dilithium validator keypair
-        auto const [validatorPubKey, validatorSecKey] =
-            randomKeyPair(KeyType::Dilithium);
+        auto const [validatorPubKey, validatorSecKey] = randomKeyPair(KeyType::Dilithium);
 
         // Set times: effective=now-2 years, expiration=now-1 year (EXPIRED!)
         auto now = env.timeKeeper().now();
@@ -236,8 +230,7 @@ private:
 
         log << "Creating EXPIRED VL with:" << std::endl;
         log << "  effective (Ripple): " << effectiveRipple << std::endl;
-        log << "  expiration (Ripple): " << expirationRipple << " (1 year ago!)"
-            << std::endl;
+        log << "  expiration (Ripple): " << expirationRipple << " (1 year ago!)" << std::endl;
 
         // Build the blob content
         json::Value blobContent;
@@ -275,19 +268,11 @@ private:
         BEAST_EXPECT(validatorList->load({}, {}, publisherKeys));
 
         // Apply the EXPIRED list
-        ValidatorBlobInfo blobInfo{
-            blob,
-            strHex(Slice{signature.data(), signature.size()}),
-            ""};
+        ValidatorBlobInfo blobInfo{blob, strHex(Slice{signature.data(), signature.size()}), ""};
 
-        auto result = validatorList->applyLists(
-            "",
-            1,
-            {blobInfo},
-            "test://expired-dilithium-vl");
+        auto result = validatorList->applyLists("", 1, {blobInfo}, "test://expired-dilithium-vl");
 
-        log << "applyLists disposition: " << to_string(result.bestDisposition())
-            << std::endl;
+        log << "applyLists disposition: " << to_string(result.bestDisposition()) << std::endl;
 
         // Test the RCLConsensus condition with EXPIRED VL
         auto expiration = validatorList->expires();
@@ -295,31 +280,30 @@ private:
 
         if (expiration)
         {
-            log << "Expiration time (Ripple): "
-                << expiration->time_since_epoch().count() << std::endl;
-            log << "Current time (Ripple): "
-                << currentTime.time_since_epoch().count() << std::endl;
+            log << "Expiration time (Ripple): " << expiration->time_since_epoch().count()
+                << std::endl;
+            log << "Current time (Ripple): " << currentTime.time_since_epoch().count() << std::endl;
 
             // This SHOULD be expired
             if (*expiration < currentTime)
             {
                 auto secondsAgo =
-                    std::chrono::duration_cast<std::chrono::seconds>(
-                        currentTime - *expiration)
+                    std::chrono::duration_cast<std::chrono::seconds>(currentTime - *expiration)
                         .count();
-                log << "✓ VL correctly shows as expired (" << secondsAgo
-                    << " seconds ago)" << std::endl;
+                log << "✓ VL correctly shows as expired (" << secondsAgo << " seconds ago)"
+                    << std::endl;
                 log << "✓ RCLConsensus would correctly bow out" << std::endl;
                 pass();
             }
             else
             {
-                fail("VL should be expired but shows as valid!\n"
-                     "expires() = " +
-                     std::to_string(expiration->time_since_epoch().count()) +
-                     "\n"
-                     "now() = " +
-                     std::to_string(currentTime.time_since_epoch().count()));
+                fail(
+                    "VL should be expired but shows as valid!\n"
+                    "expires() = " +
+                    std::to_string(expiration->time_since_epoch().count()) +
+                    "\n"
+                    "now() = " +
+                    std::to_string(currentTime.time_since_epoch().count()));
             }
         }
         else
@@ -340,10 +324,8 @@ private:
         Env env{*this};
 
         // Generate secp256k1 keys for backward compatibility test
-        auto const [publisherPubKey, publisherSecKey] =
-            randomKeyPair(KeyType::Secp256k1);
-        auto const [validatorPubKey, validatorSecKey] =
-            randomKeyPair(KeyType::Secp256k1);
+        auto const [publisherPubKey, publisherSecKey] = randomKeyPair(KeyType::Secp256k1);
+        auto const [validatorPubKey, validatorSecKey] = randomKeyPair(KeyType::Secp256k1);
 
         // Set valid times
         auto now = env.timeKeeper().now();
@@ -382,24 +364,18 @@ private:
         std::vector<std::string> publisherKeys = {strHex(publisherPubKey)};
         BEAST_EXPECT(validatorList->load({}, {}, publisherKeys));
 
-        ValidatorBlobInfo blobInfo{
-            blob,
-            strHex(Slice{signature.data(), signature.size()}),
-            ""};
+        ValidatorBlobInfo blobInfo{blob, strHex(Slice{signature.data(), signature.size()}), ""};
 
-        auto result = validatorList->applyLists(
-            "", 1, {blobInfo}, "test://secp256k1-vl");
+        auto result = validatorList->applyLists("", 1, {blobInfo}, "test://secp256k1-vl");
 
-        log << "secp256k1 VL disposition: "
-            << to_string(result.bestDisposition()) << std::endl;
+        log << "secp256k1 VL disposition: " << to_string(result.bestDisposition()) << std::endl;
 
         auto expiration = validatorList->expires();
         auto currentTime = env.timeKeeper().now();
 
         if (expiration && *expiration >= currentTime)
         {
-            log << "✓ secp256k1 VL works correctly (backward compat)"
-                << std::endl;
+            log << "✓ secp256k1 VL works correctly (backward compat)" << std::endl;
             pass();
         }
         else

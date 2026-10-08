@@ -306,8 +306,8 @@ public:
         BEAST_EXPECT(!parseBase58<PublicKey>(TokenType::NodePublic, " "));
         BEAST_EXPECT(!parseBase58<PublicKey>(TokenType::NodePublic, "!ty89234gh45"));
 
-        auto const good = toBase58(
-            TokenType::NodePublic, derivePublicKey(keyType, randomSecretKey(keyType)));
+        auto const good =
+            toBase58(TokenType::NodePublic, derivePublicKey(keyType, randomSecretKey(keyType)));
 
         // Short (non-empty) strings
         {
@@ -425,8 +425,7 @@ public:
         {
             auto const pk1 = derivePublicKey(
                 KeyType::Dilithium,
-                generateSecretKey(
-                    KeyType::Dilithium, generateSeed("masterpassphrase")));
+                generateSecretKey(KeyType::Dilithium, generateSeed("masterpassphrase")));
 
             auto const pk2 = parseBase58<PublicKey>(
                 TokenType::NodePublic,

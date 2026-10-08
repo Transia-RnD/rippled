@@ -1,7 +1,7 @@
 #include <test/jtx/Env.h>
 
-#include <xrpl/server/Manifest.h>
 #include <xrpld/app/misc/ValidatorList.h>
+
 #include <xrpl/basics/Slice.h>
 #include <xrpl/basics/base64.h>
 #include <xrpl/basics/chrono.h>
@@ -12,9 +12,11 @@
 #include <xrpl/protocol/PublicKey.h>
 #include <xrpl/protocol/SecretKey.h>
 #include <xrpl/protocol/Sign.h>
+#include <xrpl/server/Manifest.h>
+
+#include <unistd.h>
 
 #include <fstream>
-#include <unistd.h>
 
 namespace xrpl {
 namespace test {
@@ -146,7 +148,9 @@ private:
             << " (Ripple), " << nowUnix << " (Unix)" << std::endl;
 
         // Use the PRODUCTION cluster VL file (absolute path)
-        std::string vlPath = "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/dilithium-full-cluster/vl/vl.json";
+        std::string vlPath =
+            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/"
+            "dilithium-full-cluster/vl/vl.json";
         auto vlOpt = loadValidatorList(vlPath);
 
         if (!vlOpt)
@@ -201,13 +205,17 @@ private:
                 std::time_t expirationUnix = expirationRipple + kEpochOffset.count();
                 std::time_t nowUnix = std::time(nullptr);
 
-                log << "Blob effective (Unix): " << effectiveUnix << " vs now: " << nowUnix << std::endl;
-                log << "Blob expiration (Unix): " << expirationUnix << " vs now: " << nowUnix << std::endl;
+                log << "Blob effective (Unix): " << effectiveUnix << " vs now: " << nowUnix
+                    << std::endl;
+                log << "Blob expiration (Unix): " << expirationUnix << " vs now: " << nowUnix
+                    << std::endl;
 
                 if (expirationUnix < nowUnix)
                 {
-                    fail("VL.json has EXPIRED timestamps!\n"
-                         "Expiration: " + std::to_string(expirationUnix) + " < Now: " + std::to_string(nowUnix));
+                    fail(
+                        "VL.json has EXPIRED timestamps!\n"
+                        "Expiration: " +
+                        std::to_string(expirationUnix) + " < Now: " + std::to_string(nowUnix));
                 }
                 else if (effectiveUnix > nowUnix)
                 {
@@ -230,10 +238,7 @@ private:
 
             // Apply the list using the PRODUCTION code path - env.app().getValidators()
             auto result = env.app().getValidators().applyLists(
-                manifest,
-                version,
-                {blobInfo},
-                "file://" + vlPath);
+                manifest, version, {blobInfo}, "file://" + vlPath);
 
             log << "applyLists disposition: " << to_string(result.bestDisposition()) << std::endl;
 
@@ -254,25 +259,32 @@ private:
                 // This is the PRODUCTION FAILURE CASE - RCLConsensus bows out
                 if (!when)
                 {
-                    fail("PRODUCTION FAILURE: expires() returned nullopt!\n"
-                         "RCLConsensus.cpp:991 condition: if (!when) => validating_ = false\n"
-                         "VL disposition: " + to_string(result.bestDisposition()) + "\n"
-                         "This means the node will BOW OUT of consensus!");
+                    fail(
+                        "PRODUCTION FAILURE: expires() returned nullopt!\n"
+                        "RCLConsensus.cpp:991 condition: if (!when) => validating_ = false\n"
+                        "VL disposition: " +
+                        to_string(result.bestDisposition()) +
+                        "\n"
+                        "This means the node will BOW OUT of consensus!");
                 }
                 else
                 {
-                    fail("PRODUCTION FAILURE: VL expired!\n"
-                         "RCLConsensus.cpp:991 condition: *when < now => validating_ = false\n"
-                         "expires() = " + std::to_string(when->time_since_epoch().count()) + "\n" +
-                         "now() = " + std::to_string(now.time_since_epoch().count()) + "\n" +
-                         "This means the node will BOW OUT of consensus!");
+                    fail(
+                        "PRODUCTION FAILURE: VL expired!\n"
+                        "RCLConsensus.cpp:991 condition: *when < now => validating_ = false\n"
+                        "expires() = " +
+                        std::to_string(when->time_since_epoch().count()) + "\n" +
+                        "now() = " + std::to_string(now.time_since_epoch().count()) + "\n" +
+                        "This means the node will BOW OUT of consensus!");
                 }
             }
             else
             {
                 // SUCCESS - RCLConsensus will continue validating
-                log << "✓ Expiration time (NetClock): " << when->time_since_epoch().count() << std::endl;
-                log << "✓ VL is valid and active - RCLConsensus will CONTINUE validating" << std::endl;
+                log << "✓ Expiration time (NetClock): " << when->time_since_epoch().count()
+                    << std::endl;
+                log << "✓ VL is valid and active - RCLConsensus will CONTINUE validating"
+                    << std::endl;
                 pass();
             }
 
@@ -292,7 +304,9 @@ private:
     {
         testcase("Publisher Key Match");
 
-        std::string keystorePath = "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/keystore/vl/key.json";
+        std::string keystorePath =
+            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/keystore/vl/"
+            "key.json";
         auto keystoreOpt = loadValidatorList(keystorePath);
 
         if (!keystoreOpt)
@@ -315,7 +329,9 @@ private:
 
         // Load actual VL
         // Use the PRODUCTION cluster VL file (absolute path)
-        std::string vlPath = "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/dilithium-full-cluster/vl/vl.json";
+        std::string vlPath =
+            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/"
+            "dilithium-full-cluster/vl/vl.json";
         auto vlOpt = loadValidatorList(vlPath);
 
         if (!vlOpt)
@@ -343,10 +359,11 @@ private:
         }
         else
         {
-            fail("Publisher key mismatch!\n"
-                 "Expected: " + expectedKey.substr(0, 64) + "...\n" +
-                 "Actual:   " + actualKey.substr(0, 64) + "...\n" +
-                 "The vl.json publisher key does not match the keystore.");
+            fail(
+                "Publisher key mismatch!\n"
+                "Expected: " +
+                expectedKey.substr(0, 64) + "...\n" + "Actual:   " + actualKey.substr(0, 64) +
+                "...\n" + "The vl.json publisher key does not match the keystore.");
         }
     }
 
@@ -371,8 +388,7 @@ private:
             auto hexKey = strHex(pk);
             hexKeys.push_back(hexKey);
 
-            log << "Generated validator key " << (i+1) << ": "
-                << hexKey.substr(0, 64) << "..."
+            log << "Generated validator key " << (i + 1) << ": " << hexKey.substr(0, 64) << "..."
                 << " (length: " << hexKey.size() << ")" << std::endl;
         }
 
@@ -387,18 +403,20 @@ private:
 
         if (!loaded)
         {
-            fail("FAILED to load Dilithium validator keys from [validators] section!\n"
-                 "This is the bug causing: 'Invalid node identity'\n"
-                 "\n"
-                 "The code at ValidatorList.cpp:232 uses parseBase58() for validator keys,\n"
-                 "but Dilithium keys (2624 hex chars) should be parsed as HEX, not Base58.\n"
-                 "\n"
-                 "Publisher keys work because they use strUnHex() at line 148.\n"
-                 "Validator keys need the same treatment!");
+            fail(
+                "FAILED to load Dilithium validator keys from [validators] section!\n"
+                "This is the bug causing: 'Invalid node identity'\n"
+                "\n"
+                "The code at ValidatorList.cpp:232 uses parseBase58() for validator keys,\n"
+                "but Dilithium keys (2624 hex chars) should be parsed as HEX, not Base58.\n"
+                "\n"
+                "Publisher keys work because they use strUnHex() at line 148.\n"
+                "Validator keys need the same treatment!");
         }
         else
         {
-            log << "✓ Successfully loaded " << hexKeys.size() << " Dilithium validator keys" << std::endl;
+            log << "✓ Successfully loaded " << hexKeys.size() << " Dilithium validator keys"
+                << std::endl;
 
             // Verify the keys were actually loaded
             auto trustedKeys = env.app().getValidators().getTrustedMasterKeys();
@@ -406,14 +424,14 @@ private:
 
             // Check that our keys are in the trusted set
             int foundCount = 0;
-            for (const auto& key : expectedKeys)
+            for (auto const& key : expectedKeys)
             {
                 if (trustedKeys.count(key) > 0)
                     foundCount++;
             }
 
-            log << "Found " << foundCount << " of " << expectedKeys.size()
-                << " keys in trusted set" << std::endl;
+            log << "Found " << foundCount << " of " << expectedKeys.size() << " keys in trusted set"
+                << std::endl;
 
             BEAST_EXPECT(foundCount == expectedKeys.size());
             pass();
@@ -427,7 +445,9 @@ private:
 
         // Load the publisher key from vl.json
         // Use the PRODUCTION cluster VL file (absolute path)
-        std::string vlPath = "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/dilithium-full-cluster/vl/vl.json";
+        std::string vlPath =
+            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/"
+            "dilithium-full-cluster/vl/vl.json";
         auto vlOpt = loadValidatorList(vlPath);
 
         if (!vlOpt)
@@ -450,17 +470,20 @@ private:
 
         // Check validators.txt files for the publisher key (production cluster)
         std::vector<std::string> configPaths = {
-            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/dilithium-full-cluster/vnode1/config/validators.txt",
-            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/dilithium-full-cluster/vnode2/config/validators.txt",
-            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/dilithium-full-cluster/vnode3/config/validators.txt",
-            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/dilithium-full-cluster/pnode1/config/validators.txt"
-        };
+            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/"
+            "dilithium-full-cluster/vnode1/config/validators.txt",
+            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/"
+            "dilithium-full-cluster/vnode2/config/validators.txt",
+            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/"
+            "dilithium-full-cluster/vnode3/config/validators.txt",
+            "/Users/darkmatter/projects/ledger-works/xrpld-network-gen/workspace/"
+            "dilithium-full-cluster/pnode1/config/validators.txt"};
 
         std::vector<std::string> configsWithKey;
         std::vector<std::string> configsMissingKey;
         std::vector<std::string> configsNotFound;
 
-        for (const auto& path : configPaths)
+        for (auto const& path : configPaths)
         {
             std::ifstream file(path);
             if (!file.is_open())
@@ -506,32 +529,33 @@ private:
         if (!configsWithKey.empty())
         {
             log << "✓ Configs with correct Dilithium publisher key:" << std::endl;
-            for (const auto& path : configsWithKey)
+            for (auto const& path : configsWithKey)
                 log << "  " << path << std::endl;
         }
 
         if (!configsMissingKey.empty())
         {
             log << "✗ Configs MISSING or WRONG publisher key:" << std::endl;
-            for (const auto& path : configsMissingKey)
+            for (auto const& path : configsMissingKey)
                 log << "  " << path << std::endl;
         }
 
         if (!configsNotFound.empty())
         {
             log << "⚠ Configs not found:" << std::endl;
-            for (const auto& path : configsNotFound)
+            for (auto const& path : configsNotFound)
                 log << "  " << path << std::endl;
         }
 
         if (!configsMissingKey.empty())
         {
-            fail("Some node configs are missing the correct Dilithium publisher key!\n"
-                 "This causes: 'UNL manifest is signed with an unrecognized master public key'\n"
-                 "\n"
-                 "The config files may have an old Ed25519 key instead of the new Dilithium key.\n"
-                 "Check the failing configs and update [validator_list_keys] with:\n" +
-                 publisherKey.substr(0, 64) + "...");
+            fail(
+                "Some node configs are missing the correct Dilithium publisher key!\n"
+                "This causes: 'UNL manifest is signed with an unrecognized master public key'\n"
+                "\n"
+                "The config files may have an old Ed25519 key instead of the new Dilithium key.\n"
+                "Check the failing configs and update [validator_list_keys] with:\n" +
+                publisherKey.substr(0, 64) + "...");
         }
         else if (configsWithKey.empty())
         {

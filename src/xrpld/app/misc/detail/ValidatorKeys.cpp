@@ -36,8 +36,8 @@ ValidatorKeys::ValidatorKeys(Config const& config, beast::Journal j)
             if (!parsedKeyType)
             {
                 configInvalid_ = true;
-                JLOG(j.fatal()) << "Invalid key type specified in ["
-                                << Sections::kValidatorKeyType << "]: " << keyTypeStr;
+                JLOG(j.fatal()) << "Invalid key type specified in [" << Sections::kValidatorKeyType
+                                << "]: " << keyTypeStr;
                 return;
             }
             keyType = *parsedKeyType;
@@ -67,8 +67,8 @@ ValidatorKeys::ValidatorKeys(Config const& config, beast::Journal j)
         else
         {
             configInvalid_ = true;
-            JLOG(j.fatal()) << "Could not load token specified in ["
-                            << Sections::kValidatorToken << "]";
+            JLOG(j.fatal()) << "Could not load token specified in [" << Sections::kValidatorToken
+                            << "]";
         }
     }
     else if (config.exists(Sections::kValidationSeed))
@@ -86,8 +86,7 @@ ValidatorKeys::ValidatorKeys(Config const& config, beast::Journal j)
             KeyType keyType = KeyType::Secp256k1;
             if (config.exists(Sections::kValidatorKeyType))
             {
-                auto const keyTypeStr =
-                    config.section(Sections::kValidatorKeyType).lines().front();
+                auto const keyTypeStr = config.section(Sections::kValidatorKeyType).lines().front();
                 auto const parsedKeyType = keyTypeFromString(keyTypeStr);
                 if (!parsedKeyType)
                 {

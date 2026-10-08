@@ -1912,9 +1912,7 @@ PeerImp::onMessage(std::shared_ptr<protocol::TMProposeSet> const& m)
          std::clamp<std::size_t>(sig.size(), 64, 72) != sig.size()))
     {
         JLOG(pJournal_.warn()) << "Proposal: malformed";
-        fee_.update(
-            resource::kFeeInvalidSignature,
-            " invalid signature size for key type");
+        fee_.update(resource::kFeeInvalidSignature, " invalid signature size for key type");
         return;
     }
 

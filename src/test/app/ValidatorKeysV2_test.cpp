@@ -1,12 +1,12 @@
 #include <test/jtx/Env.h>
 
 #include <xrpld/app/misc/ValidatorKeys.h>
-#include <xrpl/server/Manifest.h>
 #include <xrpld/core/Config.h>
-#include <xrpl/config/Constants.h>
 
 #include <xrpl/basics/base64.h>
 #include <xrpl/beast/unit_test.h>
+#include <xrpl/config/Constants.h>
+#include <xrpl/server/Manifest.h>
 
 #include <string>
 
@@ -48,8 +48,7 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
         "XCky4s82nMDfLv7AiAvtrwVu7Z2pdSm6cUYLOlqkNmJHtcmUqCo69Qr8gVgrXcTdmFsaWR"
         "hdG9yMS54cnBsLm9yZ3ASQFCJulMxEuBvoMtRF4HS0ItFT1amBI2qPPYNAi8LzA7B+"
         "j37bLkhvYmqQ+s0KuF6UEKTaBtnXYnnChDP767vdQg=",
-        {"INVALID_TOKEN_BLOB"}
-    };
+        {"INVALID_TOKEN_BLOB"}};
 
     // Test data for Dilithium
     KeyTypeTestData const dilithiumData{
@@ -603,8 +602,7 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
         "+P4OmtUl82hTtxn4eGckQe75nWzWmjLXRX+28u5vSb4g41cDCNfiZenq63W4Oz+"
         "DhgbN1pob3Z7goWzvsTcGSw6T1mCg4agp6u43eryERM3UlaLjpGjqrrD1QAAAAAAAAAAAA"
         "AAAAAAAAAAAAAAAAAAAAAMGyo3",
-        {"INVALID_TOKEN_BLOB"}
-    };
+        {"INVALID_TOKEN_BLOB"}};
 
     void
     testKeyType(KeyTypeTestData const& testData, beast::Journal const& journal)
@@ -612,23 +610,20 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
         testcase(testData.name);
 
         // Keys/ID when using [validation_seed]
-        SecretKey const seedSecretKey = generateSecretKey(
-            testData.keyType, *parseBase58<Seed>(testData.seed));
-        PublicKey const seedPublicKey =
-            derivePublicKey(testData.keyType, seedSecretKey);
+        SecretKey const seedSecretKey =
+            generateSecretKey(testData.keyType, *parseBase58<Seed>(testData.seed));
+        PublicKey const seedPublicKey = derivePublicKey(testData.keyType, seedSecretKey);
         NodeID const seedNodeID = calcNodeID(seedPublicKey);
 
         // Keys when using [validation_token]
-        auto const tokenSecretKey = *parseBase58<SecretKey>(
-            TokenType::NodePrivate, testData.tokenSecretStr);
+        auto const tokenSecretKey =
+            *parseBase58<SecretKey>(TokenType::NodePrivate, testData.tokenSecretStr);
 
-        auto const tokenPublicKey =
-            derivePublicKey(testData.keyType, tokenSecretKey);
+        auto const tokenPublicKey = derivePublicKey(testData.keyType, tokenSecretKey);
 
         BEAST_EXPECT(1 == 1);
 
-        auto const m =
-            deserializeManifest(base64Decode(testData.tokenManifest));
+        auto const m = deserializeManifest(base64Decode(testData.tokenManifest));
         BEAST_EXPECT(m);
         NodeID const tokenNodeID = calcNodeID(m->masterKey);
 
@@ -714,8 +709,7 @@ class ValidatorKeysV2_test : public beast::unit_test::Suite
         {
             // Token manifest and private key must match
             Config c;
-            c.section(Sections::kValidatorToken)
-                .append(testData.invalidTokenBlob);
+            c.section(Sections::kValidatorToken).append(testData.invalidTokenBlob);
             c.section(Sections::kValidatorKeyType).append(testData.name);
             ValidatorKeys k{c, journal};
 
@@ -731,11 +725,7 @@ public:
     {
         // We're only using Env for its Journal.  That Journal gives better
         // coverage in unit tests.
-        test::jtx::Env env{
-            *this,
-            test::jtx::envconfig(),
-            nullptr,
-            beast::Severity::Disabled};
+        test::jtx::Env env{*this, test::jtx::envconfig(), nullptr, beast::Severity::Disabled};
         beast::Journal journal{env.app().getJournal("ValidatorKeys_test")};
 
         // Test both secp256k1 and dilithium key types

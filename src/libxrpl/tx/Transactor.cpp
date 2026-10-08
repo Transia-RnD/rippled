@@ -56,7 +56,7 @@
 #include <vector>
 
 extern "C" {
-#include "api.h"
+#include <api.h>
 }
 
 #ifndef DILITHIUM_PK_SIZE

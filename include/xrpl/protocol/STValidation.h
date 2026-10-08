@@ -236,8 +236,7 @@ STValidation::STValidation(
     // First, set our own public key. Only secp256k1 (legacy) and dilithium
     // (post-quantum) are valid for signing validations; Ed25519 has never
     // been supported here.
-    if (auto const kt = publicKeyType(pk);
-        kt != KeyType::Secp256k1 && kt != KeyType::Dilithium)
+    if (auto const kt = publicKeyType(pk); kt != KeyType::Secp256k1 && kt != KeyType::Dilithium)
         logicError("Validation signing requires secp256k1 or dilithium key");
 
     setFieldVL(sfSigningPubKey, pk.slice());

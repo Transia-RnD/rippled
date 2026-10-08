@@ -981,11 +981,11 @@ RCLConsensus::Adaptor::preStartRound(RCLCxLedger const& prevLgr, hash_set<NodeID
 
         if (when)
         {
-            JLOG(j_.debug()) << "Validator list expires at: "
-                             << when->time_since_epoch().count()
-                             << ", time_until_expiry="
-                             << std::chrono::duration_cast<std::chrono::seconds>(*when - now).count()
-                             << " seconds";
+            JLOG(j_.debug())
+                << "Validator list expires at: " << when->time_since_epoch().count()
+                << ", time_until_expiry="
+                << std::chrono::duration_cast<std::chrono::seconds>(*when - now).count()
+                << " seconds";
         }
 
         if (!when || *when < now)
@@ -996,10 +996,11 @@ RCLConsensus::Adaptor::preStartRound(RCLCxLedger const& prevLgr, hash_set<NodeID
             }
             else
             {
-                JLOG(j_.debug()) << "Validator list has expired. "
-                                 << "Expired "
-                                 << std::chrono::duration_cast<std::chrono::seconds>(now - *when).count()
-                                 << " seconds ago";
+                JLOG(j_.debug())
+                    << "Validator list has expired. "
+                    << "Expired "
+                    << std::chrono::duration_cast<std::chrono::seconds>(now - *when).count()
+                    << " seconds ago";
             }
 
             JLOG(j_.error()) << "Voluntarily bowing out of consensus process "

@@ -1255,9 +1255,8 @@ ValidatorList::verify(
 {
     if (!publisherLists_.contains(manifest.masterKey))
     {
-        JLOG(j_.warn())
-            << "UNL manifest is signed by an unrecognized publisher key: "
-            << strHex(manifest.masterKey);
+        JLOG(j_.warn()) << "UNL manifest is signed by an unrecognized publisher key: "
+                        << strHex(manifest.masterKey);
         return {ListDisposition::Untrusted, {}};
     }
 
@@ -1285,16 +1284,14 @@ ValidatorList::verify(
     auto const data = base64Decode(blob);
     if (!sig)
     {
-        JLOG(j_.warn())
-            << "Invalid signature format in manifest from publisher: "
-            << strHex(masterPubKey);
+        JLOG(j_.warn()) << "Invalid signature format in manifest from publisher: "
+                        << strHex(masterPubKey);
         return {ListDisposition::Invalid, masterPubKey};
     }
 
     if (!xrpl::verify(*signingKey, makeSlice(data), makeSlice(*sig)))
     {
-        JLOG(j_.warn()) << "Invalid signature in manifest from publisher: "
-                        << strHex(masterPubKey);
+        JLOG(j_.warn()) << "Invalid signature in manifest from publisher: " << strHex(masterPubKey);
         return {ListDisposition::Invalid, masterPubKey};
     }
 
@@ -2008,11 +2005,9 @@ ValidatorList::updateTrusted(
     if ((!publisherLists_.empty() || !localPublisherList_.list.empty()) && unlSize == 0)
     {
         // No validators. Lock down.
-        JLOG(j_.warn()) << "No trusted validators available. Locking down UNL: "
-                        << unlSize << " trusted validators."
-                        << publisherLists_.size()
-                        << " publisher lists configured."
-                        << localPublisherList_.list.size()
+        JLOG(j_.warn()) << "No trusted validators available. Locking down UNL: " << unlSize
+                        << " trusted validators." << publisherLists_.size()
+                        << " publisher lists configured." << localPublisherList_.list.size()
                         << " local static keys configured.";
         ops.setUNLBlocked();
     }

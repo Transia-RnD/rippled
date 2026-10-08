@@ -441,12 +441,12 @@ public:
 
             auto& buffer = m.getBuffer(Compressed::On);
             boost::beast::multi_buffer buffers;
-            buffers.commit(boost::asio::buffer_copy(
-                buffers.prepare(buffer.size()), boost::asio::buffer(buffer)));
+            buffers.commit(
+                boost::asio::buffer_copy(
+                    buffers.prepare(buffer.size()), boost::asio::buffer(buffer)));
 
             boost::system::error_code ec;
-            auto header = xrpl::detail::parseMessageHeader(
-                ec, buffers.data(), buffer.size());
+            auto header = xrpl::detail::parseMessageHeader(ec, buffers.data(), buffer.size());
 
             // Message should be accepted (no error)
             BEAST_EXPECT(!ec);
