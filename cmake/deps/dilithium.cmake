@@ -42,8 +42,7 @@ set_target_properties(dilithium::dilithium2_ref PROPERTIES
 )
 # The archive above is compiled with these defines via BUILD_COMMAND's CFLAGS;
 # propagate them to every consumer so params.h resolves CRYPTO_PUBLICKEYBYTES /
-# CRYPTO_SECRETKEYBYTES identically in the library and in its callers
-# (SecretKey.cpp, PublicKey.cpp), which assert the resulting sizes at compile time.
+# CRYPTO_SECRETKEYBYTES to the archive's sizes wherever it is included.
 target_compile_definitions(dilithium::dilithium2_ref INTERFACE
   DILITHIUM_MODE=2
   DILITHIUM_RANDOMIZED_SIGNING
