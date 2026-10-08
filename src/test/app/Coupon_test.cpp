@@ -138,6 +138,17 @@ class Coupon_test : public beast::unit_test::Suite
         env(scheduleCreate(alice, id, mpt), Ter(temMALFORMED));
         env.close();
 
+        // Call protection needs a callable schedule and a real call time.
+        {
+            auto jv = scheduleCreate(alice, id, USD);
+            jv[sfEarliestCallTime] = 1'000'000;
+            env(jv, Ter(temMALFORMED));
+            jv[sfCallNoticePeriod] = 86'400;
+            jv[sfEarliestCallTime] = 0;
+            env(jv, Ter(temMALFORMED));
+            env.close();
+        }
+
         env(scheduleCreate(alice, id, USD), Ter(tesSUCCESS));
         env.close();
 

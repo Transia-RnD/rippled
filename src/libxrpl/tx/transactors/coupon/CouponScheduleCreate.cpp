@@ -55,8 +55,9 @@ CouponScheduleCreate::preflight(PreflightContext const& ctx)
 
     if (auto const earliestCall = ctx.tx[~sfEarliestCallTime])
     {
-        // Call protection is meaningless on a non-callable schedule.
-        if (!ctx.tx.isFieldPresent(sfCallNoticePeriod))
+        // Call protection is meaningless on a non-callable schedule, and a
+        // zero call time protects nothing.
+        if (!ctx.tx.isFieldPresent(sfCallNoticePeriod) || *earliestCall == 0)
             return temMALFORMED;
         if (expiration && *earliestCall >= *expiration)
             return temBAD_EXPIRATION;
