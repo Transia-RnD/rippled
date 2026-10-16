@@ -104,6 +104,8 @@ enum class LedgerNameSpace : std::uint16_t {
     LoanBroker = 'l',  // lower-case L
     Loan = 'L',
     Sponsorship = '>',
+    Firewall = 'F',
+    WithdrawPreauth = 'G',
 
     // No longer used or supported. Left here to reserve the space to avoid accidental reuse.
     Contract [[deprecated]] = 'c',
@@ -608,6 +610,20 @@ Keylet
 permissionedDomain(uint256 const& domainID) noexcept
 {
     return {ltPERMISSIONED_DOMAIN, domainID};
+}
+
+Keylet
+firewall(AccountID const& account) noexcept
+{
+    return {ltFIREWALL, indexHash(LedgerNameSpace::Firewall, account)};
+}
+
+Keylet
+withdrawPreauth(AccountID const& owner, AccountID const& preauthorized, std::uint32_t dtag) noexcept
+{
+    return {
+        ltWITHDRAW_PREAUTH,
+        indexHash(LedgerNameSpace::WithdrawPreauth, owner, preauthorized, dtag)};
 }
 
 }  // namespace keylet
