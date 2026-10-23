@@ -26,6 +26,7 @@
 #include <random>
 #include <span>
 #include <sstream>
+#include <utility>
 
 namespace xrpl::test {
 namespace {
@@ -430,6 +431,82 @@ TEST(Base58Test, fast_matches_ref)
         std::array<std::uint8_t, 128> b256DataBuf{};
         auto const [tokType, b256Data] = randomB256TestData(b256DataBuf);
         testIt(tokType, b256Data);
+    }
+}
+
+TEST(Base58Test, length_ceiling)
+{
+    // Regression: the reference base58 decoder must reject pathological
+    // inputs to bound the O(n^2) decode loop. The ceiling has to be
+    // large enough for the longest legitimate token (a dilithium
+    // NodePrivate or AccountSecret: 2565 binary bytes, 3503 base58 chars)
+    // but reject anything that could be used as a CPU/memory amplification vector.
+
+    // 'p' is a nonzero base58 digit; 'r' is the zero digit, which the
+    // decoder strips as a leading zero before the ceiling applies.
+
+    // A 1-MB base58 input must be rejected (DoS guard).
+    std::string const huge(1u << 20, 'p');
+    EXPECT_TRUE(xrpl::b58_ref::detail::decodeBase58(huge).empty());
+
+    // Length just above the ceiling is rejected.
+    std::string const overCeiling(5000, 'p');
+    EXPECT_TRUE(xrpl::b58_ref::detail::decodeBase58(overCeiling).empty());
+
+    // A dilithium-sized token (~1806 chars) must still decode.
+    // We don't care about the exact bytes — only that the decoder
+    // produced non-empty output for an input in the legitimate range.
+    std::string const dilithiumSized(1806, 'p');
+    EXPECT_FALSE(xrpl::b58_ref::detail::decodeBase58(dilithiumSized).empty());
+
+    // A short token (the legacy 33-byte NodePublic at ~44 chars) still works.
+    std::string const legacySized(44, 'p');
+    EXPECT_FALSE(xrpl::b58_ref::detail::decodeBase58(legacySized).empty());
+}
+
+TEST(Base58Test, reference_fallback)
+{
+    using namespace xrpl::b58_ref::detail;
+    using xrpl::TokenCodecErrc;
+    using xrpl::TokenType;
+
+    EXPECT_EQ(maxTokenPayload(TokenType::NodePublic), 1312u);
+    EXPECT_EQ(maxTokenPayload(TokenType::AccountPublic), 1312u);
+    EXPECT_EQ(maxTokenPayload(TokenType::NodePrivate), 2560u);
+    EXPECT_EQ(maxTokenPayload(TokenType::AccountSecret), 2560u);
+    EXPECT_EQ(maxTokenPayload(TokenType::AccountID), 0u);
+    EXPECT_EQ(maxTokenPayload(TokenType::FamilySeed), 0u);
+    EXPECT_EQ(maxTokenChars(TokenType::NodePublic), 1799u);
+    EXPECT_EQ(maxTokenChars(TokenType::AccountPublic), 1799u);
+    EXPECT_EQ(maxTokenChars(TokenType::NodePrivate), 3503u);
+    EXPECT_EQ(maxTokenChars(TokenType::AccountSecret), 3503u);
+    EXPECT_EQ(maxTokenChars(TokenType::AccountID), 0u);
+
+    auto const tooLarge = TokenCodecErrc::InputTooLarge;
+    EXPECT_TRUE(decodeFallbackAllowed(TokenType::NodePublic, tooLarge, 1799));
+    EXPECT_FALSE(decodeFallbackAllowed(TokenType::NodePublic, tooLarge, 1800));
+    EXPECT_TRUE(decodeFallbackAllowed(TokenType::NodePrivate, tooLarge, 3503));
+    EXPECT_FALSE(decodeFallbackAllowed(TokenType::NodePrivate, tooLarge, 3504));
+    EXPECT_FALSE(decodeFallbackAllowed(TokenType::AccountID, tooLarge, 60));
+    EXPECT_FALSE(decodeFallbackAllowed(TokenType::FamilySeed, tooLarge, 60));
+    EXPECT_FALSE(
+        decodeFallbackAllowed(TokenType::NodePublic, TokenCodecErrc::MismatchedChecksum, 1799));
+    EXPECT_FALSE(
+        decodeFallbackAllowed(TokenType::NodePublic, TokenCodecErrc::MismatchedTokenType, 1799));
+    EXPECT_TRUE(encodeFallbackAllowed(TokenType::NodePublic, tooLarge, 1312));
+    EXPECT_FALSE(encodeFallbackAllowed(TokenType::NodePublic, tooLarge, 1313));
+    EXPECT_TRUE(encodeFallbackAllowed(TokenType::AccountSecret, tooLarge, 2560));
+    EXPECT_FALSE(encodeFallbackAllowed(TokenType::AccountSecret, tooLarge, 2561));
+    EXPECT_FALSE(encodeFallbackAllowed(TokenType::AccountID, tooLarge, 20));
+
+    // Dilithium-sized payloads round-trip through the public codec.
+    for (auto const& [type, size] :
+         {std::pair{TokenType::NodePublic, 1312uz}, std::pair{TokenType::NodePrivate, 2560uz}})
+    {
+        std::string const payload(size, '\xAB');
+        auto const encoded = xrpl::encodeBase58Token(type, payload.data(), payload.size());
+        EXPECT_EQ(encoded.size(), maxTokenChars(type));
+        EXPECT_EQ(xrpl::decodeBase58Token(encoded, type), payload);
     }
 }
 

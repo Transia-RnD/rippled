@@ -17,6 +17,7 @@
 #include <xrpl/protocol/tokens.h>
 #include <xrpl/server/Manifest.h>
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -101,8 +102,9 @@ public:
             // validation seed section -> empty manifest and valid seeds
             Config c;
             c.section(Sections::kValidationSeed).append(seed_);
+            c.section(Sections::kValidatorKeyType).append("secp256k1");
 
-            ValidatorKeys k{c, journal};
+            ValidatorKeys const k{c, journal};
             if (BEAST_EXPECT(k.keys); k.keys.has_value())
             {
                 BEAST_EXPECT(k.keys->publicKey == seedPublicKey);
@@ -117,6 +119,7 @@ public:
             // validation seed bad seed -> invalid
             Config c;
             c.section(Sections::kValidationSeed).append("badseed");
+            c.section(Sections::kValidatorKeyType).append("secp256k1");
 
             ValidatorKeys const k{c, journal};
             BEAST_EXPECT(k.configInvalid());
@@ -128,6 +131,7 @@ public:
             // validator token
             Config c;
             c.section(Sections::kValidatorToken).append(tokenBlob_);
+            c.section(Sections::kValidatorKeyType).append("secp256k1");
             ValidatorKeys k{c, journal};
 
             if (BEAST_EXPECT(k.keys); k.keys.has_value())
@@ -143,6 +147,7 @@ public:
             // invalid validator token
             Config c;
             c.section(Sections::kValidatorToken).append("badtoken");
+            c.section(Sections::kValidatorKeyType).append("secp256k1");
             ValidatorKeys const k{c, journal};
             BEAST_EXPECT(k.configInvalid());
             BEAST_EXPECT(!k.keys);
@@ -154,6 +159,7 @@ public:
             Config c;
             c.section(Sections::kValidationSeed).append(seed_);
             c.section(Sections::kValidatorToken).append(tokenBlob_);
+            c.section(Sections::kValidatorKeyType).append("secp256k1");
             ValidatorKeys const k{c, journal};
 
             BEAST_EXPECT(k.configInvalid());
@@ -165,11 +171,57 @@ public:
             // Token manifest and private key must match
             Config c;
             c.section(Sections::kValidatorToken).append(invalidTokenBlob_);
+            c.section(Sections::kValidatorKeyType).append("secp256k1");
             ValidatorKeys const k{c, journal};
 
             BEAST_EXPECT(k.configInvalid());
             BEAST_EXPECT(!k.keys);
             BEAST_EXPECT(k.manifest.empty());
+        }
+
+        testValidatorKeyType(journal);
+    }
+
+private:
+    void
+    testValidatorKeyType(beast::Journal const& journal)
+    {
+        testcase("validator_key_type");
+
+        auto keyTypeOf = [&](std::optional<std::string> const& value) {
+            Config c;
+            c.section(Sections::kValidationSeed).append(seed_);
+            if (value)
+                c.section(Sections::kValidatorKeyType);
+            if (value && !value->empty())
+                c.section(Sections::kValidatorKeyType).append(*value);
+            ValidatorKeys const k{c, journal};
+            return k.keys ? publicKeyType(k.keys->publicKey) : std::nullopt;
+        };
+        BEAST_EXPECT(keyTypeOf(std::nullopt) == KeyType::Secp256k1);
+        BEAST_EXPECT(keyTypeOf(std::string("secp256k1")) == KeyType::Secp256k1);
+        BEAST_EXPECT(keyTypeOf(std::string("dilithium")) == KeyType::Dilithium);
+
+        for (std::string const value : {"ed25519", "bogus", ""})
+        {
+            Config c;
+            c.section(Sections::kValidationSeed).append(seed_);
+            c.section(Sections::kValidatorKeyType);
+            if (!value.empty())
+                c.section(Sections::kValidatorKeyType).append(value);
+            ValidatorKeys const k{c, journal};
+            BEAST_EXPECT(k.configInvalid());
+            BEAST_EXPECT(!k.keys);
+        }
+
+        {
+            // a 32-byte token secret is not a Dilithium key
+            Config c;
+            c.section(Sections::kValidatorToken).append(tokenBlob_);
+            c.section(Sections::kValidatorKeyType).append("dilithium");
+            ValidatorKeys const k{c, journal};
+            BEAST_EXPECT(k.configInvalid());
+            BEAST_EXPECT(!k.keys);
         }
     }
 };  // namespace test
